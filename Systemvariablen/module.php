@@ -25,6 +25,18 @@
 			foreach ($class_methods as $method_name) {
 				IPS_LogMessage("CLASS",$method_name);
 			}
+			function format($array)
+			{
+				return implode('|', array_keys($array)) . "\r\n";
+			}
+			IPS_LogMessage("VARS",format(get_class_vars('TestCase')));
+			
+			$vars = get_object_vars($this);
+			foreach ($vars as $var) {
+				IPS_LogMessage("ObjectVar",$var);
+			}
+			
+			
 		/*	$sid = $this->RegisterScript("Hook", "Hook", "<? //Do not delete or modify.\ninclude(IPS_GetKernelDirEx().\"scripts/__ipsmodule.inc.php\");\ninclude(\"../modules/SymconMisc/Geofency/module.php\");\n(new Geofency(".$this->InstanceID."))->ProcessHookData();");
 			$this->RegisterHook("/hook/geofency", $sid);*/
 		}
