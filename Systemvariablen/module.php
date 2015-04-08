@@ -1,7 +1,7 @@
 <?
 	class HMSysVar extends IPSModule
 	{
-		private $THMSysVarsList;
+	//	private $THMSysVarsList;
 		
 		public function __construct($InstanceID)
 		{
@@ -21,6 +21,10 @@
 			//Never delete this line!
 			parent::ApplyChanges();
 			
+			$class_methods = get_class_methods('IPSModule');
+			foreach ($class_methods as $method_name) {
+				IPS_LogMessage("CLASS",$method_name);
+			}
 		/*	$sid = $this->RegisterScript("Hook", "Hook", "<? //Do not delete or modify.\ninclude(IPS_GetKernelDirEx().\"scripts/__ipsmodule.inc.php\");\ninclude(\"../modules/SymconMisc/Geofency/module.php\");\n(new Geofency(".$this->InstanceID."))->ProcessHookData();");
 			$this->RegisterHook("/hook/geofency", $sid);*/
 		}
@@ -33,10 +37,10 @@
 		* GEO_ProcessHookData($id);
 		*
 		*/
-		public function ReadSysVars()
+		/*public function ReadSysVars()
 		{
 			IPS_LogMessage("HomeMaticSystemvariablen", "Dummy-Module");
-		}
+		}*/
 		/*
 		public function ProcessHookData()
 		{
