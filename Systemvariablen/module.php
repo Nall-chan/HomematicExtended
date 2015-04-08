@@ -35,7 +35,7 @@
 		*/
 		public function ReadSysVars()
 		{
-			IPS_LogMessage("HomeMatic Systemvariablen", "Dummy-Module");
+			IPS_LogMessage("HomeMaticSystemvariablen", "Dummy-Module");
 		}
 		/*
 		public function ProcessHookData()
