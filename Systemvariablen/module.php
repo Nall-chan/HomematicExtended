@@ -2,6 +2,7 @@
 	class HMSysVar extends IPSModule
 	{
 		private $THMSysVarsList;
+		
 		public function __construct($InstanceID)
 		{
 			//Never delete this line!
@@ -12,7 +13,7 @@
 			$this->RegisterPropertyInteger("EventID", 0);
 			$this->RegisterPropertyInteger("Interval", 0);
 			$this->RegisterPropertyBoolean("EmulateStatus", false);
-			$this->RegisterTimer("ReadHMSysVar", 0);
+//			$this->RegisterTimer("ReadHMSysVar", 0);
 		}
 	
 		public function ApplyChanges()
