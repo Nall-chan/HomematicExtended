@@ -1,0 +1,12 @@
+{
+    "elements":
+            [],
+    "actions":
+            [
+                {
+                    "type": "Button",
+                    "label": "CCU auslesen",
+                    "onClick": "HM_ReadPrograms($id);"
+                }
+            ]
+}

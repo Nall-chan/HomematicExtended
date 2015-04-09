@@ -1,0 +1,73 @@
+{
+    "elements":
+            [
+                {
+                    "name": "PageUpID",
+                    "type": "SelectVariable",
+                    "caption": "Hoch-Taste"
+                },
+                {
+                    "name": "PageDownID",
+                    "type": "SelectVariable",
+                    "caption": "Runter-Taste"
+                },
+                {
+                    "name": "ActionUpID",
+                    "type": "SelectVariable",
+                    "caption": "Aktion Hoch-Taste"
+                },
+                {
+                    "name": "ActionDownID",
+                    "type": "SelectVariable",
+                    "caption": "Aktion Runter-Taste"
+                },
+                {
+                    "name": "MaxPage",
+                    "type": "NumberSpinner",
+                    "caption": "Seitenanzahl"
+                },
+                {
+                    "name": "Timeout",
+                    "type": "NumberSpinner",
+                    "caption": "Display Timeout"
+                },
+                {
+                    "name": "ScriptID",
+                    "type": "SelectScript",
+                    "caption": "Display-Script"
+                }
+            ],
+    "status":
+            [
+                {
+                    "code": 102,
+                    "icon": "active",
+                    "caption": "Konfiguration gültig."
+                },
+                {
+                    "code": 104,
+                    "icon": "inactive",
+                    "caption": "Kein PRESS Datenpunkt ausgewählt."
+                },
+                {
+                    "code": 202,
+                    "icon": "inactive",
+                    "caption": "Mindestens ein gewählter Datenpunkt ist ungültig."
+                },
+                {
+                    "code": 203,
+                    "icon": "inactive",
+                    "caption": "Kein Display-Script ausgewählt."
+                },
+                {
+                    "code": 204,
+                    "icon": "inactive",
+                    "caption": "Timeout darf nicht negativ sein."
+                },
+                {
+                    "code": 205,
+                    "icon": "inactive",
+                    "caption": "Seitenanzahl darf nicht negativ sein."
+                }
+            ]
+}

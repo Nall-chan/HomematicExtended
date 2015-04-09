@@ -1,0 +1,28 @@
+{
+    "elements":
+            [
+                {
+                    "name": "EventID",
+                    "type": "SelectVariable",
+                    "caption": "ENERGY_COUNTER vom Device"
+                }
+            ],
+    "status":
+            [
+                {
+                    "code": 102,
+                    "icon": "active",
+                    "caption": "Konfiguration gültig."
+                },
+                {
+                    "code": 104,
+                    "icon": "inactive",
+                    "caption": "Kein ENERGY_COUNTER Datenpunkt ausgewählt."
+                },
+                {
+                    "code": 202,
+                    "icon": "inactive",
+                    "caption": "Gewählter Datenpunkt ist ungültig."
+                }
+            ]
+}
