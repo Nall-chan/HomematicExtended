@@ -1,9 +1,9 @@
 {
-	"id": "{AE6D87CF-041F-4603-9FBB-8D6F3EA82B81}",
-	"author": "Michael Tröger",
-	"name": "Homematic Erweiterung",
-	"url": "git.nall-chan.net",
-	"version": "0.1",
-	"build": 6,
-	"date": 202
+    "id": "{AE6D87CF-041F-4603-9FBB-8D6F3EA82B81}",
+    "author": "Michael Tröger",
+    "name": "Homematic Erweiterung",
+    "url": "git.nall-chan.net",
+    "version": "0.1",
+    "build": 6,
+    "date": 202
 }
