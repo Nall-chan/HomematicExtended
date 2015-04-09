@@ -64,13 +64,19 @@
                     //        MaintainVariable(true,Ident,Name,cVariable.VariableValue.ValueType,'HM.SysVar'+ IntToStr(fInstanceID) +'.'+Ident,ActionHandler);
                             $this->THMSysVarsList[$Child]=$Objekt['ObjectIdent'];
                         }
-//                    }
-                    if ($this->ReadPropertyInteger('Interval') >= 5)	
+//                    } else {
+                    if ($this->CheckConfig())
                     {
-//open                        $this->SetTimerInterval('ReadHMSysVar',$this->ReadPropertyInteger('Interval'));
+                        if ($this->ReadPropertyInteger('Interval') >= 5)	
+                        {
+    //open                        $this->SetTimerInterval('ReadHMSysVar',$this->ReadPropertyInteger('Interval'));
+                        } else {
+    //open                        $this->SetTimerInterval('ReadHMSysVar',0);
+                        }
                     } else {
-//open                        $this->SetTimerInterval('ReadHMSysVar',0);
+    //open                        $this->SetTimerInterval('ReadHMSysVar',0);                    
                     }
+//                }
                 }	
                 
                 private function CheckConfig()
