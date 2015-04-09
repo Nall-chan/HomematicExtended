@@ -1,18 +1,18 @@
 {
 	"elements":
 	[
-		{ "name": "EventID", "type": "SelectVariable", "caption": "Trigger fÃ¼r Refresh" },
+		{ "name": "EventID", "type": "SelectVariable", "caption": "Trigger für Refresh" },
 		{ "name": "Interval", "type": "IntervalBox", "caption": "seconds" },
 		{ "name": "EmulateStatus", "type": "CheckBox", "caption": "Status emulieren" }
 	],
 	"status":
 	[
-		{ "code": 102, "icon": "active", "caption": "Konfiguration gÃ¼ltig." },
+		{ "code": 102, "icon": "active", "caption": "Konfiguration gültig." },
 		{ "code": 104, "icon": "inactive", "caption": "Kein Trigger oder Interval aktiv." },
 		{ "code": 105, "icon": "active", "caption": "Status emulieren nur empfohlen bei Interval." },
 		{ "code": 106, "icon": "active", "caption": "Nur Trigger oder Interval empfohlen." },
 		{ "code": 107, "icon": "active", "caption": "Trigger scheint keine Virt. FB der CCU zu sein." },
-		{ "code": 108, "icon": "inactive", "caption": "Trigger kleiner 5 nicht mÃ¶glich." },
+		{ "code": 108, "icon": "inactive", "caption": "Trigger kleiner 5 nicht möglich." },
 		{ "code": 202, "icon": "error", "caption": "Timer darf nicht kleiner 1 sein." }
 	],
 	"actions":

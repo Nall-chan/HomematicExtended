@@ -181,7 +181,7 @@
                 public function __destruct()
                 {
                     $this->SetTimerInterval('ReadHMSysVar', 0);
-//unnÃ¶tig ?                    parent::__destruct();                    
+//unnötig ?                    parent::__destruct();                    
                 }
                 
                 public function ProcessInstanceStatusChange($InstanceID, $Status)
