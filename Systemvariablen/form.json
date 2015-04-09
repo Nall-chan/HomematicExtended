@@ -1,4 +1,4 @@
-﻿{
+{
 	"elements":
 	[
 		{ "name": "EventID", "type": "SelectVariable", "caption": "Trigger für Refresh" },
