@@ -1,8 +1,28 @@
 <?php
-	class HMSysVar extends IPSModule
+ // --- BASE MESSAGE
+ define('IPS_BASE', 10000);                             //Base Message
+
+define('IPS_KERNELSHUTDOWN',IPS_BASE + 1);            //Pre Shutdown Message, Runlevel UNINIT Follows
+define('IPS_KERNELSTARTED', IPS_BASE + 2);             //Post Ready Message
+        
+ // --- KERNEL
+ define('IPS_KERNELMESSAGE', IPS_BASE + 100);           //Kernel Message
+ define('KR_CREATE', IPS_KERNELMESSAGE + 1);            //Kernel is beeing created
+ define('KR_INIT', IPS_KERNELMESSAGE + 2);              //Kernel Components are beeing initialised, Modules loaded, Settings read
+ define('KR_READY', IPS_KERNELMESSAGE + 3);             //Kernel is ready and running
+ define('KR_UNINIT', IPS_KERNELMESSAGE + 4);            //Got Shutdown Message, unloading all stuff
+ define('KR_SHUTDOWN', IPS_KERNELMESSAGE + 5);          //Uninit Complete, Destroying Kernel Inteface
+
+        
+        class HMSysVar extends IPSModule
 	{
 		private $THMSysVarsList;
 		private $HMAddress;
+                
+                //Dummy
+                private $fKernelRunlevel;
+                
+
                 
 		public function __construct($InstanceID)
 		{
@@ -14,12 +34,13 @@
 			$this->RegisterPropertyInteger("EventID", 0);
 			$this->RegisterPropertyInteger("Interval", 0);
 			$this->RegisterPropertyBoolean("EmulateStatus", false);
-//open			$this->RegisterTimer("ReadHMSysVar", 0);
+			$this->RegisterTimer("ReadHMSysVar", 0);
+                        $this->fKernelRunlevel=KR_READY;
 		}
                 
                 public function __destruct()
                 {
-//open                    $this->SetTimerInterval('ReadHMSysVar', 0);
+                    $this->SetTimerInterval('ReadHMSysVar', 0);
 //unnötig ?                    parent::__destruct();                    
                 }
                 
@@ -36,13 +57,13 @@
                                     $this->GetParentData();
                                     if ($this->HMAddress <> '')
                                     {
-//open                                        if ($this->ReadPropertyInteger('Interval') >= 5) $this->SetTimerInterval('ReadHMSysVar', $this->ReadPropertyInteger('Interval'));
+                                        if ($this->ReadPropertyInteger('Interval') >= 5) $this->SetTimerInterval('ReadHMSysVar', $this->ReadPropertyInteger('Interval'));
                                         $this->ReadSysVars();
                                     }
                                 }
                             } else {
                                 $this->HMAddress='';
-//open                                if ($this->ReadPropertyInteger('Interval') >= 5) $this->SetTimerInterval('ReadHMSysVar', 0);
+                                if ($this->ReadPropertyInteger('Interval') >= 5) $this->SetTimerInterval('ReadHMSysVar', 0);
                             }
                         }
                     }
@@ -53,8 +74,8 @@
 		{
                     //Never delete this line!
                     parent::ApplyChanges();
-//                    if ($this->fKernelRunlevel == KR_INIT)
-//                    {
+                    if ($this->fKernelRunlevel == KR_INIT)
+                    {
                         foreach (IPS_GetChildrenIDs($this->InstanceID) as $Child)
                         {
                             $Objekt = IPS_GetObject($Child);
@@ -64,19 +85,19 @@
                     //        MaintainVariable(true,Ident,Name,cVariable.VariableValue.ValueType,'HM.SysVar'+ IntToStr(fInstanceID) +'.'+Ident,ActionHandler);
                             $this->THMSysVarsList[$Child]=$Objekt['ObjectIdent'];
                         }
-//                    } else {
-                    if ($this->CheckConfig())
-                    {
-                        if ($this->ReadPropertyInteger('Interval') >= 5)	
-                        {
-    //open                        $this->SetTimerInterval('ReadHMSysVar',$this->ReadPropertyInteger('Interval'));
-                        } else {
-    //open                        $this->SetTimerInterval('ReadHMSysVar',0);
-                        }
                     } else {
-    //open                        $this->SetTimerInterval('ReadHMSysVar',0);                    
+                        if ($this->CheckConfig())
+                        {
+                            if ($this->ReadPropertyInteger('Interval') >= 5)	
+                            {
+                                $this->SetTimerInterval('ReadHMSysVar',$this->ReadPropertyInteger('Interval'));
+                            } else {
+                                $this->SetTimerInterval('ReadHMSysVar',0);
+                            }
+                        } else {
+                                $this->SetTimerInterval('ReadHMSysVar',0);                    
+                        }
                     }
-//                }
                 }	
                 
                 private function CheckConfig()
@@ -198,7 +219,7 @@
 			SetValue($this->CreateVariableByIdent($deviceID, $this->ReduceGUIDToIdent($_POST['id']), utf8_decode($_POST['name']), 0, "~Presence"), intval($_POST['entry']) > 0);
 			
 		}*/
-		
+		/*
 		private function ReduceGUIDToIdent($guid) {
 			return str_replace(Array("{", "-", "}"), "", $guid);
 		}
@@ -243,6 +264,20 @@
 			 }
 			 return $iid;
 		}
+                */
+                // DUMMYS
+                private function SetStatus($data)
+                {
+                    
+                }
+                private function RegisterTimer($data,$cata)
+                {
+                    
+                }
+                private function SetTimerInterval($data,$cata)
+                {
+                    
+                }
 		
 	
 	}
