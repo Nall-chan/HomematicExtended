@@ -14,12 +14,12 @@
 			$this->RegisterPropertyInteger("EventID", 0);
 			$this->RegisterPropertyInteger("Interval", 0);
 			$this->RegisterPropertyBoolean("EmulateStatus", false);
-			$this->RegisterTimer("ReadHMSysVar", 0);
+//open			$this->RegisterTimer("ReadHMSysVar", 0);
 		}
                 
                 public function __destruct()
                 {
-                    $this->SetTimerInterval('ReadHMSysVar', 0);
+//open                    $this->SetTimerInterval('ReadHMSysVar', 0);
                     parent::__destruct();                    
                 }
                 
@@ -36,13 +36,13 @@
                                     $this->GetParentData();
                                     if ($this->HMAddress <> '')
                                     {
-                                        if ($this->ReadPropertyInteger('Interval') >= 5) $this->SetTimerInterval('ReadHMSysVar', $this->ReadPropertyInteger('Interval'));
+//open                                        if ($this->ReadPropertyInteger('Interval') >= 5) $this->SetTimerInterval('ReadHMSysVar', $this->ReadPropertyInteger('Interval'));
                                         $this->ReadSysVars();
                                     }
                                 }
                             } else {
                                 $this->HMAddress='';
-                                if ($this->ReadPropertyInteger('Interval') >= 5) $this->SetTimerInterval('ReadHMSysVar', 0);
+//open                                if ($this->ReadPropertyInteger('Interval') >= 5) $this->SetTimerInterval('ReadHMSysVar', 0);
                             }
                         }
                     }
@@ -67,9 +67,9 @@
                     }
                     if ($this->ReadPropertyInteger('Interval') >= 5)	
                     {
-                        $this->SetTimerInterval('ReadHMSysVar',$this->ReadPropertyInteger('Interval'));
+//open                        $this->SetTimerInterval('ReadHMSysVar',$this->ReadPropertyInteger('Interval'));
                     } else {
-                        $this->SetTimerInterval('ReadHMSysVar',0);
+//open                        $this->SetTimerInterval('ReadHMSysVar',0);
                     }
                 }	
                 
