@@ -20,7 +20,7 @@
                 public function __destruct()
                 {
 //open                    $this->SetTimerInterval('ReadHMSysVar', 0);
-                    parent::__destruct();                    
+//unnötig ?                    parent::__destruct();                    
                 }
                 
                 public function ProcessInstanceStatusChange($InstanceID, $Status)
@@ -53,8 +53,8 @@
 		{
                     //Never delete this line!
                     parent::ApplyChanges();
-                    if ($this->fKernelRunlevel == KR_INIT)
-                    {
+//                    if ($this->fKernelRunlevel == KR_INIT)
+//                    {
                         foreach (IPS_GetChildrenIDs($this->InstanceID) as $Child)
                         {
                             $Objekt = IPS_GetObject($Child);
@@ -64,7 +64,7 @@
                     //        MaintainVariable(true,Ident,Name,cVariable.VariableValue.ValueType,'HM.SysVar'+ IntToStr(fInstanceID) +'.'+Ident,ActionHandler);
                             $this->THMSysVarsList[$Child]=$Objekt['ObjectIdent'];
                         }
-                    }
+//                    }
                     if ($this->ReadPropertyInteger('Interval') >= 5)	
                     {
 //open                        $this->SetTimerInterval('ReadHMSysVar',$this->ReadPropertyInteger('Interval'));
