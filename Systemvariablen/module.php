@@ -81,7 +81,7 @@
                 
                 private function CheckConfig()
                 {
-                    if ($this->GetPropertyInteger('Interval') < 0)
+                    if ($this->ReadPropertyInteger('Interval') < 0)
                     {
                       $this->SetStatus(202); //Error Timer is Zero
                       return false;
@@ -110,7 +110,7 @@
                                 {
                                     $this->SetStatus(107);  //Warnung vermutlich falscher Trigger                        
                                 } else {  //ist HM Device
-                                    if (strpos('BidCoS-RF:',IPS_GetProperty($parent,'Address'))  === false )
+                                    if (strpos('BidCoS-RF:',IPS_ReadProperty($parent,'Address'))  === false )
                                     {
                                         $this->SetStatus(107);  //Warnung vermutlich falscher Trigger                        
                                     }else {
@@ -135,7 +135,7 @@
                     $ObjID = @IPS_GetInstanceParentID($this->InstanceID);
                     if ($ObjID <> 0)
                     {
-                        $this->HMAddress=IPS_GetProperty($ObjID,'Host');
+                        $this->HMAddress=IPS_ReadProperty($ObjID,'Host');
                         $this->SetSummary(HMAddress);                        
                     } else {
                         $this->HMAddress='';
