@@ -265,8 +265,11 @@ IPS_LogMessage(__CLASS__, __FUNCTION__); //
 
     public function ApplyChanges() {
         IPS_LogMessage(__CLASS__, __FUNCTION__); //           
+        IPS_LogMessage('Config',print_r(json_decode(IPS_GetConfiguration($this->InstanceID)),1));
         //Never delete this line!
         parent::ApplyChanges();
+        IPS_LogMessage(__CLASS__, __FUNCTION__); //                   
+        IPS_LogMessage('Config',print_r(json_decode(IPS_GetConfiguration($this->InstanceID)),1));
         if ($this->fKernelRunlevel == KR_INIT) {
             foreach (IPS_GetChildrenIDs($this->InstanceID) as $Child) {
                 $Objekt = IPS_GetObject($Child);
