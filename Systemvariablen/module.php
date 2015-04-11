@@ -151,7 +151,7 @@ class HMSysVar extends IPSModule {
     public function __construct($InstanceID) {
         //Never delete this line!
         parent::__construct($InstanceID);
-        IPS_LogMessage('HMSysVar', __FUNCTION__); //           
+        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
         //These lines are parsed on Symcon Startup or Instance creation
         //You cannot use variables here. Just static values.
         $this->RegisterPropertyInteger("EventID", 0);
@@ -163,12 +163,12 @@ class HMSysVar extends IPSModule {
 
     public function __destruct() {
 //        $this->SetTimerInterval('ReadHMSysVar', 0);
-        IPS_LogMessage('HMSysVar', __FUNCTION__); //           
+        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
 //unnötig ?                    parent::__destruct();                    
     }
 
     public function ProcessInstanceStatusChange($InstanceID, $Status) {
-        IPS_LogMessage('HMSysVar', __FUNCTION__); //           
+IPS_LogMessage(__CLASS__, __FUNCTION__); //           
 
         if ($this->fKernelRunlevel == KR_READY) {
             if (($InstanceID == @IPS_GetInstanceParentID($this->InstanceID)) or ( $InstanceID == 0)) {
@@ -192,7 +192,7 @@ class HMSysVar extends IPSModule {
     }
 
     public function MessageSink($Msg) {
-        IPS_LogMessage('HMSysVar', __FUNCTION__); //           
+        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
 
         /*
          *   if (msg.Message = IPS_KERNELMESSAGE) and (msg.SenderID=0) and (Msg.Data[0] = KR_READY) then
@@ -264,7 +264,7 @@ class HMSysVar extends IPSModule {
     }
 
     public function ApplyChanges() {
-        IPS_LogMessage('HMSysVar', __FUNCTION__); //           
+        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
         //Never delete this line!
         parent::ApplyChanges();
         if ($this->fKernelRunlevel == KR_INIT) {
@@ -293,7 +293,7 @@ class HMSysVar extends IPSModule {
 ################## PRIVATE                
 
     private function CheckConfig() {
-        IPS_LogMessage('HMSysVar', __FUNCTION__); //           
+        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
         if ($this->ReadPropertyInteger('Interval') < 0) {
             $this->SetStatus(202); //Error Timer is Zero
             return false;
@@ -329,14 +329,14 @@ class HMSysVar extends IPSModule {
     }
 
     private function TimerFire() {
-        IPS_LogMessage('HMSysVar', __FUNCTION__); //           
+        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
 
         if ($this->HasActiveParent())
             $this->ReadSysVars();
     }
 
     private function GetParentData() {
-        IPS_LogMessage('HMSysVar', __FUNCTION__); //           
+        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
 
         $ObjID = @IPS_GetInstanceParentID($this->InstanceID);
         if ($ObjID <> 0) {
@@ -349,7 +349,7 @@ class HMSysVar extends IPSModule {
     }
 
     private function LoadHMScript($url, $HMScript) {
-        IPS_LogMessage('HMSysVar', __FUNCTION__); //           
+        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
 
         if ($this->HMAddress == '') {
             $this->SendData('Error', 'CCU Address not set.');
@@ -380,7 +380,7 @@ class HMSysVar extends IPSModule {
     }
 
     private function ReadSysVars() {
-        IPS_LogMessage('HMSysVar', __FUNCTION__); //           
+        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
 //                    IPS_LogMessage("HomeMaticSystemvariablen", "Dummy-Module");
         /*
          *   SysVarType:=vtBoolean;
@@ -650,7 +650,7 @@ class HMSysVar extends IPSModule {
     }
 
     private function WriteSysVar($param, $value) {
-        IPS_LogMessage('HMSysVar', __FUNCTION__); //           
+        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
 
         /*
          *      Result:=false;
@@ -695,7 +695,7 @@ class HMSysVar extends IPSModule {
 ################## ActionHandler
 
     public function ActionHandler($StatusVariable, $Value) {
-        IPS_LogMessage('HMSysVar', __FUNCTION__); //           
+        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
 
         /*
          *    begin
@@ -765,7 +765,7 @@ class HMSysVar extends IPSModule {
      */
 
     public function ReadSystemVariables() {
-        IPS_LogMessage('HMSysVar', __FUNCTION__); //           
+        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
 
         if (!$this->HasActiveParent())
             throw new Exception("Instance has no active Parent Instance!");
@@ -774,7 +774,7 @@ class HMSysVar extends IPSModule {
     }
 
     public function WriteValueBoolean($Parameter, $Value) {
-        IPS_LogMessage('HMSysVar', __FUNCTION__); //           
+        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
 
         /*
           var IPSVarID       : word;
@@ -801,7 +801,7 @@ class HMSysVar extends IPSModule {
     }
 
     public function WriteValueInteger($Parameter, $Value) {
-        IPS_LogMessage('HMSysVar', __FUNCTION__); //           
+        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
 
         /*
           //------------------------------------------------------------------------------
@@ -827,7 +827,7 @@ class HMSysVar extends IPSModule {
     }
 
     public function WriteValueFloat($Parameter, $Value) {
-        IPS_LogMessage('HMSysVar', __FUNCTION__); //           
+        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
 
         /*
           //------------------------------------------------------------------------------
@@ -857,7 +857,7 @@ class HMSysVar extends IPSModule {
     }
 
     public function WriteValueString($Parameter, $Value) {
-        IPS_LogMessage('HMSysVar', __FUNCTION__); //           
+        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
 
         /*
           //------------------------------------------------------------------------------
@@ -942,7 +942,7 @@ class HMSysVar extends IPSModule {
 ################## DUMMYS / WOARKAROUNDS - PRIVATE
 
     private function HasActiveParent() {
-        IPS_LogMessage('HMSysVar', __FUNCTION__); //           
+        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
 
         $id = @IPS_GetInstanceParentID($this->InstanceID);
         if ($id > 0) {
@@ -954,21 +954,21 @@ class HMSysVar extends IPSModule {
     }
 
     private function SetStatus($data) {
-        IPS_LogMessage('HMSysVar', __FUNCTION__); //           
+        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
     }
 
     private function RegisterTimer($data, $cata) {
-        IPS_LogMessage('HMSysVar', __FUNCTION__); //           
+        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
     }
 
     private function SetTimerInterval($data, $cata) {
-        IPS_LogMessage('HMSysVar', __FUNCTION__); //           
+        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
 
-        IPS_LogMessage('HMSysVar', 'Timer:' . $data . ' Interval:' . $cata);
+        IPS_LogMessage(__CLASS__, 'Timer:' . $data . ' Interval:' . $cata);
     }
 
     private function LogMessage($data, $cata) {
-//        IPS_LogMessage('HMSysVar',__FUNCTION__);//           
+//        IPS_LogMessage(__CLASS__,__FUNCTION__);//           
     }
 
 }
