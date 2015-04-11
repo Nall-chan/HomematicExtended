@@ -157,7 +157,7 @@ class HMSysVar extends IPSModule {
         $this->RegisterPropertyInteger("EventID", 0);
         $this->RegisterPropertyInteger("Interval", 0);
         $this->RegisterPropertyBoolean("EmulateStatus", false);
-        $this->RegisterTimer("ReadHMSysVar", -1);
+        $this->RegisterTimer("ReadHMSysVar", 0);
         $this->fKernelRunlevel = KR_READY;
     }
 
