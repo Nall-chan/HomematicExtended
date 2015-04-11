@@ -404,9 +404,6 @@ class HMCCUPrg extends IPSModule {
 ################## ActionHandler
 
     public function ActionHandler($StatusVariableIdent, $Value) {
-        $VarID = @IPS_GetObjectByIdent($this->InstanceID, $StatusVariableIdent);
-        if (($VarID === false) or ( $VarID == 0))
-            return;
         $this->StartCCUProgram($StatusVariableIdent);
     }
 
