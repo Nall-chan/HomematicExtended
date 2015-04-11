@@ -932,7 +932,7 @@ class HMSysVar extends IPSModule {
     }
 
     private function SetTimerInterval($data, $cata) {
-        IPS_LogMessage('HMSysVar','Timer:'.$data.' Interval:'.$cdata);
+        IPS_LogMessage('HMSysVar','Timer:'.$data.' Interval:'.$cata);
     }
 
     private function LogMessage($data, $cata) {
