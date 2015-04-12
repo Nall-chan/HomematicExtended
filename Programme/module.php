@@ -109,10 +109,10 @@ class HMCCUPrg extends HMBase
             $this->LogMessage('HM-Script result is not wellformed');
             throw new Exception("Error on Read CCU-Programs");
         }
-        foreach (explode(' ', $xml->SysPrgs) as $SysVar)
+        foreach (explode(' ', (string)$xml->SysPrgs) as $SysPrg)
         {
-            $HMScript = 'Name=dom.GetObject(' . $SysVar . ').Name();' . PHP_EOL
-                    . 'Info=dom.GetObject(' . $SysVar . ').PrgInfo();' . PHP_EOL;
+            $HMScript = 'Name=dom.GetObject(' . $SysPrg . ').Name();' . PHP_EOL
+                    . 'Info=dom.GetObject(' . $SysPrg . ').PrgInfo();' . PHP_EOL;
             $HMScriptResult = $this->LoadHMScript($url, $HMScript);
             $varXml = @new SimpleXMLElement($HMScriptResult);
             if ($varXml === false)
@@ -120,19 +120,19 @@ class HMCCUPrg extends HMBase
                 $this->LogMessage('HM-Script result is not wellformed');
                 throw new Exception("Error on Read CCU-Programs");
             }
-            $var = @GetObjectIDByIdent($SysVar);
+            $var = @GetObjectIDByIdent($SysPrg);
             if ($var === false)
             {
-                $this->MaintainVariable($SysVar, $varXml->Name, 1, 'Execute.HM.', 0, true);
-                $this->MaintainAction($SysVar, 'ActionHandler', true);
-                IPS_SetInfo($SysVar, $varXml->Info);
+                $this->MaintainVariable($SysPrg, (string)$varXml->Name, 1, 'Execute.HM.', 0, true);
+                $this->MaintainAction($SysPrg, 'ActionHandler', true);
+                IPS_SetInfo($SysPrg, (string)$varXml->Info);
             }
             else
             {
-                if (IPS_GetName($SysVar) <> $varXml->Name)
-                    IPS_SetName($SysVar, $varXml->Name);
-                if (IPS_GetInfo($SysVar) <> $varXml->Info)
-                    IPS_SetInfo($SysVar, $varXml->Info);
+                if (IPS_GetName($SysPrg) <> (string)$varXml->Name)
+                    IPS_SetName($SysPrg, (string)$varXml->Name);
+                if (IPS_GetInfo($SysPrg) <> (string)$varXml->Info)
+                    IPS_SetInfo($SysPrg, (string)$varXml->Info);
             }
         }
     }
@@ -158,7 +158,7 @@ class HMCCUPrg extends HMBase
             $this->LogMessage('HM-Script result is not wellformed');
             throw new Exception("Error on start CCU-Program");
         }
-        if ($xml->State == 'True')
+        if ((string)$xml->State == 'True')
             SetValueInteger($var,0);
         else
             throw new Exception("Error on start CCU-Program");            

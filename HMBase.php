@@ -141,6 +141,11 @@ define('FOUND_OLD', 2);         //Device is already configues (InstanceID should
 define('FOUND_CURRENT', 3);     //Device is already configues (InstanceID is from the current/searching Instance)
 define('FOUND_UNSUPPORTED', 4); //Device is not supported by Module
 
+define('vtBoolean', 0);
+define('vtInteger', 1);
+define('vtFloat', 2);
+define('vtString', 3);
+
 class HMBase extends IPSModule
 {
     protected $fKernelRunlevel;

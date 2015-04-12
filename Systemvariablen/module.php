@@ -1,21 +1,23 @@
 <?
 
-
 require_once(__DIR__ . "/../HMBase.php");  // HMBase Klasse
 
-class HMSysVar extends HMBase {
+class HMSysVar extends HMBase
+{
 
-    private $THMSysVarsList;
-    private $HMAddress;
-    //Dummy
+//    private $THMSysVarsList;
+//    private $HMAddress;
+//Dummy
     private $fKernelRunlevel;
+    private $CcuVarType = array(2 => vtBoolean, 4 => vtFloat, 16 => vtInteger, 20 => vtString);
 
-    public function __construct($InstanceID) {
-        //Never delete this line!
+    public function __construct($InstanceID)
+    {
+//Never delete this line!
         parent::__construct($InstanceID);
         IPS_LogMessage(__CLASS__, __FUNCTION__); //           
-        //These lines are parsed on Symcon Startup or Instance creation
-        //You cannot use variables here. Just static values.
+//These lines are parsed on Symcon Startup or Instance creation
+//You cannot use variables here. Just static values.
         $this->RegisterPropertyInteger("EventID", 0);
         $this->RegisterPropertyInteger("Interval", 0);
         $this->RegisterPropertyBoolean("EmulateStatus", false);
@@ -23,28 +25,39 @@ class HMSysVar extends HMBase {
         $this->fKernelRunlevel = KR_READY;
     }
 
-    public function __destruct() {
+    public function __destruct()
+    {
 //        $this->SetTimerInterval('ReadHMSysVar', 0);
         IPS_LogMessage(__CLASS__, __FUNCTION__); //           
 //unnötig ?                    parent::__destruct();                    
     }
 
-    public function ProcessInstanceStatusChange($InstanceID, $Status) {
-IPS_LogMessage(__CLASS__, __FUNCTION__); //           
+    public function ProcessInstanceStatusChange($InstanceID, $Status)
+    {
+        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
 
-        if ($this->fKernelRunlevel == KR_READY) {
-            if (($InstanceID == @IPS_GetInstanceParentID($this->InstanceID)) or ( $InstanceID == 0)) {
-                if ($this->HasActiveParent()) {
-                    if ($this->CheckConfig()) {
-                        $this->GetParentData();
-                        if ($this->HMAddress <> '') {
+        if ($this->fKernelRunlevel == KR_READY)
+        {
+            if (($InstanceID == @IPS_GetInstanceParentID($this->InstanceID)) or ( $InstanceID == 0))
+            {
+                $HMAdress = $this->GetParentData();
+                if ($this->HasActiveParent())
+                {
+                    if ($this->CheckConfig())
+                    {
+                        if ($HMAdress <> '')
+                        {
                             if ($this->ReadPropertyInteger('Interval') >= 5)
                                 $this->SetTimerInterval('ReadHMSysVar', $this->ReadPropertyInteger('Interval'));
                             $this->ReadSysVars();
                         }
+                    } else
+                    {
+                        if ($this->ReadPropertyInteger('Interval') >= 5)
+                            $this->SetTimerInterval('ReadHMSysVar', 0);
                     }
-                } else {
-                    $this->HMAddress = '';
+                } else
+                {
                     if ($this->ReadPropertyInteger('Interval') >= 5)
                         $this->SetTimerInterval('ReadHMSysVar', 0);
                 }
@@ -53,7 +66,8 @@ IPS_LogMessage(__CLASS__, __FUNCTION__); //
         parent::ProcessInstanceStatusChange($InstanceID, $Status);
     }
 
-    public function MessageSink($Msg) {
+    public function MessageSink($Msg)
+    {
         IPS_LogMessage(__CLASS__, __FUNCTION__); //           
 
         /*
@@ -125,31 +139,42 @@ IPS_LogMessage(__CLASS__, __FUNCTION__); //
          */
     }
 
-    public function ApplyChanges() {
+    public function ApplyChanges()
+    {
         IPS_LogMessage(__CLASS__, __FUNCTION__); //           
-        IPS_LogMessage('Config',print_r(json_decode(IPS_GetConfiguration($this->InstanceID)),1));
-        //Never delete this line!
+        IPS_LogMessage('Config', print_r(json_decode(IPS_GetConfiguration($this->InstanceID)), 1));
+//Never delete this line!
         parent::ApplyChanges();
         IPS_LogMessage(__CLASS__, __FUNCTION__); //                   
-        IPS_LogMessage('Config',print_r(json_decode(IPS_GetConfiguration($this->InstanceID)),1));
-        if ($this->fKernelRunlevel == KR_INIT) {
-            foreach (IPS_GetChildrenIDs($this->InstanceID) as $Child) {
+        IPS_LogMessage('Config', print_r(json_decode(IPS_GetConfiguration($this->InstanceID)), 1));
+        if ($this->fKernelRunlevel == KR_INIT)
+        {
+            foreach (IPS_GetChildrenIDs($this->InstanceID) as $Child)
+            {
                 $Objekt = IPS_GetObject($Child);
                 if ($Objekt['ObjectType'] <> 2)
                     continue;
                 $Var = IPS_GetVariable($Child);
                 $this->MaintainVariable($Objekt['ObjectIdent'], $Objekt['ObjectName'], $Var['ValueType'], 'HM.SysVar' . $this->InstanceID . '.' . $Objekt['ObjectIdent'], $Objekt['ObjectPosition'], true);
-                //        MaintainVariable(true,Ident,Name,cVariable.VariableValue.ValueType,'HM.SysVar'+ IntToStr(fInstanceID) +'.'+Ident,ActionHandler);
-                $this->THMSysVarsList[$Child] = $Objekt['ObjectIdent'];
+                $this->MaintainAction($Objekt['ObjectIdent'], 'ActionHandler', true);
+//        MaintainVariable(true,Ident,Name,cVariable.VariableValue.ValueType,'HM.SysVar'+ IntToStr(fInstanceID) +'.'+Ident,ActionHandler);
+//                $this->THMSysVarsList[$Child] = $Objekt['ObjectIdent'];
             }
-        } else {
-            if ($this->CheckConfig()) {
-                if ($this->ReadPropertyInteger('Interval') >= 5) {
+        } else
+        {
+            if ($this->CheckConfig())
+            {
+                if ($this->ReadPropertyInteger('Interval') >= 5)
+                {
                     $this->SetTimerInterval('ReadHMSysVar', $this->ReadPropertyInteger('Interval'));
-                } else {
+                }
+                else
+                {
                     $this->SetTimerInterval('ReadHMSysVar', 0);
                 }
-            } else {
+            }
+            else
+            {
                 $this->SetTimerInterval('ReadHMSysVar', 0);
             }
         }
@@ -157,364 +182,215 @@ IPS_LogMessage(__CLASS__, __FUNCTION__); //
 
 ################## PRIVATE                
 
-    private function CheckConfig() {
+    private function CheckConfig()
+    {
         IPS_LogMessage(__CLASS__, __FUNCTION__); //           
-        if ($this->ReadPropertyInteger('Interval') < 0) {
+        if ($this->ReadPropertyInteger('Interval') < 0)
+        {
             $this->SetStatus(202); //Error Timer is Zero
             return false;
-        } elseif ($this->ReadPropertyInteger('Interval') >= 5) {
-            if ($this->ReadPropertyInteger('EventID') == 0) {
+        }
+        elseif ($this->ReadPropertyInteger('Interval') >= 5)
+        {
+            if ($this->ReadPropertyInteger('EventID') == 0)
+            {
                 $this->SetStatus(IS_ACTIVE); //OK
-            } else {
+            }
+            else
+            {
                 $this->SetStatus(106); //Trigger und Timer aktiv                      
             }
-        } elseif ($this->ReadPropertyInteger('Interval') == 0) {
-            if ($this->ReadPropertyInteger('EventID') == 0) {
+        }
+        elseif ($this->ReadPropertyInteger('Interval') == 0)
+        {
+            if ($this->ReadPropertyInteger('EventID') == 0)
+            {
                 $this->SetStatus(IS_INACTIVE); // kein Trigger und Timer aktiv
-            } else {
-                if ($this->ReadPropertyBoolean('EmulateStatus') == true) {
+            }
+            else
+            {
+                if ($this->ReadPropertyBoolean('EmulateStatus') == true)
+                {
                     $this->SetStatus(105); //Status emulieren nur empfohlen bei Interval.
-                } else {
+                }
+                else
+                {
                     $parent = IPS_GetParent($this->ReadPropertyInteger('EventID'));
-                    if (IPS_GetInstance($parent)['ModuleID'] <> '{EE4A81C6-5C90-4DB7-AD2F-F6BBD521412E}') {
+                    if (IPS_GetInstance($parent)['ModuleID'] <> '{EE4A81C6-5C90-4DB7-AD2F-F6BBD521412E}')
+                    {
                         $this->SetStatus(107);  //Warnung vermutlich falscher Trigger                        
-                    } else {  //ist HM Device
-                        if (strpos('BidCoS-RF:', IPS_ReadProperty($parent, 'Address')) === false) {
+                    }
+                    else
+                    {  //ist HM Device
+                        if (strpos('BidCoS-RF:', IPS_ReadProperty($parent, 'Address')) === false)
+                        {
                             $this->SetStatus(107);  //Warnung vermutlich falscher Trigger                        
-                        } else {
+                        }
+                        else
+                        {
                             $this->SetStatus(IS_ACTIVE); //OK
                         }
                     }
                 }
             }
-        } else {
+        }
+        else
+        {
             $this->SetStatus(108);  //Warnung Trigger zu klein                  
         }
         return true;
     }
 
-    private function TimerFire() {
+    private function TimerFire()
+    {
         IPS_LogMessage(__CLASS__, __FUNCTION__); //           
 
         if ($this->HasActiveParent())
             $this->ReadSysVars();
     }
 
-    private function GetParentData() {
-        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
-
-        $ObjID = @IPS_GetInstanceParentID($this->InstanceID);
-        if ($ObjID <> 0) {
-            $this->HMAddress = IPS_ReadProperty($ObjID, 'Host');
-            $this->SetSummary(HMAddress);
-        } else {
-            $this->HMAddress = '';
-            $this->SetSummary('');
-        }
-    }
-
-    private function LoadHMScript($url, $HMScript) {
-        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
-
-        if ($this->HMAddress == '') {
-            $this->SendData('Error', 'CCU Address not set.');
-            $this->LogMessage(KL_ERROR, 'CCU Address not set.');
-            return false;
-        }
-        $ch = curl_init('http://' . $this->HMAddress . ':8181/' . $url);
-        curl_setopt($ch, CURLOPT_HEADER, false);
-        curl_setopt($ch, CURLOPT_FAILONERROR, true);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $HMScript);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT_MS, 500);
-        curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
-        curl_setopt($ch, CURLOPT_TIMEOUT_MS, 500);
-        $this->SendData('Request', 'http://' + $this->HMAddress + ':8181/' + $url);
-        $this->SendData('Request', $HMScript);
-        $result = curl_exec($ch);
-        curl_close($ch);
-        if ($result === false) {
-            $this->SendData('Response', 'Failed');
-            $this->LogMessage(KL_WARNING, 'CCU unreachable');
-            return false;
-        } else {
-            $this->SendData('Response', $result);
-            return $result;
-        }
-    }
-
-    private function ReadSysVars() {
+    private function ReadSysVars()
+    {
         IPS_LogMessage(__CLASS__, __FUNCTION__); //           
 //                    IPS_LogMessage("HomeMaticSystemvariablen", "Dummy-Module");
-        /*
-         *   SysVarType:=vtBoolean;
-          HMScriptResult:='';
-          if  not HasActiveParent then
-          begin
-          LogMessage(KL_WARNING,'ReadSysVars Error - Instance has no active Parent Instance.');
-          exit;
-          end;
-          if HMAddress = '' then exit;
-          url:='SysVar.exe';
-          HMScript:='SysVars=dom.GetObject(ID_SYSTEM_VARIABLES).EnumUsedIDs();';
-          HMScriptResult := LoadHMScript(url,HMScript);
-          if HMScriptResult = '' then exit;
-          CoInitialize(nil);
-          //  xmlDoc := newXMLDocument;
-          xmlDoc := TXMLDocument.Create(nil);
-          xmlDoc.Active := false;
-          //  xmlDoc.XML.Add(HMScriptResult);
-          try
-          xmlDoc.LoadFromXml(HMScriptResult);
-          //    xmlDoc.Encoding :='UTF-8';
-          //    xmlDoc.Active := true;
-          except
-          xmlDoc.Active := false;
-          xmlDoc := nil;
-          freeandnil(xmlDoc);
-          CoUninitialize;
-          LogMessage(KL_WARNING,'HM-Script result is not wellformed');
-          EIPSModuleObject.Create('Error on Read SystemVariables');
-          exit;
-          end;
 
-          if (not xmlDoc.DocumentElement.ChildNodes['SysVars'].IsTextElement) or
-          (xmlDoc.DocumentElement.ChildNodes['SysVars'].Text = 'null') or
-          (xmlDoc.DocumentElement.ChildNodes['SysVars'].Text = 'DOM') then
-          begin
-          xmlDoc.Active := false;
-          xmlDoc := nil;
-          freeandnil(xmlDoc);
-          CoUninitialize;
-          LogMessage(KL_WARNING,'HM-Script result is not wellformed');
-          EIPSModuleObject.Create('Error on Read SystemVariables');
-          exit;
-          end;
-
-          ListOfStrings := TStringList.Create;
-          ListOfStrings.Clear;
-          ListOfStrings.Delimiter     := ' ';
-          ListOfStrings.DelimitedText := xmlDoc.DocumentElement.ChildNodes['SysVars'].Text;
-          ArrayOfSysVarIDstr := ListOfStrings.toArray;
-          ListOfStrings.Free;
-          xmlDoc.Active := false;
-          xmlDoc := nil;
-          freeandnil(xmlDoc);
-          CoUninitialize;
-
-          url:='Time.exe';
-          HMScript:='Now=system.Date("%F %T");' + sLineBreak
-          + 'TimeZone=system.Date("%z");'+sLineBreak;
-          HMScriptResult := LoadHMScript(url,HMScript);
-          if HMScriptResult = '' then exit;
-          CoInitialize(nil);
-          //xmlDoc := newXMLDocument;
-          xmlDoc := TXMLDocument.Create(nil);
-          xmlDoc.Active := false;
-          //    xmlDoc.XML.Add(HMScriptResult);
-          try
-          xmlDoc.LoadFromXml(HMScriptResult);
-          //    xmlDoc.Encoding :='UTF-8';
-          //      xmlDoc.Encoding :='ISO-8859-1';
-          //      xmlDoc.Active := true;
-          except
-          xmlDoc.Active := false;
-          xmlDoc := nil;
-          freeandnil(xmlDoc);
-          CoUninitialize;
-          LogMessage(KL_WARNING,'HM-Script result is not wellformed');
-          EIPSModuleObject.Create('Error on Read SystemVariables');
-          exit;
-          end;
-          CCUTimeStr := xmlDoc.DocumentElement.ChildNodes['Now'].Text;
-          CCUTimeZone := xmlDoc.DocumentElement.ChildNodes['TimeZone'].Text;
-          CCUTimeZone:=copy(CCUTimeZone,1,3)+':'+copy(CCUTimeZone,4,2);
-          //----------------------jetz Zeitdiff IPS <> CCU ermitteln
-          CCUUnixTime:=CCUTimeToUnixTime(CCUTimeStr,CCUTimeZone);
-          GetSystemTime(UTC);
-          NowTime  := DateTimeToUnix(SystemTimeToDateTime(UTC));
-          SendData('IPS-UTC Time',DateTimeToStr(UnixToDateTime(NowTime)));
-          SendData('CCU-UTC Time',DateTimeToStr(UnixToDateTime(CCUUnixTime)));
-          DiffTime := NowTime - CCUUnixTime;
-          xmlDoc.Active := false;
-          xmlDoc := nil;
-          freeandnil(xmlDoc);
-          CoUninitialize;
+        if (!$this->HasActiveParent())
+        {
+            throw new Exception("Instance has no active Parent Instance!");
+        }
+        if ($this->GetParentData() == '')
+            return;
+        $HMScript = 'SysVars=dom.GetObject(ID_SYSTEM_VARIABLES).EnumUsedIDs();';
+        $HMScriptResult = $this->LoadHMScript('SysVar.exe', $HMScript);
+        if ($HMScriptResult === false)
+            return;
+        $xmlVars = @new SimpleXMLElement($HMScriptResult);
+        if (($xmlVars === false))
+        {
+            $this->LogMessage('HM-Script result is not wellformed');
+            throw new Exception("Error on Read CCU-Programs");
+        }
 
 
-          for SysVarIDstr in ArrayOfSysVarIDstr do
-          begin
-          if SysVarIDstr = '' then continue;
-          if StrToIntDef(SysVarIDstr,0) <> StrToIntDef(SysVarIDstr,1) then continue;
-          url:='SysVar.exe';
-          HMScript:=
-          'Name=dom.GetObject('+SysVarIDstr+').Name();' + sLineBreak
-          + 'ValueType=dom.GetObject('+SysVarIDstr+').ValueType();' + sLineBreak
-          + 'ValueSubType=dom.GetObject('+SysVarIDstr+').ValueSubType();' + sLineBreak
-          + 'Value=dom.GetObject('+SysVarIDstr+').Value();' + sLineBreak
-          + 'Variable=dom.GetObject('+SysVarIDstr+').Variable();' + sLineBreak
-          + 'LastValue=dom.GetObject('+SysVarIDstr+').LastValue();' + sLineBreak
-          + 'Timestamp=dom.GetObject('+SysVarIDstr+').Timestamp();' + sLineBreak
-          + 'ValueList=dom.GetObject('+SysVarIDstr+').ValueList();' + sLineBreak
-          + 'ValueName0=dom.GetObject('+SysVarIDstr+').ValueName0();' + sLineBreak
-          + 'ValueName1=dom.GetObject('+SysVarIDstr+').ValueName1();' + sLineBreak
-          + 'ValueMin=dom.GetObject('+SysVarIDstr+').ValueMin();' + sLineBreak
-          + 'ValueMax=dom.GetObject('+SysVarIDstr+').ValueMax();' + sLineBreak
-          + 'ValueUnit=dom.GetObject('+SysVarIDstr+').ValueUnit();' + sLineBreak;
-          HMScriptResult := LoadHMScript(url,HMScript);
-          if HMScriptResult = '' then continue;
-          CoInitialize(nil);
-          xmlDoc := TXMLDocument.Create(nil);
-          xmlDoc.Active := false;
-          //     xmlDoc.XML.Add(HMScriptResult);
-          try
-          //    xmlDoc.Encoding :='UTF-8';
-          xmlDoc.LoadFromXml(HMScriptResult);
+        $HMScript = 'Now=system.Date("%F %T%z");' . PHP_EOL
+                . 'TimeZone=system.Date("%z");' . PHP_EOL;
+        $HMScriptResult = $this->LoadHMScript('Time.exe', $HMScript);
+        if ($HMScriptResult === false)
+            return;
+        $xmlTime = @new SimpleXMLElement($HMScriptResult);
+        if (($xmlTime === false))
+        {
+            $this->LogMessage('HM-Script result is not wellformed');
+            throw new Exception("Error on Read CCU-Programs");
+        }
+        $Date = new DateTime((string) $xmlTime->Now);
+        $CCUTime = $Date->getTimestamp();
+        $Date = new DateTime();
+        $NowTime = $Date->getTimestamp();
+        $TimeDiff = $NowTime - $CCUTime;
+        $CCUTimeZone = (string) $xmlTime->TimeZone;
 
-          //         xmlDoc.Encoding :='ISO-8859-1';
-          //         xmlDoc.Active := true;
-          except
-          xmlDoc.Active := false;
-          xmlDoc := nil;
-          freeandnil(xmlDoc);
-          CoUninitialize;
-          LogMessage(KL_WARNING,'HM-Script result is not wellformed');
-          EIPSModuleObject.Create('Error on Read SystemVariables');
-          continue;
-          end;
-          if not xmlDoc.DocumentElement.ChildNodes['Timestamp'].IsTextElement then
-          begin
-          xmlDoc.Active := false;
-          xmlDoc := nil;
-          freeandnil(xmlDoc);
-          CoUninitialize;
-          continue;
-          end;
-          try
-          IPSVarID := GetStatusVariableID(SysVarIDstr);
-          except
-          IPSVarID := 0;
-          end;
-          CCUUnixTime:=DiffTime + CCUTimeToUnixTime(xmlDoc.DocumentElement.ChildNodes['Timestamp'].Text,CCUTimeZone);
+        foreach (explode(' ', (string) $xmlVars->SysVars) as $SysVar)
+        {
+            $HMScript = 'Name=dom.GetObject(' . $SysVar . ').Name();' . PHP_EOL
+                    . 'ValueType=dom.GetObject(' . $SysVar . ').ValueType();' . PHP_EOL
+                    . 'ValueSubType=dom.GetObject(' . $SysVar . ').ValueSubType();' . PHP_EOL
+                    . 'Value=dom.GetObject(' . $SysVar . ').Value();' . PHP_EOL
+                    . 'Variable=dom.GetObject(' . $SysVar . ').Variable();' . PHP_EOL
+                    . 'LastValue=dom.GetObject(' . $SysVar . ').LastValue();' . PHP_EOL
+                    . 'Timestamp=dom.GetObject(' . $SysVar . ').Timestamp();' . PHP_EOL
+                    . 'ValueList=dom.GetObject(' . $SysVar . ').ValueList();' . PHP_EOL
+                    . 'ValueName0=dom.GetObject(' . $SysVar . ').ValueName0();' . PHP_EOL
+                    . 'ValueName1=dom.GetObject(' . $SysVar . ').ValueName1();' . PHP_EOL
+                    . 'ValueMin=dom.GetObject(' . $SysVar . ').ValueMin();' . PHP_EOL
+                    . 'ValueMax=dom.GetObject(' . $SysVar . ').ValueMax();' . PHP_EOL
+                    . 'ValueUnit=dom.GetObject(' . $SysVar . ').ValueUnit();' . PHP_EOL;
+            $HMScriptResult = $this->LoadHMScript('SysVar.exe', $HMScript);
 
-          case StrToInt(xmlDoc.DocumentElement.ChildNodes['ValueType'].Text) of
-          2: SysVarType:=vtBoolean;
-          4: SysVarType:=vtFloat;
-          16: SysVarType:=vtInteger;
-          20: SysVarType:=vtString;
-          end;
+            $xmlVar = @new SimpleXMLElement($HMScriptResult, LIBXML_NOBLANKS + LIBXML_NONET);
+            if (($xmlVar === false))
+            {
+                $this->LogMessage('HM-Script result is not wellformed');
+                continue;
+//                throw new Exception("Error on Read CCU-Programs");
+            }
+            $VarID = @GetObjectIDByIdent($SysVar, $this->InstanceID);
+            $VarType = $this->CcuVarType[(int) $xmlVar->ValueType];
+            $VarProfil = 'HM.SysVar' . (string) $this->InstanceID . '.' . (string) $SysVar;
+            if (($VarID === false) or ( !IPS_VariableProfilExists($VarProfil)))
+            {                 // neu anlegen wenn VAR neu ist oder Profil nicht vorhanden
+// löschen wenn noch vorhanden weil Var neu ist
+                if (IPS_VariableProfilExists($VarProfil))
+                    IPS_VariableProfilDelete($VarProfil);
+                if ((int) $xmlVar->ValueType <> vtString)
+                    IPS_CreateVariableProfil($VarProfil, $VarType);
+                switch ($VarType)
+                {
+                    case vtBoolean:
+                        if (isset($xmlVar->ValueName0))
+                            IPS_SetVariableProfilAssociation($VarProfil, 0, (string) $xmlVar->ValueName0, '', -1);
+                        if (isset($xmlVar->ValueName1))
+                            IPS_SetVariableProfilAssociation($VarProfil, 1, (string) $xmlVar->ValueName1, '', -1);
+                        break;
+                    case vtFloat:
+                        IPS_SetVariableProfileDigits($VarProfil, strlen((string) $xmlVar->ValueMin) - strpos('.', (string) $xmlVar->ValueMin) - 1);
+                        IPS_SetVariableProfileValues($VarProfil, (float) $xmlVar->ValueMin, (float) $xmlVar->ValueMax, 1);
+                        break;
+                }
+                if (isset($xmlVar->ValueUnit))
+                    IPS_SetVariableProfileText($VarProfil, ' ' . (string) $xmlVar->ValueUnit);
+                if (isset($xmlVar->ValueSubType) and ( (int) $this->ValueSubType == 29))
+                {
+                    foreach (explode(';', (string) $xmlVar->ValueList) as $Index => $ValueList)
+                    {
+                        IPS_SetVariableProfileAssociation($VarProfil, $Index, trim($ValueList), '', -1);
+                    }
+                }
+            }
+            if ($VarID === false)
+            {
+                $this->MaintainVariable($SysVar, (string) $xmlVar->Name, $VarType, $VarProfil, 0, true);
+                $this->MaintainAction($SysVar, 'ActionHandler', true);
+                $VarID = @GetObjectIDByIdent($SysVar, $this->InstanceID);
+            }
+            else
+            {
+                if (IPS_GetName($VarID) <> (string) $xmlVar->Name)
+                    IPS_SetName($VarID, (string) $xmlVar->Name);
+            }
+            if (IPS_GetVariable($VarID)['VariableValue']['ValueType'] <> $VarType)
+            {
+                $this->LogMessage(KL_WARNING, 'Type of CCU Systemvariable ' . (string) $xmlVar->Name . ' has changed.');
+//                throw new Exception('Type of CCU Systemvariable ' . (string) $varXml->Name . ' has changed.');
+                continue;
+            }
+            $VarTime = new DateTime((string) $xmlVar->Timestamp . $CCUTimeZone);
 
-          if (IPSVarID = 0) or (not fKernel.ProfilePool.VariableProfileExists('HM.SysVar'+ IntToStr(fInstanceID) +'.'+SysVarIDstr)) then
-          begin
-          // neu anlegen wenn in IPS unbekannt oder Profil nicht vorhanden
-          if fKernel.ProfilePool.VariableProfileExists('HM.SysVar'+ IntToStr(fInstanceID) +'.'+SysVarIDstr) then
-          fKernel.ProfilePool.DeleteVariableProfile('HM.SysVar'+ IntToStr(fInstanceID) +'.'+SysVarIDstr);
-          if SysVarType <> vtString then fKernel.ProfilePool.CreateVariableProfile('HM.SysVar'+ IntToStr(fInstanceID) +'.'+SysVarIDstr,SysVarType);
-          if SysVarType = vtFloat then
-          begin
-          fKernel.ProfilePool.SetVariableProfileDigits('HM.SysVar'+ IntToStr(fInstanceID) +'.'+SysVarIDstr, length(xmlDoc.DocumentElement.ChildNodes['ValueMin'].Text) - pos('.',xmlDoc.DocumentElement.ChildNodes['ValueMin'].Text)-1);
-          xmlDoc.DocumentElement.ChildNodes['ValueMin'].Text := StringReplace(xmlDoc.DocumentElement.ChildNodes['ValueMin'].Text, '.', DecimalSeparator, [rfIgnoreCase, rfReplaceAll]);
-          xmlDoc.DocumentElement.ChildNodes['ValueMax'].Text := StringReplace(xmlDoc.DocumentElement.ChildNodes['ValueMax'].Text, '.', DecimalSeparator, [rfIgnoreCase, rfReplaceAll]);
-          fKernel.ProfilePool.SetVariableProfileValues('HM.SysVar'+ IntToStr(fInstanceID) +'.'+SysVarIDstr, StrToFloat(xmlDoc.DocumentElement.ChildNodes['ValueMin'].Text ),StrToFloat(xmlDoc.DocumentElement.ChildNodes['ValueMax'].Text),1);
-          end;
-          if xmlDoc.DocumentElement.ChildNodes['ValueUnit'].IsTextElement then
-          fkernel.ProfilePool.SetVariableProfileText('HM.SysVar'+ IntToStr(fInstanceID) +'.'+SysVarIDstr,'',' ' + xmlDoc.DocumentElement.ChildNodes['ValueUnit'].Text);
-          if SysVarType = vtBoolean then
-          begin
-          if xmlDoc.DocumentElement.ChildNodes['ValueName0'].IsTextElement then
-          fKernel.ProfilePool.SetVariableProfileAssociation('HM.SysVar'+ IntToStr(fInstanceID) +'.'+SysVarIDstr, 0,xmlDoc.DocumentElement.ChildNodes['ValueName0'].Text,'',-1);
-          if xmlDoc.DocumentElement.ChildNodes['ValueName1'].IsTextElement then
-          fKernel.ProfilePool.SetVariableProfileAssociation('HM.SysVar'+ IntToStr(fInstanceID) +'.'+SysVarIDstr, 1,xmlDoc.DocumentElement.ChildNodes['ValueName1'].Text,'',-1);
-          end;
-          if StrtoInt(xmlDoc.DocumentElement.ChildNodes['ValueSubType'].Text) = 29 then
-          begin  // Werteliste
-          ListOfStrings := TStringList.Create;
-          ListOfStrings.Clear;
-          ListOfStrings.Delimiter     := ';';
-          ListOfStrings.StrictDelimiter:=true;
-          ListOfStrings.DelimitedText :=      xmlDoc.DocumentElement.ChildNodes['ValueList'].Text;
-          ArrayOfValueList := ListOfStrings.toArray;
-          ListOfStrings.Free;
-          for ValueListID:=0 to high(ArrayOfValueList)  do
-          begin
-          fKernel.ProfilePool.SetVariableProfileAssociation('HM.SysVar'+ IntToStr(fInstanceID) +'.'+SysVarIDstr, ValueListID, trim(ArrayOfValueList[ValueListID]),'',-1);
-          end;
-          end;
-          end;
-
-          if IPSVarID = 0 then
-          begin
-          MaintainVariable(true,SysVarIDstr,xmlDoc.DocumentElement.ChildNodes['Name'].Text,SysVarType,'HM.SysVar'+ IntToStr(fInstanceID) +'.'+SysVarIDstr,ActionHandler);
-          IPSVarID := GetStatusVariableID(SysVarIDstr);
-          SysIdents.Add(THMSysVars.create);
-          SysIdents.Last.IPSVarID:= IPSVarID;
-          SysIdents.Last.HMVarID:=SysVarIDstr;
-          end else
-          begin
-          if GetName(IPSVarID) <>  xmlDoc.DocumentElement.ChildNodes['Name'].Text then
-          fKernel.ObjectManager.SetName(IPSVarID,xmlDoc.DocumentElement.ChildNodes['Name'].Text);
-          end;
-          cVariable:=fKernel.VariableManager.GetVariable(IPSVarID);
-          if cVariable.VariableValue.ValueType <> SysVarType then
-          begin
-          HMScript:=xmlDoc.DocumentElement.ChildNodes['Name'].Text;
-          xmlDoc.Active := false;
-          xmlDoc := nil;
-          freeandnil(xmlDoc);
-          CoUninitialize;
-          LogMessage(KL_WARNING,'Type of CCU Systemvariable '+ HMScript + ' has changed.');
-          EIPSModuleObject.Create('Type of CCU Systemvariable '+ HMScript + ' has changed.');
-          cVariable.Free;
-          continue;
-          end;
-
-          if not (cVariable.VariableUpdated < CCUUnixTime) then
-          begin
-          xmlDoc.Active := false;
-          xmlDoc := nil;
-          freeandnil(xmlDoc);
-          CoUninitialize;
-          //    xmlDoc._Release;
-          cVariable.Free;
-          continue;
-          end;
-          cVariable.Free;
-          case SysVarType of
-          vtBoolean:
-          begin
-          if StrToInt(xmlDoc.DocumentElement.ChildNodes['Variable'].Text) = 1 then
-          begin
-          fKernel.VariableManager.WriteVariableBoolean(IPSVarID,true);
-          end else begin
-          fKernel.VariableManager.WriteVariableBoolean(IPSVarID,false);
-          end;
-          end;
-          vtInteger:
-          begin
-          fKernel.VariableManager.WriteVariableInteger(IPSVarID,strtoint(xmlDoc.DocumentElement.ChildNodes['Variable'].Text));
-          end;
-          vtFloat:
-          begin
-          xmlDoc.DocumentElement.ChildNodes['Value'].Text := StringReplace(xmlDoc.DocumentElement.ChildNodes['Value'].Text, '.', DecimalSeparator, [rfIgnoreCase, rfReplaceAll]);
-          fKernel.VariableManager.WriteVariableFloat(IPSVarID,StrToFloat(xmlDoc.DocumentElement.ChildNodes['Value'].Text));
-          end;
-          vtString:
-          begin
-          fKernel.VariableManager.WriteVariableString(IPSVarID,xmlDoc.DocumentElement.ChildNodes['Value'].Text);
-          end;
-          end;
-          xmlDoc.Active := false;
-          xmlDoc := nil;
-          freeandnil(xmlDoc);
-          CoUninitialize;
-          end;
-
-
-         */
+            if (!(IPS_GetVariable($VarID)['VariableUpdated'] < ($TimeDiff + $VarTime->getTimestamp())))
+                continue;
+            switch ($VarType)
+            {
+                case vtBoolean:
+                    if ((int) $xmlVar->Variable == 1)
+                        SetValueBoolean($VarID, true);
+                    else
+                        SetValueBoolean($VarID, false);
+                    break;
+                case vtInteger:
+                    SetValueInteger($VarID, (int) $xmlVar->Variable);
+                    break;
+                case vtFloat:
+                    SetValueFloat($VarID, (float) $xmlVar->Variable);
+                    break;
+                case vtString:
+                    SetValueString($VarID, (string) $xmlVar->Variable);
+                    break;
+            }
+        }
     }
 
-    private function WriteSysVar($param, $value) {
+    private function WriteSysVar($Parameter, $ValueStr)
+    {
         IPS_LogMessage(__CLASS__, __FUNCTION__); //           
 
         /*
@@ -559,7 +435,8 @@ IPS_LogMessage(__CLASS__, __FUNCTION__); //
 
 ################## ActionHandler
 
-    public function ActionHandler($StatusVariable, $Value) {
+    public function ActionHandler($StatusVariable, $Value)
+    {
         IPS_LogMessage(__CLASS__, __FUNCTION__); //           
 
         /*
@@ -623,13 +500,23 @@ IPS_LogMessage(__CLASS__, __FUNCTION__); //
          */
     }
 
-################## PUBLIC
+    private function GetStatusVarIDex($Ident)
+    {
+        $VarID = @GetObjectIDByIdent($Ident, $this->InstanceID);
+        if ($VarID === false)
+            throw new Exception('Ident ' . $Ident . ' do not exist.');
+        else
+            return $VarID;
+    }
+
+################## PUBLIC    
     /**
      * This function will be available automatically after the module is imported with the module control.
      * Using the custom prefix this function will be callable from PHP and JSON-RPC through:
      */
 
-    public function ReadSystemVariables() {
+    public function ReadSystemVariables()
+    {
         IPS_LogMessage(__CLASS__, __FUNCTION__); //           
 
         if (!$this->HasActiveParent())
@@ -638,34 +525,30 @@ IPS_LogMessage(__CLASS__, __FUNCTION__); //
             $this->ReadSysVars();
     }
 
-    public function WriteValueBoolean($Parameter, $Value) {
+    public function WriteValueBoolean($Parameter, $Value)
+    {
         IPS_LogMessage(__CLASS__, __FUNCTION__); //           
-
-        /*
-          var IPSVarID       : word;
-          ValueStr       : String;
-          cVariable      : TIPSVariable;
-          begin
-          IPSVarID := GetStatusVarIDex(Parameter);
-          if IPSVarID<> 0 then
-          begin
-          cVariable :=fKernel.VariableManager.GetVariable(IPSVarID);
-          if cVariable.VariableValue.ValueType <> vtBoolean then
-          begin
-          raise EIPSModuleObject.Create('Wrong Datatype for '+ IntToStr(IPSVarID));
-          end else begin
-          if Value then ValueStr:='true'
-          else ValueStr:='false';
-          if not WriteSysVar(Parameter,ValueStr) then
-          raise EIPSModuleObject.Create('Error on write Data '+ IntToStr(IPSVarID))
-          else if GetProperty('EmulateStatus') = true then fKernel.VariableManager.WriteVariableBoolean(IPSVarID,Value);
-          end;
-          cVariable.free;
-          end;
-          end; */
+        $VarID = GetStatusVarIDex($Parameter);
+        if (IPS_GetVariable($VarID)['VariableValue']['ValueType'] <> vtBoolean)
+            throw new Exception('Wrong Datatype for ' . $VarID);
+        else
+        {
+            if ($Value)
+                $ValueStr = 'true';
+            else
+                $ValueStr = 'false';
+        }
+        if (!$this->WriteSysVar($Parameter, $ValueStr))
+            throw new Exception('Error on write Data ' . $VarID);
+        else
+        {
+            if ($this->ReadPropertyBoolean('EmulateStatus') === true)
+                SetValueBoolean($VarID, $Value);
+        }
     }
 
-    public function WriteValueInteger($Parameter, $Value) {
+    public function WriteValueInteger($Parameter, $Value)
+    {
         IPS_LogMessage(__CLASS__, __FUNCTION__); //           
 
         /*
@@ -691,7 +574,8 @@ IPS_LogMessage(__CLASS__, __FUNCTION__); //
           end; */
     }
 
-    public function WriteValueFloat($Parameter, $Value) {
+    public function WriteValueFloat($Parameter, $Value)
+    {
         IPS_LogMessage(__CLASS__, __FUNCTION__); //           
 
         /*
@@ -721,7 +605,8 @@ IPS_LogMessage(__CLASS__, __FUNCTION__); //
           end; */
     }
 
-    public function WriteValueString($Parameter, $Value) {
+    public function WriteValueString($Parameter, $Value)
+    {
         IPS_LogMessage(__CLASS__, __FUNCTION__); //           
 
         /*
@@ -745,40 +630,6 @@ IPS_LogMessage(__CLASS__, __FUNCTION__); //
           cVariable.Free;
           end;
           end; */
-    }
-
-  
-
-################## DUMMYS / WOARKAROUNDS - PRIVATE
-
-    private function HasActiveParent() {
-        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
-
-        $id = @IPS_GetInstanceParentID($this->InstanceID);
-        if ($id > 0) {
-            if (IPS_GetInstance($id)['InstanceStatus'] == 102)
-                return true;
-            else
-                return false;
-        }
-    }
-
-    private function SetStatus($data) {
-        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
-    }
-
-    private function RegisterTimer($data, $cata) {
-        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
-    }
-
-    private function SetTimerInterval($data, $cata) {
-        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
-
-        IPS_LogMessage(__CLASS__, 'Timer:' . $data . ' Interval:' . $cata);
-    }
-
-    private function LogMessage($data, $cata) {
-//        IPS_LogMessage(__CLASS__,__FUNCTION__);//           
     }
 
 }
