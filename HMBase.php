@@ -223,6 +223,7 @@ class HMBase extends IPSModule
         {
             $this->SendData('Error', 'CCU Address not set.');
             $this->LogMessage(KL_ERROR, 'CCU Address not set.');
+            $result =false;
         }
         return $result;
     }

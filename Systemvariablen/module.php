@@ -258,17 +258,17 @@ class HMSysVar extends HMBase
         {
             throw new Exception("Instance has no active Parent Instance!");
         }
-        if ($this->GetParentData() == '')
-            return;
         $HMScript = 'SysVars=dom.GetObject(ID_SYSTEM_VARIABLES).EnumUsedIDs();';
         $HMScriptResult = $this->LoadHMScript('SysVar.exe', $HMScript);
         if ($HMScriptResult === false)
-            return;
+        {
+            throw new Exception("Error on Read CCU Systemvariable");
+        }
         $xmlVars = @new SimpleXMLElement($HMScriptResult);
         if (($xmlVars === false))
         {
             $this->LogMessage('HM-Script result is not wellformed');
-            throw new Exception("Error on Read CCU-Programs");
+            throw new Exception("Error on Read CCU Systemvariable");
         }
 
 
@@ -276,12 +276,14 @@ class HMSysVar extends HMBase
                 . 'TimeZone=system.Date("%z");' . PHP_EOL;
         $HMScriptResult = $this->LoadHMScript('Time.exe', $HMScript);
         if ($HMScriptResult === false)
-            return;
+        {
+            throw new Exception("Error on Read CCU Systemvariable");
+        }
         $xmlTime = @new SimpleXMLElement($HMScriptResult);
         if (($xmlTime === false))
         {
             $this->LogMessage('HM-Script result is not wellformed');
-            throw new Exception("Error on Read CCU-Programs");
+            throw new Exception("Error on Read CCU Systemvariable");
         }
         $Date = new DateTime((string) $xmlTime->Now);
         $CCUTime = $Date->getTimestamp();
@@ -306,13 +308,17 @@ class HMSysVar extends HMBase
                     . 'ValueMax=dom.GetObject(' . $SysVar . ').ValueMax();' . PHP_EOL
                     . 'ValueUnit=dom.GetObject(' . $SysVar . ').ValueUnit();' . PHP_EOL;
             $HMScriptResult = $this->LoadHMScript('SysVar.exe', $HMScript);
-
+            if ($HMScriptResult === false)
+            {
+//                $this->LogMessage('HM-Script result is not wellformed');
+                continue;
+            }
             $xmlVar = @new SimpleXMLElement($HMScriptResult, LIBXML_NOBLANKS + LIBXML_NONET);
             if (($xmlVar === false))
             {
                 $this->LogMessage('HM-Script result is not wellformed');
                 continue;
-//                throw new Exception("Error on Read CCU-Programs");
+//                throw new Exception("Error on Read CCU Systemvariable");
             }
             $VarID = @GetObjectIDByIdent($SysVar, $this->InstanceID);
             $VarType = $this->CcuVarType[(int) $xmlVar->ValueType];
@@ -387,50 +393,31 @@ class HMSysVar extends HMBase
                     break;
             }
         }
+        return true;
     }
 
     private function WriteSysVar($Parameter, $ValueStr)
     {
         IPS_LogMessage(__CLASS__, __FUNCTION__); //           
-
-        /*
-         *      Result:=false;
-          if fKernelRunlevel <> KR_READY then exit;
-          if  not HasActiveParent then exit;
-          if HMAddress = '' then exit;
-          url:='SysVar.exe';
-          HMScript:='State=dom.GetObject('+Parameter+').State("'+ ValueStr +'");';
-          HMScriptResult := LoadHMScript(url,HMScript);
-          CoInitialize(nil);
-          // xmlDoc := newXMLDocument;
-          xmlDoc := TXMLDocument.Create(nil);
-          xmlDoc.Active := false;
-          //     xmlDoc.XML.Add(HMScriptResult);
-          try
-          xmlDoc.LoadFromXml(HMScriptResult);
-          //    xmlDoc.Encoding :='UTF-8';
-          //       xmlDoc.Encoding :='ISO-8859-1';
-          //       xmlDoc.Active := true;
-          except
-          LogMessage(KL_WARNING,'HM-Script result is not wellformed');
-          xmlDoc := nil;
-          //    xmlDoc._Release;
-          freeandnil(xmlDoc);
-          CoUninitialize;
-          Result:=false;
-          exit;
-          end;
-          if xmlDoc.DocumentElement.ChildNodes['State'].Text = 'true' then
-          begin
-          Result:=true;
-          end else begin
-          Result:=false;
-          end;
-          xmlDoc:=nil;
-          freeandnil(xmlDoc);
-          CoUninitialize;
-
-         */
+        if ($this->fKernelRunlevel <> KR_READY)
+            return false;
+        if (!$this->HasActiveParent())
+            return false;
+        $url = 'SysVar.exe';
+        $HMScript = 'State=dom.GetObject(' . $Parameter . ').State("' . $ValueStr . '");';
+        $HMScriptResult = $this->LoadHMScript($url, $HMScript);
+        if ($HMScriptResult === false)
+            return false;
+        $xml = @new SimpleXMLElement($HMScriptResult);
+        if (($xml === false))
+        {
+            $this->LogMessage('HM-Script result is not wellformed');
+            return false;
+        }
+        if ((string) $xml->State == 'true')
+            return true;
+        else
+            return false;
     }
 
 ################## ActionHandler
@@ -438,66 +425,30 @@ class HMSysVar extends HMBase
     public function ActionHandler($StatusVariable, $Value)
     {
         IPS_LogMessage(__CLASS__, __FUNCTION__); //           
-
-        /*
-         *    begin
-          try
-          IPSVarID := GetStatusVariableID(StatusVariable);
-          except
-          IPSVarID := 0;
-          end;
-          if IPSVarID = 0 then exit;
-          if  not HasActiveParent then
-          begin
-          raise EIPSModuleObject.Create('Instance has no active Parent Instance!');
-          exit;
-          end;
-          cVariable:=fKernel.VariableManager.GetVariable(IPSVarID);
-          case cVariable.VariableValue.ValueType of
-          vtBoolean:
-          begin
-          if not VarIsType(Value,varBoolean) then
-          begin
-          raise EIPSModuleObject.Create('Wrong Datatype for '+ IntToStr(IPSVarID));
-          cVariable.Free;
-          exit;
-          end;
-          WriteValueBoolean(StatusVariable,Variants.VarAsType(Value,varBoolean));
-          end;
-          vtInteger:
-          begin
-          if not  VarIsNumeric(Value) then
-          begin
-          raise EIPSModuleObject.Create('Wrong Datatype for '+ IntToStr(IPSVarID));
-          cVariable.Free;
-          exit;
-          end;
-          WriteValueInteger(StatusVariable,Variants.VarAsType(Value,varInteger));
-          end;
-          vtFloat:
-          begin
-          if (not VarIsFloat(Value)) and (not VarIsNumeric(Value))  then
-          begin
-          raise EIPSModuleObject.Create('Wrong Datatype for '+ IntToStr(IPSVarID));
-          cVariable.Free;
-          exit;
-          end;
-          WriteValueFloat(StatusVariable,Variants.VarAsType(Value,varDouble));
-          end;
-          vtString:
-          begin
-          if not VarIsStr(Value) then
-          begin
-          raise EIPSModuleObject.Create('Wrong Datatype for '+ IntToStr(IPSVarID));
-          cVariable.Free;
-          exit;
-          end;
-          WriteValueString(StatusVariable,Variants.VarAsType(Value,varString));
-          end;
-          end;
-          cVariable.Free;
-
-         */
+        $VarID = $this->GetStatusVarIDex();
+        if (!$this->HasActiveParent())
+            throw new Exception('Instance has no active Parent Instance!');
+        switch (IPS_GetVariable($VarID)['VariableValue']['ValueType'])
+        {
+            case vtBoolean:
+                if (!is_bool($Value))
+                    throw new Exception('Wrong Datatype for ' . $VarID);
+                $this->WriteValueBoolean($StatusVariable, (bool) $Value);
+                break;
+            case vtInteger:
+                if (!is_numeric($Value))
+                    throw new Exception('Wrong Datatype for ' . $VarID);
+                $this->WriteValueInteger($StatusVariable, (int) $Value);
+                break;
+            case vtFloat:
+                if ((!is_float($Value)) and ( !is_numeric($Value)))
+                    throw new Exception('Wrong Datatype for ' . $VarID);
+                $this->WriteValueFloat($StatusVariable, (float) $Value);
+                break;
+            case vtString:
+                $this->WriteValueFloat($StatusVariable, (string) $Value);
+                break;
+        }
     }
 
     private function GetStatusVarIDex($Ident)
@@ -522,13 +473,13 @@ class HMSysVar extends HMBase
         if (!$this->HasActiveParent())
             throw new Exception("Instance has no active Parent Instance!");
         else
-            $this->ReadSysVars();
+            return $this->ReadSysVars();
     }
 
     public function WriteValueBoolean($Parameter, $Value)
     {
         IPS_LogMessage(__CLASS__, __FUNCTION__); //           
-        $VarID = GetStatusVarIDex($Parameter);
+        $VarID = $this->GetStatusVarIDex($Parameter);
         if (IPS_GetVariable($VarID)['VariableValue']['ValueType'] <> vtBoolean)
             throw new Exception('Wrong Datatype for ' . $VarID);
         else
@@ -537,99 +488,69 @@ class HMSysVar extends HMBase
                 $ValueStr = 'true';
             else
                 $ValueStr = 'false';
-        }
-        if (!$this->WriteSysVar($Parameter, $ValueStr))
-            throw new Exception('Error on write Data ' . $VarID);
-        else
-        {
-            if ($this->ReadPropertyBoolean('EmulateStatus') === true)
-                SetValueBoolean($VarID, $Value);
+
+            if (!$this->WriteSysVar($Parameter, $ValueStr))
+                throw new Exception('Error on write Data ' . $VarID);
+            else
+            {
+                if ($this->ReadPropertyBoolean('EmulateStatus') === true)
+                    SetValueBoolean($VarID, $Value);
+            }
         }
     }
 
     public function WriteValueInteger($Parameter, $Value)
     {
         IPS_LogMessage(__CLASS__, __FUNCTION__); //           
-
-        /*
-          //------------------------------------------------------------------------------
-          procedure TIPSHMSysVar.WriteValueInteger(Parameter: String; Value: Integer); stdcall;
-          var IPSVarID       : word;
-          cVariable      : TIPSVariable;
-          begin
-          IPSVarID := GetStatusVarIDex(Parameter);
-          if IPSVarID<> 0 then
-          begin
-          cVariable :=fKernel.VariableManager.GetVariable(IPSVarID);
-          if cVariable.VariableValue.ValueType <> vtInteger then
-          begin
-          raise EIPSModuleObject.Create('Wrong Datatype for '+ IntToStr(IPSVarID));
-          end else begin
-          if not WriteSysVar(Parameter,IntToStr(Value)) then
-          raise EIPSModuleObject.Create('Error on write Data '+ IntToStr(IPSVarID))
-          else if GetProperty('EmulateStatus') = true then fKernel.VariableManager.WriteVariableInteger(IPSVarID,Value);
-          end;
-          cVariable.Free;
-          end;
-          end; */
+        $VarID = $this->GetStatusVarIDex($Parameter);
+        if (IPS_GetVariable($VarID)['VariableValue']['ValueType'] <> vtInteger)
+            throw new Exception('Wrong Datatype for ' . $VarID);
+        else
+        {
+            if (!$this->WriteSysVar($Parameter, (string) $Value))
+                throw new Exception('Error on write Data ' . $VarID);
+            else
+            {
+                if ($this->ReadPropertyBoolean('EmulateStatus') === true)
+                    SetValueInteger($VarID, $Value);
+            }
+        }
     }
 
     public function WriteValueFloat($Parameter, $Value)
     {
         IPS_LogMessage(__CLASS__, __FUNCTION__); //           
-
-        /*
-          //------------------------------------------------------------------------------
-          procedure TIPSHMSysVar.WriteValueFloat(Parameter: String; Value: Double); stdcall;
-          var IPSVarID       : word;
-          ValueStr       : String;
-          cVariable      : TIPSVariable;
-          begin
-          IPSVarID := GetStatusVarIDex(Parameter);
-          if IPSVarID<> 0 then
-          begin
-          cVariable :=fKernel.VariableManager.GetVariable(IPSVarID);
-          if cVariable.VariableValue.ValueType <> vtFloat then
-          begin
-          raise EIPSModuleObject.Create('Wrong Datatype for '+ IntToStr(IPSVarID));
-          end else begin
-          /// format gem. VarProfile
-          ValueStr:= Format('%f',[Value]);
-          ValueStr:= StringReplace(ValueStr,DecimalSeparator,'.', [rfIgnoreCase, rfReplaceAll]);
-          if not WriteSysVar(Parameter,ValueStr) then
-          raise EIPSModuleObject.Create('Error on write Data '+ IntToStr(IPSVarID))
-          else if GetProperty('EmulateStatus') = true then fKernel.VariableManager.WriteVariableFloat(IPSVarID,Value);
-          end;
-          cVariable.Free;
-          end;
-          end; */
+        $VarID = $this->GetStatusVarIDex($Parameter);
+        if (IPS_GetVariable($VarID)['VariableValue']['ValueType'] <> vtFloat)
+            throw new Exception('Wrong Datatype for ' . $VarID);
+        else
+        {
+            if (!$this->WriteSysVar($Parameter, (string) $Value))
+                throw new Exception('Error on write Data ' . $VarID);
+            else
+            {
+                if ($this->ReadPropertyBoolean('EmulateStatus') === true)
+                    SetValueFloat($VarID, $Value);
+            }
+        }
     }
 
     public function WriteValueString($Parameter, $Value)
     {
         IPS_LogMessage(__CLASS__, __FUNCTION__); //           
-
-        /*
-          //------------------------------------------------------------------------------
-          procedure TIPSHMSysVar.WriteValueString(Parameter: String; Value: String); stdcall;
-          var IPSVarID       : word;
-          cVariable      : TIPSVariable;
-          begin
-          IPSVarID := GetStatusVarIDex(Parameter);
-          if IPSVarID<> 0 then
-          begin
-          cVariable :=fKernel.VariableManager.GetVariable(IPSVarID);
-          if cVariable.VariableValue.ValueType <> vtString then
-          begin
-          raise EIPSModuleObject.Create('Wrong Datatype for '+ IntToStr(IPSVarID));
-          end else begin
-          if not WriteSysVar(Parameter,Value) then
-          raise EIPSModuleObject.Create('Error on write Data '+ IntToStr(IPSVarID))
-          else if GetProperty('EmulateStatus') = true then fKernel.VariableManager.WriteVariableString(IPSVarID,Value);
-          end;
-          cVariable.Free;
-          end;
-          end; */
+        $VarID = $this->GetStatusVarIDex($Parameter);
+        if (IPS_GetVariable($VarID)['VariableValue']['ValueType'] <> vtString)
+            throw new Exception('Wrong Datatype for ' . $VarID);
+        else
+        {
+            if (!$this->WriteSysVar($Parameter, (string) $Value))
+                throw new Exception('Error on write Data ' . $VarID);
+            else
+            {
+                if ($this->ReadPropertyBoolean('EmulateStatus') === true)
+                    SetValueString($VarID, $Value);
+            }
+        }
     }
 
 }
