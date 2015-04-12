@@ -79,11 +79,13 @@ class HMScript extends HMBase
         }
         $url = 'Script.exe';
         $HMScriptResult = $this->LoadHMScript($url, $Script);
+        if ($HMScriptResult===false)
+            throw new Exception("Error on write CCU-Script");        
         $xml = new SimpleXMLElement($HMScriptResult);
         if ($xml === false)
         {
             $this->LogMessage('HM-Script result is not wellformed');
-            throw new Exception("Error on start CCU-Program");
+            throw new Exception("Error on write CCU-Script");
         }
         unset($xml->exec);
         unset($xml->sessionId);        

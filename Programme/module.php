@@ -102,7 +102,7 @@ class HMCCUPrg extends HMBase
         $HMScript = 'SysPrgs=dom.GetObject(ID_PROGRAMS).EnumUsedIDs();';
         $HMScriptResult = $this->LoadHMScript($url, $HMScript);
         if ($HMScriptResult === false)
-            return;
+            throw new Exception("Error on Read CCU-Programs");
         $xml = @new SimpleXMLElement($HMScriptResult);
         if (($xml === false))
         {
@@ -114,13 +114,16 @@ class HMCCUPrg extends HMBase
             $HMScript = 'Name=dom.GetObject(' . $SysPrg . ').Name();' . PHP_EOL
                     . 'Info=dom.GetObject(' . $SysPrg . ').PrgInfo();' . PHP_EOL;
             $HMScriptResult = $this->LoadHMScript($url, $HMScript);
+            if ($HMScript===false)
+                throw new Exception("Error on Read CCU-Programs");
+            
             $varXml = @new SimpleXMLElement($HMScriptResult);
             if ($varXml === false)
             {
                 $this->LogMessage('HM-Script result is not wellformed');
                 throw new Exception("Error on Read CCU-Programs");
             }
-            $var = @GetObjectIDByIdent($SysPrg);
+            $var = @GetObjectIDByIdent($SysPrg,$this->InstanceID);
             if ($var === false)
             {
                 $this->MaintainVariable($SysPrg, (string)$varXml->Name, 1, 'Execute.HM.', 0, true);
@@ -145,13 +148,15 @@ class HMCCUPrg extends HMBase
         {
             throw new Exception("Instance has no active Parent Instance!");
         }
-        $var = @GetObjectIDByIdent($Ident);
+        $var = @GetObjectIDByIdent($Ident,$this->InstanceID);
         if ($var === false)
             throw new Exception('CCU Program ' . $Ident . ' not found!');
 
         $url = 'SysPrg.exe';
         $HMScript = 'State=dom.GetObject(' . $Ident . ').ProgramExecute();';
         $HMScriptResult = $this->LoadHMScript($url, $HMScript);
+        if ($HMScript===false)
+            throw new Exception("Error on start CCU-Program");            
         $xml = @new SimpleXMLElement($HMScriptResult);
         if ($xml === false)
         {
