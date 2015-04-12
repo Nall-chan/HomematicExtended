@@ -194,7 +194,7 @@ class HMBase extends IPSModule
     protected function LoadHMScript($url, $HMScript)
     {
         IPS_LogMessage(__CLASS__, __FUNCTION__); //           
-        $HMAddress = $this->GetParentData();
+        $HMAddress = self::GetParentData();
         if ($HMAddress <> '')
         {
             $ch = curl_init('http://' . $HMAddress . ':8181/' . $url);

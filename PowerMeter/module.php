@@ -26,7 +26,7 @@ class HMPowerMeter extends HMBase
                 {
                     if ($this->CheckConfig())
                     {
-                        if ($this->GetParentData() <> '')
+                        if (!($this->GetParentData() === false ))
                             $this->ReadPowerSysVar();
                     }
                 }
@@ -96,8 +96,9 @@ class HMPowerMeter extends HMBase
         parent::ApplyChanges();
         if ($this->fKernelRunlevel == KR_READY)
         {
-            if ($this->CheckConfig())
-                $this->GetParentData();
+            $this->CheckConfig();
+//            if ($this->CheckConfig())
+//                $this->GetParentData();
         }
     }
 
@@ -105,102 +106,56 @@ class HMPowerMeter extends HMBase
 
     private function CheckConfig()
     {
-        /*
-          begin
-          temp := true;
-          pObjekt:=nil;
-          pInstanz:=nil;
-          try
-          if GetProperty('EventID') = 0 then
-          begin
-          SetStatus(IS_INACTIVE); // kein Trigger und Timer aktiv
-          temp:=false;
-          end else begin
-          // Prüfe Ob HM-Device
-          parent := fkernel.ObjectManager.GetParent(GetProperty('EventID'));
-          pInstanz:=fKernel.InstanceManager.GetInstance(parent);
-          pObjekt := fKernel.ObjectManager.GetObject(GetProperty('EventID'));
-          if (pInstanz.ModuleInfo.ModuleID = '{EE4A81C6-5C90-4DB7-AD2F-F6BBD521412E}')
-          and (pObjekt.ObjectIdent = 'ENERGY_COUNTER') then
-          begin
-          SetStatus(IS_ACTIVE); //OK
-          end else begin
-          SetStatus(202);
-          end;
-          end;
-          finally
-          pObjekt.free;
-          pInstanz.free;
-          end;
-          Result:=temp;
-         *  */
-        return true;
+        if ($this->ReadPropertyInteger('EventID') == 0)
+        {
+            $this->SetStatus(IS_INACTIVE);
+            return false;
+        }
+        else
+        {
+            // Prüfe Ob HM-Device
+            $parent = IPS_GetParent($this->ReadPropertyInteger('EventID'));
+            if ((IPS_GetInstance($parent)['ModuleInfo']['ModuleID'] == '{EE4A81C6-5C90-4DB7-AD2F-F6BBD521412E}')
+                    and ( IPS_GetObject($this->ReadPropertyInteger('EventID'))['ObjectIdent'] == 'ENERGY_COUNTER'))
+            {
+                $this->SetStatus(IS_ACTIVE); //OK
+                return true;
+            }
+            else
+            {
+                $this->SetStatus(202);
+                return false;
+            }
+        }
     }
 
     private function ReadPowerSysVar()
     {
 //                    IPS_LogMessage("HomeMaticSystemvariablen", "Dummy-Module");
-        /*
-          var HMScriptResult     : wideString;
-          Url                : String;
-          IPSVarID           : word;
-          xmlDoc             : IXMLDocument;
-          HMScript           : wideString;
-          begin
-          HMScriptResult := '';
-          IPSVarID := 0;
-          if not HasActiveParent then
-          begin
-          //    raise EIPSModuleObject.Create('Instance has no active Parent Instance!');
-          LogMessage(KL_WARNING,'ReadSysPowerVar Error - Instance has no active Parent Instance.');
-          exit;
-          end;
-          url:='GetPower.exe';
-          HMScript:='Value=dom.GetObject('+PowerMeterAddress+').Value();';
-          HMScriptResult := LoadHMScript(url,HMScript);
-          if HMScriptResult = '' then exit;
-          CoInitialize(nil);
-          xmlDoc := TXMLDocument.Create(nil);
-          //  xmlDoc := newXMLDocument;
-          //  xmlDoc.XML.Add(HMScriptResult);
-          try
-          xmlDoc.LoadFromXml(HMScriptResult);
-          except
-          LogMessage(KL_WARNING,'HM-Script result is not wellformed');
-          xmlDoc.Active := false;
-          xmlDoc := nil;
-          freeandnil(xmlDoc);
-          //    xmlDoc._Release;
-          CoUninitialize;
-
-          //   xmlDoc.Resync;
-          exit;
-          end;
-          try
-          if xmlDoc.DocumentElement.ChildNodes['Value'].IsTextElement then
-          if xmlDoc.DocumentElement.ChildNodes['Value'].Text <> 'null' then
-          if xmlDoc.DocumentElement.ChildNodes['Value'].Text <> 'DOM' then
-          try
-          IPSVarID := GetStatusVariableID('ENERGY_COUNTER_TOTAL');
-          except
-          IPSVarID := 0;
-          end;
-          if IPSVarID <> 0 then
-          begin
-          xmlDoc.DocumentElement.ChildNodes['Value'].Text := StringReplace(xmlDoc.DocumentElement.ChildNodes['Value'].Text, '.', DecimalSeparator, [rfIgnoreCase, rfReplaceAll]);
-          fKernel.VariableManager.WriteVariableFloat(IPSVarID,StrToFloat(xmlDoc.DocumentElement.ChildNodes['Value'].Text)/1000);
-          end;
-          finally
-          xmlDoc.Active := false;
-          xmlDoc := nil;
-          freeandnil(xmlDoc);
-          //    xmlDoc._Release;
-          freeandnil(xmlDoc);
-          CoUninitialize;
-
-          //    xmlDoc.Resync;
-          end;
-         */
+        if (!$this->HasActiveParent())
+        {
+            throw new Exception('Instance has no active Parent Instance!');
+        }
+        $PowerMeterAddress = $this->GetParentData();
+        if ($PowerMeterAddress === false)
+        {
+            throw new Exception('Error on read PowerMeterAddress');
+        }
+        $url = 'GetPower.exe';
+        $HMScript = 'Value=dom.GetObject(' . $PowerMeterAddress . ').Value();' . PHP_EOL;
+        $HMScriptResult = $this->LoadHMScript($url, $HMScript);
+        if ($HMScriptResult == '')
+            throw new Exception('Error on read PowerMeterData');
+        $xml = @new SimpleXMLElement($HMScriptResult);
+        if (($xml === false) or ( !isset($xml->Value)))
+        {
+            $this->LogMessage(KL_WARNING, 'HM-Script result is not wellformed');
+            throw new Exception('Error on read PowerMeterData');
+        }
+        $VarID = @GetObjectIDByIdent('ENERGY_COUNTER_TOTAL', $this->InstanceID);
+        if ($VarID === false)
+            return;
+        SetValueFloat($VarID, ((float)$xml->Value)/1000);
     }
 
 ################## PUBLIC
@@ -212,82 +167,31 @@ class HMPowerMeter extends HMBase
 
     protected function GetParentData()
     {
-        $HMAddress = parent::GetParentData();
-        /*
-          var parent          : word;
-          url             : String;
-          HMScriptResult  : wideString;
-          xmlDoc          : IXMLDocument;
-          HMDeviceAddress : String;
-          HMScript        : wideString;
-          pInstanz        : TIPSInstance;
-          pObjekt         : TIPSObject;
-          begin
-          inherited;
-          HMScriptResult := '';
-          pObjekt:=nil;
-          pInstanz:=nil;
-          if (GetProperty('EventID') <> 0) and (HMAddress <> '') then
-          begin
-          // Prüfe Ob HM-Device
-          try
-          parent := fkernel.ObjectManager.GetParent(GetProperty('EventID'));
-          pInstanz := fKernel.InstanceManager.GetInstance(parent);
-          pObjekt := fKernel.ObjectManager.GetObject(GetProperty('EventID'));
-          if (pInstanz.ModuleInfo.ModuleID = '{EE4A81C6-5C90-4DB7-AD2F-F6BBD521412E}')
-          and (pObjekt.ObjectIdent = 'ENERGY_COUNTER') then
-          begin
-          HMDeviceAddress:= pInstanz.InstanceInterface.GetProperty('Address');
+//        dont do it
+//        $HMAddress = parent::GetParentData();
+        $ObjID = @IPS_GetInstanceParentID($this->InstanceID);
+        if ($ObjID === false)
+            return false;
 
-          url:='GetMeter.exe';
-          HMScript:='Meter=dom.GetObject("BidCos-RF.'+HMDeviceAddress +'.ENERGY_COUNTER").Device();';
-
-          HMScript:='object oitemID;' + sLineBreak
-          + 'oitemID = dom.GetObject("svEnergyCounter_" # dom.GetObject("BidCos-RF.'+ HMDeviceAddress + '.ENERGY_COUNTER").Device() # "_'+ HMDeviceAddress + '");' +sLineBreak
-          + 'SysVar=oitemID.ID();';
-          HMScriptResult := LoadHMScript(url,HMScript);
-          if HMScriptResult <> '' then
-          begin
-          CoInitialize(nil);
-          xmlDoc := TXMLDocument.Create(nil);
-          //xmlDoc := newXMLDocument;
-          //  xmlDoc.XML.Add(HMScriptResult);
-          try
-          xmlDoc.LoadFromXml(HMScriptResult);
-          except
-          LogMessage(KL_WARNING,'HM-Script result is not wellformed');
-          xmlDoc.Active := false;
-          xmlDoc := nil;
-          freeandnil(xmlDoc);
-          CoUninitialize;
-          pObjekt.free;
-          pInstanz.free;
-          exit;
-          end;
-          try
-          if xmlDoc.DocumentElement.ChildNodes['SysVar'].IsTextElement then
-          if xmlDoc.DocumentElement.ChildNodes['SysVar'].Text <> 'null' then
-          if xmlDoc.DocumentElement.ChildNodes['SysVar'].Text <> 'DOM' then
-          begin
-          PowerMeterAddress:=xmlDoc.DocumentElement.ChildNodes['SysVar'].Text;
-          SetSummary(HMDeviceAddress);
-          end;
-          finally
-          xmlDoc.Active := false;
-          xmlDoc := nil;
-          freeandnil(xmlDoc);
-          CoUninitialize;
-          end;
-          end;
-          end;
-          finally
-          pObjekt.free;
-          pInstanz.free;
-          end;
-          end;
-
-         * 
-         */
+        $HMAddress = IPS_ReadProperty($ObjID, 'Host');
+        $parent = IPS_GetParent($this->ReadPropertyInteger('EventID'));
+        $HMDeviceAddress = IPS_GetProperty($parent, 'Address');
+        $url = 'GetMeter.exe';
+//          $HMScript='Meter=dom.GetObject("BidCos-RF.'.$HMDeviceAddress .'.ENERGY_COUNTER").Device();';
+        $HMScript = 'object oitemID;' . PHP_EOL
+                . 'oitemID = dom.GetObject("svEnergyCounter_" # dom.GetObject("BidCos-RF.' . $HMDeviceAddress . '.ENERGY_COUNTER").Device() # "_' . $HMDeviceAddress . '");' . PHP_EOL
+                . 'SysVar=oitemID.ID();' . PHP_EOL;
+        $HMScriptResult = $this->LoadHMScript($url, $HMScript);
+        if ($HMScriptResult == '')
+            return false;
+        $xml = @new SimpleXMLElement($HMScriptResult);
+        if (($xml === false) or ( !isset($xml->SysVar)))
+        {
+            $this->LogMessage(KL_WARNING, 'HM-Script result is not wellformed');
+            return false;
+        }
+        $this->SetSummary($HMDeviceAddress);
+        return (string) $xml->SysVar;
     }
 
 }

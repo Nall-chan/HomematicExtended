@@ -203,7 +203,7 @@ class HMSystemVariable extends HMBase
                 else
                 {
                     $parent = IPS_GetParent($this->ReadPropertyInteger('EventID'));
-                    if (IPS_GetInstance($parent)['ModuleID'] <> '{EE4A81C6-5C90-4DB7-AD2F-F6BBD521412E}')
+                    if (IPS_GetInstance($parent)['ModuleInfo']['ModuleID'] <> '{EE4A81C6-5C90-4DB7-AD2F-F6BBD521412E}')
                     {
                         $this->SetStatus(107);  //Warnung vermutlich falscher Trigger                        
                     }

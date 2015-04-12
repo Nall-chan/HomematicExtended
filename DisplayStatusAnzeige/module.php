@@ -165,7 +165,7 @@ class HMDisWM55 extends HMBase {
                     $this->SetStatus(105); //Status emulieren nur empfohlen bei Interval.
                 } else {
                     $parent = IPS_GetParent($this->ReadPropertyInteger('EventID'));
-                    if (IPS_GetInstance($parent)['ModuleID'] <> '{EE4A81C6-5C90-4DB7-AD2F-F6BBD521412E}') {
+                    if (IPS_GetInstance($parent)['ModuleInfo']['ModuleID'] <> '{EE4A81C6-5C90-4DB7-AD2F-F6BBD521412E}') {
                         $this->SetStatus(107);  //Warnung vermutlich falscher Trigger                        
                     } else {  //ist HM Device
                         if (strpos('BidCoS-RF:', IPS_ReadProperty($parent, 'Address')) === false) {
