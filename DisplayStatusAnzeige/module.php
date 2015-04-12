@@ -2,7 +2,7 @@
 
 require_once(__DIR__ . "/../HMBase.php");  // HMBase Klasse
 
-class HMSysVar extends HMBase {
+class HMDisWM55 extends HMBase {
 
     private $THMSysVarsList;
     private $HMAddress;
@@ -771,34 +771,6 @@ class HMSysVar extends HMBase {
       }
      */
 
-
-################## DUMMYS / WOARKAROUNDS - PRIVATE
-
-    private function HasActiveParent() {
-        $id = @IPS_GetInstanceParentID($this->InstanceID);
-        if ($id > 0) {
-            if (IPS_GetInstance($id)['InstanceStatus'] == 102)
-                return true;
-            else
-                return false;
-        }
-    }
-
-    private function SetStatus($data) {
-        
-    }
-
-    private function RegisterTimer($data, $cata) {
-        
-    }
-
-    private function SetTimerInterval($data, $cata) {
-        
-    }
-
-    private function LogMessage($data, $cata) {
-        
-    }
 
 }
 

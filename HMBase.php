@@ -148,6 +148,7 @@ define('vtString', 3);
 
 class HMBase extends IPSModule
 {
+
     protected $fKernelRunlevel;
 
     public function __construct($InstanceID)
@@ -223,7 +224,7 @@ class HMBase extends IPSModule
         {
             $this->SendData('Error', 'CCU Address not set.');
             $this->LogMessage(KL_ERROR, 'CCU Address not set.');
-            $result =false;
+            $result = false;
         }
         return $result;
     }
@@ -246,12 +247,12 @@ class HMBase extends IPSModule
 
     protected function SetStatus($data)
     {
-        IPS_LogMessage(__CLASS__, __FUNCTION__.':'.$data); //           
+        IPS_LogMessage(__CLASS__, __FUNCTION__ . ':' . $data); //           
     }
 
     protected function RegisterTimer($data, $cata)
     {
-        IPS_LogMessage(__CLASS__, __FUNCTION__.':'.$data.':'.$cata); //           
+        IPS_LogMessage(__CLASS__, __FUNCTION__ . ':' . $data . ':' . $cata); //           
     }
 
     protected function SetTimerInterval($data, $cata)
@@ -263,7 +264,7 @@ class HMBase extends IPSModule
 
     protected function LogMessage($data, $cata)
     {
-        IPS_LogMessage(__CLASS__,__FUNCTION__.':'.$data.':'.$cata);//           
+        IPS_LogMessage(__CLASS__, __FUNCTION__ . ':' . $data . ':' . $cata); //           
     }
 
 }

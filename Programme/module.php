@@ -2,7 +2,7 @@
 
 require_once(__DIR__ . "/../HMBase.php");  // HMBase Klasse
 
-class HMCCUPrg extends HMBase
+class HMCCUProgram extends HMBase
 {
 
     public function __construct($InstanceID)
@@ -109,33 +109,33 @@ class HMCCUPrg extends HMBase
             $this->LogMessage('HM-Script result is not wellformed');
             throw new Exception("Error on Read CCU-Programs");
         }
-        foreach (explode(' ', (string)$xml->SysPrgs) as $SysPrg)
+        foreach (explode(' ', (string) $xml->SysPrgs) as $SysPrg)
         {
             $HMScript = 'Name=dom.GetObject(' . $SysPrg . ').Name();' . PHP_EOL
                     . 'Info=dom.GetObject(' . $SysPrg . ').PrgInfo();' . PHP_EOL;
             $HMScriptResult = $this->LoadHMScript($url, $HMScript);
-            if ($HMScript===false)
+            if ($HMScript === false)
                 throw new Exception("Error on Read CCU-Programs");
-            
+
             $varXml = @new SimpleXMLElement($HMScriptResult);
             if ($varXml === false)
             {
                 $this->LogMessage('HM-Script result is not wellformed');
                 throw new Exception("Error on Read CCU-Programs");
             }
-            $var = @GetObjectIDByIdent($SysPrg,$this->InstanceID);
+            $var = @GetObjectIDByIdent($SysPrg, $this->InstanceID);
             if ($var === false)
             {
-                $this->MaintainVariable($SysPrg, (string)$varXml->Name, 1, 'Execute.HM.', 0, true);
+                $this->MaintainVariable($SysPrg, (string) $varXml->Name, 1, 'Execute.HM.', 0, true);
                 $this->MaintainAction($SysPrg, 'ActionHandler', true);
-                IPS_SetInfo($SysPrg, (string)$varXml->Info);
+                IPS_SetInfo($SysPrg, (string) $varXml->Info);
             }
             else
             {
-                if (IPS_GetName($SysPrg) <> (string)$varXml->Name)
-                    IPS_SetName($SysPrg, (string)$varXml->Name);
-                if (IPS_GetInfo($SysPrg) <> (string)$varXml->Info)
-                    IPS_SetInfo($SysPrg, (string)$varXml->Info);
+                if (IPS_GetName($SysPrg) <> (string) $varXml->Name)
+                    IPS_SetName($SysPrg, (string) $varXml->Name);
+                if (IPS_GetInfo($SysPrg) <> (string) $varXml->Info)
+                    IPS_SetInfo($SysPrg, (string) $varXml->Info);
             }
         }
     }
@@ -148,25 +148,25 @@ class HMCCUPrg extends HMBase
         {
             throw new Exception("Instance has no active Parent Instance!");
         }
-        $var = @GetObjectIDByIdent($Ident,$this->InstanceID);
+        $var = @GetObjectIDByIdent($Ident, $this->InstanceID);
         if ($var === false)
             throw new Exception('CCU Program ' . $Ident . ' not found!');
 
         $url = 'SysPrg.exe';
         $HMScript = 'State=dom.GetObject(' . $Ident . ').ProgramExecute();';
         $HMScriptResult = $this->LoadHMScript($url, $HMScript);
-        if ($HMScript===false)
-            throw new Exception("Error on start CCU-Program");            
+        if ($HMScript === false)
+            throw new Exception("Error on start CCU-Program");
         $xml = @new SimpleXMLElement($HMScriptResult);
         if ($xml === false)
         {
             $this->LogMessage('HM-Script result is not wellformed');
             throw new Exception("Error on start CCU-Program");
         }
-        if ((string)$xml->State == 'True')
-            SetValueInteger($var,0);
+        if ((string) $xml->State == 'True')
+            SetValueInteger($var, 0);
         else
-            throw new Exception("Error on start CCU-Program");            
+            throw new Exception("Error on start CCU-Program");
     }
 
 ################## ActionHandler

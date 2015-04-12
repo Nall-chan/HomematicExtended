@@ -2,13 +2,9 @@
 
 require_once(__DIR__ . "/../HMBase.php");  // HMBase Klasse
 
-class HMSysVar extends HMBase
+class HMSystemVariable extends HMBase
 {
 
-//    private $THMSysVarsList;
-//    private $HMAddress;
-//Dummy
-    private $fKernelRunlevel;
     private $CcuVarType = array(2 => vtBoolean, 4 => vtFloat, 16 => vtInteger, 20 => vtString);
 
     public function __construct($InstanceID)
@@ -22,14 +18,6 @@ class HMSysVar extends HMBase
         $this->RegisterPropertyInteger("Interval", 0);
         $this->RegisterPropertyBoolean("EmulateStatus", false);
         $this->RegisterTimer("ReadHMSysVar", 0);
-        $this->fKernelRunlevel = KR_READY;
-    }
-
-    public function __destruct()
-    {
-//        $this->SetTimerInterval('ReadHMSysVar', 0);
-        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
-//unnötig ?                    parent::__destruct();                    
     }
 
     public function ProcessInstanceStatusChange($InstanceID, $Status)
@@ -141,12 +129,12 @@ class HMSysVar extends HMBase
 
     public function ApplyChanges()
     {
-        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
-        IPS_LogMessage('Config', print_r(json_decode(IPS_GetConfiguration($this->InstanceID)), 1));
+//        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
+//        IPS_LogMessage('Config', print_r(json_decode(IPS_GetConfiguration($this->InstanceID)), 1));
 //Never delete this line!
         parent::ApplyChanges();
-        IPS_LogMessage(__CLASS__, __FUNCTION__); //                   
-        IPS_LogMessage('Config', print_r(json_decode(IPS_GetConfiguration($this->InstanceID)), 1));
+//        IPS_LogMessage(__CLASS__, __FUNCTION__); //                   
+//        IPS_LogMessage('Config', print_r(json_decode(IPS_GetConfiguration($this->InstanceID)), 1));
         if ($this->fKernelRunlevel == KR_INIT)
         {
             foreach (IPS_GetChildrenIDs($this->InstanceID) as $Child)
@@ -157,8 +145,7 @@ class HMSysVar extends HMBase
                 $Var = IPS_GetVariable($Child);
                 $this->MaintainVariable($Objekt['ObjectIdent'], $Objekt['ObjectName'], $Var['ValueType'], 'HM.SysVar' . $this->InstanceID . '.' . $Objekt['ObjectIdent'], $Objekt['ObjectPosition'], true);
                 $this->MaintainAction($Objekt['ObjectIdent'], 'ActionHandler', true);
-//        MaintainVariable(true,Ident,Name,cVariable.VariableValue.ValueType,'HM.SysVar'+ IntToStr(fInstanceID) +'.'+Ident,ActionHandler);
-//                $this->THMSysVarsList[$Child] = $Objekt['ObjectIdent'];
+
             }
         } else
         {
