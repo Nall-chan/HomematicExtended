@@ -6,8 +6,6 @@ class HMDisWM55 extends HMBase
 {
 
     //Dummy
-    private $fKernelRunlevel;
-
     public function __construct($InstanceID)
     {
         //Never delete this line!
@@ -20,7 +18,7 @@ class HMDisWM55 extends HMBase
         $this->RegisterPropertyInteger("Interval", 0);
         $this->RegisterPropertyBoolean("EmulateStatus", false);
         $this->RegisterTimer("ReadHMSysVar", 0);*/
-        $this->fKernelRunlevel = KR_READY;
+
     }
 
     public function ProcessInstanceStatusChange($InstanceID, $Status)

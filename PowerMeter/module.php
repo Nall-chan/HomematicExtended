@@ -12,7 +12,7 @@ class HMPowerMeter extends HMBase
 
         //These lines are parsed on Symcon Startup or Instance creation
         //You cannot use variables here. Just static values.
-        $this->RegisterProperty('EventID', 0);
+        $this->RegisterPropertyInteger('EventID', 0);
         $this->RegisterVariabeFloat('ENERGY_COUNTER_TOTAL', 'ENERGY_COUNTER_TOTAL', '~Electricity');
     }
 

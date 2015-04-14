@@ -181,7 +181,7 @@ class HMBase extends IPSModule
 
     public function ReceiveData($JSONString)
     {
-        IPS_LogMessage(__CLASS__ . $this->InstanceID, print_r(bin2hex(json_decode($JSONString)->Buffer), true));
+        IPS_LogMessage(__CLASS__ . $this->InstanceID, print_r(json_decode($JSONString), true));
 //We dont need any Data...
     }
 
