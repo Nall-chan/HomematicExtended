@@ -20,6 +20,22 @@ class HMPowerMeter extends HMBase
     {
         if ($this->fKernelRunlevel == KR_READY)
         {
+            // FIX ME....
+            /*
+             * @IPS_GetInstanceParentID replace
+    protected function GetParentData()
+    {
+        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
+        $result = '';
+        $instance = IPS_GetInstance($this->InstanceID);
+        if ($instance['ConnectionID'] > 0)
+        {
+            $parent = IPS_GetInstance($instance['ConnectionID']);
+            $result = IPS_ReadProperty($parent, 'Host');
+        }
+        $this->SetSummary($result);
+        return $result;
+    }    */            
             if ($InstanceID == @IPS_GetInstanceParentID($this->InstanceID))
             {
                 if ($this->HasActiveParent())
@@ -169,9 +185,27 @@ class HMPowerMeter extends HMBase
     {
 //        dont do it
 //        $HMAddress = parent::GetParentData();
-        $ObjID = @IPS_GetInstanceParentID($this->InstanceID);
+            // FIX ME....
+            /*
+             * @IPS_GetInstanceParentID replace
+    protected function GetParentData()
+    {
+        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
+        $result = '';
+        $instance = IPS_GetInstance($this->InstanceID);
+        if ($instance['ConnectionID'] > 0)
+        {
+            $parent = IPS_GetInstance($instance['ConnectionID']);
+            $result = IPS_ReadProperty($parent, 'Host');
+        }
+        $this->SetSummary($result);
+        return $result;
+    }    */      
+        $result = parent::GetParentData();
+        if ($result == '') return false;
+/*        $ObjID = @IPS_GetInstanceParentID($this->InstanceID);
         if ($ObjID === false)
-            return false;
+            return false;*/
 
         $HMAddress = IPS_ReadProperty($ObjID, 'Host');
         $parent = IPS_GetParent($this->ReadPropertyInteger('EventID'));

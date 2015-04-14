@@ -26,6 +26,23 @@ class HMSystemVariable extends HMBase
 
         if ($this->fKernelRunlevel == KR_READY)
         {
+            // FIX ME....
+            /*
+             * @IPS_GetInstanceParentID replace
+    protected function GetParentData()
+    {
+        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
+        $result = '';
+        $instance = IPS_GetInstance($this->InstanceID);
+        if ($instance['ConnectionID'] > 0)
+        {
+            $parent = IPS_GetInstance($instance['ConnectionID']);
+            $result = IPS_ReadProperty($parent, 'Host');
+        }
+        $this->SetSummary($result);
+        return $result;
+    }            
+            */
             if (($InstanceID == @IPS_GetInstanceParentID($this->InstanceID)) or ( $InstanceID == 0))
             {
                 $HMAdress = $this->GetParentData();
@@ -144,7 +161,8 @@ class HMSystemVariable extends HMBase
                     continue;
                 $Var = IPS_GetVariable($Child);
                 $this->MaintainVariable($Objekt['ObjectIdent'], $Objekt['ObjectName'], $Var['ValueType'], 'HM.SysVar' . $this->InstanceID . '.' . $Objekt['ObjectIdent'], $Objekt['ObjectPosition'], true);
-                $this->MaintainAction($Objekt['ObjectIdent'], 'ActionHandler', true);
+                $this->EnableAction($Objekt['ObjectIdent']);
+//                $this->MaintainAction($Objekt['ObjectIdent'], 'ActionHandler', true);
 
             }
         } else
@@ -343,7 +361,9 @@ class HMSystemVariable extends HMBase
             if ($VarID === false)
             {
                 $this->MaintainVariable($SysVar, (string) $xmlVar->Name, $VarType, $VarProfil, 0, true);
-                $this->MaintainAction($SysVar, 'ActionHandler', true);
+                $this->EnableAction($SysVar);
+                
+//                $this->MaintainAction($SysVar, 'ActionHandler', true);
                 $VarID = @GetObjectIDByIdent($SysVar, $this->InstanceID);
             }
             else
@@ -409,31 +429,31 @@ class HMSystemVariable extends HMBase
 
 ################## ActionHandler
 
-    public function ActionHandler($StatusVariable, $Value)
+    public function RequestAction($Ident, $Value)
     {
         IPS_LogMessage(__CLASS__, __FUNCTION__); //           
         $VarID = $this->GetStatusVarIDex();
         if (!$this->HasActiveParent())
             throw new Exception('Instance has no active Parent Instance!');
-        switch (IPS_GetVariable($VarID)['VariableValue']['ValueType'])
+        switch (IPS_GetVariable($Ident)['VariableValue']['ValueType'])
         {
             case vtBoolean:
                 if (!is_bool($Value))
                     throw new Exception('Wrong Datatype for ' . $VarID);
-                $this->WriteValueBoolean($StatusVariable, (bool) $Value);
+                $this->WriteValueBoolean($Ident, (bool) $Value);
                 break;
             case vtInteger:
                 if (!is_numeric($Value))
                     throw new Exception('Wrong Datatype for ' . $VarID);
-                $this->WriteValueInteger($StatusVariable, (int) $Value);
+                $this->WriteValueInteger($Ident, (int) $Value);
                 break;
             case vtFloat:
                 if ((!is_float($Value)) and ( !is_numeric($Value)))
                     throw new Exception('Wrong Datatype for ' . $VarID);
-                $this->WriteValueFloat($StatusVariable, (float) $Value);
+                $this->WriteValueFloat($Ident, (float) $Value);
                 break;
             case vtString:
-                $this->WriteValueFloat($StatusVariable, (string) $Value);
+                $this->WriteValueFloat($Ident, (string) $Value);
                 break;
         }
     }

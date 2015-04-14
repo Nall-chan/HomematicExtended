@@ -158,6 +158,7 @@ class HMBase extends IPSModule
 //These lines are parsed on Symcon Startup or Instance creation
 //You cannot use variables here. Just static values.
         $this->fKernelRunlevel = KR_READY;
+        $this->ConnectParent("{A151ECE9-D733-4FB9-AA15-7F7DD10C58AF}");
     }
 
     public function ProcessInstanceStatusChange($InstanceID, $Status)
@@ -178,15 +179,24 @@ class HMBase extends IPSModule
         parent::ApplyChanges();
     }
 
+    public function ReceiveData($JSONString)
+    {
+        IPS_LogMessage(__CLASS__ . $this->InstanceID, print_r(bin2hex(json_decode($JSONString)->Buffer), true));
+//We dont need any Data...
+    }
+
 ################## protected
 
     protected function GetParentData()
     {
         IPS_LogMessage(__CLASS__, __FUNCTION__); //           
         $result = '';
-        $ObjID = @IPS_GetInstanceParentID($this->InstanceID);
-        if ($ObjID > 0)
-            $result = IPS_ReadProperty($ObjID, 'Host');
+        $instance = IPS_GetInstance($this->InstanceID);
+        if ($instance['ConnectionID'] > 0)
+        {
+            $parent = IPS_GetInstance($instance['ConnectionID']);
+            $result = IPS_ReadProperty($parent, 'Host');
+        }
         $this->SetSummary($result);
         return $result;
     }
@@ -233,16 +243,15 @@ class HMBase extends IPSModule
 
     protected function HasActiveParent()
     {
-        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
-
-        $id = @IPS_GetInstanceParentID($this->InstanceID);
-        if ($id > 0)
+        IPS_LogMessage(__CLASS__, __FUNCTION__); //          
+        $instance = IPS_GetInstance($this->InstanceID);
+        if ($instance['ConnectionID'] > 0)
         {
-            if (IPS_GetInstance($id)['InstanceStatus'] == 102)
+            $parent = IPS_GetInstance($instance['ConnectionID']);
+            if ($parent['InstanceStatus'] == IS_ACTIVE)
                 return true;
-            else
-                return false;
         }
+        return false;
     }
 
     protected function SetStatus($data)

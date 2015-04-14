@@ -24,6 +24,22 @@ class HMCCUProgram extends HMBase
 
     public function ProcessInstanceStatusChange($InstanceID, $Status)
     {
+            // FIX ME....
+            /*
+             * @IPS_GetInstanceParentID replace
+    protected function GetParentData()
+    {
+        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
+        $result = '';
+        $instance = IPS_GetInstance($this->InstanceID);
+        if ($instance['ConnectionID'] > 0)
+        {
+            $parent = IPS_GetInstance($instance['ConnectionID']);
+            $result = IPS_ReadProperty($parent, 'Host');
+        }
+        $this->SetSummary($result);
+        return $result;
+    }    */        
         if ($this->fKernelRunlevel == KR_READY)
         {
             if (($InstanceID == @IPS_GetInstanceParentID($this->InstanceID)) or ( $InstanceID == 0))
@@ -39,7 +55,22 @@ class HMCCUProgram extends HMBase
 
     public function MessageSink($Msg)
     {
-
+            // FIX ME....
+            /*
+             * @IPS_GetInstanceParentID replace
+    protected function GetParentData()
+    {
+        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
+        $result = '';
+        $instance = IPS_GetInstance($this->InstanceID);
+        if ($instance['ConnectionID'] > 0)
+        {
+            $parent = IPS_GetInstance($instance['ConnectionID']);
+            $result = IPS_ReadProperty($parent, 'Host');
+        }
+        $this->SetSummary($result);
+        return $result;
+    }    */
         if ($Msg['SenderID'] <> 0)
         {
             if ($Msg['Message'] == DM_CONNECT)
@@ -75,7 +106,8 @@ class HMCCUProgram extends HMBase
                 if ($Objekt['ObjectType'] <> 2)
                     continue;
                 $this->MaintainVariable($Objekt['ObjectIdent'], $Objekt['ObjectName'], 1, 'Execute.HM', $Objekt['ObjectPosition'], true);
-                $this->RegisterAction($Objekt['ObjectIdent'], 'ActionHandler');
+//                $this->RegisterAction($Objekt['ObjectIdent'], 'ActionHandler');
+                $this->EnableAction($Objekt['ObjectIdent']);                
             }
         }
     }
@@ -127,7 +159,8 @@ class HMCCUProgram extends HMBase
             if ($var === false)
             {
                 $this->MaintainVariable($SysPrg, (string) $varXml->Name, 1, 'Execute.HM.', 0, true);
-                $this->MaintainAction($SysPrg, 'ActionHandler', true);
+                $this->EnableAction($SysPrg);
+//                $this->MaintainAction($SysPrg, 'ActionHandler', true);
                 IPS_SetInfo($SysPrg, (string) $varXml->Info);
             }
             else
@@ -169,14 +202,15 @@ class HMCCUProgram extends HMBase
             throw new Exception("Error on start CCU-Program");
     }
 
+
 ################## ActionHandler
 
-    public function ActionHandler($StatusVariableIdent, $Value)
+    public function RequestAction($Ident, $Value)
     {
+        IPS_LogMessage(__CLASS__, __FUNCTION__ . ' Ident:.' . $Ident); //     
         unset($Value);
-        $this->StartCCUProgram($StatusVariableIdent);
+        $this->StartCCUProgram($Ident);
     }
-
 ################## PUBLIC
     /**
      * This function will be available automatically after the module is imported with the module control.

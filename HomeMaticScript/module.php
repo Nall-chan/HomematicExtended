@@ -24,6 +24,22 @@ class HMScript extends HMBase
 
     public function ProcessInstanceStatusChange($InstanceID, $Status)
     {
+                    // FIX ME....
+            /*
+             * @IPS_GetInstanceParentID replace
+    protected function GetParentData()
+    {
+        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
+        $result = '';
+        $instance = IPS_GetInstance($this->InstanceID);
+        if ($instance['ConnectionID'] > 0)
+        {
+            $parent = IPS_GetInstance($instance['ConnectionID']);
+            $result = IPS_ReadProperty($parent, 'Host');
+        }
+        $this->SetSummary($result);
+        return $result;
+    }    */
         if ($this->fKernelRunlevel == KR_READY)
         {
             if (($InstanceID == @IPS_GetInstanceParentID($this->InstanceID)) or ( $InstanceID == 0))
@@ -36,7 +52,22 @@ class HMScript extends HMBase
 
     public function MessageSink($Msg)
     {
-
+            // FIX ME....
+            /*
+             * @IPS_GetInstanceParentID replace
+    protected function GetParentData()
+    {
+        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
+        $result = '';
+        $instance = IPS_GetInstance($this->InstanceID);
+        if ($instance['ConnectionID'] > 0)
+        {
+            $parent = IPS_GetInstance($instance['ConnectionID']);
+            $result = IPS_ReadProperty($parent, 'Host');
+        }
+        $this->SetSummary($result);
+        return $result;
+    }    */
         if ($Msg['SenderID'] <> 0)
         {
             if ($Msg['Message'] == DM_CONNECT)
