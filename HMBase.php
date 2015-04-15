@@ -160,19 +160,21 @@ class HMBase extends IPSModule
         $this->fKernelRunlevel = KR_READY;
         $this->ConnectParent("{A151ECE9-D733-4FB9-AA15-7F7DD10C58AF}");
     }
-/*
-    public function ProcessInstanceStatusChange($InstanceID, $Status)
-    {
-        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
-        parent::ProcessInstanceStatusChange($InstanceID, $Status);
-    }
 
-    public function MessageSink($Msg)
-    {
-        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
-        parent::MessageSink($Msg);
-    }
-*/
+    /*
+      public function ProcessInstanceStatusChange($InstanceID, $Status)
+      {
+      IPS_LogMessage(__CLASS__, __FUNCTION__); //
+      parent::ProcessInstanceStatusChange($InstanceID, $Status);
+      }
+
+      public function MessageSink($Msg)
+      {
+      IPS_LogMessage(__CLASS__, __FUNCTION__); //
+      parent::MessageSink($Msg);
+      }
+     */
+
     public function ApplyChanges()
     {
 //Never delete this line!
@@ -195,6 +197,7 @@ class HMBase extends IPSModule
         if ($instance['ConnectionID'] > 0)
         {
             $parent = IPS_GetInstance($instance['ConnectionID']);
+            IPS_LogMessage(__CLASS__ . $this->InstanceID, print_r($parent, true));
             $result = IPS_GetProperty($parent, 'Host');
         }
         $this->SetSummary($result);
@@ -275,10 +278,12 @@ class HMBase extends IPSModule
     {
         IPS_LogMessage(__CLASS__, __FUNCTION__ . ':' . $data . ':' . $cata); //           
     }
+
     protected function SetSummary($data)
     {
         IPS_LogMessage(__CLASS__, __FUNCTION__ . "Data:" . $data); //                   
     }
+
 }
 
 ?>
