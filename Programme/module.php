@@ -184,7 +184,7 @@ class HMCCUProgram extends HMBase
             {
                 if (IPS_GetName($var) <> $Name)
                     IPS_SetName($var, $Name);
-                if (IPS_GetInfo($var) <> $Info)
+                if (IPS_GetObject($var)['ObjectInfo'] <> $Info)
                     IPS_SetInfo($var,$Info);
             }
         }
