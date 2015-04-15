@@ -297,7 +297,7 @@ class HMSystemVariable extends HMBase
         $TimeDiff = $NowTime - $CCUTime;
         $CCUTimeZone = (string) $xmlTime->TimeZone;
 
-        foreach (explode(' ', (string) $xmlVars->SysVars) as $SysVar)
+        foreach (explode(chr(0x09), (string) $xmlVars->SysVars) as $SysVar)
         {
             $HMScript = 'Name=dom.GetObject(' . $SysVar . ').Name();' . PHP_EOL
                     . 'ValueType=dom.GetObject(' . $SysVar . ').ValueType();' . PHP_EOL

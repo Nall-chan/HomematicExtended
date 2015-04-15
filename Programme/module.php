@@ -147,7 +147,7 @@ class HMCCUProgram extends HMBase
             $this->LogMessage('HM-Script result is not wellformed');
             throw new Exception("Error on Read CCU-Programs");
         }
-        foreach (explode(' ', (string) $xml->SysPrgs) as $SysPrg)
+        foreach (explode(chr(0x09), (string) $xml->SysPrgs) as $SysPrg)
         {
             $HMScript = 'Name=dom.GetObject(' . $SysPrg . ').Name();' . PHP_EOL
                     . 'Info=dom.GetObject(' . $SysPrg . ').PrgInfo();' . PHP_EOL;
