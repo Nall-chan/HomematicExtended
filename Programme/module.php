@@ -169,7 +169,7 @@ class HMCCUProgram extends HMBase
 //                throw new Exception("Error on Read CCU-Programs");
                 continue;
             }
-            $var = @GetObjectIDByIdent($SysPrg, $this->InstanceID);
+            $var = @IPS_GetObjectIDByIdent($SysPrg, $this->InstanceID);
             if ($var === false)
             {
                 $this->MaintainVariable($SysPrg, (string) $varXml->Name, 1, 'Execute.HM.', 0, true);
@@ -195,7 +195,7 @@ class HMCCUProgram extends HMBase
         {
             throw new Exception("Instance has no active Parent Instance!");
         }
-        $var = @GetObjectIDByIdent($Ident, $this->InstanceID);
+        $var = @IPS_GetObjectIDByIdent($Ident, $this->InstanceID);
         if ($var === false)
             throw new Exception('CCU Program ' . $Ident . ' not found!');
 

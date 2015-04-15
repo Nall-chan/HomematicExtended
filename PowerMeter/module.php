@@ -184,7 +184,7 @@ class HMPowerMeter extends HMBase
             $this->LogMessage(KL_WARNING, 'HM-Script result is not wellformed');
             throw new Exception('Error on read PowerMeterData');
         }
-        $VarID = @GetObjectIDByIdent('ENERGY_COUNTER_TOTAL', $this->InstanceID);
+        $VarID = @IPS_GetObjectIDByIdent('ENERGY_COUNTER_TOTAL', $this->InstanceID);
         if ($VarID === false)
             return;
         SetValueFloat($VarID, ((float)$xml->Value)/1000);

@@ -325,7 +325,7 @@ class HMSystemVariable extends HMBase
                 continue;
 //                throw new Exception("Error on Read CCU Systemvariable");
             }
-            $VarID = @GetObjectIDByIdent($SysVar, $this->InstanceID);
+            $VarID = @IPS_GetObjectIDByIdent($SysVar, $this->InstanceID);
             $VarType = $this->CcuVarType[(int) $xmlVar->ValueType];
             $VarProfil = 'HM.SysVar' . (string) $this->InstanceID . '.' . (string) $SysVar;
             if (($VarID === false) or ( !IPS_VariableProfilExists($VarProfil)))
@@ -364,7 +364,7 @@ class HMSystemVariable extends HMBase
                 $this->EnableAction($SysVar);
                 
 //                $this->MaintainAction($SysVar, 'ActionHandler', true);
-                $VarID = @GetObjectIDByIdent($SysVar, $this->InstanceID);
+                $VarID = @IPS_GetObjectIDByIdent($SysVar, $this->InstanceID);
             }
             else
             {
@@ -460,7 +460,7 @@ class HMSystemVariable extends HMBase
 
     private function GetStatusVarIDex($Ident)
     {
-        $VarID = @GetObjectIDByIdent($Ident, $this->InstanceID);
+        $VarID = @IPS_GetObjectIDByIdent($Ident, $this->InstanceID);
         if ($VarID === false)
             throw new Exception('Ident ' . $Ident . ' do not exist.');
         else
