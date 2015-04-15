@@ -20,6 +20,7 @@ class HMCCUProgram extends HMBase
         IPS_LogMessage(__CLASS__, __FUNCTION__); //            
 //Never delete this line!
         parent::ApplyChanges();
+        $this->CreateProfil();
         $this->ReadCCUPrograms();
     }
 
@@ -43,12 +44,12 @@ class HMCCUProgram extends HMBase
     private function ReadCCUPrograms()
     {
         IPS_LogMessage(__CLASS__, __FUNCTION__); //            
-        $this->CreateProfil();
         if (!$this->HasActiveParent())
         {
             throw new Exception("Instance has no active Parent Instance!");
         }
-        if ($this->GetParentData() == '')
+        $this->GetParentData();
+        if ($this->HMAddress == '')
             return;
         $url = 'SysPrg.exe';
         $HMScript = 'SysPrgs=dom.GetObject(ID_PROGRAMS).EnumUsedIDs();';
