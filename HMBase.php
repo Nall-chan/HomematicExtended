@@ -160,7 +160,7 @@ class HMBase extends IPSModule
         $this->fKernelRunlevel = KR_READY;
         $this->ConnectParent("{A151ECE9-D733-4FB9-AA15-7F7DD10C58AF}");
     }
-
+/*
     public function ProcessInstanceStatusChange($InstanceID, $Status)
     {
         IPS_LogMessage(__CLASS__, __FUNCTION__); //           
@@ -172,7 +172,7 @@ class HMBase extends IPSModule
         IPS_LogMessage(__CLASS__, __FUNCTION__); //           
         parent::MessageSink($Msg);
     }
-
+*/
     public function ApplyChanges()
     {
 //Never delete this line!

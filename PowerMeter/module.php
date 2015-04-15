@@ -16,10 +16,10 @@ class HMPowerMeter extends HMBase
         $this->RegisterVariabeFloat('ENERGY_COUNTER_TOTAL', 'ENERGY_COUNTER_TOTAL', '~Electricity');
     }
 
-    public function ProcessInstanceStatusChange($InstanceID, $Status)
-    {
-        if ($this->fKernelRunlevel == KR_READY)
-        {
+//    public function ProcessInstanceStatusChange($InstanceID, $Status)
+//    {
+//        if ($this->fKernelRunlevel == KR_READY)
+//        {
             // FIX ME....
             /*
              * @IPS_GetInstanceParentID replace
@@ -36,7 +36,7 @@ class HMPowerMeter extends HMBase
         $this->SetSummary($result);
         return $result;
     }    */            
-            if ($InstanceID == @IPS_GetInstanceParentID($this->InstanceID))
+  /*          if ($InstanceID == @IPS_GetInstanceParentID($this->InstanceID))
             {
                 if ($this->HasActiveParent())
                 {
@@ -50,9 +50,10 @@ class HMPowerMeter extends HMBase
         }
         parent::ProcessInstanceStatusChange($InstanceID, $Status);
     }
-
-    public function MessageSink($Msg)
-    {
+*/
+    
+//    public function MessageSink($Msg)
+//    {
         /*
           if (msg.Message = IPS_KERNELMESSAGE) and (msg.SenderID=0) and (Msg.Data[0] = KR_READY) then
           begin
@@ -104,7 +105,7 @@ class HMPowerMeter extends HMBase
           end;
           end;
          */
-    }
+  //  }
 
     public function ApplyChanges()
     {
@@ -112,12 +113,27 @@ class HMPowerMeter extends HMBase
         parent::ApplyChanges();
         if ($this->fKernelRunlevel == KR_READY)
         {
-            $this->CheckConfig();
+            if (!$this->CheckConfig())
+            {
+                throw new Exception ('Configuration is not valid.');
+            }
 //            if ($this->CheckConfig())
 //                $this->GetParentData();
         }
     }
+    public function ReceiveData($JSONString)
+    {
+//        IPS_LogMessage(__CLASS__ . $this->InstanceID, print_r(json_decode($JSONString), true));
+//We dont need any Data...
 
+  //      json_decode($JSONString)->DeviceID
+        $parent = IPS_GetParent($this->ReadPropertyInteger('EventID'));
+        $HMDeviceAddress = IPS_GetProperty($parent, 'Address');
+        $Data =json_decode($JSONString);
+        if ($HMDeviceAddress <> (string)$Data->DeviceID) return;
+        if ((string)$Data->VariableName <> 'ENERGY_COUNTER') return;
+        $this->ReadPowerSysVar();
+    }
 ################## PRIVATE                
 
     private function CheckConfig()
@@ -201,13 +217,13 @@ class HMPowerMeter extends HMBase
         $this->SetSummary($result);
         return $result;
     }    */      
-        $result = parent::GetParentData();
-        if ($result == '') return false;
+        $HMAddress = parent::GetParentData();
+        if ($HMAddress == '') return false;
 /*        $ObjID = @IPS_GetInstanceParentID($this->InstanceID);
         if ($ObjID === false)
             return false;*/
 
-        $HMAddress = IPS_ReadProperty($ObjID, 'Host');
+//        $HMAddress = IPS_ReadProperty($ObjID, 'Host');
         $parent = IPS_GetParent($this->ReadPropertyInteger('EventID'));
         $HMDeviceAddress = IPS_GetProperty($parent, 'Address');
         $url = 'GetMeter.exe';

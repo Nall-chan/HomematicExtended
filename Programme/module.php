@@ -13,7 +13,7 @@ class HMCCUProgram extends HMBase
 //These lines are parsed on Symcon Startup or Instance creation
 //You cannot use variables here. Just static values.
     }
-
+/* FIX ME
     public function ProcessKernelRunlevelChange($Runlevel)
     {
         if ($Runlevel == KR_READY)
@@ -21,9 +21,10 @@ class HMCCUProgram extends HMBase
             $this->ReadCCUPrograms();
         }
     }
-
-    public function ProcessInstanceStatusChange($InstanceID, $Status)
-    {
+*/
+    
+//    public function ProcessInstanceStatusChange($InstanceID, $Status)
+//    {
             // FIX ME....
             /*
              * @IPS_GetInstanceParentID replace
@@ -40,7 +41,7 @@ class HMCCUProgram extends HMBase
         $this->SetSummary($result);
         return $result;
     }    */        
-        if ($this->fKernelRunlevel == KR_READY)
+/*        if ($this->fKernelRunlevel == KR_READY)
         {
             if (($InstanceID == @IPS_GetInstanceParentID($this->InstanceID)) or ( $InstanceID == 0))
             {
@@ -52,9 +53,9 @@ class HMCCUProgram extends HMBase
         }
         parent::ProcessInstanceStatusChange($InstanceID, $Status);
     }
-
-    public function MessageSink($Msg)
-    {
+*/
+//    public function MessageSink($Msg)
+//    {
             // FIX ME....
             /*
              * @IPS_GetInstanceParentID replace
@@ -71,7 +72,7 @@ class HMCCUProgram extends HMBase
         $this->SetSummary($result);
         return $result;
     }    */
-        if ($Msg['SenderID'] <> 0)
+/*        if ($Msg['SenderID'] <> 0)
         {
             if ($Msg['Message'] == DM_CONNECT)
             {
@@ -92,11 +93,14 @@ class HMCCUProgram extends HMBase
             }
         }
     }
-
+*/
     public function ApplyChanges()
     {
 //Never delete this line!
         parent::ApplyChanges();
+
+// FIXME
+/*        $this->fKernelRunlevel = KR_INIT;
         if ($this->fKernelRunlevel == KR_INIT)
         {
             $this->CreateProfil();
@@ -109,7 +113,9 @@ class HMCCUProgram extends HMBase
 //                $this->RegisterAction($Objekt['ObjectIdent'], 'ActionHandler');
                 $this->EnableAction($Objekt['ObjectIdent']);                
             }
-        }
+        $this->fKernelRunlevel = KR_READY;            
+        }*/
+        $this->ReadCCUPrograms();
     }
 
     private function CreateProfil()
