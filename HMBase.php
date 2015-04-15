@@ -181,7 +181,7 @@ class HMBase extends IPSModule
 
     public function ReceiveData($JSONString)
     {
-        IPS_LogMessage(__CLASS__ . $this->InstanceID, print_r(json_decode($JSONString), true));
+//        IPS_LogMessage(__CLASS__ . $this->InstanceID, print_r(json_decode($JSONString), true));
 //We dont need any Data...
     }
 
@@ -195,7 +195,7 @@ class HMBase extends IPSModule
         if ($instance['ConnectionID'] > 0)
         {
             $parent = IPS_GetInstance($instance['ConnectionID']);
-            $result = IPS_ReadProperty($parent, 'Host');
+            $result = IPS_GetProperty($parent, 'Host');
         }
         $this->SetSummary($result);
         return $result;
