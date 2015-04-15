@@ -62,7 +62,7 @@ class HMCCUProgram extends HMBase
         }
         catch (Exception $ex)
         {
-            $this->LogMessage('HM-Script result is not wellformed');
+            $this->LogMessage(KL_ERROR,'HM-Script result is not wellformed');
             throw new Exception("Error on Read CCU-Programs");
         }
 
@@ -79,7 +79,7 @@ class HMCCUProgram extends HMBase
             }
             catch (Exception $ex)
             {
-                $this->LogMessage('HM-Script result is not wellformed');
+                $this->LogMessage(KL_ERROR,'HM-Script result is not wellformed');
 //                throw new Exception("Error on Read CCU-Programs");
                 continue;
             }
@@ -128,7 +128,7 @@ class HMCCUProgram extends HMBase
         }
         catch (Exception $ex)
         {
-            $this->LogMessage('HM-Script result is not wellformed');
+            $this->LogMessage(KL_ERROR,'HM-Script result is not wellformed');
             throw new Exception("Error on start CCU-Program");
         }
         if ((string) $xml->State == 'true')
