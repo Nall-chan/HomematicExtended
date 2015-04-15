@@ -281,7 +281,7 @@ class HMSystemVariable extends HMBase
         }
         catch (Exception $ex)
         {
-            $this->LogMessage('HM-Script result is not wellformed');
+            $this->LogMessage(KL_ERROR,'HM-Script result is not wellformed');
             throw new Exception("Error on Read CCU Systemvariable");
         }
 
@@ -299,7 +299,7 @@ class HMSystemVariable extends HMBase
         }
         catch (Exception $ex)
         {
-            $this->LogMessage('HM-Script result is not wellformed');
+            $this->LogMessage(KL_ERROR,'HM-Script result is not wellformed');
             throw new Exception("Error on Read CCU Systemvariable");
         }
 
@@ -328,7 +328,7 @@ class HMSystemVariable extends HMBase
             $HMScriptResult = $this->LoadHMScript('SysVar.exe', $HMScript);
             if ($HMScriptResult === false)
             {
-//                $this->LogMessage('HM-Script result is not wellformed');
+                $this->LogMessage(KL_WARNING,'HM-Script result is not wellformed');
                 continue;
             }
 
@@ -338,7 +338,7 @@ class HMSystemVariable extends HMBase
             }
             catch (Exception $ex)
             {
-                $this->LogMessage('HM-Script result is not wellformed');
+                $this->LogMessage(KL_WARNING,'HM-Script result is not wellformed');
                 continue;
             }
 
@@ -438,7 +438,7 @@ class HMSystemVariable extends HMBase
         }
         catch (Exception $ex)
         {
-            $this->LogMessage('HM-Script result is not wellformed');
+            $this->LogMessage(KL_ERROR,'HM-Script result is not wellformed');
             return false;
         }
 

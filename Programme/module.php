@@ -7,7 +7,7 @@ class HMCCUProgram extends HMBase
 
     public function __construct($InstanceID)
     {
-        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
+//        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
 //Never delete this line!
         parent::__construct($InstanceID);
 
@@ -17,7 +17,7 @@ class HMCCUProgram extends HMBase
 
     public function ApplyChanges()
     {
-        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
+//        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
 //Never delete this line!
         parent::ApplyChanges();
         $this->CreateProfil();
@@ -26,7 +26,7 @@ class HMCCUProgram extends HMBase
 
     private function CreateProfil()
     {
-        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
+        //IPS_LogMessage(__CLASS__, __FUNCTION__); //            
         if (!IPS_VariableProfileExists('Execute.HM'))
         {
             IPS_CreateVariableProfile('Execute.HM', 1);
@@ -36,21 +36,23 @@ class HMCCUProgram extends HMBase
 
     protected function GetParentData()
     {
-        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
+        //IPS_LogMessage(__CLASS__, __FUNCTION__); //            
         parent::GetParentData();
         $this->SetSummary($this->HMAddress);
     }
 
     private function ReadCCUPrograms()
     {
-        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
+        //IPS_LogMessage(__CLASS__, __FUNCTION__); //            
         if (!$this->HasActiveParent())
         {
             throw new Exception("Instance has no active Parent Instance!");
         }
         $this->GetParentData();
         if ($this->HMAddress == '')
-            return;
+        {
+            throw new Exception("Instance has no active Parent Instance!");
+        }
         $url = 'SysPrg.exe';
         $HMScript = 'SysPrgs=dom.GetObject(ID_PROGRAMS).EnumUsedIDs();';
         $HMScriptResult = $this->LoadHMScript($url, $HMScript);
@@ -79,7 +81,7 @@ class HMCCUProgram extends HMBase
             }
             catch (Exception $ex)
             {
-                $this->LogMessage(KL_ERROR, 'HM-Script result is not wellformed');
+                $this->LogMessage(KL_WARNING, 'HM-Script result is not wellformed');
 //                throw new Exception("Error on Read CCU-Programs");
                 continue;
             }
@@ -106,7 +108,7 @@ class HMCCUProgram extends HMBase
 
     private function StartCCUProgram($Ident)
     {
-        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
+        //IPS_LogMessage(__CLASS__, __FUNCTION__); //            
         if (!$this->HasActiveParent())
         {
             throw new Exception("Instance has no active Parent Instance!");
@@ -132,7 +134,7 @@ class HMCCUProgram extends HMBase
         }
         catch (Exception $ex)
         {
-            $this->LogMessage(KL_ERROR, 'HM-Script result is not wellformed');
+            $this->LogMessage(KL_ERROR, 'Error on start CCU-Program');
             throw new Exception("Error on start CCU-Program");
         }
         if ((string) $xml->State == 'true')
@@ -145,7 +147,7 @@ class HMCCUProgram extends HMBase
 
     public function RequestAction($Ident, $Value)
     {
-        IPS_LogMessage(__CLASS__, __FUNCTION__ . ' Ident:.' . $Ident); //     
+        //IPS_LogMessage(__CLASS__, __FUNCTION__ . ' Ident:.' . $Ident); //     
         unset($Value);
         $this->StartCCUProgram($Ident);
     }
@@ -158,14 +160,14 @@ class HMCCUProgram extends HMBase
 
     public function ReadPrograms()
     {
-        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
+        //IPS_LogMessage(__CLASS__, __FUNCTION__); //            
 
         $this->ReadCCUPrograms();
     }
 
     public function StartProgram($Parameter)
     {
-        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
+        //IPS_LogMessage(__CLASS__, __FUNCTION__); //            
 
         $this->StartCCUProgram($Parameter);
     }

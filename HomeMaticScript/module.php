@@ -8,7 +8,7 @@ class HMScript extends HMBase
     public function __construct($InstanceID)
     {
 //Never delete this line!
-        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
+//        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
         parent::__construct($InstanceID);
 
 //These lines are parsed on Symcon Startup or Instance creation
@@ -17,21 +17,20 @@ class HMScript extends HMBase
 
     public function ApplyChanges()
     {
-        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
+        //IPS_LogMessage(__CLASS__, __FUNCTION__); //            
 //Never delete this line!
         parent::ApplyChanges();
     }
 
     private function SendScript($Script)
     {
-        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
-        $this->GetParentData();
-        if ($this->HMAddress == '')
+        //IPS_LogMessage(__CLASS__, __FUNCTION__); //            
+        if (!$this->HasActiveParent())
         {
             throw new Exception("Instance has no active Parent Instance!");
         }
-
-        if (!$this->HasActiveParent())
+        $this->GetParentData();
+        if ($this->HMAddress == '')
         {
             throw new Exception("Instance has no active Parent Instance!");
         }
@@ -45,7 +44,7 @@ class HMScript extends HMBase
         }
         catch (Exception $ex)
         {
-            $this->LogMessage('HM-Script result is not wellformed');
+            $this->LogMessage(KL_ERROR,'HM-Script result is not wellformed');
             throw new Exception("Error on write CCU-Script");
         }
         unset($xml->exec);
@@ -56,7 +55,7 @@ class HMScript extends HMBase
 
     protected function GetParentData()
     {
-        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
+        //IPS_LogMessage(__CLASS__, __FUNCTION__); //            
         parent::GetParentData();
         $this->SetSummary($this->HMAddress);
     }
@@ -69,7 +68,7 @@ class HMScript extends HMBase
 
     public function RunScript($Script)
     {
-        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
+        //IPS_LogMessage(__CLASS__, __FUNCTION__); //            
         return $this->SendScript($Script);
     }
 

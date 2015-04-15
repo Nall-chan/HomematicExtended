@@ -5,6 +5,8 @@ require_once(__DIR__ . "/../HMBase.php");  // HMBase Klasse
 class HMPowerMeter extends HMBase
 {
 
+    private $HMDeviceAddress;
+
     public function __construct($InstanceID)
     {
         IPS_LogMessage(__CLASS__, __FUNCTION__); //            
@@ -22,19 +24,23 @@ class HMPowerMeter extends HMBase
         IPS_LogMessage(__CLASS__, __FUNCTION__); //            
         //Never delete this line!
         parent::ApplyChanges();
+        $this->CheckConfig();
     }
 
     public function ReceiveData($JSONString)
     {
         IPS_LogMessage(__CLASS__, __FUNCTION__); //    
-        if (!$this->CheckConfig())
-        {
+        $EventID = $this->ReadPropertyInteger('EventID');
+        /*        if (!$this->CheckConfig())
+          {
+          return;
+          } */
+        if ($EventID == 0)
             return;
-        }
-        $parent = IPS_GetParent($this->ReadPropertyInteger('EventID'));
-        $HMDeviceAddress = IPS_GetProperty($parent, 'Address');
+        $parent = IPS_GetParent($EventID);
+        $this->HMDeviceAddress = IPS_GetProperty($parent, 'Address');
         $Data = json_decode($JSONString);
-        if ($HMDeviceAddress <> (string) $Data->DeviceID)
+        if ($this->HMDeviceAddress <> (string) $Data->DeviceID)
             return;
         if ((string) $Data->VariableName <> 'ENERGY_COUNTER')
             return;
@@ -73,21 +79,39 @@ class HMPowerMeter extends HMBase
     {
         IPS_LogMessage(__CLASS__, __FUNCTION__); //            
 //                    IPS_LogMessage("HomeMaticSystemvariablen", "Dummy-Module");
+        if (!$this->HasActiveParent())
+        {
+            throw new Exception("Instance has no active Parent Instance!");
+        }
         $this->GetParentData();
         if ($this->HMAddress == '')
         {
             throw new Exception("Instance has no active Parent Instance!");
         }
-        if (!$this->HasActiveParent())
+
+
+        $this->SetSummary($this->HMDeviceAddress);
+        $url = 'GetPowerMeter.exe';
+//          $HMScript='Meter=dom.GetObject("BidCos-RF.'.$HMDeviceAddress .'.ENERGY_COUNTER").Device();';
+        $HMScript = 'object oitemID;' . PHP_EOL
+                . 'oitemID = dom.GetObject("svEnergyCounter_" # dom.GetObject("BidCos-RF.' . $this->HMDeviceAddress . '.ENERGY_COUNTER").Device() # "_' . $this->HMDeviceAddress . '");' . PHP_EOL
+                . 'Value=oitemID.Value();' . PHP_EOL;
+        $HMScriptResult = $this->LoadHMScript($url, $HMScript);
+        if ($HMScriptResult == '')
+            throw new Exception('Error on read PowerMeterData');
+        try
         {
-            throw new Exception('Instance has no active Parent Instance!');
+            $xml = new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
+            $Value = ((float) $xml->Value) / 1000;
         }
-        $PowerMeterAddress = $this->GetParentData();
-        if ($PowerMeterAddress === false)
+        catch (Exception $ex)
         {
-            throw new Exception('Error on read PowerMeterAddress');
+            $this->LogMessage(KL_ERROR,'Error on read PowerMeterAddress');
+            throw new Exception(KL_ERROR,'Error on read PowerMeterAddress');            
         }
-        $url = 'GetPower.exe';
+
+        
+/*        $url = 'GetPower.exe';
         $HMScript = 'Value=dom.GetObject(' . $PowerMeterAddress . ').Value();' . PHP_EOL;
         $HMScriptResult = $this->LoadHMScript($url, $HMScript);
         if ($HMScriptResult == '')
@@ -95,13 +119,13 @@ class HMPowerMeter extends HMBase
         $xml = @new SimpleXMLElement($HMScriptResult);
         if (($xml === false) or ( !isset($xml->Value)))
         {
-            $this->LogMessage(KL_WARNING, 'HM-Script result is not wellformed');
+            $this->LogMessage(KL_ERROR, 'HM-Script result is not wellformed');
             throw new Exception('Error on read PowerMeterData');
-        }
+        }*/
         $VarID = @IPS_GetObjectIDByIdent('ENERGY_COUNTER_TOTAL', $this->InstanceID);
         if ($VarID === false)
             return;
-        SetValueFloat($VarID, ((float) $xml->Value) / 1000);
+        SetValueFloat($VarID, $Value);
     }
 
 ################## PUBLIC
@@ -115,30 +139,6 @@ class HMPowerMeter extends HMBase
     {
         IPS_LogMessage(__CLASS__, __FUNCTION__); //            
         parent::GetParentData();
-        if ($this->HMAddress == '')
-            return false;
-
-        $parent = IPS_GetParent($this->ReadPropertyInteger('EventID'));
-        $HMDeviceAddress = IPS_GetProperty($parent, 'Address');
-        $this->SetSummary($HMDeviceAddress);
-        $url = 'GetMeter.exe';
-//          $HMScript='Meter=dom.GetObject("BidCos-RF.'.$HMDeviceAddress .'.ENERGY_COUNTER").Device();';
-        $HMScript = 'object oitemID;' . PHP_EOL
-                . 'oitemID = dom.GetObject("svEnergyCounter_" # dom.GetObject("BidCos-RF.' . $HMDeviceAddress . '.ENERGY_COUNTER").Device() # "_' . $HMDeviceAddress . '");' . PHP_EOL
-                . 'SysVar=oitemID.ID();' . PHP_EOL;
-        $HMScriptResult = $this->LoadHMScript($url, $HMScript);
-        if ($HMScriptResult == '')
-            return false;
-        try
-        {
-            $xml = new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
-        }
-        catch (Exception $ex)
-        {
-            $this->LogMessage('HM-Script result is not wellformed');
-            return false;
-        }
-        return (string) $xml->SysVar;
     }
 
 }
