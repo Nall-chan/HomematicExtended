@@ -275,7 +275,10 @@ class HMBase extends IPSModule
     {
         IPS_LogMessage(__CLASS__, __FUNCTION__ . ':' . $data . ':' . $cata); //           
     }
-
+    protected function SetSummary($data)
+    {
+        IPS_LogMessage(__CLASS__, __FUNCTION__ . "Data:" . $data); //                   
+    }
 }
 
 ?>
