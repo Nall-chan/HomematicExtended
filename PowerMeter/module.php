@@ -234,12 +234,18 @@ class HMPowerMeter extends HMBase
         $HMScriptResult = $this->LoadHMScript($url, $HMScript);
         if ($HMScriptResult == '')
             return false;
-        $xml = @new SimpleXMLElement($HMScriptResult);
-        if (($xml === false) or ( !isset($xml->SysVar)))
+        try
         {
-            $this->LogMessage(KL_WARNING, 'HM-Script result is not wellformed');
-            return false;
+        $xml = new SimpleXMLElement(uft8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
+            
         }
+        catch (Exception $ex)
+        {
+            $this->LogMessage('HM-Script result is not wellformed');
+            return false;
+            
+        }
+
         $this->SetSummary($HMDeviceAddress);
         return (string) $xml->SysVar;
     }

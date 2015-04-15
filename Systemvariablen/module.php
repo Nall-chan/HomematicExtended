@@ -29,20 +29,20 @@ class HMSystemVariable extends HMBase
             // FIX ME....
             /*
              * @IPS_GetInstanceParentID replace
-    protected function GetParentData()
-    {
-        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
-        $result = '';
-        $instance = IPS_GetInstance($this->InstanceID);
-        if ($instance['ConnectionID'] > 0)
-        {
-            $parent = IPS_GetInstance($instance['ConnectionID']);
-            $result = IPS_ReadProperty($parent, 'Host');
-        }
-        $this->SetSummary($result);
-        return $result;
-    }            
-            */
+              protected function GetParentData()
+              {
+              IPS_LogMessage(__CLASS__, __FUNCTION__); //
+              $result = '';
+              $instance = IPS_GetInstance($this->InstanceID);
+              if ($instance['ConnectionID'] > 0)
+              {
+              $parent = IPS_GetInstance($instance['ConnectionID']);
+              $result = IPS_ReadProperty($parent, 'Host');
+              }
+              $this->SetSummary($result);
+              return $result;
+              }
+             */
             if (($InstanceID == @IPS_GetInstanceParentID($this->InstanceID)) or ( $InstanceID == 0))
             {
                 $HMAdress = $this->GetParentData();
@@ -163,7 +163,6 @@ class HMSystemVariable extends HMBase
                 $this->MaintainVariable($Objekt['ObjectIdent'], $Objekt['ObjectName'], $Var['ValueType'], 'HM.SysVar' . $this->InstanceID . '.' . $Objekt['ObjectIdent'], $Objekt['ObjectPosition'], true);
                 $this->EnableAction($Objekt['ObjectIdent']);
 //                $this->MaintainAction($Objekt['ObjectIdent'], 'ActionHandler', true);
-
             }
         } else
         {
@@ -269,8 +268,11 @@ class HMSystemVariable extends HMBase
         {
             throw new Exception("Error on Read CCU Systemvariable");
         }
-        $xmlVars = @new SimpleXMLElement($HMScriptResult);
-        if (($xmlVars === false))
+        try
+        {
+            $varXml = new SimpleXMLElement($HMScriptResult, LIBXML_NOBLANKS + LIBXML_NONET);
+        }
+        catch (Exception $ex)
         {
             $this->LogMessage('HM-Script result is not wellformed');
             throw new Exception("Error on Read CCU Systemvariable");
@@ -284,12 +286,16 @@ class HMSystemVariable extends HMBase
         {
             throw new Exception("Error on Read CCU Systemvariable");
         }
-        $xmlTime = @new SimpleXMLElement($HMScriptResult);
-        if (($xmlTime === false))
+        try
+        {
+            $xmlTime = new SimpleXMLElement(uft8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
+        }
+        catch (Exception $ex)
         {
             $this->LogMessage('HM-Script result is not wellformed');
             throw new Exception("Error on Read CCU Systemvariable");
         }
+
         $Date = new DateTime((string) $xmlTime->Now);
         $CCUTime = $Date->getTimestamp();
         $Date = new DateTime();
@@ -318,13 +324,17 @@ class HMSystemVariable extends HMBase
 //                $this->LogMessage('HM-Script result is not wellformed');
                 continue;
             }
-            $xmlVar = @new SimpleXMLElement($HMScriptResult, LIBXML_NOBLANKS + LIBXML_NONET);
-            if (($xmlVar === false))
+
+            try
+            {
+                $xmlVar = new SimpleXMLElement(uft8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
+            }
+            catch (Exception $ex)
             {
                 $this->LogMessage('HM-Script result is not wellformed');
                 continue;
-//                throw new Exception("Error on Read CCU Systemvariable");
             }
+
             $VarID = @IPS_GetObjectIDByIdent($SysVar, $this->InstanceID);
             $VarType = $this->CcuVarType[(int) $xmlVar->ValueType];
             $VarProfil = 'HM.SysVar' . (string) $this->InstanceID . '.' . (string) $SysVar;
@@ -362,7 +372,7 @@ class HMSystemVariable extends HMBase
             {
                 $this->MaintainVariable($SysVar, (string) $xmlVar->Name, $VarType, $VarProfil, 0, true);
                 $this->EnableAction($SysVar);
-                
+
 //                $this->MaintainAction($SysVar, 'ActionHandler', true);
                 $VarID = @IPS_GetObjectIDByIdent($SysVar, $this->InstanceID);
             }
@@ -415,12 +425,16 @@ class HMSystemVariable extends HMBase
         $HMScriptResult = $this->LoadHMScript($url, $HMScript);
         if ($HMScriptResult === false)
             return false;
-        $xml = @new SimpleXMLElement($HMScriptResult);
-        if (($xml === false))
+        try
+        {
+            $xml = new SimpleXMLElement($HMScriptResult, LIBXML_NOBLANKS + LIBXML_NONET);
+        }
+        catch (Exception $ex)
         {
             $this->LogMessage('HM-Script result is not wellformed');
             return false;
         }
+
         if ((string) $xml->State == 'true')
             return true;
         else

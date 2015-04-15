@@ -144,7 +144,7 @@ class HMCCUProgram extends HMBase
             throw new Exception("Error on Read CCU-Programs");
         try
         {
-            $xml = new SimpleXMLElement($HMScriptResult);
+            $xml = new SimpleXMLElement($HMScriptResult, LIBXML_NOBLANKS + LIBXML_NONET);
         }
         catch (Exception $ex)
         {
@@ -161,7 +161,7 @@ class HMCCUProgram extends HMBase
                 throw new Exception("Error on Read CCU-Programs");
             try
             {
-                $varXml = new SimpleXMLElement($HMScriptResult);
+                $varXml = new SimpleXMLElement(uft8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
             }
             catch (Exception $ex)
             {
@@ -170,19 +170,21 @@ class HMCCUProgram extends HMBase
                 continue;
             }
             $var = @IPS_GetObjectIDByIdent($SysPrg, $this->InstanceID);
+            $Name = uft8_decode((string)$varXml->Name);
+            $Info = uft8_decode((string)$varXml->Name);            
             if ($var === false)
             {
-                $this->MaintainVariable($SysPrg, (string) $varXml->Name, 1, 'Execute.HM', 0, true);
+                $this->MaintainVariable($SysPrg,$Name, 1, 'Execute.HM', 0, true);
                 $this->EnableAction($SysPrg);
 //                $this->MaintainAction($SysPrg, 'ActionHandler', true);
-                IPS_SetInfo($SysPrg, (string) $varXml->Info);
+                IPS_SetInfo($SysPrg, $Info);
             }
             else
             {
-                if (IPS_GetName($SysPrg) <> (string) $varXml->Name)
-                    IPS_SetName($SysPrg, (string) $varXml->Name);
-                if (IPS_GetInfo($SysPrg) <> (string) $varXml->Info)
-                    IPS_SetInfo($SysPrg, (string) $varXml->Info);
+                if (IPS_GetName($SysPrg) <> $Name)
+                    IPS_SetName($SysPrg, $Name);
+                if (IPS_GetInfo($SysPrg) <> $Info)
+                    IPS_SetInfo($SysPrg,$Info);
             }
         }
     }
@@ -204,7 +206,7 @@ class HMCCUProgram extends HMBase
         $HMScriptResult = $this->LoadHMScript($url, $HMScript);
         if ($HMScript === false)
             throw new Exception("Error on start CCU-Program");
-        $xml = @new SimpleXMLElement($HMScriptResult);
+        $xml = @new SimpleXMLElement($HMScriptResult, LIBXML_NOBLANKS + LIBXML_NONET);
         if ($xml === false)
         {
             $this->LogMessage('HM-Script result is not wellformed');
