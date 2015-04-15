@@ -13,108 +13,109 @@ class HMCCUProgram extends HMBase
 //These lines are parsed on Symcon Startup or Instance creation
 //You cannot use variables here. Just static values.
     }
-/* FIX ME
-    public function ProcessKernelRunlevelChange($Runlevel)
-    {
-        if ($Runlevel == KR_READY)
-        {
-            $this->ReadCCUPrograms();
-        }
-    }
-*/
-    
+
+    /* FIX ME
+      public function ProcessKernelRunlevelChange($Runlevel)
+      {
+      if ($Runlevel == KR_READY)
+      {
+      $this->ReadCCUPrograms();
+      }
+      }
+     */
+
 //    public function ProcessInstanceStatusChange($InstanceID, $Status)
 //    {
-            // FIX ME....
-            /*
-             * @IPS_GetInstanceParentID replace
-    protected function GetParentData()
-    {
-        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
-        $result = '';
-        $instance = IPS_GetInstance($this->InstanceID);
-        if ($instance['ConnectionID'] > 0)
-        {
-            $parent = IPS_GetInstance($instance['ConnectionID']);
-            $result = IPS_ReadProperty($parent, 'Host');
-        }
-        $this->SetSummary($result);
-        return $result;
-    }    */        
-/*        if ($this->fKernelRunlevel == KR_READY)
-        {
-            if (($InstanceID == @IPS_GetInstanceParentID($this->InstanceID)) or ( $InstanceID == 0))
-            {
-                if ($this->HasActiveParent())
-                {
-                    $this->ReadCCUPrograms();
-                }
-            }
-        }
-        parent::ProcessInstanceStatusChange($InstanceID, $Status);
-    }
-*/
+    // FIX ME....
+    /*
+     * @IPS_GetInstanceParentID replace
+      protected function GetParentData()
+      {
+      IPS_LogMessage(__CLASS__, __FUNCTION__); //
+      $result = '';
+      $instance = IPS_GetInstance($this->InstanceID);
+      if ($instance['ConnectionID'] > 0)
+      {
+      $parent = IPS_GetInstance($instance['ConnectionID']);
+      $result = IPS_ReadProperty($parent, 'Host');
+      }
+      $this->SetSummary($result);
+      return $result;
+      } */
+    /*        if ($this->fKernelRunlevel == KR_READY)
+      {
+      if (($InstanceID == @IPS_GetInstanceParentID($this->InstanceID)) or ( $InstanceID == 0))
+      {
+      if ($this->HasActiveParent())
+      {
+      $this->ReadCCUPrograms();
+      }
+      }
+      }
+      parent::ProcessInstanceStatusChange($InstanceID, $Status);
+      }
+     */
 //    public function MessageSink($Msg)
 //    {
-            // FIX ME....
-            /*
-             * @IPS_GetInstanceParentID replace
-    protected function GetParentData()
-    {
-        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
-        $result = '';
-        $instance = IPS_GetInstance($this->InstanceID);
-        if ($instance['ConnectionID'] > 0)
-        {
-            $parent = IPS_GetInstance($instance['ConnectionID']);
-            $result = IPS_ReadProperty($parent, 'Host');
-        }
-        $this->SetSummary($result);
-        return $result;
-    }    */
-/*        if ($Msg['SenderID'] <> 0)
-        {
-            if ($Msg['Message'] == DM_CONNECT)
-            {
-                if (!$this->HasActiveParent())
-                {
-                    IPS_Sleep(250);
-                    if (!$this->HasActiveParent())
-                        return;
-                }
-                if (($Msg['SenderID'] == $this->InstanceID) or ( $Msg['SenderID'] == IPS_GetInstanceParentID($this->InstanceID)))
-                    $this->ReadCCUPrograms();
-            } elseif ($Msg['Message'] == DM_DISCONNECT)
-            {
-                if (($Msg['SenderID'] == $this->InstanceID) or ( $Msg['SenderID'] == IPS_GetInstanceParentID($this->InstanceID)))
-                {
-                    $this->SetSummary('No parent');
-                }
-            }
-        }
-    }
-*/
+    // FIX ME....
+    /*
+     * @IPS_GetInstanceParentID replace
+      protected function GetParentData()
+      {
+      IPS_LogMessage(__CLASS__, __FUNCTION__); //
+      $result = '';
+      $instance = IPS_GetInstance($this->InstanceID);
+      if ($instance['ConnectionID'] > 0)
+      {
+      $parent = IPS_GetInstance($instance['ConnectionID']);
+      $result = IPS_ReadProperty($parent, 'Host');
+      }
+      $this->SetSummary($result);
+      return $result;
+      } */
+    /*        if ($Msg['SenderID'] <> 0)
+      {
+      if ($Msg['Message'] == DM_CONNECT)
+      {
+      if (!$this->HasActiveParent())
+      {
+      IPS_Sleep(250);
+      if (!$this->HasActiveParent())
+      return;
+      }
+      if (($Msg['SenderID'] == $this->InstanceID) or ( $Msg['SenderID'] == IPS_GetInstanceParentID($this->InstanceID)))
+      $this->ReadCCUPrograms();
+      } elseif ($Msg['Message'] == DM_DISCONNECT)
+      {
+      if (($Msg['SenderID'] == $this->InstanceID) or ( $Msg['SenderID'] == IPS_GetInstanceParentID($this->InstanceID)))
+      {
+      $this->SetSummary('No parent');
+      }
+      }
+      }
+      }
+     */
     public function ApplyChanges()
     {
 //Never delete this line!
         parent::ApplyChanges();
 
 // FIXME
-/*        $this->fKernelRunlevel = KR_INIT;
-        if ($this->fKernelRunlevel == KR_INIT)
-        {
-            $this->CreateProfil();
-            foreach (IPS_GetChildrenIDs($this->InstanceID) as $Child)
-            {
-                $Objekt = IPS_GetObject($Child);
-                if ($Objekt['ObjectType'] <> 2)
-                    continue;
-                $this->MaintainVariable($Objekt['ObjectIdent'], $Objekt['ObjectName'], 1, 'Execute.HM', $Objekt['ObjectPosition'], true);
-//                $this->RegisterAction($Objekt['ObjectIdent'], 'ActionHandler');
-                $this->EnableAction($Objekt['ObjectIdent']);                
-            }
-        $this->fKernelRunlevel = KR_READY;            
-        }*/
+        /*        $this->fKernelRunlevel = KR_INIT;
+          if ($this->fKernelRunlevel == KR_INIT)
+          {
+          $this->CreateProfil();
+          foreach (IPS_GetChildrenIDs($this->InstanceID) as $Child)
+          {
+          $Objekt = IPS_GetObject($Child);
+          if ($Objekt['ObjectType'] <> 2)
+          continue;
+          $this->MaintainVariable($Objekt['ObjectIdent'], $Objekt['ObjectName'], 1, 'Execute.HM', $Objekt['ObjectPosition'], true);
+          //                $this->RegisterAction($Objekt['ObjectIdent'], 'ActionHandler');
+          $this->EnableAction($Objekt['ObjectIdent']);
+          }
+          $this->fKernelRunlevel = KR_READY;
+          } */
         $this->ReadCCUPrograms();
     }
 
@@ -141,12 +142,16 @@ class HMCCUProgram extends HMBase
         $HMScriptResult = $this->LoadHMScript($url, $HMScript);
         if ($HMScriptResult === false)
             throw new Exception("Error on Read CCU-Programs");
-        $xml = @new SimpleXMLElement($HMScriptResult);
-        if (($xml === false))
+        try
+        {
+            $xml = new SimpleXMLElement($HMScriptResult);
+        }
+        catch (Exception $ex)
         {
             $this->LogMessage('HM-Script result is not wellformed');
             throw new Exception("Error on Read CCU-Programs");
         }
+
         foreach (explode(chr(0x09), (string) $xml->SysPrgs) as $SysPrg)
         {
             $HMScript = 'Name=dom.GetObject(' . $SysPrg . ').Name();' . PHP_EOL
@@ -154,12 +159,15 @@ class HMCCUProgram extends HMBase
             $HMScriptResult = $this->LoadHMScript($url, $HMScript);
             if ($HMScript === false)
                 throw new Exception("Error on Read CCU-Programs");
-
-            $varXml = @new SimpleXMLElement($HMScriptResult);
-            if ($varXml === false)
+            try
+            {
+                $varXml = new SimpleXMLElement($HMScriptResult);
+            }
+            catch (Exception $ex)
             {
                 $this->LogMessage('HM-Script result is not wellformed');
-                throw new Exception("Error on Read CCU-Programs");
+//                throw new Exception("Error on Read CCU-Programs");
+                continue;
             }
             $var = @GetObjectIDByIdent($SysPrg, $this->InstanceID);
             if ($var === false)
@@ -208,7 +216,6 @@ class HMCCUProgram extends HMBase
             throw new Exception("Error on start CCU-Program");
     }
 
-
 ################## ActionHandler
 
     public function RequestAction($Ident, $Value)
@@ -217,6 +224,7 @@ class HMCCUProgram extends HMBase
         unset($Value);
         $this->StartCCUProgram($Ident);
     }
+
 ################## PUBLIC
     /**
      * This function will be available automatically after the module is imported with the module control.
