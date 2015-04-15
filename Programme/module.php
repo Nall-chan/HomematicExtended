@@ -213,7 +213,7 @@ class HMCCUProgram extends HMBase
             $this->LogMessage('HM-Script result is not wellformed');
             throw new Exception("Error on start CCU-Program");
         }
-        if ((string) $xml->State == 'True')
+        if ((string) $xml->State == 'true')
             SetValueInteger($var, 0);
         else
             throw new Exception("Error on start CCU-Program");
