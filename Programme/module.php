@@ -172,7 +172,7 @@ class HMCCUProgram extends HMBase
             $var = @IPS_GetObjectIDByIdent($SysPrg, $this->InstanceID);
             if ($var === false)
             {
-                $this->MaintainVariable($SysPrg, (string) $varXml->Name, 1, 'Execute.HM.', 0, true);
+                $this->MaintainVariable($SysPrg, (string) $varXml->Name, 1, 'Execute.HM', 0, true);
                 $this->EnableAction($SysPrg);
 //                $this->MaintainAction($SysPrg, 'ActionHandler', true);
                 IPS_SetInfo($SysPrg, (string) $varXml->Info);
