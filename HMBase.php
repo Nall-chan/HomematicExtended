@@ -196,7 +196,7 @@ class HMBase extends IPSModule
         IPS_LogMessage(__CLASS__, __FUNCTION__); //           
         if ($this->HMAddress <> '')
         {
-            $ch = curl_init('http://' . $HMAddress . ':8181/' . $url);
+            $ch = curl_init('http://' . $this->HMAddress . ':8181/' . $url);
             curl_setopt($ch, CURLOPT_HEADER, false);
             curl_setopt($ch, CURLOPT_FAILONERROR, true);
             curl_setopt($ch, CURLOPT_POST, true);
@@ -205,7 +205,7 @@ class HMBase extends IPSModule
             curl_setopt($ch, CURLOPT_CONNECTTIMEOUT_MS, 500);
             curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
             curl_setopt($ch, CURLOPT_TIMEOUT_MS, 500);
-            $this->SendData('Request', 'http://' + $HMAddress + ':8181/' + $url);
+            $this->SendData('Request', 'http://' + $this->HMAddress + ':8181/' + $url);
             $this->SendData('Request', $HMScript);
             $result = curl_exec($ch);
             curl_close($ch);
