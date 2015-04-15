@@ -62,7 +62,7 @@ class HMCCUProgram extends HMBase
         }
         catch (Exception $ex)
         {
-            $this->LogMessage(KL_ERROR,'HM-Script result is not wellformed');
+            $this->LogMessage(KL_ERROR, 'HM-Script result is not wellformed');
             throw new Exception("Error on Read CCU-Programs");
         }
 
@@ -79,7 +79,7 @@ class HMCCUProgram extends HMBase
             }
             catch (Exception $ex)
             {
-                $this->LogMessage(KL_ERROR,'HM-Script result is not wellformed');
+                $this->LogMessage(KL_ERROR, 'HM-Script result is not wellformed');
 //                throw new Exception("Error on Read CCU-Programs");
                 continue;
             }
@@ -107,12 +107,16 @@ class HMCCUProgram extends HMBase
     private function StartCCUProgram($Ident)
     {
         IPS_LogMessage(__CLASS__, __FUNCTION__); //            
-        if ($this->fKernelRunlevel <> KR_READY)
-            return;
         if (!$this->HasActiveParent())
         {
             throw new Exception("Instance has no active Parent Instance!");
         }
+        $this->GetParentData();
+        if ($this->HMAddress == '')
+        {
+            throw new Exception("Instance has no active Parent Instance!");
+        }
+
         $var = @IPS_GetObjectIDByIdent($Ident, $this->InstanceID);
         if ($var === false)
             throw new Exception('CCU Program ' . $Ident . ' not found!');
@@ -128,7 +132,7 @@ class HMCCUProgram extends HMBase
         }
         catch (Exception $ex)
         {
-            $this->LogMessage(KL_ERROR,'HM-Script result is not wellformed');
+            $this->LogMessage(KL_ERROR, 'HM-Script result is not wellformed');
             throw new Exception("Error on start CCU-Program");
         }
         if ((string) $xml->State == 'true')
