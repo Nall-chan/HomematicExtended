@@ -7,6 +7,7 @@ class HMPowerMeter extends HMBase
 
     public function __construct($InstanceID)
     {
+        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
         //Never delete this line!
         parent::__construct($InstanceID);
 
@@ -16,128 +17,35 @@ class HMPowerMeter extends HMBase
         $this->RegisterVariabeFloat('ENERGY_COUNTER_TOTAL', 'ENERGY_COUNTER_TOTAL', '~Electricity');
     }
 
-//    public function ProcessInstanceStatusChange($InstanceID, $Status)
-//    {
-//        if ($this->fKernelRunlevel == KR_READY)
-//        {
-            // FIX ME....
-            /*
-             * @IPS_GetInstanceParentID replace
-    protected function GetParentData()
-    {
-        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
-        $result = '';
-        $instance = IPS_GetInstance($this->InstanceID);
-        if ($instance['ConnectionID'] > 0)
-        {
-            $parent = IPS_GetInstance($instance['ConnectionID']);
-            $result = IPS_ReadProperty($parent, 'Host');
-        }
-        $this->SetSummary($result);
-        return $result;
-    }    */            
-  /*          if ($InstanceID == @IPS_GetInstanceParentID($this->InstanceID))
-            {
-                if ($this->HasActiveParent())
-                {
-                    if ($this->CheckConfig())
-                    {
-                        if (!($this->GetParentData() === false ))
-                            $this->ReadPowerSysVar();
-                    }
-                }
-            }
-        }
-        parent::ProcessInstanceStatusChange($InstanceID, $Status);
-    }
-*/
-    
-//    public function MessageSink($Msg)
-//    {
-        /*
-          if (msg.Message = IPS_KERNELMESSAGE) and (msg.SenderID=0) and (Msg.Data[0] = KR_READY) then
-          begin
-          if  CheckConfig() then
-          begin
-          GetParentData();
-          if HMAddress <> '' then  ReadPowerSysVar();
-          end;
-          end;
-
-          if msg.SenderID <>0 then
-          if fKernelRunlevel = KR_READY then
-          begin
-          if msg.Message=DM_CONNECT then
-          begin
-          if not HasActiveParent then sleep(250);
-          if HasActiveParent then
-          begin
-          if (msg.SenderID = fInstanceID) or (msg.SenderID = fKernel.DataHandlerEx.GetInstanceParentID(fInstanceID)) then
-          begin
-          GetParentData();
-          end;
-          end;
-          end;
-          if msg.Message=DM_DISCONNECT then
-          begin
-          if (msg.SenderID = fInstanceID) or (msg.SenderID = fKernel.DataHandlerEx.GetInstanceParentID(fInstanceID)) then
-          begin
-          SetSummary('No parent');
-          HMAddress:='';
-          end;
-          end;
-          if msg.SenderID=GetProperty('EventID') then
-          begin
-          if msg.Message=VM_UPDATE then
-          begin
-          if HasActiveParent then
-          begin
-          if HMAddress <> '' then  ReadPowerSysVar;
-          end else begin
-          LogMessage(KL_WARNING,'EventRefresh Error - Instance has no active Parent Instance.');
-          end;
-          end else if msg.Message=VM_DELETE then
-          begin
-          SetProperty('EventID',0);
-          ApplyChanges();
-          SaveSettings();
-          end;
-          end;
-          end;
-         */
-  //  }
-
     public function ApplyChanges()
     {
+        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
         //Never delete this line!
         parent::ApplyChanges();
-        if ($this->fKernelRunlevel == KR_READY)
-        {
-            if (!$this->CheckConfig())
-            {
-                throw new Exception ('Configuration is not valid.');
-            }
-//            if ($this->CheckConfig())
-//                $this->GetParentData();
-        }
     }
+
     public function ReceiveData($JSONString)
     {
-//        IPS_LogMessage(__CLASS__ . $this->InstanceID, print_r(json_decode($JSONString), true));
-//We dont need any Data...
-
-  //      json_decode($JSONString)->DeviceID
+        IPS_LogMessage(__CLASS__, __FUNCTION__); //    
+        if (!$this->CheckConfig())
+        {
+            return;
+        }
         $parent = IPS_GetParent($this->ReadPropertyInteger('EventID'));
         $HMDeviceAddress = IPS_GetProperty($parent, 'Address');
-        $Data =json_decode($JSONString);
-        if ($HMDeviceAddress <> (string)$Data->DeviceID) return;
-        if ((string)$Data->VariableName <> 'ENERGY_COUNTER') return;
+        $Data = json_decode($JSONString);
+        if ($HMDeviceAddress <> (string) $Data->DeviceID)
+            return;
+        if ((string) $Data->VariableName <> 'ENERGY_COUNTER')
+            return;
         $this->ReadPowerSysVar();
     }
+
 ################## PRIVATE                
 
     private function CheckConfig()
     {
+        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
         if ($this->ReadPropertyInteger('EventID') == 0)
         {
             $this->SetStatus(IS_INACTIVE);
@@ -163,7 +71,13 @@ class HMPowerMeter extends HMBase
 
     private function ReadPowerSysVar()
     {
+        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
 //                    IPS_LogMessage("HomeMaticSystemvariablen", "Dummy-Module");
+        $this->GetParentData();
+        if ($this->HMAddress == '')
+        {
+            throw new Exception("Instance has no active Parent Instance!");
+        }
         if (!$this->HasActiveParent())
         {
             throw new Exception('Instance has no active Parent Instance!');
@@ -187,7 +101,7 @@ class HMPowerMeter extends HMBase
         $VarID = @IPS_GetObjectIDByIdent('ENERGY_COUNTER_TOTAL', $this->InstanceID);
         if ($VarID === false)
             return;
-        SetValueFloat($VarID, ((float)$xml->Value)/1000);
+        SetValueFloat($VarID, ((float) $xml->Value) / 1000);
     }
 
 ################## PUBLIC
@@ -199,33 +113,14 @@ class HMPowerMeter extends HMBase
 
     protected function GetParentData()
     {
-//        dont do it
-//        $HMAddress = parent::GetParentData();
-            // FIX ME....
-            /*
-             * @IPS_GetInstanceParentID replace
-    protected function GetParentData()
-    {
-        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
-        $result = '';
-        $instance = IPS_GetInstance($this->InstanceID);
-        if ($instance['ConnectionID'] > 0)
-        {
-            $parent = IPS_GetInstance($instance['ConnectionID']);
-            $result = IPS_ReadProperty($parent, 'Host');
-        }
-        $this->SetSummary($result);
-        return $result;
-    }    */      
-        $HMAddress = parent::GetParentData();
-        if ($HMAddress == '') return false;
-/*        $ObjID = @IPS_GetInstanceParentID($this->InstanceID);
-        if ($ObjID === false)
-            return false;*/
+        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
+        parent::GetParentData();
+        if ($this->HMAddress == '')
+            return false;
 
-//        $HMAddress = IPS_ReadProperty($ObjID, 'Host');
         $parent = IPS_GetParent($this->ReadPropertyInteger('EventID'));
         $HMDeviceAddress = IPS_GetProperty($parent, 'Address');
+        $this->SetSummary($HMDeviceAddress);
         $url = 'GetMeter.exe';
 //          $HMScript='Meter=dom.GetObject("BidCos-RF.'.$HMDeviceAddress .'.ENERGY_COUNTER").Device();';
         $HMScript = 'object oitemID;' . PHP_EOL
@@ -236,17 +131,13 @@ class HMPowerMeter extends HMBase
             return false;
         try
         {
-        $xml = new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
-            
+            $xml = new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
         }
         catch (Exception $ex)
         {
             $this->LogMessage('HM-Script result is not wellformed');
             return false;
-            
         }
-
-        $this->SetSummary($HMDeviceAddress);
         return (string) $xml->SysVar;
     }
 

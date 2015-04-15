@@ -9,9 +9,10 @@ class HMSystemVariable extends HMBase
 
     public function __construct($InstanceID)
     {
+        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
 //Never delete this line!
         parent::__construct($InstanceID);
-        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
+      
 //These lines are parsed on Symcon Startup or Instance creation
 //You cannot use variables here. Just static values.
         $this->RegisterPropertyInteger("EventID", 0);
@@ -251,6 +252,12 @@ class HMSystemVariable extends HMBase
 
         if ($this->HasActiveParent())
             $this->ReadSysVars();
+    }
+
+    private function GetParentData()
+    {
+        parent::GetParentData();
+        $this->SetSummary($this->HMAddress);
     }
 
     private function ReadSysVars()

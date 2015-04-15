@@ -7,6 +7,7 @@ class HMCCUProgram extends HMBase
 
     public function __construct($InstanceID)
     {
+        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
 //Never delete this line!
         parent::__construct($InstanceID);
 
@@ -14,113 +15,17 @@ class HMCCUProgram extends HMBase
 //You cannot use variables here. Just static values.
     }
 
-    /* FIX ME
-      public function ProcessKernelRunlevelChange($Runlevel)
-      {
-      if ($Runlevel == KR_READY)
-      {
-      $this->ReadCCUPrograms();
-      }
-      }
-     */
-
-//    public function ProcessInstanceStatusChange($InstanceID, $Status)
-//    {
-    // FIX ME....
-    /*
-     * @IPS_GetInstanceParentID replace
-      protected function GetParentData()
-      {
-      IPS_LogMessage(__CLASS__, __FUNCTION__); //
-      $result = '';
-      $instance = IPS_GetInstance($this->InstanceID);
-      if ($instance['ConnectionID'] > 0)
-      {
-      $parent = IPS_GetInstance($instance['ConnectionID']);
-      $result = IPS_ReadProperty($parent, 'Host');
-      }
-      $this->SetSummary($result);
-      return $result;
-      } */
-    /*        if ($this->fKernelRunlevel == KR_READY)
-      {
-      if (($InstanceID == @IPS_GetInstanceParentID($this->InstanceID)) or ( $InstanceID == 0))
-      {
-      if ($this->HasActiveParent())
-      {
-      $this->ReadCCUPrograms();
-      }
-      }
-      }
-      parent::ProcessInstanceStatusChange($InstanceID, $Status);
-      }
-     */
-//    public function MessageSink($Msg)
-//    {
-    // FIX ME....
-    /*
-     * @IPS_GetInstanceParentID replace
-      protected function GetParentData()
-      {
-      IPS_LogMessage(__CLASS__, __FUNCTION__); //
-      $result = '';
-      $instance = IPS_GetInstance($this->InstanceID);
-      if ($instance['ConnectionID'] > 0)
-      {
-      $parent = IPS_GetInstance($instance['ConnectionID']);
-      $result = IPS_ReadProperty($parent, 'Host');
-      }
-      $this->SetSummary($result);
-      return $result;
-      } */
-    /*        if ($Msg['SenderID'] <> 0)
-      {
-      if ($Msg['Message'] == DM_CONNECT)
-      {
-      if (!$this->HasActiveParent())
-      {
-      IPS_Sleep(250);
-      if (!$this->HasActiveParent())
-      return;
-      }
-      if (($Msg['SenderID'] == $this->InstanceID) or ( $Msg['SenderID'] == IPS_GetInstanceParentID($this->InstanceID)))
-      $this->ReadCCUPrograms();
-      } elseif ($Msg['Message'] == DM_DISCONNECT)
-      {
-      if (($Msg['SenderID'] == $this->InstanceID) or ( $Msg['SenderID'] == IPS_GetInstanceParentID($this->InstanceID)))
-      {
-      $this->SetSummary('No parent');
-      }
-      }
-      }
-      }
-     */
     public function ApplyChanges()
     {
+        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
 //Never delete this line!
         parent::ApplyChanges();
-
-// FIXME
-        /*        $this->fKernelRunlevel = KR_INIT;
-          if ($this->fKernelRunlevel == KR_INIT)
-          {
-          $this->CreateProfil();
-          foreach (IPS_GetChildrenIDs($this->InstanceID) as $Child)
-          {
-          $Objekt = IPS_GetObject($Child);
-          if ($Objekt['ObjectType'] <> 2)
-          continue;
-          $this->MaintainVariable($Objekt['ObjectIdent'], $Objekt['ObjectName'], 1, 'Execute.HM', $Objekt['ObjectPosition'], true);
-          //                $this->RegisterAction($Objekt['ObjectIdent'], 'ActionHandler');
-          $this->EnableAction($Objekt['ObjectIdent']);
-          }
-          $this->fKernelRunlevel = KR_READY;
-          } */
         $this->ReadCCUPrograms();
     }
 
     private function CreateProfil()
     {
+        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
         if (!IPS_VariableProfileExists('Execute.HM'))
         {
             IPS_CreateVariableProfile('Execute.HM', 1);
@@ -128,8 +33,16 @@ class HMCCUProgram extends HMBase
         }
     }
 
+    private function GetParentData()
+    {
+        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
+        parent::GetParentData();
+        $this->SetSummary($this->HMAddress);
+    }
+
     private function ReadCCUPrograms()
     {
+        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
         $this->CreateProfil();
         if (!$this->HasActiveParent())
         {
@@ -170,14 +83,14 @@ class HMCCUProgram extends HMBase
                 continue;
             }
             $var = @IPS_GetObjectIDByIdent($SysPrg, $this->InstanceID);
-            $Name = utf8_decode((string)$varXml->Name);
-            $Info = utf8_decode((string)$varXml->Name);            
+            $Name = utf8_decode((string) $varXml->Name);
+            $Info = utf8_decode((string) $varXml->Name);
             if ($var === false)
             {
-                $this->MaintainVariable($SysPrg,$Name, 1, 'Execute.HM', 0, true);
+                $this->MaintainVariable($SysPrg, $Name, 1, 'Execute.HM', 0, true);
                 $this->EnableAction($SysPrg);
 //                $this->MaintainAction($SysPrg, 'ActionHandler', true);
-                $var = IPS_GetObjectIDByIdent($SysPrg, $this->InstanceID);                
+                $var = IPS_GetObjectIDByIdent($SysPrg, $this->InstanceID);
                 IPS_SetInfo($var, $Info);
             }
             else
@@ -185,13 +98,14 @@ class HMCCUProgram extends HMBase
                 if (IPS_GetName($var) <> $Name)
                     IPS_SetName($var, $Name);
                 if (IPS_GetObject($var)['ObjectInfo'] <> $Info)
-                    IPS_SetInfo($var,$Info);
+                    IPS_SetInfo($var, $Info);
             }
         }
     }
 
     private function StartCCUProgram($Ident)
     {
+        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
         if ($this->fKernelRunlevel <> KR_READY)
             return;
         if (!$this->HasActiveParent())
@@ -236,18 +150,16 @@ class HMCCUProgram extends HMBase
 
     public function ReadPrograms()
     {
-        if (!$this->HasActiveParent())
-            throw new Exception("Instance has no active Parent Instance!");
-        else
-            $this->ReadCCUPrograms();
+        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
+
+        $this->ReadCCUPrograms();
     }
 
     public function StartProgram($Parameter)
     {
-        if (!$this->HasActiveParent())
-            throw new Exception("Instance has no active Parent Instance!");
-        else
-            $this->StartCCUProgram($Parameter);
+        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
+
+        $this->StartCCUProgram($Parameter);
     }
 
 }

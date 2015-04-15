@@ -150,9 +150,11 @@ class HMBase extends IPSModule
 {
 
     protected $fKernelRunlevel;
+    protected $HMAddress;
 
     public function __construct($InstanceID)
     {
+        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
 //Never delete this line!
         parent::__construct($InstanceID);
 //These lines are parsed on Symcon Startup or Instance creation
@@ -161,22 +163,9 @@ class HMBase extends IPSModule
         $this->ConnectParent("{A151ECE9-D733-4FB9-AA15-7F7DD10C58AF}");
     }
 
-    /*
-      public function ProcessInstanceStatusChange($InstanceID, $Status)
-      {
-      IPS_LogMessage(__CLASS__, __FUNCTION__); //
-      parent::ProcessInstanceStatusChange($InstanceID, $Status);
-      }
-
-      public function MessageSink($Msg)
-      {
-      IPS_LogMessage(__CLASS__, __FUNCTION__); //
-      parent::MessageSink($Msg);
-      }
-     */
-
     public function ApplyChanges()
     {
+        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
 //Never delete this line!
         parent::ApplyChanges();
     }
@@ -199,15 +188,13 @@ class HMBase extends IPSModule
 //            IPS_LogMessage(__CLASS__ . $this->InstanceID, print_r($parent, true));
             $result = IPS_GetProperty($instance['ConnectionID'], 'Host');
         }
-        $this->SetSummary($result);
-        return $result;
+        $this->HMAddress= $result;
     }
 
     protected function LoadHMScript($url, $HMScript)
     {
         IPS_LogMessage(__CLASS__, __FUNCTION__); //           
-        $HMAddress = self::GetParentData();
-        if ($HMAddress <> '')
+        if ($this->HMAddress <> '')
         {
             $ch = curl_init('http://' . $HMAddress . ':8181/' . $url);
             curl_setopt($ch, CURLOPT_HEADER, false);
@@ -282,10 +269,12 @@ class HMBase extends IPSModule
     {
         IPS_LogMessage(__CLASS__, __FUNCTION__ . "Data:" . $data); //                   
     }
-    protected function SendData($data,$cata)
+
+    protected function SendData($data, $cata)
     {
-        IPS_LogMessage(__CLASS__.$this->InstanceID, __FUNCTION__ . ":Data:" . $data.' '.$cata); //                   
+        IPS_LogMessage(__CLASS__ . $this->InstanceID, __FUNCTION__ . ":Data:" . $data . ' ' . $cata); //                   
     }
+
 }
 
 ?>
