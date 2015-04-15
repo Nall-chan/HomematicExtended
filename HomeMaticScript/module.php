@@ -54,7 +54,7 @@ class HMScript extends HMBase
         return json_encode($xml);
     }
 
-    private function GetParentData()
+    protected function GetParentData()
     {
         IPS_LogMessage(__CLASS__, __FUNCTION__); //            
         parent::GetParentData();

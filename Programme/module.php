@@ -33,7 +33,7 @@ class HMCCUProgram extends HMBase
         }
     }
 
-    private function GetParentData()
+    protected function GetParentData()
     {
         IPS_LogMessage(__CLASS__, __FUNCTION__); //            
         parent::GetParentData();

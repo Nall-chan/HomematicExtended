@@ -254,7 +254,7 @@ class HMSystemVariable extends HMBase
             $this->ReadSysVars();
     }
 
-    private function GetParentData()
+    protected function GetParentData()
     {
         parent::GetParentData();
         $this->SetSummary($this->HMAddress);
