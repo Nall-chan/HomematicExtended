@@ -236,7 +236,7 @@ class HMPowerMeter extends HMBase
             return false;
         try
         {
-        $xml = new SimpleXMLElement(uft8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
+        $xml = new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
             
         }
         catch (Exception $ex)

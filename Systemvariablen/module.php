@@ -288,7 +288,7 @@ class HMSystemVariable extends HMBase
         }
         try
         {
-            $xmlTime = new SimpleXMLElement(uft8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
+            $xmlTime = new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
         }
         catch (Exception $ex)
         {
@@ -327,7 +327,7 @@ class HMSystemVariable extends HMBase
 
             try
             {
-                $xmlVar = new SimpleXMLElement(uft8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
+                $xmlVar = new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
             }
             catch (Exception $ex)
             {

@@ -114,7 +114,7 @@ class HMScript extends HMBase
             throw new Exception("Error on write CCU-Script");        
         try
         {
-        $xml = new SimpleXMLElement(uft8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
+        $xml = new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
             
         }
         catch (Exception $ex)

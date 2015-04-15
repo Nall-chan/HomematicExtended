@@ -161,7 +161,7 @@ class HMCCUProgram extends HMBase
                 throw new Exception("Error on Read CCU-Programs");
             try
             {
-                $varXml = new SimpleXMLElement(uft8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
+                $varXml = new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
             }
             catch (Exception $ex)
             {
@@ -170,8 +170,8 @@ class HMCCUProgram extends HMBase
                 continue;
             }
             $var = @IPS_GetObjectIDByIdent($SysPrg, $this->InstanceID);
-            $Name = uft8_decode((string)$varXml->Name);
-            $Info = uft8_decode((string)$varXml->Name);            
+            $Name = utf8_decode((string)$varXml->Name);
+            $Info = utf8_decode((string)$varXml->Name);            
             if ($var === false)
             {
                 $this->MaintainVariable($SysPrg,$Name, 1, 'Execute.HM', 0, true);
