@@ -177,14 +177,15 @@ class HMCCUProgram extends HMBase
                 $this->MaintainVariable($SysPrg,$Name, 1, 'Execute.HM', 0, true);
                 $this->EnableAction($SysPrg);
 //                $this->MaintainAction($SysPrg, 'ActionHandler', true);
-                IPS_SetInfo($SysPrg, $Info);
+                $var = IPS_GetObjectIDByIdent($SysPrg, $this->InstanceID);                
+                IPS_SetInfo($var, $Info);
             }
             else
             {
-                if (IPS_GetName($SysPrg) <> $Name)
-                    IPS_SetName($SysPrg, $Name);
-                if (IPS_GetInfo($SysPrg) <> $Info)
-                    IPS_SetInfo($SysPrg,$Info);
+                if (IPS_GetName($var) <> $Name)
+                    IPS_SetName($var, $Name);
+                if (IPS_GetInfo($var) <> $Info)
+                    IPS_SetInfo($var,$Info);
             }
         }
     }
