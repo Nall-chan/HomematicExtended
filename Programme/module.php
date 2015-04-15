@@ -122,8 +122,11 @@ class HMCCUProgram extends HMBase
         $HMScriptResult = $this->LoadHMScript($url, $HMScript);
         if ($HMScript === false)
             throw new Exception("Error on start CCU-Program");
-        $xml = @new SimpleXMLElement($HMScriptResult, LIBXML_NOBLANKS + LIBXML_NONET);
-        if ($xml === false)
+        try
+        {
+            $xml = new SimpleXMLElement($HMScriptResult, LIBXML_NOBLANKS + LIBXML_NONET);
+        }
+        catch (Exception $ex)
         {
             $this->LogMessage('HM-Script result is not wellformed');
             throw new Exception("Error on start CCU-Program");
