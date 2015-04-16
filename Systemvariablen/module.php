@@ -389,29 +389,34 @@ class HMSystemVariable extends HMBase
 // löschen wenn noch vorhanden weil Var neu ist
                 if (IPS_VariableProfileExists($VarProfil))
                     IPS_VariableProfilDelete($VarProfil);
-                if ((int) $xmlVar->ValueType <> vtString)
-                    IPS_CreateVariableProfile($VarProfil, $VarType);
-                switch ($VarType)
+                if ((int) $xmlVar->ValueType == vtString)
                 {
-                    case vtBoolean:
-                        if (isset($xmlVar->ValueName0))
-                            IPS_SetVariableProfileAssociation($VarProfil, 0, utf8_decode((string) $xmlVar->ValueName0), '', -1);
-                        if (isset($xmlVar->ValueName1))
-                            IPS_SetVariableProfileAssociation($VarProfil, 1, utf8_decode((string) $xmlVar->ValueName1), '', -1);
-                        break;
-                    case vtFloat:
-                        IPS_SetVariableProfileDigits($VarProfil, strlen((string) $xmlVar->ValueMin) - strpos('.', (string) $xmlVar->ValueMin) - 1);
-                        IPS_SetVariableProfileValues($VarProfil, (float) $xmlVar->ValueMin, (float) $xmlVar->ValueMax, 1);
-                        break;
+                    $VarProfil='~String';
                 }
-                if (isset($xmlVar->ValueUnit))
-                    IPS_SetVariableProfileText($VarProfil, '', ' ' . utf8_decode((string) $xmlVar->ValueUnit));
-                if (isset($xmlVar->ValueSubType))
-                    if ((int) $this->ValueSubType == 29)
+                else
+                {
+                    IPS_CreateVariableProfile($VarProfil, $VarType);
+                    switch ($VarType)
+                    {
+                        case vtBoolean:
+                            if (isset($xmlVar->ValueName0))
+                                IPS_SetVariableProfileAssociation($VarProfil, 0, utf8_decode((string) $xmlVar->ValueName0), '', -1);
+                            if (isset($xmlVar->ValueName1))
+                                IPS_SetVariableProfileAssociation($VarProfil, 1, utf8_decode((string) $xmlVar->ValueName1), '', -1);
+                            break;
+                        case vtFloat:
+                            IPS_SetVariableProfileDigits($VarProfil, strlen((string) $xmlVar->ValueMin) - strpos('.', (string) $xmlVar->ValueMin) - 1);
+                            IPS_SetVariableProfileValues($VarProfil, (float) $xmlVar->ValueMin, (float) $xmlVar->ValueMax, 1);
+                            break;
+                    }
+                    if (isset($xmlVar->ValueUnit))
+                        IPS_SetVariableProfileText($VarProfil, '', ' ' . utf8_decode((string) $xmlVar->ValueUnit));
+                    if ((isset($xmlVar->ValueSubType)) and ( (int) $xmlVar->ValueSubType == 29))
                         foreach (explode(';', (string) $xmlVar->ValueList) as $Index => $ValueList)
                         {
                             IPS_SetVariableProfileAssociation($VarProfil, $Index, trim($ValueList), '', -1);
                         }
+                }
             }
             if ($VarID === false)
             {
