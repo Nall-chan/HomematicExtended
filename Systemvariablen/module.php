@@ -202,7 +202,7 @@ class HMSystemVariable extends HMBase
 
     private function CheckConfig()
     {
-        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
+//        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
         if ($this->ReadPropertyInteger("Interval") < 0)
         {
             $this->SetStatus(202); //Error Timer is Zero
@@ -261,7 +261,7 @@ class HMSystemVariable extends HMBase
 
     private function TimerFire()
     {
-        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
+//        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
         $this->GetParentData();
         if ($this->HMAddress == '')
             return;
@@ -303,7 +303,7 @@ class HMSystemVariable extends HMBase
 
     private function ReadSysVars()
     {
-        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
+//        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
 //                    IPS_LogMessage("HomeMaticSystemvariablen", "Dummy-Module");
 
         if (!$this->HasActiveParent())
@@ -386,7 +386,7 @@ class HMSystemVariable extends HMBase
             $VarID = @IPS_GetObjectIDByIdent($SysVar, $this->InstanceID);
             $VarType = $this->CcuVarType[(int) $xmlVar->ValueType];
             $VarProfil = 'HM.SysVar' . (string) $this->InstanceID . '.' . (string) $SysVar;
-            IPS_LogMessage($VarName, print_r($xmlVar, true));
+//            IPS_LogMessage($VarName, print_r($xmlVar, true));
             if (($VarID === false) or ( !IPS_VariableProfileExists($VarProfil)))
             {                 // neu anlegen wenn VAR neu ist oder Profil nicht vorhanden
 // löschen wenn noch vorhanden weil Var neu ist
@@ -468,7 +468,7 @@ class HMSystemVariable extends HMBase
 
     private function WriteSysVar($Parameter, $ValueStr)
     {
-        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
+//        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
         if ($this->fKernelRunlevel <> KR_READY)
             return false;
         if (!$this->HasActiveParent())
@@ -498,7 +498,7 @@ class HMSystemVariable extends HMBase
 
     public function RequestAction($Ident, $Value)
     {
-        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
+//        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
         $VarID = $this->GetStatusVarIDex();
         if (!$this->HasActiveParent())
             throw new Exception('Instance has no active Parent Instance!');
@@ -542,7 +542,7 @@ class HMSystemVariable extends HMBase
 
     public function ReadSystemVariables()
     {
-        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
+//        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
 
         if (!$this->HasActiveParent())
             throw new Exception("Instance has no active Parent Instance!");
