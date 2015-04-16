@@ -372,7 +372,7 @@ class HMSystemVariable extends HMBase
 
             try
             {
-                $xmlVar = new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
+                $xmlVar = new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NONET);
             }
             catch (Exception $ex)
             {
