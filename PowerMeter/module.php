@@ -28,7 +28,7 @@ class HMPowerMeter extends HMBase
 //        IPS_Sleep(500);
         if ($this->CheckConfig())
         {
-            if (GetPowerSysVarAddress)
+            if ($this->GetPowerSysVarAddress())
             {
                 $this->SetSummary($this->HMDeviceAddress);
                 if ($this->HasActiveParent())
@@ -52,7 +52,7 @@ class HMPowerMeter extends HMBase
     public function ReceiveData($JSONString)
     {
 //        IPS_LogMessage(__CLASS__, __FUNCTION__); //    
-        if (!GetPowerSysVarAddress)
+        if (!$this->GetPowerSysVarAddress())
             return;
         $Data = json_decode($JSONString);
         if ($this->HMDeviceAddress <> (string) $Data->DeviceID)
