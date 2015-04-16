@@ -389,14 +389,14 @@ class HMSystemVariable extends HMBase
                 if (IPS_VariableProfileExists($VarProfil))
                     IPS_VariableProfilDelete($VarProfil);
                 if ((int) $xmlVar->ValueType <> vtString)
-                    IPS_CreateVariableProfil($VarProfil, $VarType);
+                    IPS_CreateVariableProfile($VarProfil, $VarType);
                 switch ($VarType)
                 {
                     case vtBoolean:
                         if (isset($xmlVar->ValueName0))
-                            IPS_SetVariableProfilAssociation($VarProfil, 0, (string) $xmlVar->ValueName0, '', -1);
+                            IPS_SetVariableProfileAssociation($VarProfil, 0, (string) $xmlVar->ValueName0, '', -1);
                         if (isset($xmlVar->ValueName1))
-                            IPS_SetVariableProfilAssociation($VarProfil, 1, (string) $xmlVar->ValueName1, '', -1);
+                            IPS_SetVariableProfileAssociation($VarProfil, 1, (string) $xmlVar->ValueName1, '', -1);
                         break;
                     case vtFloat:
                         IPS_SetVariableProfileDigits($VarProfil, strlen((string) $xmlVar->ValueMin) - strpos('.', (string) $xmlVar->ValueMin) - 1);
