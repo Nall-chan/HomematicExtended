@@ -26,26 +26,35 @@ class HMPowerMeter extends HMBase
         parent::ApplyChanges();
 //        $this->ReadPropertyInteger("EventID");
 //        IPS_Sleep(500);
-        $this->CheckConfig();
+        if ($this->CheckConfig())
+        {
+            if (GetPowerSysVarAddress)
+            {
+                $this->SetSummary($this->HMDeviceAddress);
+                if ($this->HasActiveParent())
+                {
+                    $this->GetParentData();
+                    if ($this->HMAddress <> '')
+                        $this->ReadPowerSysVar();
+                }
+            }
+            else
+            {
+                $this->SetSummary('');
+            }
+        }
+        else
+        {
+            $this->SetSummary('');
+        }
     }
 
     public function ReceiveData($JSONString)
     {
-        IPS_LogMessage(__CLASS__, __FUNCTION__); //    
-        $EventID = $this->ReadPropertyInteger("EventID");
-        IPS_LOGMESSAGE(__CLASS__, '$EventID:' . $EventID);
-        /*        if (!$this->CheckConfig())
-          {
-          return;
-          } */
-        if ($EventID == 0)
+//        IPS_LogMessage(__CLASS__, __FUNCTION__); //    
+        if (!GetPowerSysVarAddress)
             return;
-        $parent = IPS_GetParent($EventID);
-        $this->HMDeviceAddress = IPS_GetProperty($parent, 'Address');
-        IPS_LOGMESSAGE(__CLASS__, 'Address1:' . $this->HMDeviceAddress);
         $Data = json_decode($JSONString);
-        IPS_LOGMESSAGE(__CLASS__, 'Address2:' . (string) $Data->DeviceID);
-
         if ($this->HMDeviceAddress <> (string) $Data->DeviceID)
             return;
         if ((string) $Data->VariableName <> 'ENERGY_COUNTER')
@@ -81,6 +90,16 @@ class HMPowerMeter extends HMBase
         }
     }
 
+    private function GetPowerSysVarAddress()
+    {
+        $EventID = $this->ReadPropertyInteger("EventID");
+        if ($EventID == 0)
+            return false;
+        $parent = IPS_GetParent($EventID);
+        $this->HMDeviceAddress = IPS_GetProperty($parent, 'Address');
+        return true;
+    }
+
     private function ReadPowerSysVar()
     {
         IPS_LogMessage(__CLASS__, __FUNCTION__); //            
@@ -95,8 +114,6 @@ class HMPowerMeter extends HMBase
             throw new Exception("Instance has no active Parent Instance!");
         }
 
-
-        $this->SetSummary($this->HMDeviceAddress);
         $url = 'GetPowerMeter.exe';
 //          $HMScript='Meter=dom.GetObject("BidCos-RF.'.$HMDeviceAddress .'.ENERGY_COUNTER").Device();';
         $HMScript = 'object oitemID;' . PHP_EOL
