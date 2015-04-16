@@ -42,7 +42,10 @@ class HMPowerMeter extends HMBase
             return;
         $parent = IPS_GetParent($EventID);
         $this->HMDeviceAddress = IPS_GetProperty($parent, 'Address');
+        IPS_LOGMESSAGE(__CLASS__, 'Address1:' . $this->HMDeviceAddress);
         $Data = json_decode($JSONString);
+        IPS_LOGMESSAGE(__CLASS__, 'Address2:' . (string) $Data->DeviceID);
+
         if ($this->HMDeviceAddress <> (string) $Data->DeviceID)
             return;
         if ((string) $Data->VariableName <> 'ENERGY_COUNTER')
