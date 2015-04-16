@@ -240,7 +240,7 @@ class HMSystemVariable extends HMBase
                     }
                     else
                     {  //ist HM Device
-                        if (strpos('BidCoS-RF:', IPS_ReadProperty($parent, "Address")) === false)
+                        if (strpos('BidCoS-RF:', IPS_GetProperty($parent, "Address")) === false)
                         {
                             $this->SetStatus(107);  //Warnung vermutlich falscher Trigger                        
                         }
