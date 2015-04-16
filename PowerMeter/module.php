@@ -33,7 +33,7 @@ class HMPowerMeter extends HMBase
     {
         IPS_LogMessage(__CLASS__, __FUNCTION__); //    
         $EventID = $this->ReadPropertyInteger("EventID");
-
+        IPS_LOGMESSAGE(__CLASS__, '$EventID:' . $EventID);
         /*        if (!$this->CheckConfig())
           {
           return;
