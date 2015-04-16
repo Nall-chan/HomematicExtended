@@ -12,8 +12,6 @@ class HMPowerMeter extends HMBase
         IPS_LogMessage(__CLASS__, __FUNCTION__); //            
         //Never delete this line!
         parent::__construct($InstanceID);
-        $this->RegisterPropertyInteger('EventID', 0);
-        $this->RegisterVariabeFloat('ENERGY_COUNTER_TOTAL', 'ENERGY_COUNTER_TOTAL', '~Electricity');
 
         //These lines are parsed on Symcon Startup or Instance creation
         //You cannot use variables here. Just static values.
@@ -24,7 +22,9 @@ class HMPowerMeter extends HMBase
         IPS_LogMessage(__CLASS__, __FUNCTION__); //            
         //Never delete this line!
         parent::ApplyChanges();
-//        $this->ReadPropertyInteger('EventID');        
+        $this->RegisterPropertyInteger("EventID", 0);
+        $this->RegisterVariabeFloat("ENERGY_COUNTER_TOTAL", "ENERGY_COUNTER_TOTAL", "~Electricity");
+        $this->ReadPropertyInteger("EventID");        
 //        IPS_Sleep(500);
 //        $this->CheckConfig();
     }
@@ -32,7 +32,7 @@ class HMPowerMeter extends HMBase
     public function ReceiveData($JSONString)
     {
         IPS_LogMessage(__CLASS__, __FUNCTION__); //    
-        $EventID = $this->ReadPropertyInteger('EventID');
+        $EventID = $this->ReadPropertyInteger("EventID");
         /*        if (!$this->CheckConfig())
           {
           return;
@@ -54,7 +54,7 @@ class HMPowerMeter extends HMBase
     private function CheckConfig()
     {
         IPS_LogMessage(__CLASS__, __FUNCTION__); //            
-        if ($this->ReadPropertyInteger('EventID') == 0)
+        if ($this->ReadPropertyInteger("EventID") == 0)
         {
             $this->SetStatus(IS_INACTIVE);
             return false;
@@ -62,9 +62,9 @@ class HMPowerMeter extends HMBase
         else
         {
             // Prüfe Ob HM-Device
-            $parent = IPS_GetParent($this->ReadPropertyInteger('EventID'));
+            $parent = IPS_GetParent($this->ReadPropertyInteger("EventID"));
             if ((IPS_GetInstance($parent)['ModuleInfo']['ModuleID'] == '{EE4A81C6-5C90-4DB7-AD2F-F6BBD521412E}')
-                    and ( IPS_GetObject($this->ReadPropertyInteger('EventID'))['ObjectIdent'] == 'ENERGY_COUNTER'))
+                    and ( IPS_GetObject($this->ReadPropertyInteger("EventID"))['ObjectIdent'] == 'ENERGY_COUNTER'))
             {
                 $this->SetStatus(IS_ACTIVE); //OK
                 return true;
@@ -108,22 +108,22 @@ class HMPowerMeter extends HMBase
         }
         catch (Exception $ex)
         {
-            $this->LogMessage(KL_ERROR,'Error on read PowerMeterAddress');
-            throw new Exception(KL_ERROR,'Error on read PowerMeterAddress');            
+            $this->LogMessage(KL_ERROR, 'Error on read PowerMeterAddress');
+            throw new Exception(KL_ERROR, 'Error on read PowerMeterAddress');
         }
 
-        
-/*        $url = 'GetPower.exe';
-        $HMScript = 'Value=dom.GetObject(' . $PowerMeterAddress . ').Value();' . PHP_EOL;
-        $HMScriptResult = $this->LoadHMScript($url, $HMScript);
-        if ($HMScriptResult == '')
-            throw new Exception('Error on read PowerMeterData');
-        $xml = @new SimpleXMLElement($HMScriptResult);
-        if (($xml === false) or ( !isset($xml->Value)))
-        {
-            $this->LogMessage(KL_ERROR, 'HM-Script result is not wellformed');
-            throw new Exception('Error on read PowerMeterData');
-        }*/
+
+        /*        $url = 'GetPower.exe';
+          $HMScript = 'Value=dom.GetObject(' . $PowerMeterAddress . ').Value();' . PHP_EOL;
+          $HMScriptResult = $this->LoadHMScript($url, $HMScript);
+          if ($HMScriptResult == '')
+          throw new Exception('Error on read PowerMeterData');
+          $xml = @new SimpleXMLElement($HMScriptResult);
+          if (($xml === false) or ( !isset($xml->Value)))
+          {
+          $this->LogMessage(KL_ERROR, 'HM-Script result is not wellformed');
+          throw new Exception('Error on read PowerMeterData');
+          } */
         $VarID = @IPS_GetObjectIDByIdent('ENERGY_COUNTER_TOTAL', $this->InstanceID);
         if ($VarID === false)
             return;
