@@ -24,9 +24,9 @@ class HMPowerMeter extends HMBase
         parent::ApplyChanges();
         $this->RegisterPropertyInteger("EventID", 0);
         $this->RegisterVariabeFloat("ENERGY_COUNTER_TOTAL", "ENERGY_COUNTER_TOTAL", "~Electricity");
-        $this->ReadPropertyInteger("EventID");
+//        $this->ReadPropertyInteger("EventID");
 //        IPS_Sleep(500);
-//        $this->CheckConfig();
+        $this->CheckConfig();
     }
 
     public function ReceiveData($JSONString)
