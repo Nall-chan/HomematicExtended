@@ -24,7 +24,7 @@ class HMPowerMeter extends HMBase
         IPS_LogMessage(__CLASS__, __FUNCTION__); //            
         //Never delete this line!
         parent::ApplyChanges();
-        $this->ReadPropertyInteger('EventID');        
+//        $this->ReadPropertyInteger('EventID');        
 //        IPS_Sleep(500);
 //        $this->CheckConfig();
     }
