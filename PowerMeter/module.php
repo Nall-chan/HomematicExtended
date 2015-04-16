@@ -9,7 +9,7 @@ class HMPowerMeter extends HMBase
 
     public function __construct($InstanceID)
     {
-        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
+//        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
         //Never delete this line!
         parent::__construct($InstanceID);
 
@@ -21,7 +21,7 @@ class HMPowerMeter extends HMBase
 
     public function ApplyChanges()
     {
-        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
+//        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
         //Never delete this line!
         parent::ApplyChanges();
 //        $this->ReadPropertyInteger("EventID");
@@ -66,7 +66,7 @@ class HMPowerMeter extends HMBase
 
     private function CheckConfig()
     {
-        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
+//        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
         if ($this->ReadPropertyInteger("EventID") == 0)
         {
             $this->SetStatus(IS_INACTIVE);
@@ -102,7 +102,7 @@ class HMPowerMeter extends HMBase
 
     private function ReadPowerSysVar()
     {
-        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
+//        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
 //                    IPS_LogMessage("HomeMaticSystemvariablen", "Dummy-Module");
         if (!$this->HasActiveParent())
         {
@@ -160,7 +160,7 @@ class HMPowerMeter extends HMBase
 
     protected function GetParentData()
     {
-        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
+//        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
         parent::GetParentData();
     }
 
