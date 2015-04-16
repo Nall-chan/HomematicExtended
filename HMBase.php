@@ -155,6 +155,7 @@ class HMBase extends IPSModule
     public function __construct($InstanceID)
     {
 //        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
+//        
 //Never delete this line!
         parent::__construct($InstanceID);
 //These lines are parsed on Symcon Startup or Instance creation
@@ -188,7 +189,7 @@ class HMBase extends IPSModule
 //            IPS_LogMessage(__CLASS__ . $this->InstanceID, print_r($parent, true));
             $result = IPS_GetProperty($instance['ConnectionID'], 'Host');
         }
-        $this->HMAddress= $result;
+        $this->HMAddress = $result;
     }
 
     protected function LoadHMScript($url, $HMScript)
