@@ -268,7 +268,7 @@ class HMSystemVariable extends HMBase
         $this->ReadSysVars();
     }
 
-        public function ReceiveData($JSONString)
+    public function ReceiveData($JSONString)
     {
 //        IPS_LogMessage(__CLASS__, __FUNCTION__); //    
         if (!$this->GetTriggerVar())
@@ -280,13 +280,13 @@ class HMSystemVariable extends HMBase
             return;
         $this->ReadSysVars();
     }
-    
+
     protected function GetParentData()
     {
         parent::GetParentData();
         $this->SetSummary($this->HMAddress);
     }
-    
+
     private function GetTriggerVar()
     {
         $EventID = $this->ReadPropertyInteger("EventID");
@@ -294,10 +294,10 @@ class HMSystemVariable extends HMBase
             return false;
         $parent = IPS_GetParent($EventID);
         $this->HMTriggerAddress = IPS_GetProperty($parent, 'Address');
-        $this->HMTriggerName = IPS_GetObject($EventID)['ObjectIdent'];        
+        $this->HMTriggerName = IPS_GetObject($EventID)['ObjectIdent'];
         return true;
     }
-    
+
     private function ReadSysVars()
     {
         IPS_LogMessage(__CLASS__, __FUNCTION__); //           
@@ -379,7 +379,7 @@ class HMSystemVariable extends HMBase
                 $this->LogMessage(KL_WARNING, 'HM-Script result is not wellformed');
                 continue;
             }
-
+            $VarName = utf8_decode((string) $xmlVar->Name);
             $VarID = @IPS_GetObjectIDByIdent($SysVar, $this->InstanceID);
             $VarType = $this->CcuVarType[(int) $xmlVar->ValueType];
             $VarProfil = 'HM.SysVar' . (string) $this->InstanceID . '.' . (string) $SysVar;
@@ -394,9 +394,9 @@ class HMSystemVariable extends HMBase
                 {
                     case vtBoolean:
                         if (isset($xmlVar->ValueName0))
-                            IPS_SetVariableProfileAssociation($VarProfil, 0, (string) $xmlVar->ValueName0, '', -1);
+                            IPS_SetVariableProfileAssociation($VarProfil, 0, utf8_decode((string) $xmlVar->ValueName0), '', -1);
                         if (isset($xmlVar->ValueName1))
-                            IPS_SetVariableProfileAssociation($VarProfil, 1, (string) $xmlVar->ValueName1, '', -1);
+                            IPS_SetVariableProfileAssociation($VarProfil, 1, utf8_decode((string) $xmlVar->ValueName1), '', -1);
                         break;
                     case vtFloat:
                         IPS_SetVariableProfileDigits($VarProfil, strlen((string) $xmlVar->ValueMin) - strpos('.', (string) $xmlVar->ValueMin) - 1);
@@ -404,18 +404,17 @@ class HMSystemVariable extends HMBase
                         break;
                 }
                 if (isset($xmlVar->ValueUnit))
-                    IPS_SetVariableProfileText($VarProfil, ' ' . (string) $xmlVar->ValueUnit);
-                if (isset($xmlVar->ValueSubType) and ( (int) $this->ValueSubType == 29))
-                {
-                    foreach (explode(';', (string) $xmlVar->ValueList) as $Index => $ValueList)
-                    {
-                        IPS_SetVariableProfileAssociation($VarProfil, $Index, trim($ValueList), '', -1);
-                    }
-                }
+                    IPS_SetVariableProfileText($VarProfil, '', ' ' . utf8_decode((string) $xmlVar->ValueUnit));
+                if (isset($xmlVar->ValueSubType))
+                    if ((int) $this->ValueSubType == 29)
+                        foreach (explode(';', (string) $xmlVar->ValueList) as $Index => $ValueList)
+                        {
+                            IPS_SetVariableProfileAssociation($VarProfil, $Index, trim($ValueList), '', -1);
+                        }
             }
             if ($VarID === false)
             {
-                $this->MaintainVariable($SysVar, (string) $xmlVar->Name, $VarType, $VarProfil, 0, true);
+                $this->MaintainVariable($SysVar, $VarName, $VarType, $VarProfil, 0, true);
                 $this->EnableAction($SysVar);
 
 //                $this->MaintainAction($SysVar, 'ActionHandler', true);
@@ -423,12 +422,12 @@ class HMSystemVariable extends HMBase
             }
             else
             {
-                if (IPS_GetName($VarID) <> (string) $xmlVar->Name)
-                    IPS_SetName($VarID, (string) $xmlVar->Name);
+                if (IPS_GetName($VarID) <> $VarName)
+                    IPS_SetName($VarID, $VarName);
             }
-            if (IPS_GetVariable($VarID)['VariableValue']['ValueType'] <> $VarType)
+            if (IPS_GetVariable($VarID)['VariableType'] <> $VarType)
             {
-                $this->LogMessage(KL_WARNING, 'Type of CCU Systemvariable ' . (string) $xmlVar->Name . ' has changed.');
+                $this->LogMessage(KL_WARNING, 'Type of CCU Systemvariable ' . $VarName . ' has changed.');
 //                throw new Exception('Type of CCU Systemvariable ' . (string) $varXml->Name . ' has changed.');
                 continue;
             }
@@ -451,7 +450,7 @@ class HMSystemVariable extends HMBase
                     SetValueFloat($VarID, (float) $xmlVar->Variable);
                     break;
                 case vtString:
-                    SetValueString($VarID, (string) $xmlVar->Variable);
+                    SetValueString($VarID, utf8_decode((string) $xmlVar->Variable));
                     break;
             }
         }
@@ -494,7 +493,7 @@ class HMSystemVariable extends HMBase
         $VarID = $this->GetStatusVarIDex();
         if (!$this->HasActiveParent())
             throw new Exception('Instance has no active Parent Instance!');
-        switch (IPS_GetVariable($Ident)['VariableValue']['ValueType'])
+        switch (IPS_GetVariable($Ident)['VariableType'])
         {
             case vtBoolean:
                 if (!is_bool($Value))
@@ -546,7 +545,7 @@ class HMSystemVariable extends HMBase
     {
         IPS_LogMessage(__CLASS__, __FUNCTION__); //           
         $VarID = $this->GetStatusVarIDex($Parameter);
-        if (IPS_GetVariable($VarID)['VariableValue']['ValueType'] <> vtBoolean)
+        if (IPS_GetVariable($VarID)['VariableType'] <> vtBoolean)
             throw new Exception('Wrong Datatype for ' . $VarID);
         else
         {
@@ -569,7 +568,7 @@ class HMSystemVariable extends HMBase
     {
         IPS_LogMessage(__CLASS__, __FUNCTION__); //           
         $VarID = $this->GetStatusVarIDex($Parameter);
-        if (IPS_GetVariable($VarID)['VariableValue']['ValueType'] <> vtInteger)
+        if (IPS_GetVariable($VarID)['VariableType'] <> vtInteger)
             throw new Exception('Wrong Datatype for ' . $VarID);
         else
         {
@@ -587,7 +586,7 @@ class HMSystemVariable extends HMBase
     {
         IPS_LogMessage(__CLASS__, __FUNCTION__); //           
         $VarID = $this->GetStatusVarIDex($Parameter);
-        if (IPS_GetVariable($VarID)['VariableValue']['ValueType'] <> vtFloat)
+        if (IPS_GetVariable($VarID)['VariableType'] <> vtFloat)
             throw new Exception('Wrong Datatype for ' . $VarID);
         else
         {
@@ -605,7 +604,7 @@ class HMSystemVariable extends HMBase
     {
         IPS_LogMessage(__CLASS__, __FUNCTION__); //           
         $VarID = $this->GetStatusVarIDex($Parameter);
-        if (IPS_GetVariable($VarID)['VariableValue']['ValueType'] <> vtString)
+        if (IPS_GetVariable($VarID)['VariableType'] <> vtString)
             throw new Exception('Wrong Datatype for ' . $VarID);
         else
         {
