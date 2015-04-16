@@ -386,7 +386,7 @@ class HMSystemVariable extends HMBase
             if (($VarID === false) or ( !IPS_VariableProfilExists($VarProfil)))
             {                 // neu anlegen wenn VAR neu ist oder Profil nicht vorhanden
 // löschen wenn noch vorhanden weil Var neu ist
-                if (IPS_VariableProfilExists($VarProfil))
+                if (IPS_VariableProfileExists($VarProfil))
                     IPS_VariableProfilDelete($VarProfil);
                 if ((int) $xmlVar->ValueType <> vtString)
                     IPS_CreateVariableProfil($VarProfil, $VarType);
