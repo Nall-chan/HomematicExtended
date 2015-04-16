@@ -315,7 +315,7 @@ class HMSystemVariable extends HMBase
         }
         try
         {
-            $varXml = new SimpleXMLElement($HMScriptResult, LIBXML_NOBLANKS + LIBXML_NONET);
+            $xmlVars = new SimpleXMLElement($HMScriptResult, LIBXML_NOBLANKS + LIBXML_NONET);
         }
         catch (Exception $ex)
         {
