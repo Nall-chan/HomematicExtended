@@ -154,7 +154,7 @@ class HMBase extends IPSModule
 
     public function __construct($InstanceID)
     {
-        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
+//        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
 //Never delete this line!
         parent::__construct($InstanceID);
 //These lines are parsed on Symcon Startup or Instance creation
