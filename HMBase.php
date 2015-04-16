@@ -251,7 +251,7 @@ class HMBase extends IPSModule
 
     protected function RegisterTimer($data, $cata)
     {
-        IPS_LogMessage(__CLASS__, __FUNCTION__ . ':' . $data . ':' . $cata); //           
+//        IPS_LogMessage(__CLASS__, __FUNCTION__ . ':' . $data . ':' . $cata); //           
     }
 
     protected function SetTimerInterval($data, $cata)

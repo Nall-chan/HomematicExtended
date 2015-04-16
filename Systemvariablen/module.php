@@ -11,7 +11,7 @@ class HMSystemVariable extends HMBase
 
     public function __construct($InstanceID)
     {
-        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
+//        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
 //Never delete this line!
         parent::__construct($InstanceID);
 
@@ -278,6 +278,9 @@ class HMSystemVariable extends HMBase
             return;
         if ($this->HMTriggerName <> (string) $Data->VariableName)
             return;
+        $this->GetParentData();
+        if ($this->HMAddress == '')
+            return;
         $this->ReadSysVars();
     }
 
@@ -391,7 +394,7 @@ class HMSystemVariable extends HMBase
                     IPS_VariableProfilDelete($VarProfil);
                 if ((int) $xmlVar->ValueType == vtString)
                 {
-                    $VarProfil='~String';
+                    $VarProfil = '~String';
                 }
                 else
                 {
