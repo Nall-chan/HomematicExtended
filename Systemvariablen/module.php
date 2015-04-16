@@ -383,6 +383,7 @@ class HMSystemVariable extends HMBase
             $VarID = @IPS_GetObjectIDByIdent($SysVar, $this->InstanceID);
             $VarType = $this->CcuVarType[(int) $xmlVar->ValueType];
             $VarProfil = 'HM.SysVar' . (string) $this->InstanceID . '.' . (string) $SysVar;
+            IPS_LogMessage($VarName, print_r($xmlVar, true));
             if (($VarID === false) or ( !IPS_VariableProfilExists($VarProfil)))
             {                 // neu anlegen wenn VAR neu ist oder Profil nicht vorhanden
 // löschen wenn noch vorhanden weil Var neu ist
