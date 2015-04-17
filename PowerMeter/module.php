@@ -29,7 +29,7 @@ class HMPowerMeter extends HMBase
 //        IPS_Sleep(500);
         if ($this->CheckConfig())
         {
-            if ($this->GetPowerSysVarAddress())
+            if ($this->GetPowerAddress())
             {
                 $this->SetSummary($this->HMDeviceAddress);
                 if ($this->HasActiveParent())
@@ -52,8 +52,9 @@ class HMPowerMeter extends HMBase
 
     public function ReceiveData($JSONString)
     {
-//        IPS_LogMessage(__CLASS__, __FUNCTION__); //    
-        if (!$this->GetPowerSysVarAddress())
+//        IPS_LogMessage(__CLASS__, __FUNCTION__); // 
+        //FIXME Bei Status inaktiv abbrechen
+        if (!$this->GetPowerAddress())
             return;
         $Data = json_decode($JSONString);
         if ($this->HMDeviceAddress <> (string) $Data->DeviceID)
@@ -91,7 +92,7 @@ class HMPowerMeter extends HMBase
         }
     }
 
-    private function GetPowerSysVarAddress()
+    private function GetPowerAddress()
     {
         $EventID = $this->ReadPropertyInteger("EventID");
         if ($EventID == 0)

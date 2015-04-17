@@ -9,13 +9,14 @@ class HMDisWM55 extends HMBase
     const PageDown = 1;
     const ActionUp = 2;
     const ActionDown = 3;
-    private static $PropertysName  = array(
+
+    private static $PropertysName = array(
         "PageUpID",
         "PageDownID",
         "ActionUpID",
         "ActionDownID");
-
-    private $HMDeviceAddress;
+    private $HMDeviceAddress = '';
+    private $HMVariableIdents = array();
 
     public function __construct($InstanceID)
     {
@@ -58,38 +59,52 @@ class HMDisWM55 extends HMBase
     public function ReceiveData($JSONString)
     {
 //        IPS_LogMessage(__CLASS__, __FUNCTION__); //    
-/*        if (!$this->GetPowerSysVarAddress())
+        //FIXME Bei Status inaktiv abbrechen        
+        if (!$this->GetDisplayAddress())
             return;
         $Data = json_decode($JSONString);
         if ($this->HMDeviceAddress <> (string) $Data->DeviceID)
             return;
-        if ((string) $Data->VariableName <> 'ENERGY_COUNTER')
+        $Action = array_search((string) $Data->VariableName, $this->HMVariableIdents);
+        if ($Action === false)
             return;
-        $this->ReadPowerSysVar();*/
+        $this->RunDisplayScript($Action);
     }
 
 ################## PRIVATE                
 
     private function CheckConfig()
     {
+        foreach (self::$PropertysName as $Name)
+        {
+//            Alle Prüfen ob gleich
+//            $this->RegisterPropertyInteger($Name, 0);
+        }
+
         return true;
     }
 
     private function GetDisplayAddress()
     {
-        /*$EventID = $this->ReadPropertyInteger("EventID");
-        if ($EventID == 0)
+        foreach (self::$PropertysName as $Name)
+        {
+            $EventID = ReadPropertyInteger($Name);
+            if ($EventID <> 0)
+            {
+                $parent = IPS_GetParent($EventID);
+                $this->HMDeviceAddress = IPS_GetProperty($parent, 'Address');
+                $this->HMVariableIdents[$Name] = IPS_GetObject($EventID)['ObjectIdent'];
+            }
+        }
+        if (sizeof($this->HMVariableIdents) > 0)
+            return true;
+        else
             return false;
-        $parent = IPS_GetParent($EventID);
-        $this->HMDeviceAddress = IPS_GetProperty($parent, 'Address');
-        return true;
-
-        $this->RegisterPropertyInteger("PageUpID", 0);
-        $this->RegisterPropertyInteger("PageDownID", 0);
-        $this->RegisterPropertyInteger("ActionUpID", 0);
-        $this->RegisterPropertyInteger("ActionDownID", 0);*/
     }
 
+    private function RunDisplayScript($Action)
+    {
+        IPS_LogMessage(__CLASS__, __FUNCTION__.'Action:'.$Action); //            
+    }
 }
-
 ?>
