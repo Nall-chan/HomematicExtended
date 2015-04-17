@@ -27,6 +27,7 @@ class HMDisWM55 extends HMBase
         //You cannot use variables here. Just static values.
         foreach (self::$PropertysName as $Name)
         {
+            IPS_LogMessage(__CLASS__, $Name);
             $this->RegisterPropertyInteger("$Name", 0);
         }
 
