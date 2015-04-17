@@ -138,7 +138,7 @@ class HMDisWM55 extends HMBase
         $ScriptID = $this->ReadPropertyInteger('ScriptID');
         if ($ScriptID <> 0)
         {
-            $Result = IPS_RunScriptWaitEx($ScriptID, array('ACTION' => $ActionString, 'PAGE' => $Page, 'EVENT' => $this->InstanceID));
+            $Result = IPS_RunScriptWaitEx($ScriptID, array('SENDER'=>'HMDisWM55','ACTION' => $ActionString, 'PAGE' => $Page, 'EVENT' => $this->InstanceID));
             IPS_LogMessage(__CLASS__, __FUNCTION__ . 'ScriptResult:' . $Result); //                    
         }
         SetValueInteger($this->GetIDForIdent('PAGE'), $Page);
