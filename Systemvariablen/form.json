@@ -47,12 +47,12 @@
                 {
                     "code": 108,
                     "icon": "inactive",
-                    "caption": "Trigger kleiner 5 nicht möglich."
+                    "caption": "Interval kleiner 5 nicht möglich."
                 },
                 {
                     "code": 202,
                     "icon": "error",
-                    "caption": "Timer darf nicht kleiner 1 sein."
+                    "caption": "Interval darf nicht kleiner 1 sein."
                 }
             ],
     "actions":
