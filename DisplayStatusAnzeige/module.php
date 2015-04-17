@@ -15,8 +15,8 @@ class HMDisWM55 extends HMBase
         "PageDownID",
         "ActionUpID",
         "ActionDownID");
-    private $HMDeviceAddress = '';
-    private $HMVariableIdents = array();
+//    private $HMDeviceAddress = '';
+    private $HMEventData = array();
 
     public function __construct($InstanceID)
     {
@@ -42,7 +42,7 @@ class HMDisWM55 extends HMBase
         {
             if ($this->GetDisplayAddress())
             {
-                $this->SetSummary($this->HMDeviceAddress);
+//                $this->SetSummary($this->HMDeviceAddress);
             }
             else
             {
@@ -62,9 +62,10 @@ class HMDisWM55 extends HMBase
         if (!$this->GetDisplayAddress())
             return;
         $Data = json_decode($JSONString);
-        if ($this->HMDeviceAddress <> (string) $Data->DeviceID)
-            return;
-        $Action = array_search((string) $Data->VariableName, $this->HMVariableIdents);
+        $ReceiveData = array("DeviceID"=>(string) $Data->DeviceID,"VariableName" => (string) $Data->VariableName);
+//        if ($ReceiveData === $this->HMEventData)
+//            return;
+        $Action = array_search($ReceiveData, $this->HMEventData);
         if ($Action === false)
             return;
         $this->RunDisplayScript($Action);
@@ -91,11 +92,14 @@ class HMDisWM55 extends HMBase
             if ($EventID <> 0)
             {
                 $parent = IPS_GetParent($EventID);
-                $this->HMDeviceAddress = IPS_GetProperty($parent, 'Address');
-                $this->HMVariableIdents[$Name] = IPS_GetObject($EventID)['ObjectIdent'];
+                $this->HMEventData[$Name] = array(
+                    "DeviceID" => IPS_GetProperty($parent, 'Address'),
+                    "VariableName"=>IPS_GetObject($EventID)['ObjectIdent']
+                );
+//                $this->HMVariableIdents[$Name] = IPS_GetObject($EventID)['ObjectIdent'];
             }
         }
-        if (sizeof($this->HMVariableIdents) > 0)
+        if (sizeof($this->HMEventData) > 0)
             return true;
         else
             return false;
