@@ -9,7 +9,7 @@ class HMDisWM55 extends HMBase
     const PageDown = 1;
     const ActionUp = 2;
     const ActionDown = 3;
-    const PropertysName = array(
+    private static $PropertysName  = array(
         "PageUpID",
         "PageDownID",
         "ActionUpID",
@@ -24,7 +24,7 @@ class HMDisWM55 extends HMBase
 
         //These lines are parsed on Symcon Startup or Instance creation
         //You cannot use variables here. Just static values.
-        foreach (static::PropertysName as $Name)
+        foreach (self::$PropertysName as $Name)
         {
             $this->RegisterPropertyInteger($Name, 0);
         }
