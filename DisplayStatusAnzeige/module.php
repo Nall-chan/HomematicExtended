@@ -25,15 +25,10 @@ class HMDisWM55 extends HMBase
 
         //These lines are parsed on Symcon Startup or Instance creation
         //You cannot use variables here. Just static values.
-//        foreach (self::$PropertysName as $Name)
-//        {
-//            IPS_LogMessage(__CLASS__, $Name);
         $this->RegisterPropertyInteger("PageUpID", 0);
-$this->RegisterPropertyInteger("PageDownID", 0);
-$this->RegisterPropertyInteger("ActionUpID", 0);
-$this->RegisterPropertyInteger("ActionDownID", 0);
-//        }
-
+        $this->RegisterPropertyInteger("PageDownID", 0);
+        $this->RegisterPropertyInteger("ActionUpID", 0);
+        $this->RegisterPropertyInteger("ActionDownID", 0);
         $this->RegisterPropertyInteger("MaxPage", 1);
         $this->RegisterPropertyInteger("Timeout", 0);
         $this->RegisterPropertyInteger("ScriptID", 0);
@@ -62,7 +57,6 @@ $this->RegisterPropertyInteger("ActionDownID", 0);
 
     public function ReceiveData($JSONString)
     {
-        return;
 //        IPS_LogMessage(__CLASS__, __FUNCTION__); //    
         //FIXME Bei Status inaktiv abbrechen        
         if (!$this->GetDisplayAddress())
@@ -93,8 +87,7 @@ $this->RegisterPropertyInteger("ActionDownID", 0);
     {
         foreach (self::$PropertysName as $Name)
         {
-            IPS_LogMessage(__CLASS__, __FUNCTION__.'Proper:'.IPS_GetProperty($this->InstanceID, $Name)); //                        
-            $EventID = $this->ReadPropertyInteger((string)$Name);
+            $EventID = $this->ReadPropertyInteger((string) $Name);
             if ($EventID <> 0)
             {
                 $parent = IPS_GetParent($EventID);
@@ -110,7 +103,9 @@ $this->RegisterPropertyInteger("ActionDownID", 0);
 
     private function RunDisplayScript($Action)
     {
-        IPS_LogMessage(__CLASS__, __FUNCTION__.'Action:'.$Action); //            
+        IPS_LogMessage(__CLASS__, __FUNCTION__ . 'Action:' . $Action); //            
     }
+
 }
+
 ?>
