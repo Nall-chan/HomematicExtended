@@ -28,7 +28,7 @@ class HMDisWM55 extends HMBase
         foreach (self::$PropertysName as $Name)
         {
             IPS_LogMessage(__CLASS__, $Name);
-            $this->RegisterPropertyInteger("$Name", 0);
+            $this->RegisterPropertyInteger((string)$Name, 0);
         }
 
         $this->RegisterPropertyInteger("MaxPage", 1);
@@ -59,6 +59,7 @@ class HMDisWM55 extends HMBase
 
     public function ReceiveData($JSONString)
     {
+        return;
 //        IPS_LogMessage(__CLASS__, __FUNCTION__); //    
         //FIXME Bei Status inaktiv abbrechen        
         if (!$this->GetDisplayAddress())
@@ -89,7 +90,8 @@ class HMDisWM55 extends HMBase
     {
         foreach (self::$PropertysName as $Name)
         {
-            $EventID = $this->ReadPropertyInteger("$Name");
+            IPS_LogMessage(__CLASS__, __FUNCTION__.'Proper:'.IPS_GetProperty($this->InstanceID, $Name)); //                        
+            $EventID = $this->ReadPropertyInteger((string)$Name);
             if ($EventID <> 0)
             {
                 $parent = IPS_GetParent($EventID);
