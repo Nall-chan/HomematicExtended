@@ -88,7 +88,7 @@ class HMDisWM55 extends HMBase
     {
         foreach (self::$PropertysName as $Name)
         {
-            $EventID = ReadPropertyInteger($Name);
+            $EventID = $this->ReadPropertyInteger($Name);
             if ($EventID <> 0)
             {
                 $parent = IPS_GetParent($EventID);
