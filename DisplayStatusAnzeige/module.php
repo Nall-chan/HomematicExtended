@@ -32,6 +32,7 @@ class HMDisWM55 extends HMBase
         $this->RegisterPropertyInteger("MaxPage", 1);
         $this->RegisterPropertyInteger("Timeout", 0);
         $this->RegisterPropertyInteger("ScriptID", 0);
+        $this->RegisterVariableInteger('PAGE', 'PAGE');
     }
 
     public function ApplyChanges()
@@ -62,7 +63,7 @@ class HMDisWM55 extends HMBase
         if (!$this->GetDisplayAddress())
             return;
         $Data = json_decode($JSONString);
-        $ReceiveData = array("DeviceID"=>(string) $Data->DeviceID,"VariableName" => (string) $Data->VariableName);
+        $ReceiveData = array("DeviceID" => (string) $Data->DeviceID, "VariableName" => (string) $Data->VariableName);
 //        if ($ReceiveData === $this->HMEventData)
 //            return;
         $Action = array_search($ReceiveData, $this->HMEventData);
@@ -94,7 +95,7 @@ class HMDisWM55 extends HMBase
                 $parent = IPS_GetParent($EventID);
                 $this->HMEventData[$Name] = array(
                     "DeviceID" => IPS_GetProperty($parent, 'Address'),
-                    "VariableName"=>IPS_GetObject($EventID)['ObjectIdent']
+                    "VariableName" => IPS_GetObject($EventID)['ObjectIdent']
                 );
 //                $this->HMVariableIdents[$Name] = IPS_GetObject($EventID)['ObjectIdent'];
             }
@@ -108,6 +109,44 @@ class HMDisWM55 extends HMBase
     private function RunDisplayScript($Action)
     {
         IPS_LogMessage(__CLASS__, __FUNCTION__ . 'Action:' . $Action); //            
+        $Page = GetValueInteger($this->GetIDForIdent('PAGE'));
+        $MaxPage = $this->ReadPropertyInteger('MaxPage');
+        switch ($Action)
+        {
+            case "PageUpID":
+                if ($Page == $MaxPage)
+                    $Page = 1;
+                else
+                    $Page++;
+                $ActionString = "UP";
+                break;
+            case "PageDownID":
+                if ($Page == 1)
+                    $Page = $MaxPage;
+                else
+                    $Page--;
+                $ActionString = "DOWN";
+                break;
+            case "ActionUpID":
+                $ActionString = "UP";
+                break;
+            case "ActionDownID":
+                $ActionString = "UP";
+                break;
+        }
+        // PHP-Script ausführen
+        $ScriptID = $this->ReadPropertyInteger('ScriptID');
+        if ($ScriptID <> 0)
+        {
+            $Result = IPS_RunScriptWaitEx($ScriptID, array('ACTION' => $ActionString, 'PAGE' => $Page, 'EVENT' => $this->InstanceID));
+            IPS_LogMessage(__CLASS__, __FUNCTION__ . 'ScriptResult:' . $Result); //                    
+        }
+        SetValueInteger($this->GetIDForIdent('PAGE'), $Page);
+        $Timeout = $this->ReadPropertyInteger('Timeout');
+        if ($Timeout > 0)        
+        {
+        //$this->SetTimerInterval('DisplayTimeout',$Timeout);
+        }
     }
 
 }
