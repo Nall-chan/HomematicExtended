@@ -27,7 +27,7 @@ class HMDisWM55 extends HMBase
         //You cannot use variables here. Just static values.
         foreach (self::$PropertysName as $Name)
         {
-            $this->RegisterPropertyInteger($Name, 0);
+            $this->RegisterPropertyInteger("$Name", 0);
         }
 
         $this->RegisterPropertyInteger("MaxPage", 1);
@@ -88,7 +88,7 @@ class HMDisWM55 extends HMBase
     {
         foreach (self::$PropertysName as $Name)
         {
-            $EventID = $this->ReadPropertyInteger($Name);
+            $EventID = $this->ReadPropertyInteger("$Name");
             if ($EventID <> 0)
             {
                 $parent = IPS_GetParent($EventID);
