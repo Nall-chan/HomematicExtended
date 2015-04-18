@@ -273,7 +273,7 @@ class HMBase extends IPSModule
 
     protected function SendData($data, $cata)
     {
-        //IPS_LogMessage(__CLASS__ . $this->InstanceID, __FUNCTION__ . ":Data:" . $data . ' ' . $cata); //                   
+        IPS_LogMessage(__CLASS__ . $this->InstanceID, __FUNCTION__ . ":Data:" . $data . ' ' . $cata); //                   
     }
 
 }
