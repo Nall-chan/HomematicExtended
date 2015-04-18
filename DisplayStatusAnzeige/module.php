@@ -129,6 +129,8 @@ class HMDisWM55 extends HMBase
                 else
                     $Page++;
                 $ActionString = "UP";
+                SetValueInteger($this->GetIDForIdent('PAGE'), $Page);
+
                 break;
             case "PageDownID":
                 if ($Page == 1)
@@ -136,12 +138,14 @@ class HMDisWM55 extends HMBase
                 else
                     $Page--;
                 $ActionString = "DOWN";
+                SetValueInteger($this->GetIDForIdent('PAGE'), $Page);
+
                 break;
             case "ActionUpID":
-                $ActionString = "UP";
+                $ActionString = "ActionUP";
                 break;
             case "ActionDownID":
-                $ActionString = "UP";
+                $ActionString = "ActionDOWN";
                 break;
         }
 // PHP-Script ausführen
@@ -162,21 +166,20 @@ class HMDisWM55 extends HMBase
             $HMScript.='DisplayKeySubmit=dom.GetObject("BidCos-RF.' . (string) $this->HMEventData[$Action]['DeviceID'] . '.SUBMIT").ID();' . PHP_EOL;
             $HMScript .= 'State=dom.GetObject(DisplayKeySubmit).State("' . $Data . '");' . PHP_EOL;
             $HMScriptResult = $this->LoadHMScript($url, $HMScript);
-/*            if ($HMScriptResult == '')
-                throw new Exception('Error on send Data to HM-Dis-WM55.');
-            try
-            {
-                $xml = new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
-                $State = (string) $xml->State;
-            }
-            catch (Exception $ex)
-            {
-                $this->LogMessage(KL_ERROR, 'Error on send Data to HM-Dis-WM55.');
-                throw new Exception('Error on send Data to HM-Dis-WM55.');
-            }
-            IPS_LogMessage(__CLASS__, "Value:" . $State);*/
+            /*            if ($HMScriptResult == '')
+              throw new Exception('Error on send Data to HM-Dis-WM55.');
+              try
+              {
+              $xml = new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
+              $State = (string) $xml->State;
+              }
+              catch (Exception $ex)
+              {
+              $this->LogMessage(KL_ERROR, 'Error on send Data to HM-Dis-WM55.');
+              throw new Exception('Error on send Data to HM-Dis-WM55.');
+              }
+              IPS_LogMessage(__CLASS__, "Value:" . $State); */
         }
-        SetValueInteger($this->GetIDForIdent('PAGE'), $Page);
         $Timeout = $this->ReadPropertyInteger('Timeout');
         if ($Timeout > 0)
         {
