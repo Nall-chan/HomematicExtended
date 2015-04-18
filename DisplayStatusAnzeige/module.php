@@ -163,22 +163,22 @@ class HMDisWM55 extends HMBase
         {
             if ((string) $Line->Text <> "")
             {
-                $SendData.="0x12";
+                $SendData.=",0x12";
                 for ($i = 0; $i < strlen((string) $Line->Text); $i++)
                 {
-                    $SendData .= "0x" . dechex(ord((string) $Line->Text[$i]));
+                    $SendData .= ",0x" . dechex(ord((string) $Line->Text[$i]));
                 }
-                $SendData.="0x11";
-                $SendData .= "0x" . dechex((int) $Line->Color);
+                $SendData.=",0x11";
+                $SendData .= ",0x" . dechex((int) $Line->Color);
             }
             if ((int) $Line->Icon <> 0)
             {
-                $SendData.="0x13";
-                $SendData .= "0x" . dechex((int) $Line->Icon);
+                $SendData.=",0x13";
+                $SendData .= ",0x" . dechex((int) $Line->Icon);
             }
-            $SendData.="0x0A";
+            $SendData.=",0x0A";
         }
-        $SendData.="0x03";
+        $SendData.=",0x03";
         IPS_LogMessage(__CLASS__, "Data:" . $SendData);        
     }
 
