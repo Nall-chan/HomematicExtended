@@ -158,8 +158,8 @@ class HMDisWM55 extends HMBase
                 return;
             }
             $url = 'GetDisplay.exe';
-
-            $HMScript='DisplayKeySubmit=dom.GetObject("BidCos-RF.'.(string) $this->HMEventData[$Action]['DeviceID'].'.SUBMIT").ID();'.PHP_EOL;
+            $HMScript = 'string DisplayKeySubmit;' . PHP_EOL;
+            $HMScript.='DisplayKeySubmit=dom.GetObject("BidCos-RF.' . (string) $this->HMEventData[$Action]['DeviceID'] . '.SUBMIT").ID();' . PHP_EOL;
             $HMScript .= 'State=dom.GetObject(DisplayKeySubmit).State("' . $Data . '");' . PHP_EOL;
             $HMScriptResult = $this->LoadHMScript($url, $HMScript);
             if ($HMScriptResult == '')
@@ -167,14 +167,14 @@ class HMDisWM55 extends HMBase
             try
             {
                 $xml = new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
-                $State = (string)$xml->State;
+                $State = (string) $xml->State;
             }
             catch (Exception $ex)
             {
                 $this->LogMessage(KL_ERROR, 'Error on send Data to HM-Dis-WM55 ' /* xmlDoc.DocumentElement.ChildNodes['State'].Text */);
                 throw new Exception('Error on send Data to HM-Dis-WM55 ' /* xmlDoc.DocumentElement.ChildNodes['State'].Text */);
             }
-            IPS_LogMessage(__CLASS__, "Value:".$State);
+            IPS_LogMessage(__CLASS__, "Value:" . $State);
         }
         SetValueInteger($this->GetIDForIdent('PAGE'), $Page);
         $Timeout = $this->ReadPropertyInteger('Timeout');
