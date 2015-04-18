@@ -187,7 +187,7 @@ class HMBase extends IPSModule
         if ($instance['ConnectionID'] > 0)
         {
 //            IPS_LogMessage(__CLASS__ . $this->InstanceID, print_r($parent, true));
-            $result = IPS_GetProperty($instance['ConnectionID'], 'Host');
+            $result = (string)IPS_GetProperty($instance['ConnectionID'], 'Host');
         }
         $this->HMAddress = $result;
     }
