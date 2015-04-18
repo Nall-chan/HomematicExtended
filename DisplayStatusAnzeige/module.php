@@ -20,11 +20,11 @@ class HMDisWM55 extends HMBase
 
     public function __construct($InstanceID)
     {
-        //Never delete this line!
+//Never delete this line!
         parent::__construct($InstanceID);
 
-        //These lines are parsed on Symcon Startup or Instance creation
-        //You cannot use variables here. Just static values.
+//These lines are parsed on Symcon Startup or Instance creation
+//You cannot use variables here. Just static values.
         $this->RegisterPropertyInteger("PageUpID", 0);
         $this->RegisterPropertyInteger("PageDownID", 0);
         $this->RegisterPropertyInteger("ActionUpID", 0);
@@ -37,7 +37,7 @@ class HMDisWM55 extends HMBase
 
     public function ApplyChanges()
     {
-        //Never delete this line!
+//Never delete this line!
         parent::ApplyChanges();
         if ($this->CheckConfig())
         {
@@ -59,7 +59,7 @@ class HMDisWM55 extends HMBase
     public function ReceiveData($JSONString)
     {
 //        IPS_LogMessage(__CLASS__, __FUNCTION__); //    
-        //FIXME Bei Status inaktiv abbrechen        
+//FIXME Bei Status inaktiv abbrechen        
         if (!$this->GetDisplayAddress())
             return;
         $Data = json_decode($JSONString);
@@ -134,19 +134,30 @@ class HMDisWM55 extends HMBase
                 $ActionString = "UP";
                 break;
         }
-        // PHP-Script ausführen
+// PHP-Script ausführen
         $ScriptID = $this->ReadPropertyInteger('ScriptID');
         if ($ScriptID <> 0)
         {
-            $Result = IPS_RunScriptWaitEx($ScriptID, array('SENDER'=>'HMDisWM55','ACTION' => $ActionString, 'PAGE' => $Page, 'EVENT' => $this->InstanceID));
-            IPS_LogMessage(__CLASS__, __FUNCTION__ . 'ScriptResult:' . $Result); //                    
+            $Result = IPS_RunScriptWaitEx($ScriptID, array('SENDER' => 'HMDisWM55', 'ACTION' => $ActionString, 'PAGE' => $Page, 'EVENT' => $this->InstanceID));
+//IPS_LogMessage(__CLASS__, __FUNCTION__ . 'ScriptResult:' . $Result); //                    
+//Weiter geht es ab hier mit 
+            $this->SendDataToDisplay(json_decode($Result));
         }
         SetValueInteger($this->GetIDForIdent('PAGE'), $Page);
         $Timeout = $this->ReadPropertyInteger('Timeout');
-        if ($Timeout > 0)        
+        if ($Timeout > 0)
         {
-        //$this->SetTimerInterval('DisplayTimeout',$Timeout);
+//$this->SetTimerInterval('DisplayTimeout',$Timeout);
         }
+    }
+
+    private function SendDataToDisplay($Data)
+    {
+        if ($Data === null)
+        {
+            throw new Exception("Error in Display Script.");
+        }
+        IPS_LogMessage(__CLASS__, "Data:" . print_r($Data, true));
     }
 
 }
