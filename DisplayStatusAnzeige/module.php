@@ -109,7 +109,7 @@ class HMDisWM55 extends HMBase
 
     private function RunDisplayScript($Action)
     {
-        IPS_LogMessage(__CLASS__, __FUNCTION__ . 'Action:' . $Action); //            
+//        IPS_LogMessage(__CLASS__, __FUNCTION__ . 'Action:' . $Action); //            
         if (!$this->HasActiveParent())
         {
             throw new Exception("Instance has no active Parent Instance!");
@@ -215,7 +215,7 @@ class HMDisWM55 extends HMBase
             $SendData.=",0x0A";
         }
         $SendData.=",0x03";
-        IPS_LogMessage(__CLASS__, "Data:" . $SendData);
+//        IPS_LogMessage(__CLASS__, "Data:" . $SendData);
         return $SendData;
     }
 

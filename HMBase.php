@@ -166,7 +166,7 @@ class HMBase extends IPSModule
 
     public function ApplyChanges()
     {
-        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
+//        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
 //Never delete this line!
         parent::ApplyChanges();
     }
@@ -181,7 +181,7 @@ class HMBase extends IPSModule
 
     protected function GetParentData()
     {
-        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
+//        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
         $result = '';
         $instance = IPS_GetInstance($this->InstanceID);
         if ($instance['ConnectionID'] > 0)
@@ -194,7 +194,7 @@ class HMBase extends IPSModule
 
     protected function LoadHMScript($url, $HMScript)
     {
-        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
+//        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
         if ($this->HMAddress <> '')
         {
             $ch = curl_init('http://' . $this->HMAddress . ':8181/' . $url);
@@ -233,7 +233,7 @@ class HMBase extends IPSModule
 
     protected function HasActiveParent()
     {
-        IPS_LogMessage(__CLASS__, __FUNCTION__); //          
+//        IPS_LogMessage(__CLASS__, __FUNCTION__); //          
         $instance = IPS_GetInstance($this->InstanceID);
         if ($instance['ConnectionID'] > 0)
         {
@@ -246,7 +246,7 @@ class HMBase extends IPSModule
 
     protected function SetStatus($data)
     {
-        IPS_LogMessage(__CLASS__, __FUNCTION__ . ':' . $data); //           
+//        IPS_LogMessage(__CLASS__, __FUNCTION__ . ':' . $data); //           
     }
 
     protected function RegisterTimer($data, $cata)
@@ -256,24 +256,24 @@ class HMBase extends IPSModule
 
     protected function SetTimerInterval($data, $cata)
     {
-        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
+//        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
 
-        IPS_LogMessage(__CLASS__, 'Timer:' . $data . ' Interval:' . $cata);
+        //IPS_LogMessage(__CLASS__, 'Timer:' . $data . ' Interval:' . $cata);
     }
 
     protected function LogMessage($data, $cata)
     {
-        IPS_LogMessage(__CLASS__, __FUNCTION__ . ':' . $data . ':' . $cata); //           
+        //IPS_LogMessage(__CLASS__, __FUNCTION__ . ':' . $data . ':' . $cata); //           
     }
 
     protected function SetSummary($data)
     {
-        IPS_LogMessage(__CLASS__, __FUNCTION__ . "Data:" . $data); //                   
+        //IPS_LogMessage(__CLASS__, __FUNCTION__ . "Data:" . $data); //                   
     }
 
     protected function SendData($data, $cata)
     {
-        IPS_LogMessage(__CLASS__ . $this->InstanceID, __FUNCTION__ . ":Data:" . $data . ' ' . $cata); //                   
+        //IPS_LogMessage(__CLASS__ . $this->InstanceID, __FUNCTION__ . ":Data:" . $data . ' ' . $cata); //                   
     }
 
 }
