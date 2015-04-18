@@ -157,7 +157,29 @@ class HMDisWM55 extends HMBase
         {
             throw new Exception("Error in Display Script.");
         }
-        IPS_LogMessage(__CLASS__, "Data:" . print_r($Data, true));
+        //IPS_LogMessage(__CLASS__, "Data:" . print_r($Data, true));
+        $SendData = "0x02";
+        foreach ($Data as $Line)
+        {
+            if ((string) $Line->Text <> "")
+            {
+                $SendData.="0x12";
+                for ($i = 0; $i < strlen((string) $Line->Text); $i++)
+                {
+                    $SendData .= "0x" . dechex(ord((string) $Line->Text[$i]));
+                }
+                $SendData.="0x11";
+                $SendData .= "0x" . dechex((int) $Line->Color);
+            }
+            if ((int) $Line->Icon <> 0)
+            {
+                $SendData.="0x13";
+                $SendData .= "0x" . dechex((int) $Line->Icon);
+            }
+            $SendData.="0x0A";
+        }
+        $SendData.="0x03";
+        IPS_LogMessage(__CLASS__, "Data:" . $SendData);        
     }
 
 }
