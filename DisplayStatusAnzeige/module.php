@@ -159,9 +159,8 @@ class HMDisWM55 extends HMBase
             }
             $url = 'GetDisplay.exe';
 
-            //HMScript:='DisplayKeySubmit=dom.GetObject("BidCos-RF.'.LEQ12345:2.'.SUBMIT").ID();';
-
-            $HMScript = 'State=dom.GetObject(' . (string) $this->HMEventData[$Action]['DeviceID'] . ').State("' . $Data . '");' . PHP_EOL;
+            $HMScript='DisplayKeySubmit=dom.GetObject("BidCos-RF.'.(string) $this->HMEventData[$Action]['DeviceID'].'.SUBMIT").ID();'.PHP_EOL;
+            $HMScript .= 'State=dom.GetObject(DisplayKeySubmit).State("' . $Data . '");' . PHP_EOL;
             $HMScriptResult = $this->LoadHMScript($url, $HMScript);
             if ($HMScriptResult == '')
                 throw new Exception('Error on send Data to HM-Dis-WM55 ' /* xmlDoc.DocumentElement.ChildNodes['State'].Text */);
