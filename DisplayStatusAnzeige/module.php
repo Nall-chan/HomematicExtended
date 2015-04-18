@@ -133,7 +133,7 @@ class HMDisWM55 extends HMBase
 
                 break;
             case "PageDownID":
-                if ($Page == 1)
+                if ($Page <= 1)
                     $Page = $MaxPage;
                 else
                     $Page--;
