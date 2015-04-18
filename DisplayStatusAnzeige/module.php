@@ -39,21 +39,22 @@ class HMDisWM55 extends HMBase
     {
 //Never delete this line!
         parent::ApplyChanges();
-        if ($this->CheckConfig())
-        {
-            if ($this->GetDisplayAddress())
-            {
-//                $this->SetSummary($this->HMDeviceAddress);
-            }
-            else
-            {
-                $this->SetSummary('');
-            }
-        }
-        else
-        {
-            $this->SetSummary('');
-        }
+        $this->CheckConfig();
+        /*        if ($this->CheckConfig())
+          {
+          if ($this->GetDisplayAddress())
+          {
+          //                $this->SetSummary($this->HMDeviceAddress);
+          }
+          else
+          {
+          $this->SetSummary('');
+          }
+          }
+          else
+          {
+          $this->SetSummary('');
+          } */
     }
 
     public function ReceiveData($JSONString)
@@ -109,6 +110,15 @@ class HMDisWM55 extends HMBase
     private function RunDisplayScript($Action)
     {
         IPS_LogMessage(__CLASS__, __FUNCTION__ . 'Action:' . $Action); //            
+        if (!$this->HasActiveParent())
+        {
+            throw new Exception("Instance has no active Parent Instance!");
+        }
+        $this->GetParentData();
+        if ($this->HMAddress == '')
+        {
+            throw new Exception("Instance has no active Parent Instance!");
+        }
         $Page = GetValueInteger($this->GetIDForIdent('PAGE'));
         $MaxPage = $this->ReadPropertyInteger('MaxPage');
         switch ($Action)
@@ -141,7 +151,31 @@ class HMDisWM55 extends HMBase
             $Result = IPS_RunScriptWaitEx($ScriptID, array('SENDER' => 'HMDisWM55', 'ACTION' => $ActionString, 'PAGE' => $Page, 'EVENT' => $this->InstanceID));
 //IPS_LogMessage(__CLASS__, __FUNCTION__ . 'ScriptResult:' . $Result); //                    
 //Weiter geht es ab hier mit 
-            $this->SendDataToDisplay(json_decode($Result));
+            $Data = $this->ConvertDisplayData(json_decode($Result));
+            if ($Data === false)
+            {
+                throw new Exception("Error in Display Script.");
+                return;
+            }
+            $url = 'GetDisplay.exe';
+
+            //HMScript:='DisplayKeySubmit=dom.GetObject("BidCos-RF.'.LEQ12345:2.'.SUBMIT").ID();';
+
+            $HMScript = 'State=dom.GetObject(' . (string) $this->HMEventData[$Action]['DeviceID'] . ').State("' . $Data . '");' . PHP_EOL;
+            $HMScriptResult = $this->LoadHMScript($url, $HMScript);
+            if ($HMScriptResult == '')
+                throw new Exception('Error on send Data to HM-Dis-WM55 ' /* xmlDoc.DocumentElement.ChildNodes['State'].Text */);
+            try
+            {
+                $xml = new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
+                $State = (string)$xml->State;
+            }
+            catch (Exception $ex)
+            {
+                $this->LogMessage(KL_ERROR, 'Error on send Data to HM-Dis-WM55 ' /* xmlDoc.DocumentElement.ChildNodes['State'].Text */);
+                throw new Exception('Error on send Data to HM-Dis-WM55 ' /* xmlDoc.DocumentElement.ChildNodes['State'].Text */);
+            }
+            IPS_LogMessage(__CLASS__, "Value:".$State);
         }
         SetValueInteger($this->GetIDForIdent('PAGE'), $Page);
         $Timeout = $this->ReadPropertyInteger('Timeout');
@@ -151,11 +185,11 @@ class HMDisWM55 extends HMBase
         }
     }
 
-    private function SendDataToDisplay($Data)
+    private function ConvertDisplayData($Data)
     {
         if ($Data === null)
         {
-            throw new Exception("Error in Display Script.");
+            return false;
         }
         //IPS_LogMessage(__CLASS__, "Data:" . print_r($Data, true));
         $SendData = "0x02";
@@ -179,7 +213,8 @@ class HMDisWM55 extends HMBase
             $SendData.=",0x0A";
         }
         $SendData.=",0x03";
-        IPS_LogMessage(__CLASS__, "Data:" . $SendData);        
+        IPS_LogMessage(__CLASS__, "Data:" . $SendData);
+        return $SendData;
     }
 
 }

@@ -132,7 +132,7 @@ class HMPowerMeter extends HMBase
         catch (Exception $ex)
         {
             $this->LogMessage(KL_ERROR, 'Error on read PowerMeterAddress');
-            throw new Exception(KL_ERROR, 'Error on read PowerMeterAddress');
+            throw new Exception( 'Error on read PowerMeterAddress');
         }
 
 
