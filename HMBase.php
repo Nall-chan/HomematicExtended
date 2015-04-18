@@ -197,7 +197,7 @@ class HMBase extends IPSModule
 //        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
         if ($this->HMAddress <> '')
         {
-            $ch = curl_init('http://' . $this->HMAddress . ':8181/' . $url);
+            $ch = curl_init('http://' . (string)$this->HMAddress . ':8181/' . $url);
             curl_setopt($ch, CURLOPT_HEADER, false);
             curl_setopt($ch, CURLOPT_FAILONERROR, true);
             curl_setopt($ch, CURLOPT_POST, true);
