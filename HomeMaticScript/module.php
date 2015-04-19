@@ -21,9 +21,8 @@ class HMScript extends HMBase
 //Never delete this line!
         parent::ApplyChanges();
         $this->RegisterPropertyInteger("Protocol", 0);
-                $self = "XXX9".(string)$this->InstanceID.":5";
-        $this->RegisterPropertyString("Address",$self);      
-        $this->RegisterPropertyBoolean("EmulateStatus", false);        
+        $this->RegisterPropertyString("Address", "XXX9999999:3");
+        $this->RegisterPropertyBoolean("EmulateStatus", false);
     }
 
     private function SendScript($Script)
@@ -48,7 +47,7 @@ class HMScript extends HMBase
         }
         catch (Exception $ex)
         {
-            $this->LogMessage(KL_ERROR,'HM-Script result is not wellformed');
+            $this->LogMessage(KL_ERROR, 'HM-Script result is not wellformed');
             throw new Exception("Error on write CCU-Script");
         }
         unset($xml->exec);

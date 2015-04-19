@@ -41,8 +41,7 @@ class HMDisWM55 extends HMBase
 //Never delete this line!
         parent::ApplyChanges();
         $this->RegisterPropertyInteger("Protocol", 0);
-                $self = "XXX9".(string)$this->InstanceID.":4";
-        $this->RegisterPropertyString("Address",$self);      
+        $this->RegisterPropertyString("Address","XXX9999999:5");      
         $this->RegisterPropertyBoolean("EmulateStatus", false);          
         $this->CheckConfig();
         /*        if ($this->CheckConfig())
