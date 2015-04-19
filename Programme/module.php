@@ -22,7 +22,8 @@ class HMCCUProgram extends HMBase
 //Never delete this line!
         parent::ApplyChanges();
         $this->RegisterPropertyInteger("Protocol", 0);
-        $this->RegisterPropertyString("Address","XXX9".(string)$this->InstanceID.":2");
+        $self = "XXX9".(string)$this->InstanceID.":2";
+        $this->RegisterPropertyString("Address",$self);      
         $this->RegisterPropertyBoolean("EmulateStatus", false);        
         $this->CreateProfil();
         $this->ReadCCUPrograms();

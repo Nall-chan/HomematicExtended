@@ -157,7 +157,8 @@ class HMSystemVariable extends HMBase
 //Never delete this line!
         parent::ApplyChanges();
         $this->RegisterPropertyInteger("Protocol", 0);
-        $this->RegisterPropertyString("Address","XXX9".(string)$this->InstanceID.":1");        
+        $self = "XXX9".(string)$this->InstanceID.":1";
+        $this->RegisterPropertyString("Address",$self);        
 //        IPS_LogMessage(__CLASS__, __FUNCTION__); //                   
 //        IPS_LogMessage('Config', print_r(json_decode(IPS_GetConfiguration($this->InstanceID)), 1));
 
