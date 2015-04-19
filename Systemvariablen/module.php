@@ -20,8 +20,7 @@ class HMSystemVariable extends HMBase
         $this->RegisterPropertyInteger("EventID", 0);
         $this->RegisterPropertyInteger("Interval", 0);
         $this->RegisterPropertyBoolean("EmulateStatus", false);
-        $this->RegisterPropertyInteger("Protocol", 0);
-        $this->RegisterPropertyString("Address","XXX9".(string)$this->InstanceID.":1");
+
         $this->RegisterTimer("ReadHMSysVar", 0);
     }
 
@@ -157,6 +156,8 @@ class HMSystemVariable extends HMBase
 //        IPS_LogMessage('Config', print_r(json_decode(IPS_GetConfiguration($this->InstanceID)), 1));
 //Never delete this line!
         parent::ApplyChanges();
+        $this->RegisterPropertyInteger("Protocol", 0);
+        $this->RegisterPropertyString("Address","XXX9".(string)$this->InstanceID.":1");        
 //        IPS_LogMessage(__CLASS__, __FUNCTION__); //                   
 //        IPS_LogMessage('Config', print_r(json_decode(IPS_GetConfiguration($this->InstanceID)), 1));
 

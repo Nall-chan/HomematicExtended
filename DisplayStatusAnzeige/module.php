@@ -33,15 +33,16 @@ class HMDisWM55 extends HMBase
         $this->RegisterPropertyInteger("Timeout", 0);
         $this->RegisterPropertyInteger("ScriptID", 0);
         $this->RegisterVariableInteger('PAGE', 'PAGE');
-        $this->RegisterPropertyInteger("Protocol", 0);
-        $this->RegisterPropertyString("Address","XXX9".(string)$this->InstanceID.":4");
-        $this->RegisterPropertyBoolean("EmulateStatus", false);        
+      
     }
 
     public function ApplyChanges()
     {
 //Never delete this line!
         parent::ApplyChanges();
+        $this->RegisterPropertyInteger("Protocol", 0);
+        $this->RegisterPropertyString("Address","XXX9".(string)$this->InstanceID.":4");
+        $this->RegisterPropertyBoolean("EmulateStatus", false);          
         $this->CheckConfig();
         /*        if ($this->CheckConfig())
           {
