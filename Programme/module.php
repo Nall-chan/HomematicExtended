@@ -14,7 +14,7 @@ class HMCCUProgram extends HMBase
 //These lines are parsed on Symcon Startup or Instance creation
 //You cannot use variables here. Just static values.
         $this->RegisterPropertyInteger("Protocol", 0);
-        $this->RegisterPropertyString("Address","INT99999:9");
+        $this->RegisterPropertyString("Address","XXX9".(string)$this->InstanceID.":2");
         $this->RegisterPropertyBoolean("EmulateStatus", false);
     }
 

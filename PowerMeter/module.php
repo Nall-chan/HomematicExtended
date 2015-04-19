@@ -14,7 +14,9 @@ class HMPowerMeter extends HMBase
         parent::__construct($InstanceID);
         $this->RegisterPropertyInteger("EventID", 0);
         $this->RegisterVariabeFloat("ENERGY_COUNTER_TOTAL", "ENERGY_COUNTER_TOTAL", "~Electricity");
-        
+        $this->RegisterPropertyInteger("Protocol", 0);
+        $this->RegisterPropertyString("Address","XXX9".(string)$this->InstanceID.":3");
+        $this->RegisterPropertyBoolean("EmulateStatus", false);        
         //These lines are parsed on Symcon Startup or Instance creation
         //You cannot use variables here. Just static values.
     }

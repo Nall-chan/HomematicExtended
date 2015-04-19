@@ -10,8 +10,10 @@ class HMScript extends HMBase
 //Never delete this line!
 //        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
         parent::__construct($InstanceID);
-
-//These lines are parsed on Symcon Startup or Instance creation
+        $this->RegisterPropertyInteger("Protocol", 0);
+        $this->RegisterPropertyString("Address","XXX9".(string)$this->InstanceID.":5");
+        $this->RegisterPropertyBoolean("EmulateStatus", false);
+        ////These lines are parsed on Symcon Startup or Instance creation
 //You cannot use variables here. Just static values.
     }
 
