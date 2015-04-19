@@ -421,7 +421,7 @@ class HMSystemVariable extends HMBase
                     if ((isset($xmlVar->ValueSubType)) and ( (int) $xmlVar->ValueSubType == 29))
                         foreach (explode(';', (string) $xmlVar->ValueList) as $Index => $ValueList)
                         {
-                            IPS_SetVariableProfileAssociation($VarProfil, $Index, trim($ValueList), '', -1);
+                            IPS_SetVariableProfileAssociation($VarProfil, $Index, utf8_decode(trim($ValueList)), '', -1);
                         }
                 }
             }
