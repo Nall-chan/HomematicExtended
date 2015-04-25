@@ -551,7 +551,10 @@ class HMSystemVariable extends HMBase
         if (!$this->HasActiveParent())
             throw new Exception("Instance has no active Parent Instance!");
         else
+        {
+            $this->GetParentData();
             return $this->ReadSysVars();
+        }
     }
 
     public function WriteValueBoolean($Parameter, $Value)
