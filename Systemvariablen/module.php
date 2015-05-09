@@ -477,6 +477,9 @@ class HMSystemVariable extends HMBase
             return false;
         if (!$this->HasActiveParent())
             return false;
+        $this->GetParentData();
+        if ($this->HMAddress == '')
+            return;
         $url = 'SysVar.exe';
         $HMScript = 'State=dom.GetObject(' . $Parameter . ').State("' . $ValueStr . '");';
         $HMScriptResult = $this->LoadHMScript($url, $HMScript);
@@ -503,7 +506,7 @@ class HMSystemVariable extends HMBase
     public function RequestAction($Ident, $Value)
     {
 //        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
-        $VarID = $this->GetStatusVarIDex();
+        $VarID = $this->GetStatusVarIDex($Ident);
         if (!$this->HasActiveParent())
             throw new Exception('Instance has no active Parent Instance!');
         switch (IPS_GetVariable($Ident)['VariableType'])
