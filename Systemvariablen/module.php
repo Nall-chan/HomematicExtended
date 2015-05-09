@@ -509,7 +509,7 @@ class HMSystemVariable extends HMBase
         $VarID = $this->GetStatusVarIDex($Ident);
         if (!$this->HasActiveParent())
             throw new Exception('Instance has no active Parent Instance!');
-        switch (IPS_GetVariable($Ident)['VariableType'])
+        switch (IPS_GetVariable($VarID)['VariableType'])
         {
             case vtBoolean:
                 if (!is_bool($Value))
