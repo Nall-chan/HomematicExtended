@@ -527,7 +527,7 @@ class HMSystemVariable extends HMBase
                 $this->WriteValueFloat($Ident, (float) $Value);
                 break;
             case vtString:
-                $this->WriteValueFloat($Ident, (string) $Value);
+                $this->WriteValueString($Ident, (string) $Value);
                 break;
         }
     }
