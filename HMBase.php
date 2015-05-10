@@ -197,8 +197,13 @@ class HMBase extends IPSModule
 //        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
         if ($this->HMAddress <> '')
         {
+  $header[] = "Accept: text/plain,text/xml,application/xml,application/xhtml+xml,text/html"; 
+  $header[] = "Cache-Control: max-age=0";
+  $header[] = "Connection: close";
+  $header[] = "Accept-Charset: UTF-8";             
+  $header[] = "Content-type: text/plain;charset=\"UTF-8\"";
             $ch = curl_init('http://' . (string)$this->HMAddress . ':8181/' . $url);
-            curl_setopt($ch, CURLOPT_HEADER, false);
+            curl_setopt($ch, CURLOPT_HEADER, $$header);
             curl_setopt($ch, CURLOPT_FAILONERROR, true);
             curl_setopt($ch, CURLOPT_POST, true);
             curl_setopt($ch, CURLOPT_POSTFIELDS, $HMScript);
