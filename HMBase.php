@@ -204,7 +204,7 @@ class HMBase extends IPSModule
   $header[] = "Content-type: text/plain;charset=\"UTF-8\"";
             $ch = curl_init('http://' . (string)$this->HMAddress . ':8181/' . $url);
             curl_setopt($ch, CURLOPT_HEADER, false);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);             
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $header);             
             curl_setopt($ch, CURLOPT_FAILONERROR, true);
             curl_setopt($ch, CURLOPT_POST, true);
             curl_setopt($ch, CURLOPT_POSTFIELDS, $HMScript);
