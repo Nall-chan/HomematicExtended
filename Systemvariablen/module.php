@@ -627,7 +627,7 @@ class HMSystemVariable extends HMBase
             throw new Exception('Wrong Datatype for ' . $VarID);
         else
         {
-            if (!$this->WriteSysVar($Parameter, utf8_decode((string) $Value)))
+            if (!$this->WriteSysVar($Parameter, utf8_decode($Value)))
                 throw new Exception('Error on write Data ' . $VarID);
             else
             {
