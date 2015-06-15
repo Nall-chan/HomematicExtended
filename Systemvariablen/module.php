@@ -25,7 +25,7 @@ class HMSystemVariable extends HMBase
     }
 
     /*
-      public function ProcessInstanceStatusChange($InstanceID, $Status)
+      //public function ProcessInstanceStatusChange($InstanceID, $Status)
       {
       IPS_LogMessage(__CLASS__, __FUNCTION__); //
 
@@ -77,7 +77,7 @@ class HMSystemVariable extends HMBase
       parent::ProcessInstanceStatusChange($InstanceID, $Status);
       }
 
-      public function MessageSink($Msg)
+      //public function MessageSink($Msg)
       {
       IPS_LogMessage(__CLASS__, __FUNCTION__); //
      */
