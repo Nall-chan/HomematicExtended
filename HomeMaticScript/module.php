@@ -71,7 +71,6 @@ class HMScript extends HMBase
 
     public function RunScript($Script)
     {
-        //IPS_LogMessage(__CLASS__, __FUNCTION__); //            
         return $this->SendScript($Script);
     }
 
