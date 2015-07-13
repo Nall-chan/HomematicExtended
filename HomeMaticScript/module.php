@@ -1,6 +1,7 @@
 <?
 
-require_once(__DIR__ . "/../HMBase.php");  // HMBase Klasse
+require_once(__DIR__ . "/../HMBase.php");
+
 
 class HMScript extends HMBase
 {
