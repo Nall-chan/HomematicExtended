@@ -207,13 +207,14 @@ class HMSystemVariable extends HMBase
     private function CheckConfig()
     {
 //        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
-        if ($this->ReadPropertyInteger("Interval") < 0)
+        $Interval = $this->ReadPropertyInteger("Interval");
+        if ($Interval < 0)
         {
 
             $this->SetStatus(202); //Error Timer is negativ
             return false;
         }
-        else if ($this->ReadPropertyInteger("Interval") >= 5)
+        if ($Interval >= 5)
         {
             if ($this->ReadPropertyInteger("EventID") == 0)
             {
@@ -224,7 +225,7 @@ class HMSystemVariable extends HMBase
                 $this->SetStatus(106); //Trigger und Timer aktiv                      
             }
         }
-        else if ($this->ReadPropertyInteger("Interval") == 0)
+        if ($Interval == 0)
         {
             if ($this->ReadPropertyInteger("EventID") == 0)
             {
@@ -257,7 +258,7 @@ class HMSystemVariable extends HMBase
                 }
             }
         }
-        else
+        if ($Interval <= 5)
         {
             $this->SetStatus(108);  //Warnung Trigger zu klein                  
         }
