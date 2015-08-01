@@ -21,7 +21,7 @@ class HMSystemVariable extends HMBase
         $this->RegisterPropertyInteger("Interval", 0);
         $this->RegisterPropertyBoolean("EmulateStatus", false);
 
-        $this->RegisterTimer("ReadHMSysVar", 0,'HM_ReadSystemVariables($_IPS[\'TARGET\']);');
+        $this->RegisterTimer("ReadHMSysVar", 0, 'HM_ReadSystemVariables($_IPS[\'TARGET\']);');
     }
 
     /*
@@ -210,10 +210,10 @@ class HMSystemVariable extends HMBase
         if ($this->ReadPropertyInteger("Interval") < 0)
         {
 
-            $this->SetStatus(202); //Error Timer is Zero
+            $this->SetStatus(202); //Error Timer is negativ
             return false;
         }
-        elseif ($this->ReadPropertyInteger("Interval") >= 5)
+        else if ($this->ReadPropertyInteger("Interval") >= 5)
         {
             if ($this->ReadPropertyInteger("EventID") == 0)
             {
@@ -224,7 +224,7 @@ class HMSystemVariable extends HMBase
                 $this->SetStatus(106); //Trigger und Timer aktiv                      
             }
         }
-        elseif ($this->ReadPropertyInteger("Interval") == 0)
+        else if ($this->ReadPropertyInteger("Interval") == 0)
         {
             if ($this->ReadPropertyInteger("EventID") == 0)
             {
@@ -476,21 +476,16 @@ class HMSystemVariable extends HMBase
     private function WriteSysVar($Parameter, $ValueStr)
     {
 //        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
-        IPS_LogMessage(__FUNCTION__,$this->fKernelRunlevel);        
         if ($this->fKernelRunlevel <> KR_READY)
             return false;
-        IPS_LogMessage(__FUNCTION__,'HasParent?');        
         if (!$this->HasActiveParent())
             return false;
         $this->GetParentData();
-        IPS_LogMessage(__FUNCTION__,$this->HMAddress);        
         if ($this->HMAddress == '')
             return;
         $url = 'SysVar.exe';
         $HMScript = 'State=dom.GetObject(' . $Parameter . ').State("' . $ValueStr . '");';
-        IPS_LogMessage(__FUNCTION__,$HMScript);        
         $HMScriptResult = $this->LoadHMScript($url, $HMScript);
-        IPS_LogMessage(__FUNCTION__,$HMScriptResult);
         if ($HMScriptResult === false)
             return false;
         try
@@ -575,7 +570,6 @@ class HMSystemVariable extends HMBase
 
     public function WriteValueBoolean2(string $Parameter, boolean $Value)
     {
-        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
         $VarID = $this->GetStatusVarIDex($Parameter);
         if (IPS_GetVariable($VarID)['VariableType'] <> vtBoolean)
             throw new Exception('Wrong Datatype for ' . $VarID);
@@ -604,7 +598,6 @@ class HMSystemVariable extends HMBase
 
     public function WriteValueInteger2(string $Parameter, integer $Value)
     {
-        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
         $VarID = $this->GetStatusVarIDex($Parameter);
         if (IPS_GetVariable($VarID)['VariableType'] <> vtInteger)
             throw new Exception('Wrong Datatype for ' . $VarID);
@@ -628,7 +621,6 @@ class HMSystemVariable extends HMBase
 
     public function WriteValueFloat2(string $Parameter, float $Value)
     {
-        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
         $VarID = $this->GetStatusVarIDex($Parameter);
         if (IPS_GetVariable($VarID)['VariableType'] <> vtFloat)
             throw new Exception('Wrong Datatype for ' . $VarID);
@@ -652,7 +644,6 @@ class HMSystemVariable extends HMBase
 
     public function WriteValueString2(string $Parameter, string $Value)
     {
-        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
         $VarID = $this->GetStatusVarIDex($Parameter);
         if (IPS_GetVariable($VarID)['VariableType'] <> vtString)
             throw new Exception('Wrong Datatype for ' . $VarID);
