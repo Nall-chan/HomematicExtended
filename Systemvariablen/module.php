@@ -17,6 +17,9 @@ class HMSystemVariable extends HMBase
 
 //These lines are parsed on Symcon Startup or Instance creation
 //You cannot use variables here. Just static values.
+        $this->RegisterPropertyInteger("Protocol", 0);
+        $this->RegisterPropertyString("Address", "XXX9999999:1");        
+        
         $this->RegisterPropertyInteger("EventID", 0);
         $this->RegisterPropertyInteger("Interval", 0);
         $this->RegisterPropertyBoolean("EmulateStatus", false);
@@ -156,9 +159,7 @@ class HMSystemVariable extends HMBase
 //        IPS_LogMessage('Config', print_r(json_decode(IPS_GetConfiguration($this->InstanceID)), 1));
 //Never delete this line!
         parent::ApplyChanges();
-        $this->RegisterPropertyInteger("Protocol", 0);
 
-        $this->RegisterPropertyString("Address", "XXX9999999:1");
 //        IPS_LogMessage(__CLASS__, __FUNCTION__); //                   
 //        IPS_LogMessage('Config', print_r(json_decode(IPS_GetConfiguration($this->InstanceID)), 1));
 
@@ -208,15 +209,20 @@ class HMSystemVariable extends HMBase
     {
 //        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
         $Interval = $this->ReadPropertyInteger("Interval");
+        $Event = $this->ReadPropertyInteger("EventID");
+        IPS_LogMessage('Interval',print_r($Interval,1));
+        IPS_LogMessage('Event',print_r($Event,1));
+        
         if ($Interval < 0)
         {
 
             $this->SetStatus(202); //Error Timer is negativ
             return false;
         }
-        if ($Interval >= 5)
+        
+        if ($Interval > 4)
         {
-            if ($this->ReadPropertyInteger("EventID") == 0)
+            if ($Event == 0)
             {
                 $this->SetStatus(IS_ACTIVE); //OK
             }
@@ -225,9 +231,10 @@ class HMSystemVariable extends HMBase
                 $this->SetStatus(106); //Trigger und Timer aktiv                      
             }
         }
+        
         if ($Interval == 0)
         {
-            if ($this->ReadPropertyInteger("EventID") == 0)
+            if ($Event == 0)
             {
                 $this->SetStatus(IS_INACTIVE); // kein Trigger und Timer aktiv
             }
@@ -239,7 +246,7 @@ class HMSystemVariable extends HMBase
                 }
                 else
                 {
-                    $parent = IPS_GetParent($this->ReadPropertyInteger("EventID"));
+                    $parent = IPS_GetParent($Event);
                     if (IPS_GetInstance($parent)['ModuleInfo']['ModuleID'] <> '{EE4A81C6-5C90-4DB7-AD2F-F6BBD521412E}')
                     {
                         $this->SetStatus(107);  //Warnung vermutlich falscher Trigger                        
@@ -258,10 +265,12 @@ class HMSystemVariable extends HMBase
                 }
             }
         }
-        if ($Interval <= 5)
+        
+        if ($Interval < 5)
         {
             $this->SetStatus(108);  //Warnung Trigger zu klein                  
         }
+        
         return true;
     }
 

@@ -10,7 +10,9 @@ class HMCCUProgram extends HMBase
 //        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
 //Never delete this line!
         parent::Create();
-
+        $this->RegisterPropertyInteger("Protocol", 0);
+        $this->RegisterPropertyString("Address", "XXX9999999:2");
+        $this->RegisterPropertyBoolean("EmulateStatus", false);
 //These lines are parsed on Symcon Startup or Instance creation
 //You cannot use variables here. Just static values.
     }
@@ -20,9 +22,7 @@ class HMCCUProgram extends HMBase
 //        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
 //Never delete this line!
         parent::ApplyChanges();
-        $this->RegisterPropertyInteger("Protocol", 0);
-        $this->RegisterPropertyString("Address", "XXX9999999:2");
-        $this->RegisterPropertyBoolean("EmulateStatus", false);
+
         $this->CreateProfil();
         $this->ReadCCUPrograms();
     }

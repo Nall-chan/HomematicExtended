@@ -25,6 +25,10 @@ class HMDisWM55 extends HMBase
 
 //These lines are parsed on Symcon Startup or Instance creation
 //You cannot use variables here. Just static values.
+        $this->RegisterPropertyInteger("Protocol", 0);
+        $this->RegisterPropertyString("Address", "XXX9999999:5");
+        $this->RegisterPropertyBoolean("EmulateStatus", false);
+        
         $this->RegisterPropertyInteger("PageUpID", 0);
         $this->RegisterPropertyInteger("PageDownID", 0);
         $this->RegisterPropertyInteger("ActionUpID", 0);
@@ -40,9 +44,7 @@ class HMDisWM55 extends HMBase
     {
 //Never delete this line!
         parent::ApplyChanges();
-        $this->RegisterPropertyInteger("Protocol", 0);
-        $this->RegisterPropertyString("Address", "XXX9999999:5");
-        $this->RegisterPropertyBoolean("EmulateStatus", false);
+
         $this->CheckConfig();
         /*        if ($this->CheckConfig())
           {
