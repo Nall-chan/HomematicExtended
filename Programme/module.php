@@ -5,11 +5,11 @@ require_once(__DIR__ . "/../HMBase.php");  // HMBase Klasse
 class HMCCUProgram extends HMBase
 {
 
-    public function __construct($InstanceID)
+    public function Create()
     {
 //        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
 //Never delete this line!
-        parent::__construct($InstanceID);
+        parent::Create();
 
 //These lines are parsed on Symcon Startup or Instance creation
 //You cannot use variables here. Just static values.
@@ -168,7 +168,7 @@ class HMCCUProgram extends HMBase
         $this->ReadCCUPrograms();
     }
 
-    public function StartProgram($Parameter)
+    public function StartProgram(string $Parameter)
     {
         //IPS_LogMessage(__CLASS__, __FUNCTION__); //            
 

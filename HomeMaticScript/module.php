@@ -6,11 +6,11 @@ require_once(__DIR__ . "/../HMBase.php");
 class HMScript extends HMBase
 {
 
-    public function __construct($InstanceID)
+    public function Create()
     {
 //Never delete this line!
 //        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
-        parent::__construct($InstanceID);
+        parent::Create();
 
         ////These lines are parsed on Symcon Startup or Instance creation
 //You cannot use variables here. Just static values.
@@ -70,7 +70,7 @@ class HMScript extends HMBase
      * Using the custom prefix this function will be callable from PHP and JSON-RPC through:
      */
 
-    public function RunScript($Script)
+    public function RunScript(string $Script)
     {
         return $this->SendScript($Script);
     }

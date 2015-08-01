@@ -7,11 +7,11 @@ class HMPowerMeter extends HMBase
 
     private $HMDeviceAddress;
 
-    public function __construct($InstanceID)
+    public function Create()
     {
 //        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
         //Never delete this line!
-        parent::__construct($InstanceID);
+        parent::Create();
         $this->RegisterPropertyInteger("EventID", 0);
         $this->RegisterVariableFloat("ENERGY_COUNTER_TOTAL", "ENERGY_COUNTER_TOTAL", "~Electricity");
         //These lines are parsed on Symcon Startup or Instance creation

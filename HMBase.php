@@ -152,12 +152,12 @@ class HMBase extends IPSModule
     protected $fKernelRunlevel;
     protected $HMAddress;
 
-    public function __construct($InstanceID)
+    public function Create()
     {
 //        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
 //        
 //Never delete this line!
-        parent::__construct($InstanceID);
+        parent::Create();
 //These lines are parsed on Symcon Startup or Instance creation
 //You cannot use variables here. Just static values.
         $this->fKernelRunlevel = KR_READY;
@@ -166,14 +166,12 @@ class HMBase extends IPSModule
 
     public function ApplyChanges()
     {
-//        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
 //Never delete this line!
         parent::ApplyChanges();
     }
 
     public function ReceiveData($JSONString)
     {
-//        IPS_LogMessage(__CLASS__ . $this->InstanceID, print_r(json_decode($JSONString), true));
 //We dont need any Data...
     }
 
@@ -187,7 +185,7 @@ class HMBase extends IPSModule
         if ($instance['ConnectionID'] > 0)
         {
 //            IPS_LogMessage(__CLASS__ . $this->InstanceID, print_r($parent, true));
-            $result = (string)IPS_GetProperty($instance['ConnectionID'], 'Host');
+            $result = (string) IPS_GetProperty($instance['ConnectionID'], 'Host');
         }
         $this->HMAddress = $result;
     }
@@ -197,14 +195,14 @@ class HMBase extends IPSModule
 //        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
         if ($this->HMAddress <> '')
         {
-  $header[] = "Accept: text/plain,text/xml,application/xml,application/xhtml+xml,text/html"; 
-  $header[] = "Cache-Control: max-age=0";
-  $header[] = "Connection: close";
-  $header[] = "Accept-Charset: UTF-8";             
-  $header[] = "Content-type: text/plain;charset=\"UTF-8\"";
-            $ch = curl_init('http://' . (string)$this->HMAddress . ':8181/' . $url);
+            $header[] = "Accept: text/plain,text/xml,application/xml,application/xhtml+xml,text/html";
+            $header[] = "Cache-Control: max-age=0";
+            $header[] = "Connection: close";
+            $header[] = "Accept-Charset: UTF-8";
+            $header[] = "Content-type: text/plain;charset=\"UTF-8\"";
+            $ch = curl_init('http://' . (string) $this->HMAddress . ':8181/' . $url);
             curl_setopt($ch, CURLOPT_HEADER, false);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, $header);             
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
             curl_setopt($ch, CURLOPT_FAILONERROR, true);
             curl_setopt($ch, CURLOPT_POST, true);
             curl_setopt($ch, CURLOPT_POSTFIELDS, $HMScript);
@@ -218,17 +216,17 @@ class HMBase extends IPSModule
             curl_close($ch);
             if ($result === false)
             {
-                $this->SendData('Response', 'Failed');
+//                $this->SendData('Response', 'Failed');
                 $this->LogMessage(KL_WARNING, 'CCU unreachable');
             }
             else
             {
-  //              $this->SendData('Response', $result);
+                //              $this->SendData('Response', $result);
             }
         }
         else
         {
-            $this->SendData('Error', 'CCU Address not set.');
+//            $this->SendData('Error', 'CCU Address not set.');
             $this->LogMessage(KL_ERROR, 'CCU Address not set.');
             $result = false;
         }
@@ -250,38 +248,61 @@ class HMBase extends IPSModule
         return false;
     }
 
-    protected function SetStatus($data)
+    protected function RegisterTimer($Name, $Interval,$Script)
     {
-//        IPS_LogMessage(__CLASS__, __FUNCTION__ . ':' . $data); //           
+        $id = @IPS_GetObjectIDByIdent($Name, $this->InstanceID);
+        if ($id === false)
+        {
+            $id = IPS_CreateEvent(1);
+            IPS_SetParent($id, $this->InstanceID);
+            IPS_SetIdent($id, $Name);
+        }
+        IPS_SetName($id, $Name);
+        IPS_SetHidden($id, true);
+        IPS_SetEventScript($id, $Script);
+        IPS_SetEventCyclic($id, 0, 0, 0, 0, 1, $Interval);
+        if ($Interval > 0)
+            IPS_SetEventActive($id, true);
+        else
+            IPS_SetEventActive($id, false);
     }
 
-    protected function RegisterTimer($data, $cata)
+    protected function SetTimerInterval($Name, $Interval)
     {
-//        IPS_LogMessage(__CLASS__, __FUNCTION__ . ':' . $data . ':' . $cata); //           
+        $id = @IPS_GetObjectIDByIdent($Name, $this->InstanceID);
+        if ($id === false)
+            throw new Exception('Timer not present');
+        $Event = IPS_GetEvent($id);
+
+        if ($Interval < 1)
+        {
+            if ($Event['EventActive'])
+                IPS_SetEventActive($id, false);
+        }
+        else
+        {
+            if ($Event['CyclicTimeValue'] <> $Interval)
+                IPS_SetEventCyclic($id, 0, 0, 0, 0, 1, $Interval);
+            if (!$Event['EventActive'])
+                IPS_SetEventActive($id, true);
+        }
     }
-
-    protected function SetTimerInterval($data, $cata)
-    {
-//        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
-
-        //IPS_LogMessage(__CLASS__, 'Timer:' . $data . ' Interval:' . $cata);
-    }
-
+/*
     protected function LogMessage($data, $cata)
     {
         //IPS_LogMessage(__CLASS__, __FUNCTION__ . ':' . $data . ':' . $cata); //           
     }
-
+*/
     protected function SetSummary($data)
     {
         //IPS_LogMessage(__CLASS__, __FUNCTION__ . "Data:" . $data); //                   
     }
-
+/*
     protected function SendData($data, $cata)
     {
         IPS_LogMessage(__CLASS__ . $this->InstanceID, __FUNCTION__ . ":Data:" . $data . ' ' . $cata); //                   
     }
-
+*/
 }
 
 ?>

@@ -9,11 +9,11 @@ class HMSystemVariable extends HMBase
     private $HMTriggerAddress;
     private $HMTriggerName;
 
-    public function __construct($InstanceID)
+    public function Create()
     {
 //        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
 //Never delete this line!
-        parent::__construct($InstanceID);
+        parent::Create();
 
 //These lines are parsed on Symcon Startup or Instance creation
 //You cannot use variables here. Just static values.
@@ -21,7 +21,7 @@ class HMSystemVariable extends HMBase
         $this->RegisterPropertyInteger("Interval", 0);
         $this->RegisterPropertyBoolean("EmulateStatus", false);
 
-        $this->RegisterTimer("ReadHMSysVar", 0);
+        $this->RegisterTimer("ReadHMSysVar", 0,'HM_ReadSystemVariables($_IPS[\'TARGET\']);');
     }
 
     /*
@@ -209,6 +209,7 @@ class HMSystemVariable extends HMBase
 //        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
         if ($this->ReadPropertyInteger("Interval") < 0)
         {
+
             $this->SetStatus(202); //Error Timer is Zero
             return false;
         }
@@ -263,14 +264,15 @@ class HMSystemVariable extends HMBase
         return true;
     }
 
-    private function TimerFire()
-    {
-//        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
-        $this->GetParentData();
-        if ($this->HMAddress == '')
-            return;
-        $this->ReadSysVars();
-    }
+    /*
+      private function TimerFire()
+      {
+      //        IPS_LogMessage(__CLASS__, __FUNCTION__); //
+      $this->GetParentData();
+      if ($this->HMAddress == '')
+      return;
+      $this->ReadSysVars();
+      } */
 
     public function ReceiveData($JSONString)
     {
@@ -561,7 +563,12 @@ class HMSystemVariable extends HMBase
         }
     }
 
-    public function WriteValueBoolean($Parameter, $Value)
+    public function WriteValueBoolean(string $Parameter, boolean $Value)
+    {
+        return WriteValueBoolean2($Parameter, $Value);
+    }
+
+    public function WriteValueBoolean2(string $Parameter, boolean $Value)
     {
         IPS_LogMessage(__CLASS__, __FUNCTION__); //           
         $VarID = $this->GetStatusVarIDex($Parameter);
@@ -584,7 +591,12 @@ class HMSystemVariable extends HMBase
         }
     }
 
-    public function WriteValueInteger($Parameter, $Value)
+    public function WriteValueInteger(string $Parameter, integer $Value)
+    {
+        return WriteValueInteger2($Parameter, $Value);
+    }
+
+    public function WriteValueInteger2(string $Parameter, integer $Value)
     {
         IPS_LogMessage(__CLASS__, __FUNCTION__); //           
         $VarID = $this->GetStatusVarIDex($Parameter);
@@ -602,7 +614,12 @@ class HMSystemVariable extends HMBase
         }
     }
 
-    public function WriteValueFloat($Parameter, $Value)
+    public function WriteValueFloat(string $Parameter, float $Value)
+    {
+        return WriteValueFloat2($Parameter, $Value);
+    }
+
+    public function WriteValueFloat2(string $Parameter, float $Value)
     {
         IPS_LogMessage(__CLASS__, __FUNCTION__); //           
         $VarID = $this->GetStatusVarIDex($Parameter);
@@ -620,7 +637,12 @@ class HMSystemVariable extends HMBase
         }
     }
 
-    public function WriteValueString($Parameter, $Value)
+    public function WriteValueString(string $Parameter, string $Value)
+    {
+        return WriteValueString2($Parameter, $Value);
+    }
+
+    public function WriteValueString2(string $Parameter, string $Value)
     {
         IPS_LogMessage(__CLASS__, __FUNCTION__); //           
         $VarID = $this->GetStatusVarIDex($Parameter);
@@ -628,7 +650,7 @@ class HMSystemVariable extends HMBase
             throw new Exception('Wrong Datatype for ' . $VarID);
         else
         {
-            if (!$this->WriteSysVar($Parameter, (string)$Value))
+            if (!$this->WriteSysVar($Parameter, (string) $Value))
                 throw new Exception('Error on write Data ' . $VarID);
             else
             {

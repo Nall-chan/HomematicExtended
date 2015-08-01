@@ -18,10 +18,10 @@ class HMDisWM55 extends HMBase
 //    private $HMDeviceAddress = '';
     private $HMEventData = array();
 
-    public function __construct($InstanceID)
+    public function Create()
     {
 //Never delete this line!
-        parent::__construct($InstanceID);
+        parent::Create();
 
 //These lines are parsed on Symcon Startup or Instance creation
 //You cannot use variables here. Just static values.
@@ -33,7 +33,7 @@ class HMDisWM55 extends HMBase
         $this->RegisterPropertyInteger("Timeout", 0);
         $this->RegisterPropertyInteger("ScriptID", 0);
         $this->RegisterVariableInteger('PAGE', 'PAGE');
-      
+        $this->RegisterTimer('DisplayTimeout', 0,'HM_ResetTimer($_IPS[\'TARGET\']);');
     }
 
     public function ApplyChanges()
@@ -41,8 +41,8 @@ class HMDisWM55 extends HMBase
 //Never delete this line!
         parent::ApplyChanges();
         $this->RegisterPropertyInteger("Protocol", 0);
-        $this->RegisterPropertyString("Address","XXX9999999:5");      
-        $this->RegisterPropertyBoolean("EmulateStatus", false);          
+        $this->RegisterPropertyString("Address", "XXX9999999:5");
+        $this->RegisterPropertyBoolean("EmulateStatus", false);
         $this->CheckConfig();
         /*        if ($this->CheckConfig())
           {
@@ -83,6 +83,7 @@ class HMDisWM55 extends HMBase
     {
         foreach (self::$PropertysName as $Name)
         {
+            // TODO
 //            Alle Prüfen ob gleich
 //            $this->RegisterPropertyInteger($Name, 0);
         }
@@ -187,7 +188,7 @@ class HMDisWM55 extends HMBase
         $Timeout = $this->ReadPropertyInteger('Timeout');
         if ($Timeout > 0)
         {
-//$this->SetTimerInterval('DisplayTimeout',$Timeout);
+            $this->SetTimerInterval('DisplayTimeout', $Timeout);
         }
     }
 
@@ -221,6 +222,13 @@ class HMDisWM55 extends HMBase
         $SendData.=",0x03";
 //        IPS_LogMessage(__CLASS__, "Data:" . $SendData);
         return $SendData;
+    }
+
+    public function ResetTimer()
+    {
+//Page auf Null setzen:
+        SetValueInteger($this->GetIDForIdent('PAGE'), 0);
+        $this->SetTimerInterval('DisplayTimeout', 0);
     }
 
 }
