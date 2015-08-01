@@ -565,7 +565,7 @@ class HMSystemVariable extends HMBase
 
     public function WriteValueBoolean(string $Parameter, boolean $Value)
     {
-        return WriteValueBoolean2($Parameter, $Value);
+        return $this->WriteValueBoolean2($Parameter, $Value);
     }
 
     public function WriteValueBoolean2(string $Parameter, boolean $Value)
@@ -593,7 +593,7 @@ class HMSystemVariable extends HMBase
 
     public function WriteValueInteger(string $Parameter, integer $Value)
     {
-        return WriteValueInteger2($Parameter, $Value);
+        return $this->WriteValueInteger2($Parameter, $Value);
     }
 
     public function WriteValueInteger2(string $Parameter, integer $Value)
@@ -616,7 +616,7 @@ class HMSystemVariable extends HMBase
 
     public function WriteValueFloat(string $Parameter, float $Value)
     {
-        return WriteValueFloat2($Parameter, $Value);
+        return $this->WriteValueFloat2($Parameter, $Value);
     }
 
     public function WriteValueFloat2(string $Parameter, float $Value)
@@ -639,7 +639,7 @@ class HMSystemVariable extends HMBase
 
     public function WriteValueString(string $Parameter, string $Value)
     {
-        return WriteValueString2($Parameter, $Value);
+        return $this->WriteValueString2($Parameter, $Value);
     }
 
     public function WriteValueString2(string $Parameter, string $Value)

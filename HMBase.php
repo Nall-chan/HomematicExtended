@@ -248,7 +248,7 @@ class HMBase extends IPSModule
         return false;
     }
 
-    protected function RegisterTimer($Name, $Interval,$Script)
+    protected function RegisterTimer($Name, $Interval, $Script)
     {
         $id = @IPS_GetObjectIDByIdent($Name, $this->InstanceID);
         if ($id === false)
@@ -260,11 +260,18 @@ class HMBase extends IPSModule
         IPS_SetName($id, $Name);
         IPS_SetHidden($id, true);
         IPS_SetEventScript($id, $Script);
-        IPS_SetEventCyclic($id, 0, 0, 0, 0, 1, $Interval);
         if ($Interval > 0)
+        {
+            IPS_SetEventCyclic($id, 0, 0, 0, 0, 1, $Interval);
+
             IPS_SetEventActive($id, true);
+        }
         else
+        {
+            IPS_SetEventCyclic($id, 0, 0, 0, 0, 1, 1);
+
             IPS_SetEventActive($id, false);
+        }
     }
 
     protected function SetTimerInterval($Name, $Interval)
@@ -287,22 +294,25 @@ class HMBase extends IPSModule
                 IPS_SetEventActive($id, true);
         }
     }
-/*
-    protected function LogMessage($data, $cata)
-    {
-        //IPS_LogMessage(__CLASS__, __FUNCTION__ . ':' . $data . ':' . $cata); //           
-    }
-*/
+
+    
+      protected function LogMessage($data, $cata)
+      {
+      IPS_LogMessage(__CLASS__, __FUNCTION__ . ':' . $data . ':' . $cata); //
+      }
+     
+
     protected function SetSummary($data)
     {
         //IPS_LogMessage(__CLASS__, __FUNCTION__ . "Data:" . $data); //                   
     }
-/*
-    protected function SendData($data, $cata)
-    {
-        IPS_LogMessage(__CLASS__ . $this->InstanceID, __FUNCTION__ . ":Data:" . $data . ' ' . $cata); //                   
-    }
-*/
+
+    /*
+      protected function SendData($data, $cata)
+      {
+      IPS_LogMessage(__CLASS__ . $this->InstanceID, __FUNCTION__ . ":Data:" . $data . ' ' . $cata); //
+      }
+     */
 }
 
 ?>
