@@ -152,6 +152,12 @@ class HMBase extends IPSModule
     protected $fKernelRunlevel;
     protected $HMAddress;
 
+    public function __construct($InstanceID)
+    {
+        parent::__construct($InstanceID);
+        $this->fKernelRunlevel = KR_READY;
+        
+    }
     public function Create()
     {
 //        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
@@ -160,7 +166,6 @@ class HMBase extends IPSModule
         parent::Create();
 //These lines are parsed on Symcon Startup or Instance creation
 //You cannot use variables here. Just static values.
-        $this->fKernelRunlevel = KR_READY;
         $this->ConnectParent("{A151ECE9-D733-4FB9-AA15-7F7DD10C58AF}");
     }
 
