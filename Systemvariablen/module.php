@@ -592,6 +592,7 @@ class HMSystemVariable extends HMBase
             {
                 if ($this->ReadPropertyBoolean('EmulateStatus') === true)
                     SetValueBoolean($VarID, $Value);
+                return true;
             }
         }
     }
@@ -615,6 +616,7 @@ class HMSystemVariable extends HMBase
             {
                 if ($this->ReadPropertyBoolean('EmulateStatus') === true)
                     SetValueInteger($VarID, $Value);
+                return true;
             }
         }
     }
@@ -638,6 +640,7 @@ class HMSystemVariable extends HMBase
             {
                 if ($this->ReadPropertyBoolean('EmulateStatus') === true)
                     SetValueFloat($VarID, $Value);
+                return true;
             }
         }
     }
@@ -661,6 +664,7 @@ class HMSystemVariable extends HMBase
             {
                 if ($this->ReadPropertyBoolean('EmulateStatus') === true)
                     SetValueString($VarID, $Value);
+                return true;
             }
         }
     }

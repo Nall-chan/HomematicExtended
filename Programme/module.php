@@ -70,7 +70,7 @@ class HMCCUProgram extends HMBase
             $this->LogMessage(KL_ERROR, 'HM-Script result is not wellformed');
             throw new Exception("Error on Read CCU-Programs");
         }
-
+                $Result =true;
         foreach (explode(chr(0x09), (string) $xml->SysPrgs) as $SysPrg)
         {
             $HMScript = 'Name=dom.GetObject(' . $SysPrg . ').Name();' . PHP_EOL
@@ -85,6 +85,7 @@ class HMCCUProgram extends HMBase
             catch (Exception $ex)
             {
                 $this->LogMessage(KL_WARNING, 'HM-Script result is not wellformed');
+                $Result =false;
 //                throw new Exception("Error on Read CCU-Programs");
                 continue;
             }
@@ -107,6 +108,7 @@ class HMCCUProgram extends HMBase
                     IPS_SetInfo($var, $Info);
             }
         }
+        return $Result;
     }
 
     private function StartCCUProgram($Ident)
@@ -141,7 +143,10 @@ class HMCCUProgram extends HMBase
             throw new Exception("Error on start CCU-Program");
         }
         if ((string) $xml->State == 'true')
+        {
             SetValueInteger($var, 0);
+            return true;
+        }
         else
             throw new Exception("Error on start CCU-Program");
     }
@@ -165,14 +170,14 @@ class HMCCUProgram extends HMBase
     {
         //IPS_LogMessage(__CLASS__, __FUNCTION__); //            
 
-        $this->ReadCCUPrograms();
+        return $this->ReadCCUPrograms();
     }
 
     public function StartProgram(string $Parameter)
     {
         //IPS_LogMessage(__CLASS__, __FUNCTION__); //            
 
-        $this->StartCCUProgram($Parameter);
+        return $this->StartCCUProgram($Parameter);
     }
 
 }
