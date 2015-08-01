@@ -476,15 +476,19 @@ class HMSystemVariable extends HMBase
     private function WriteSysVar($Parameter, $ValueStr)
     {
 //        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
+        IPS_LogMessage(__FUNCTION__,$this->fKernelRunlevel);        
         if ($this->fKernelRunlevel <> KR_READY)
             return false;
+        IPS_LogMessage(__FUNCTION__,'HasParent?');        
         if (!$this->HasActiveParent())
             return false;
         $this->GetParentData();
+        IPS_LogMessage(__FUNCTION__,$this->HMAddress);        
         if ($this->HMAddress == '')
             return;
         $url = 'SysVar.exe';
         $HMScript = 'State=dom.GetObject(' . $Parameter . ').State("' . $ValueStr . '");';
+        IPS_LogMessage(__FUNCTION__,$HMScript);        
         $HMScriptResult = $this->LoadHMScript($url, $HMScript);
         IPS_LogMessage(__FUNCTION__,$HMScriptResult);
         if ($HMScriptResult === false)
