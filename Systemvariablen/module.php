@@ -486,6 +486,7 @@ class HMSystemVariable extends HMBase
         $url = 'SysVar.exe';
         $HMScript = 'State=dom.GetObject(' . $Parameter . ').State("' . $ValueStr . '");';
         $HMScriptResult = $this->LoadHMScript($url, $HMScript);
+        IPS_LogMessage(__FUNCTION__,$HMScriptResult);
         if ($HMScriptResult === false)
             return false;
         try
