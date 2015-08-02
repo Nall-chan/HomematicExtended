@@ -392,7 +392,7 @@ class HMSystemVariable extends HMBase
                 $this->LogMessage(KL_WARNING, 'HM-Script result is not wellformed');
                 continue;
             }
-            $VarName = utf8_decode((string) $xmlVar->Name);
+            $VarName = /*utf8_decode(*/(string) $xmlVar->Name;
             $VarID = @IPS_GetObjectIDByIdent($SysVar, $this->InstanceID);
             $VarType = $this->CcuVarType[(int) $xmlVar->ValueType];
             $VarProfil = 'HM.SysVar' . (string) $this->InstanceID . '.' . (string) $SysVar;

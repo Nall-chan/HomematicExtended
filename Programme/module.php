@@ -90,7 +90,7 @@ class HMCCUProgram extends HMBase
                 continue;
             }
             $var = @IPS_GetObjectIDByIdent($SysPrg, $this->InstanceID);
-            $Name = utf8_decode((string) $varXml->Name);
+            $Name = /*utf8_decode(*/(string) $varXml->Name;
             $Info = utf8_decode((string) $varXml->Name);
             if ($var === false)
             {
