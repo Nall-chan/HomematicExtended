@@ -305,12 +305,6 @@ class HMBase extends IPSModule
         IPS_LogMessage(__CLASS__, __FUNCTION__ . ':' . $data . ':' . $cata); //
     }
 
-    protected function SetStatus($InstanceStatus)
-    {
-        IPS_LogMessage(__FUNCTION__, $InstanceStatus);
-        parent::SetStatus($InstanceStatus);
-    }
-
     protected function SetSummary($data)
     {
         //IPS_LogMessage(__CLASS__, __FUNCTION__ . "Data:" . $data); //                   

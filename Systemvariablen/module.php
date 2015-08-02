@@ -210,8 +210,6 @@ class HMSystemVariable extends HMBase
 //        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
         $Interval = $this->ReadPropertyInteger("Interval");
         $Event = $this->ReadPropertyInteger("EventID");
-        IPS_LogMessage('Interval',print_r($Interval,1));
-        IPS_LogMessage('Event',print_r($Event,1));
         
         if ($Interval < 0)
         {
