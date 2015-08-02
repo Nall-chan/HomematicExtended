@@ -414,9 +414,9 @@ class HMSystemVariable extends HMBase
                     {
                         case vtBoolean:
                             if (isset($xmlVar->ValueName0))
-                                IPS_SetVariableProfileAssociation($VarProfil, 0, utf8_decode((string) $xmlVar->ValueName0), '', -1);
+                                IPS_SetVariableProfileAssociation($VarProfil, 0, /*utf8_decode(*/(string) $xmlVar->ValueName0, '', -1);
                             if (isset($xmlVar->ValueName1))
-                                IPS_SetVariableProfileAssociation($VarProfil, 1, utf8_decode((string) $xmlVar->ValueName1), '', -1);
+                                IPS_SetVariableProfileAssociation($VarProfil, 1, /*utf8_decode(*/(string) $xmlVar->ValueName1, '', -1);
                             break;
                         case vtFloat:
                             IPS_SetVariableProfileDigits($VarProfil, strlen((string) $xmlVar->ValueMin) - strpos('.', (string) $xmlVar->ValueMin) - 1);
@@ -424,11 +424,11 @@ class HMSystemVariable extends HMBase
                             break;
                     }
                     if (isset($xmlVar->ValueUnit))
-                        IPS_SetVariableProfileText($VarProfil, '', ' ' . utf8_decode((string) $xmlVar->ValueUnit));
+                        IPS_SetVariableProfileText($VarProfil, '', ' ' . /*utf8_decode(*/(string) $xmlVar->ValueUnit);
                     if ((isset($xmlVar->ValueSubType)) and ( (int) $xmlVar->ValueSubType == 29))
                         foreach (explode(';', (string) $xmlVar->ValueList) as $Index => $ValueList)
                         {
-                            IPS_SetVariableProfileAssociation($VarProfil, $Index, utf8_decode(trim($ValueList)), '', -1);
+                            IPS_SetVariableProfileAssociation($VarProfil, $Index, /*utf8_decode(*/trim($ValueList), '', -1);
                         }
                 }
             }
