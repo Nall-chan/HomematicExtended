@@ -219,8 +219,7 @@ class HMSystemVariable extends HMBase
             $this->SetStatus(202); //Error Timer is negativ
             return false;
         }
-        
-        if ($Interval > 4)
+        elseif ($Interval > 4)
         {
             if ($Event == 0)
             {
@@ -231,8 +230,7 @@ class HMSystemVariable extends HMBase
                 $this->SetStatus(106); //Trigger und Timer aktiv                      
             }
         }
-        
-        if ($Interval == 0)
+        elseif ($Interval == 0)
         {
             if ($Event == 0)
             {
@@ -265,12 +263,10 @@ class HMSystemVariable extends HMBase
                 }
             }
         }
-        
-        if ($Interval < 5)
+        elseif ($Interval < 5)
         {
             $this->SetStatus(108);  //Warnung Trigger zu klein                  
         }
-        
         return true;
     }
 

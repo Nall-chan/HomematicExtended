@@ -156,8 +156,8 @@ class HMBase extends IPSModule
     {
         parent::__construct($InstanceID);
         $this->fKernelRunlevel = KR_READY;
-        
     }
+
     public function Create()
     {
 //        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
@@ -300,12 +300,16 @@ class HMBase extends IPSModule
         }
     }
 
-    
-      protected function LogMessage($data, $cata)
-      {
-      IPS_LogMessage(__CLASS__, __FUNCTION__ . ':' . $data . ':' . $cata); //
-      }
-     
+    protected function LogMessage($data, $cata)
+    {
+        IPS_LogMessage(__CLASS__, __FUNCTION__ . ':' . $data . ':' . $cata); //
+    }
+
+    protected function SetStatus($InstanceStatus)
+    {
+        IPS_LogMessage(__FUNCTION__, $InstanceStatus);
+        parent::SetStatus($InstanceStatus);
+    }
 
     protected function SetSummary($data)
     {
