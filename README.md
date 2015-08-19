@@ -16,15 +16,15 @@ Erweitert IPS um die native Unterstützung von:
 
 **Inhaltsverzeichnis**
 
-1. Funktionsumfang
-2. Voraussetzungen
-3. Installation
-4. HomeMatic Systemvariablen
-5. HomeMatic Powermeter
-6. HomeMatic Programme
-7. HomeMatic WM55-Dis
-8. HommMatic-Script
-9. Anhang 
+1. [Funktionsumfang](#1-funktionsumfang) 
+2. [Voraussetzungen](#2-voraussetzungen)
+3. [Installation](#3-installation)
+4. [HomeMatic Systemvariablen] (#4-homematic-systemvariablen)
+5. [HomeMatic Powermeter](#5-homematic-powermeter)
+6. [HomeMatic Programme](#6-homematic-programme)
+7. [HomeMatic WM55-Dis](#7-homematic-wm55-dis)
+8. [HomeMatic-Script](#8-homematic-script) 
+9. [Anhang](#9-anhang)
 
 ## 1. Funktionsumfang
 
@@ -58,10 +58,10 @@ Erweitert IPS um die native Unterstützung von:
 
     Einstellungen -> Systemsteuerung -> Firewall
 
-    Bei 'Remote HomeMatic-Script API' muß entweder 'Vollzugriff' oder 'Eingeschränkt' eingestellt sein.
-    Bei 'Eingeschränkt' ist dann unter 'IP-Adressen für eingeschränkten Zugriff' euer LAN / IPS-PC einzugeben.  
-    (z.B. 192.168.178.0/24 => /24 ist die Subnet-Maske für das Netzwerk. Bei 255.255.255.0 ist das 24 bei 255.255.0.0. ist es 16.
-    Oder es kann direkt eine einzelne Adresse eingetragen werden. z.B. 192.168.0.2
+   Bei 'Remote HomeMatic-Script API' muß entweder 'Vollzugriff' oder 'Eingeschränkt' eingestellt sein.
+   Bei 'Eingeschränkt' ist dann unter 'IP-Adressen für eingeschränkten Zugriff' euer LAN / IPS-PC einzugeben.  
+   (z.B. 192.168.178.0/24 => /24 ist die Subnet-Maske für das Netzwerk. Bei 255.255.255.0 ist das 24 bei 255.255.0.0. ist es 16.
+   Oder es kann direkt eine einzelne Adresse eingetragen werden. z.B. 192.168.0.2
 
 ## 3. Installation
 
@@ -164,10 +164,10 @@ Erweitert IPS um die native Unterstützung von:
     angezeigt.)
 
     **Beispiele:**  
-    `HM_WriteValueBoolean(54353 /\*\[HomeMatic Systemvariablen\]\*/,950 /\* IDENT von Anwesenheit \*/,true);`  
-    `HM_WriteValueFloat(54353 /\*\[HomeMatic Systemvariablen\]\*/,2588 /\* IDENT von Solltemp Tag \*/,21.0);`  
-    `HM_WriteValueInteger(54353 /\*\[HomeMatic Systemvariablen\]\*/,12829,56);`  
-    `HM_WriteValueString(54353 /\*\[HomeMatic Systemvariablen\]\*/,14901,'TestString');`  
+    `HM_WriteValueBoolean(54353 /*[HomeMatic Systemvariablen]*/, 950 /* IDENT von Anwesenheit */, true);`  
+    `HM_WriteValueFloat(54353 /*[HomeMatic Systemvariablen]*/, 2588 /* IDENT von Solltemp Tag */, 21.0);`  
+    `HM_WriteValueInteger(54353 /*[HomeMatic Systemvariablen]*/, 12829, 56);`  
+    `HM_WriteValueString(54353 /*[HomeMatic Systemvariablen]*/, 14901, 'TestString');`  
 
 ## 5. HomeMatic Powermeter
 
@@ -216,8 +216,8 @@ Es ist somit sofort möglich die Programme aus dem WebFront heraus zu starten.
 
 Es gibt auch nur zwei PHP-Funktionen für dieses Modul:
 
-`HM_ReadPrograms(54353 /\*\[HomeMatic Systemvariablen\]\*/);`  
-`HM_StartProgram(54353 /\*\[HomeMatic Systemvariablen\]\*/,4711 /\* IDENT von Programm Licht Alles aus \*/);`  
+`HM_ReadPrograms(54353 /*[HomeMatic Systemvariablen]*/);`  
+`HM_StartProgram(54353 /*[HomeMatic Systemvariablen]*/, 4711 /* IDENT von Programm Licht Alles aus */);`  
 
 ## 7. HomeMatic WM55-Dis
 
@@ -225,7 +225,8 @@ Es gibt auch nur zwei PHP-Funktionen für dieses Modul:
 
 ## 9. Anhang
 
-**GUID's:**
+**GUID's:**  
+
 | Device          | GUID                                   |
 | :-------------: | :------------------------------------: |
 | SystemVariablen | {400F9193-FE79-4086-8D76-958BF9C1B357} |
@@ -233,6 +234,8 @@ Es gibt auch nur zwei PHP-Funktionen für dieses Modul:
 | CCU-Programme   | {A5010577-C443-4A85-ABF2-3F2D6CDD2465} |
 
 **Changelog:**
+
+Version 2.0:
 
 Version 1.5:
 
