@@ -144,9 +144,10 @@ Erweitert IPS um die native Unterstützung von:
 
     **Hinweis:**  
     Namensänderungen in IPS werden durch die CCU immer überschrieben!  
+    In der CCU gelöschte Systemvariablen, werden in IPS nicht antomatisch gelöscht.  
+
     Alle aus der CUU ausgelesenen Werte werden in IPS aufgrund des Zeitstempels der
     CCU-Variable und der IPS-Variable abgeglichen.  
-
     Somit werden unnötige Variablen-Updates in IPS vermieden, wenn die Variable in der
     CCU gar nicht aktualisiert wurde.  
 
@@ -156,18 +157,20 @@ Erweitert IPS um die native Unterstützung von:
     Eventuelle Differenzen der Uhrzeiten und/oder Zeitzonen beider Systeme werden dabei
     automatisch berücksichtigt und erfordern somit keinen Eingriff durch den Benutzer.  
 
+    ### PHP-Funktionen
+
     Um einen Wert einer Systemvariable aus IPS heraus in die CCU zu schreiben, werden die
-    schon vorhandenen HM_WriteValue* Befehle von IPS genutzt.
+    schon vorhandenen HM_WriteValue* Befehle von IPS genutzt.  
 
     Hier entspricht der Parameter mit dem Namen 'Parameter' dem IDENT der Systemvariable.  
-    (Die IDENT werden unter dem Reiter 'Statusvariablen' des Einstellungsdialogs des Moduls
-    angezeigt.)
+    (Die IDENT werden unter dem Reiter 'Statusvariablen' des Einstellungsdialogs der Instanz angezeigt.)  
 
     **Beispiele:**  
-    `HM_WriteValueBoolean(54353 /*[HomeMatic Systemvariablen]*/, 950 /* IDENT von Anwesenheit */, true);`  
-    `HM_WriteValueFloat(54353 /*[HomeMatic Systemvariablen]*/, 2588 /* IDENT von Solltemp Tag */, 21.0);`  
-    `HM_WriteValueInteger(54353 /*[HomeMatic Systemvariablen]*/, 12829, 56);`  
-    `HM_WriteValueString(54353 /*[HomeMatic Systemvariablen]*/, 14901, 'TestString');`  
+
+        HM_WriteValueBoolean(integer $InstantID /*[HomeMatic Systemvariablen]*/, string '950' /* IDENT von Anwesenheit */, boolean true);  
+        HM_WriteValueFloat(integer $InstantID /*[HomeMatic Systemvariablen]*/, string '2588' /* IDENT von Solltemp Tag */, float 21.0);  
+        HM_WriteValueInteger(integer $InstantID /*[HomeMatic Systemvariablen]*/, string '12829', integer 56);  
+        HM_WriteValueString(integer $InstantID /*[HomeMatic Systemvariablen]*/, string '14901', string 'TestString');  
 
 ## 5. HomeMatic Powermeter
 
@@ -196,32 +199,62 @@ automatisch nach kWh umgerechnet.
 
 ## 6. HomeMatic Programme
 
-Die auf der CCU eingerichteten Programme können mit dieser Instanz ausgelesen und auch gestartet werden.
+   Die auf der CCU eingerichteten Programme können mit dieser Instanz ausgelesen und auch gestartet werden.  
 
-Unter Instanz hinzufügen sind die 'HomeMatic Programme' unter dem Hersteller
-'HomeMatic' zu finden.
-Nach dem Anlegen der Instanz sollte als übergeordnetes Gerät schon der HomeMatic Socket
-ausgewählt sein.
-Existieren in IPS mehrere Homematic Socket, so ist der auszuwählen, aus welcher CCU die Programme gelesen werden sollen.
+   Unter Instanz hinzufügen sind die 'HomeMatic Programme' unter dem Hersteller 'HomeMatic' zu finden.  
+   Nach dem Anlegen der Instanz sollte als übergeordnetes Gerät schon der HomeMatic Socket ausgewählt sein.  
+   Existieren in IPS mehrere Homematic Socket, so ist der auszuwählen, aus welcher CCU die Programme gelesen werden sollen.  
 
-Dieses Modul hat keinerlei Einstellungen, welche konfiguriert werden müssen.
+   Dieses Modul hat keinerlei Einstellungen, welche konfiguriert werden müssen.  
 
-Im Testcenter ist es jedoch über den Button 'CCU auslesen' möglich, die auf der CCU vorhandenen Programme auszulesen.
+   Im Testcenter ist es jedoch über den Button 'CCU auslesen' möglich, die auf der CCU vorhandenen Programme auszulesen.
+   Dies erfolgt auch autoamtisch bei Systemstart von IPS und wenn die Instanz angelegt wird.  
 
-Die Programme werden als Integer-Variable unterhalb der Instanz erzeugt. Es wird automatisch der Name und die Beschreibung aus der CCU übernommen.
+   Die Programme werden als Integer-Variable unterhalb der Instanz erzeugt. Es wird automatisch der Name und die Beschreibung aus der CCU übernommen.  
 
-Des weiteren wird ein Standard-Profil 'Execute-HM' angelegt und den Variablen zugeordnet.
+   Des weiteren wird ein Standard-Profil 'Execute-HM' angelegt und den Variablen zugeordnet.  
 
-Es ist somit sofort möglich die Programme aus dem WebFront heraus zu starten.
+   Es ist somit sofort möglich die Programme aus dem WebFront heraus zu starten.  
 
-Es gibt auch nur zwei PHP-Funktionen für dieses Modul:
+   Werden in der CCU Programme gelöscht, so müssen die dazugehörigen Variablen in IPS bei Bedarf manuell gelöscht werden.  
 
-`HM_ReadPrograms(54353 /*[HomeMatic Systemvariablen]*/);`  
-`HM_StartProgram(54353 /*[HomeMatic Systemvariablen]*/, 4711 /* IDENT von Programm Licht Alles aus */);`  
+   ### PHP-Funktionen
+
+   `string HM_ReadPrograms(integer $InstantID /*[HomeMatic Programme]*/)`
+   Alle Programme auf der CCU werden ausgelesen und bei Bedarf umbenannt oder neu angelegt.
+
+   `string HM_StartProgram(integer $InstantID /*[HomeMatic Programme]*/, string $IDENT);`  
+   Startet ein auf der CCU hinterlegtes Programm. Als `$IDENT` muss der Ident der Variable des Programmes übergeben werden.  
+   (Die IDENT werden unter dem Reiter 'Statusvariablen' des Einstellungsdialogs der Instanz angezeigt.)  
+
+   **Beispiele:**
+
+        HM_ReadPrograms(12345 /*[HomeMatic Programme]*/);  
+        HM_StartProgram(12345 /*[HomeMatic Programme]*/, string '4711' /* IDENT von Programm Licht Alles aus */);  
+
 
 ## 7. HomeMatic WM55-Dis
 
-## 8. HommMatic-Script
+## 8. HomeMatic-Script
+
+Dies Instanz ermöglicht es eigene Homematic-Scripte zur CCU zu senden.  
+Des weiteren wird die Rückgabe der Ausführung an den Aufrufer zurück gegeben.  
+So kann z.B. per PHP-Script in IPS ein dynamisches Homematic-Script als String erstellt werden,
+und die erfolgte Ausführung ausgewertet werden.  
+
+   ### PHP-Funktionen
+
+    `string HM_RunScript(integer $InstantID /*[HomeMatic RemoteScript Interface]*/,string $Script)`
+
+   **Beispiel:**
+
+   Abfrage der Uhrzeit und Zeitzone von der CCU:
+
+    $HMScript = 'Now=system.Date("%F %T%z");' . PHP_EOL  
+              . 'TimeZone=system.Date("%z");' . PHP_EOL;   
+    $HMScriptResult = HM_RunScript(12345 /*[HomeMatic RemoteScript Interface]*/, $HMScript);  
+    var_dump(json_decode($HMScriptResult));  
+
 
 ## 9. Anhang
 
