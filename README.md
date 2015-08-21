@@ -174,29 +174,38 @@ Erweitert IPS um die native Unterstützung von:
 
 ## 5. HomeMatic Powermeter
 
-Die CCU legt für jeden 'Schaltaktor mit Leistungsmessung' automatisch eine Systemvariable
-und ein Programm an, welches den Totalwert dieses Aktors hoch zählt. Dieser Wert wird
-auch bei Stromausfall bzw. ausstecken des entsprechenden Aktors, gehalten.
-Diese Systemvariable unterscheidet sich von den 'normalen' Systemvariablen dahingehend,
-dass Sie nicht in der der Übersicht aller Systemvariablen in der CCU auftaucht.
-(Im Gegensatz zu den Regenmengen Zählern des OC3.)
-Entsprechend war es nötig für diesen Typ von Systemvariable ein eingenes IPS-Device zu
-implementieren.
-Unter Instanz hinzufügen ist die Systemvariable 'Powermeter' unter dem Hersteller
-'HomeMatic' zu finden.
-Nach dem Anlegen der Instanz sollte als übergeordnetes Gerät schon der HomeMatic Socket
-ausgewählt sein.
-Existieren in IPS mehrere Homematic Socket, so ist der auszuwählen, der der CCU
-entspricht an dem der Aktor angelernt ist.
-Dieses Modul fragt den Wert aus der CCU immer dann ab, wenn der Wert
-'ENERGY_COUNTER' des entsprechenden Aktors sich in IPS aktualisiert.
-Somit arbeitet das Modul immer nach dem Trigger-Prinzip.
-Im Einstellungsdialog der Instanz ist entsprechend die zugehörige 'ENERGY_COUNTER'
-Variable des Aktors auszuwählen, von dem der 'ENERGY_COUNTER_TOTAL' Wert
-gelesen werden soll.
-Als Profil für diese Variable ist ein Standard-IPS-Profil zugeordnet, und die Werte werden
-automatisch nach kWh umgerechnet.
+   Die CCU legt für jeden 'Schaltaktor mit Leistungsmessung' automatisch eine Systemvariable
+   und ein Programm an, welches den Totalwert dieses Aktors hoch zählt.  
 
+   Dieser Wert wird auch bei Stromausfall bzw. ausstecken des entsprechenden Aktors, gehalten.  
+
+   Diese Systemvariable unterscheidet sich von den 'normalen' Systemvariablen dahingehend,
+   dass Sie nicht in der der Übersicht aller Systemvariablen in der CCU auftaucht.  
+   (Im Gegensatz zu den Regenmengen Zählern des OC3.)  
+
+   Entsprechend war es nötig für diesen Typ von Systemvariable ein eingenes IPS-Device zu
+   implementieren.  
+
+   Unter Instanz hinzufügen ist die Systemvariable 'Powermeter' unter dem Hersteller
+   'HomeMatic' zu finden.  
+
+   Nach dem Anlegen der Instanz sollte als übergeordnetes Gerät schon der HomeMatic Socket
+   ausgewählt sein.  
+   Existieren in IPS mehrere Homematic Socket, so ist der auszuwählen, der der CCU
+   entspricht an dem der Aktor angelernt ist.  
+
+   Dieses Modul fragt den Wert aus der CCU immer dann ab, wenn der Wert
+   der Variable 'ENERGY_COUNTER' des entsprechenden Aktors sich in IPS aktualisiert.  
+   Oder der IPS-Dienst startet bzw. wenn eine Instanz neu konfiguriert wurde.  
+
+   Im Einstellungsdialog der Instanz ist entsprechend die zugehörige 'ENERGY_COUNTER'
+   Variable des Aktors auszuwählen, von dem der 'ENERGY_COUNTER_TOTAL' Wert
+   gelesen werden soll.  
+
+   Als Profil für diese Variable ist ein Standard-IPS-Profil zugeordnet, und die Werte werden
+   automatisch nach kWh umgerechnet.  
+
+   
 ## 6. HomeMatic Programme
 
    Die auf der CCU eingerichteten Programme können mit dieser Instanz ausgelesen und auch gestartet werden.  
@@ -234,6 +243,8 @@ automatisch nach kWh umgerechnet.
 
 
 ## 7. HomeMatic WM55-Dis
+
+
 
 ## 8. HomeMatic-Script
 
