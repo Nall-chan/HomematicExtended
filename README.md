@@ -1,8 +1,3 @@
-Unvollständig
-=============
-
-Work in progress...
-
 # IPSHomeMaticExtended
 Erweitert IPS um die native Unterstützung von:
 
@@ -227,12 +222,12 @@ Erweitert IPS um die native Unterstützung von:
 
    Werden in der CCU Programme gelöscht, so müssen die dazugehörigen Variablen in IPS bei Bedarf manuell gelöscht werden.  
 
-   ### PHP-Funktionen
+### PHP-Funktionen
 
-   `string HM_ReadPrograms(integer $InstantID /*[HomeMatic Programme]*/)`
+    string HM_ReadPrograms(integer $InstantID /*[HomeMatic Programme]*/)
    Alle Programme auf der CCU werden ausgelesen und bei Bedarf umbenannt oder neu angelegt.
 
-   `string HM_StartProgram(integer $InstantID /*[HomeMatic Programme]*/, string $IDENT);`  
+    string HM_StartProgram(integer $InstantID /*[HomeMatic Programme]*/, string $IDENT);
    Startet ein auf der CCU hinterlegtes Programm. Als `$IDENT` muss der Ident der Variable des Programmes übergeben werden.  
    (Die IDENT werden unter dem Reiter 'Statusvariablen' des Einstellungsdialogs der Instanz angezeigt.)  
 
@@ -244,6 +239,10 @@ Erweitert IPS um die native Unterstützung von:
 
 ## 7. HomeMatic WM55-Dis
 
+Unvollständig
+=============
+
+Work in progress...
 
 
 ## 8. HomeMatic-Script
@@ -253,9 +252,9 @@ Des weiteren wird die Rückgabe der Ausführung an den Aufrufer zurück gegeben.
 So kann z.B. per PHP-Script in IPS ein dynamisches Homematic-Script als String erstellt werden,
 und die erfolgte Ausführung ausgewertet werden.  
 
-   ### PHP-Funktionen
+### PHP-Funktionen
 
-    `string HM_RunScript(integer $InstantID /*[HomeMatic RemoteScript Interface]*/,string $Script)`
+    string HM_RunScript(integer $InstantID /*[HomeMatic RemoteScript Interface]*/,string $Script)
 
    **Beispiel:**
 
@@ -271,11 +270,13 @@ und die erfolgte Ausführung ausgewertet werden.
 
 **GUID's:**  
 
-| Device          | GUID                                   |
-| :-------------: | :------------------------------------: |
-| SystemVariablen | {400F9193-FE79-4086-8D76-958BF9C1B357} |
-| PowerMeter      | {AF50C42B-7183-4992-B04A-FAFB07BB1B90} |
-| CCU-Programme   | {A5010577-C443-4A85-ABF2-3F2D6CDD2465} |
+| Device                           | GUID                                   |
+| :------------------------------: | :------------------------------------: |
+| HomeMatic Systemvariablen        | {400F9193-FE79-4086-8D76-958BF9C1B357} |
+| HomeMatic Powermeter             | {AF50C42B-7183-4992-B04A-FAFB07BB1B90} |
+| HomeMatic Programme              | {A5010577-C443-4A85-ABF2-3F2D6CDD2465} |
+| HomeMatic RemoteScript Interface | {246EDB89-70BC-403B-A1FA-3B3B1B540401} |
+| HomeMatic Dis-WM55               | {271BCAB1-0658-46D9-A164-985AEB641B48} |
 
 **Changelog:**
 
