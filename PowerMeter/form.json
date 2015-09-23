@@ -12,17 +12,17 @@
                 {
                     "code": 102,
                     "icon": "active",
-                    "caption": "Konfiguration gültig."
+                    "caption": "Konfiguration gÃ¼ltig."
                 },
                 {
                     "code": 104,
                     "icon": "inactive",
-                    "caption": "Kein ENERGY_COUNTER Datenpunkt ausgewählt."
+                    "caption": "Kein ENERGY_COUNTER Datenpunkt ausgewÃ¤hlt."
                 },
                 {
                     "code": 202,
                     "icon": "inactive",
-                    "caption": "Gewählter Datenpunkt ist ungültig."
+                    "caption": "GewÃ¤hlter Datenpunkt ist ungÃ¼ltig."
                 }
             ]
 }

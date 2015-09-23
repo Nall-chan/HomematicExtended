@@ -86,7 +86,7 @@ class HMDisWM55 extends HMBase
         foreach (self::$PropertysName as $Name)
         {
             // TODO
-//            Alle Prüfen ob gleich
+//            Alle PrÃ¼fen ob gleich
 //            $this->RegisterPropertyInteger($Name, 0);
         }
 
@@ -155,7 +155,7 @@ class HMDisWM55 extends HMBase
                 $ActionString = "ActionDOWN";
                 break;
         }
-// PHP-Script ausführen
+// PHP-Script ausfÃ¼hren
         $ScriptID = $this->ReadPropertyInteger('ScriptID');
         if ($ScriptID <> 0)
         {

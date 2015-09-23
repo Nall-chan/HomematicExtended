@@ -78,7 +78,7 @@ class HMPowerMeter extends HMBase
         }
         else
         {
-            // Prüfe Ob HM-Device
+            // PrÃ¼fe Ob HM-Device
             $parent = IPS_GetParent($this->ReadPropertyInteger("EventID"));
             if ((IPS_GetInstance($parent)['ModuleInfo']['ModuleID'] == '{EE4A81C6-5C90-4DB7-AD2F-F6BBD521412E}')
                     and ( IPS_GetObject($this->ReadPropertyInteger("EventID"))['ObjectIdent'] == 'ENERGY_COUNTER'))

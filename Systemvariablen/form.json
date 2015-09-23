@@ -4,7 +4,7 @@
                 {
                     "name": "EventID",
                     "type": "SelectVariable",
-                    "caption": "Trigger für Refresh"
+                    "caption": "Trigger fÃ¼r Refresh"
                 },
                 {
                     "name": "Interval",
@@ -22,7 +22,7 @@
                 {
                     "code": 102,
                     "icon": "active",
-                    "caption": "Konfiguration gültig."
+                    "caption": "Konfiguration gÃ¼ltig."
                 },
                 {
                     "code": 104,
@@ -47,7 +47,7 @@
                 {
                     "code": 108,
                     "icon": "inactive",
-                    "caption": "Interval kleiner 5 nicht möglich."
+                    "caption": "Interval kleiner 5 nicht mÃ¶glich."
                 },
                 {
                     "code": 202,

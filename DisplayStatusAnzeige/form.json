@@ -42,22 +42,22 @@
                 {
                     "code": 102,
                     "icon": "active",
-                    "caption": "Konfiguration g¸ltig."
+                    "caption": "Konfiguration g√ºltig."
                 },
                 {
                     "code": 104,
                     "icon": "inactive",
-                    "caption": "Kein PRESS Datenpunkt ausgew‰hlt."
+                    "caption": "Kein PRESS Datenpunkt ausgew√§hlt."
                 },
                 {
                     "code": 202,
                     "icon": "inactive",
-                    "caption": "Mindestens ein gew‰hlter Datenpunkt ist ung¸ltig."
+                    "caption": "Mindestens ein gew√§hlter Datenpunkt ist ung√ºltig."
                 },
                 {
                     "code": 203,
                     "icon": "inactive",
-                    "caption": "Kein Display-Script ausgew‰hlt."
+                    "caption": "Kein Display-Script ausgew√§hlt."
                 },
                 {
                     "code": 204,
