@@ -14,7 +14,7 @@ class HMPowerMeter extends HMBase
         parent::Create();
         $this->RegisterPropertyInteger("Protocol", 0);
         $this->RegisterPropertyString("Address", "XXX9999999:4");
-        $this->RegisterPropertyBoolean("EmulateStatus", false);        
+        $this->RegisterPropertyBoolean("EmulateStatus", false);
         $this->RegisterPropertyInteger("EventID", 0);
         $this->RegisterVariableFloat("ENERGY_COUNTER_TOTAL", "ENERGY_COUNTER_TOTAL", "~Electricity");
         //These lines are parsed on Symcon Startup or Instance creation
@@ -29,27 +29,26 @@ class HMPowerMeter extends HMBase
 
 //        $this->ReadPropertyInteger("EventID");
 //        IPS_Sleep(500);
-        if ($this->CheckConfig())
+        if (($this->CheckConfig()) and ( $this->GetPowerAddress()))
         {
-            if ($this->GetPowerAddress())
-            {
-                $this->SetSummary($this->HMDeviceAddress);
+            $this->SetSummary($this->HMDeviceAddress);
+            if ($this->fKernelRunlevel == KR_READY)
                 if ($this->HasActiveParent())
                 {
                     $this->GetParentData();
                     if ($this->HMAddress <> '')
-                        $this->ReadPowerSysVar();
+                        try
+                        {
+                            $this->ReadPowerSysVar();
+                        } catch (Exception $exc)
+                        {
+                            trigger_error($exc->getMessage(), $exc->getCode());
+                            return false;
+                        }
                 }
-            }
-            else
-            {
-                $this->SetSummary('');
-            }
+            return true;
         }
-        else
-        {
-            $this->SetSummary('');
-        }
+        $this->SetSummary('');
     }
 
     public function ReceiveData($JSONString)
@@ -63,7 +62,14 @@ class HMPowerMeter extends HMBase
             return;
         if ((string) $Data->VariableName <> 'ENERGY_COUNTER')
             return;
-        $this->ReadPowerSysVar();
+        try
+        {
+            $this->ReadPowerSysVar();
+        } catch (Exception $exc)
+        {
+            trigger_error($exc->getMessage(), $exc->getCode());
+            return false;
+        }
     }
 
 ################## PRIVATE                
@@ -75,8 +81,7 @@ class HMPowerMeter extends HMBase
         {
             $this->SetStatus(IS_INACTIVE);
             return false;
-        }
-        else
+        } else
         {
             // Prüfe Ob HM-Device
             $parent = IPS_GetParent($this->ReadPropertyInteger("EventID"));
@@ -85,8 +90,7 @@ class HMPowerMeter extends HMBase
             {
                 $this->SetStatus(IS_ACTIVE); //OK
                 return true;
-            }
-            else
+            } else
             {
                 $this->SetStatus(202);
                 return false;
@@ -110,12 +114,12 @@ class HMPowerMeter extends HMBase
 //                    IPS_LogMessage("HomeMaticSystemvariablen", "Dummy-Module");
         if (!$this->HasActiveParent())
         {
-            throw new Exception("Instance has no active Parent Instance!");
+            throw new Exception("Instance has no active Parent Instance!", E_USER_NOTICE);
         }
         $this->GetParentData();
         if ($this->HMAddress == '')
         {
-            throw new Exception("Instance has no active Parent Instance!");
+            throw new Exception("Instance has no active Parent Instance!", E_USER_NOTICE);
         }
 
         $url = 'GetPowerMeter.exe';
@@ -123,18 +127,20 @@ class HMPowerMeter extends HMBase
         $HMScript = 'object oitemID;' . PHP_EOL
                 . 'oitemID = dom.GetObject("svEnergyCounter_" # dom.GetObject("BidCos-RF.' . $this->HMDeviceAddress . '.ENERGY_COUNTER").Device() # "_' . $this->HMDeviceAddress . '");' . PHP_EOL
                 . 'Value=oitemID.Value();' . PHP_EOL;
-        $HMScriptResult = $this->LoadHMScript($url, $HMScript);
-        if ($HMScriptResult == '')
-            throw new Exception('Error on read PowerMeterData');
+        try
+        {
+            $HMScriptResult = $this->LoadHMScript($url, $HMScript);
+        } catch (Exception $exc)
+        {
+            throw new Exception('Error on read PowerMeterData', E_USER_NOTICE);
+        }
         try
         {
             $xml = new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
             $Value = ((float) $xml->Value) / 1000;
-        }
-        catch (Exception $ex)
+        } catch (Exception $ex)
         {
-            $this->LogMessage(KL_ERROR, 'Error on read PowerMeterAddress');
-            throw new Exception('Error on read PowerMeterAddress');
+            throw new Exception('Error on read PowerMeterAddress', E_USER_NOTICE);
         }
 
 

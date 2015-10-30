@@ -28,7 +28,7 @@ class HMDisWM55 extends HMBase
         $this->RegisterPropertyInteger("Protocol", 0);
         $this->RegisterPropertyString("Address", "XXX9999999:5");
         $this->RegisterPropertyBoolean("EmulateStatus", false);
-        
+
         $this->RegisterPropertyInteger("PageUpID", 0);
         $this->RegisterPropertyInteger("PageDownID", 0);
         $this->RegisterPropertyInteger("ActionUpID", 0);
@@ -37,7 +37,7 @@ class HMDisWM55 extends HMBase
         $this->RegisterPropertyInteger("Timeout", 0);
         $this->RegisterPropertyInteger("ScriptID", 0);
         $this->RegisterVariableInteger('PAGE', 'PAGE');
-        $this->RegisterTimer('DisplayTimeout', 0,'HM_ResetTimer($_IPS[\'TARGET\']);');
+        $this->RegisterTimer('DisplayTimeout', 0, 'HM_ResetTimer($_IPS[\'TARGET\']);');
     }
 
     public function ApplyChanges()
@@ -76,7 +76,13 @@ class HMDisWM55 extends HMBase
         $Action = array_search($ReceiveData, $this->HMEventData);
         if ($Action === false)
             return;
-        $this->RunDisplayScript($Action);
+        try
+        {
+            $this->RunDisplayScript($Action);
+        } catch (Exception $exc)
+        {
+            trigger_error($exc->getMessage(), $exc->getCode());
+        }
     }
 
 ################## PRIVATE                
@@ -119,12 +125,12 @@ class HMDisWM55 extends HMBase
 //        IPS_LogMessage(__CLASS__, __FUNCTION__ . 'Action:' . $Action); //            
         if (!$this->HasActiveParent())
         {
-            throw new Exception("Instance has no active Parent Instance!");
+            throw new Exception("Instance has no active Parent Instance!", E_USER_WARNING);
         }
         $this->GetParentData();
         if ($this->HMAddress == '')
         {
-            throw new Exception("Instance has no active Parent Instance!");
+            throw new Exception("Instance has no active Parent Instance!", E_USER_WARNING);
         }
         $Page = GetValueInteger($this->GetIDForIdent('PAGE'));
         $MaxPage = $this->ReadPropertyInteger('MaxPage');
@@ -165,14 +171,22 @@ class HMDisWM55 extends HMBase
             $Data = $this->ConvertDisplayData(json_decode($Result));
             if ($Data === false)
             {
-                throw new Exception("Error in Display Script.");
+                throw new Exception("Error in Display Script.", E_USER_NOTICE);
                 return;
             }
             $url = 'GetDisplay.exe';
             $HMScript = 'string DisplayKeySubmit;' . PHP_EOL;
             $HMScript.='DisplayKeySubmit=dom.GetObject("BidCos-RF.' . (string) $this->HMEventData[$Action]['DeviceID'] . '.SUBMIT").ID();' . PHP_EOL;
             $HMScript .= 'State=dom.GetObject(DisplayKeySubmit).State("' . $Data . '");' . PHP_EOL;
-            $HMScriptResult = $this->LoadHMScript($url, $HMScript);
+            try
+            {
+                $this->LoadHMScript($url, $HMScript);
+            } catch (Exception $exc)
+            {
+                throw new Exception('Error on send Data to HM-Dis-WM55.', E_USER_NOTICE);
+            }
+
+
             /*            if ($HMScriptResult == '')
               throw new Exception('Error on send Data to HM-Dis-WM55.');
               try

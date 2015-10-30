@@ -18,8 +18,8 @@ class HMSystemVariable extends HMBase
 //These lines are parsed on Symcon Startup or Instance creation
 //You cannot use variables here. Just static values.
         $this->RegisterPropertyInteger("Protocol", 0);
-        $this->RegisterPropertyString("Address", "XXX9999999:1");        
-        
+        $this->RegisterPropertyString("Address", "XXX9999999:1");
+
         $this->RegisterPropertyInteger("EventID", 0);
         $this->RegisterPropertyInteger("Interval", 0);
         $this->RegisterPropertyBoolean("EmulateStatus", false);
@@ -183,21 +183,32 @@ class HMSystemVariable extends HMBase
             if ($this->ReadPropertyInteger("Interval") >= 5)
             {
                 $this->SetTimerInterval("ReadHMSysVar", $this->ReadPropertyInteger("Interval"));
-            }
-            else
+            } else
             {
                 $this->SetTimerInterval("ReadHMSysVar", 0);
             }
-        }
-        else
+        } else
         {
             $this->SetTimerInterval("ReadHMSysVar", 0);
         }
+
+        if ($this->fKernelRunlevel <> KR_READY)
+            return;
+
         $this->GetParentData();
-        if ($this->HMAddress <> '')
+
+        if ($this->HMAddress == '')
+            return;
+
+        if ($this->HasActiveParent())
         {
-            if ($this->HasActiveParent())
+            try
+            {
                 $this->ReadSysVars();
+            } catch (Exception $exc)
+            {
+                trigger_error($exc->getMessage(), $exc->getCode());
+            }
         }
 
 //        }
@@ -210,58 +221,50 @@ class HMSystemVariable extends HMBase
 //        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
         $Interval = $this->ReadPropertyInteger("Interval");
         $Event = $this->ReadPropertyInteger("EventID");
-        
+
         if ($Interval < 0)
         {
 
             $this->SetStatus(202); //Error Timer is negativ
             return false;
-        }
-        elseif ($Interval > 4)
+        } elseif ($Interval > 4)
         {
             if ($Event == 0)
             {
                 $this->SetStatus(IS_ACTIVE); //OK
-            }
-            else
+            } else
             {
                 $this->SetStatus(106); //Trigger und Timer aktiv                      
             }
-        }
-        elseif ($Interval == 0)
+        } elseif ($Interval == 0)
         {
             if ($Event == 0)
             {
                 $this->SetStatus(IS_INACTIVE); // kein Trigger und Timer aktiv
-            }
-            else
+            } else
             {
                 if ($this->ReadPropertyBoolean("EmulateStatus") == true)
                 {
                     $this->SetStatus(105); //Status emulieren nur empfohlen bei Interval.
-                }
-                else
+                } else
                 {
                     $parent = IPS_GetParent($Event);
                     if (IPS_GetInstance($parent)['ModuleInfo']['ModuleID'] <> '{EE4A81C6-5C90-4DB7-AD2F-F6BBD521412E}')
                     {
                         $this->SetStatus(107);  //Warnung vermutlich falscher Trigger                        
-                    }
-                    else
+                    } else
                     {  //ist HM Device
                         if (strpos('BidCoS-RF:', IPS_GetProperty($parent, "Address")) === false)
                         {
                             $this->SetStatus(107);  //Warnung vermutlich falscher Trigger                        
-                        }
-                        else
+                        } else
                         {
                             $this->SetStatus(IS_ACTIVE); //OK
                         }
                     }
                 }
             }
-        }
-        elseif ($Interval < 5)
+        } elseif ($Interval < 5)
         {
             $this->SetStatus(108);  //Warnung Trigger zu klein                  
         }
@@ -291,7 +294,14 @@ class HMSystemVariable extends HMBase
         $this->GetParentData();
         if ($this->HMAddress == '')
             return;
-        $this->ReadSysVars();
+        try
+        {
+            $this->ReadSysVars();
+        } catch (Exception $exc)
+        {
+            trigger_error($exc->getMessage(), $exc->getCode());
+            return;
+        }
     }
 
     protected function GetParentData()
@@ -318,40 +328,39 @@ class HMSystemVariable extends HMBase
 
         if (!$this->HasActiveParent())
         {
-            throw new Exception("Instance has no active Parent Instance!");
+            throw new Exception("Instance has no active Parent Instance!", E_USER_NOTICE);
         }
         $HMScript = 'SysVars=dom.GetObject(ID_SYSTEM_VARIABLES).EnumUsedIDs();';
-        $HMScriptResult = $this->LoadHMScript('SysVar.exe', $HMScript);
-        if ($HMScriptResult === false)
+        try
         {
-            throw new Exception("Error on Read CCU Systemvariable");
+            $HMScriptResult = $this->LoadHMScript('SysVar.exe', $HMScript);
+        } catch (Exception $exc)
+        {
+            throw new Exception("Error on Read CCU ID_SYSTEM_VARIABLES", E_USER_NOTICE);
         }
+
         try
         {
             $xmlVars = new SimpleXMLElement($HMScriptResult, LIBXML_NOBLANKS + LIBXML_NONET);
-        }
-        catch (Exception $ex)
+        } catch (Exception $ex)
         {
-            $this->LogMessage(KL_ERROR, 'HM-Script result is not wellformed');
-            throw new Exception("Error on Read CCU Systemvariable");
+            throw new Exception("HM-Script result is not wellformed", E_USER_NOTICE);
         }
-
-
         $HMScript = 'Now=system.Date("%F %T%z");' . PHP_EOL
                 . 'TimeZone=system.Date("%z");' . PHP_EOL;
-        $HMScriptResult = $this->LoadHMScript('Time.exe', $HMScript);
-        if ($HMScriptResult === false)
+        try
         {
-            throw new Exception("Error on Read CCU Systemvariable");
+            $HMScriptResult = $this->LoadHMScript('Time.exe', $HMScript);
+        } catch (Exception $exc)
+        {
+            throw new Exception("Error on Read CCU Time", E_USER_NOTICE);
         }
         try
         {
             $xmlTime = new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
-        }
-        catch (Exception $ex)
+        } catch (Exception $ex)
         {
-            $this->LogMessage(KL_ERROR, 'HM-Script result is not wellformed');
-            throw new Exception("Error on Read CCU Systemvariable");
+            throw new Exception("HM-Script result is not wellformed", E_USER_NOTICE);
         }
 
         $Date = new DateTime((string) $xmlTime->Now);
@@ -376,47 +385,44 @@ class HMSystemVariable extends HMBase
                     . 'ValueMin=dom.GetObject(' . $SysVar . ').ValueMin();' . PHP_EOL
                     . 'ValueMax=dom.GetObject(' . $SysVar . ').ValueMax();' . PHP_EOL
                     . 'ValueUnit=dom.GetObject(' . $SysVar . ').ValueUnit();' . PHP_EOL;
-            $HMScriptResult = $this->LoadHMScript('SysVar.exe', $HMScript);
-            if ($HMScriptResult === false)
+            try
             {
-                $this->LogMessage(KL_WARNING, 'HM-Script result is not wellformed');
+                $HMScriptResult = $this->LoadHMScript('SysVar.exe', $HMScript);
+            } catch (Exception $exc)
+            {
+                trigger_error("Error on Read CCU Systemvariable:" . $SysVar, E_USER_NOTICE);
                 continue;
             }
-
             try
             {
                 $xmlVar = new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NONET);
-            }
-            catch (Exception $ex)
+            } catch (Exception $ex)
             {
-                $this->LogMessage(KL_WARNING, 'HM-Script result is not wellformed');
+                trigger_error("HM-Script result is not wellformed. SysVar:" . $SysVar, E_USER_NOTICE);
                 continue;
             }
-            $VarName = /*utf8_decode(*/(string) $xmlVar->Name;
+            $VarName = /* utf8_decode( */(string) $xmlVar->Name;
             $VarID = @IPS_GetObjectIDByIdent($SysVar, $this->InstanceID);
             $VarType = $this->CcuVarType[(int) $xmlVar->ValueType];
             $VarProfil = 'HM.SysVar' . (string) $this->InstanceID . '.' . (string) $SysVar;
-//            IPS_LogMessage($VarName, print_r($xmlVar, true));
             if (($VarID === false) or ( !IPS_VariableProfileExists($VarProfil)))
             {                 // neu anlegen wenn VAR neu ist oder Profil nicht vorhanden
-// löschen wenn noch vorhanden weil Var neu ist
                 if (IPS_VariableProfileExists($VarProfil))
                     IPS_DeleteVariableProfile($VarProfil);
 
                 if ((int) $xmlVar->ValueType == vtString)
                 {
                     $VarProfil = '~String';
-                }
-                else
+                } else
                 {
                     IPS_CreateVariableProfile($VarProfil, $VarType);
                     switch ($VarType)
                     {
                         case vtBoolean:
                             if (isset($xmlVar->ValueName0))
-                                IPS_SetVariableProfileAssociation($VarProfil, 0, /*utf8_decode(*/(string) $xmlVar->ValueName0, '', -1);
+                                IPS_SetVariableProfileAssociation($VarProfil, 0, /* utf8_decode( */ (string) $xmlVar->ValueName0, '', -1);
                             if (isset($xmlVar->ValueName1))
-                                IPS_SetVariableProfileAssociation($VarProfil, 1, /*utf8_decode(*/(string) $xmlVar->ValueName1, '', -1);
+                                IPS_SetVariableProfileAssociation($VarProfil, 1, /* utf8_decode( */ (string) $xmlVar->ValueName1, '', -1);
                             break;
                         case vtFloat:
                             IPS_SetVariableProfileDigits($VarProfil, strlen((string) $xmlVar->ValueMin) - strpos('.', (string) $xmlVar->ValueMin) - 1);
@@ -424,11 +430,11 @@ class HMSystemVariable extends HMBase
                             break;
                     }
                     if (isset($xmlVar->ValueUnit))
-                        IPS_SetVariableProfileText($VarProfil, '', ' ' . /*utf8_decode(*/(string) $xmlVar->ValueUnit);
+                        IPS_SetVariableProfileText($VarProfil, '', ' ' . /* utf8_decode( */(string) $xmlVar->ValueUnit);
                     if ((isset($xmlVar->ValueSubType)) and ( (int) $xmlVar->ValueSubType == 29))
                         foreach (explode(';', (string) $xmlVar->ValueList) as $Index => $ValueList)
                         {
-                            IPS_SetVariableProfileAssociation($VarProfil, $Index, /*utf8_decode(*/trim($ValueList), '', -1);
+                            IPS_SetVariableProfileAssociation($VarProfil, $Index, /* utf8_decode( */ trim($ValueList), '', -1);
                         }
                 }
             }
@@ -439,16 +445,14 @@ class HMSystemVariable extends HMBase
 
 //                $this->MaintainAction($SysVar, 'ActionHandler', true);
                 $VarID = @IPS_GetObjectIDByIdent($SysVar, $this->InstanceID);
-            }
-            else
+            } else
             {
                 if (IPS_GetName($VarID) <> $VarName)
                     IPS_SetName($VarID, $VarName);
             }
             if (IPS_GetVariable($VarID)['VariableType'] <> $VarType)
             {
-                $this->LogMessage(KL_WARNING, 'Type of CCU Systemvariable ' . $VarName . ' has changed.');
-//                throw new Exception('Type of CCU Systemvariable ' . (string) $varXml->Name . ' has changed.');
+                trigger_error('Type of CCU Systemvariable ' . $VarName . ' has changed.', E_USER_NOTICE);
                 continue;
             }
             $VarTime = new DateTime((string) $xmlVar->Timestamp . $CCUTimeZone);
@@ -489,19 +493,20 @@ class HMSystemVariable extends HMBase
             return;
         $url = 'SysVar.exe';
         $HMScript = 'State=dom.GetObject(' . $Parameter . ').State("' . $ValueStr . '");';
-        $HMScriptResult = $this->LoadHMScript($url, $HMScript);
-        if ($HMScriptResult === false)
-            return false;
+        try
+        {
+            $HMScriptResult = $this->LoadHMScript($url, $HMScript);
+        } catch (Exception $exc)
+        {
+            throw new Exception("Error on write CCU Systemvariable.", E_USER_NOTICE);
+        }
         try
         {
             $xml = new SimpleXMLElement($HMScriptResult, LIBXML_NOBLANKS + LIBXML_NONET);
-        }
-        catch (Exception $ex)
+        } catch (Exception $ex)
         {
-            $this->LogMessage(KL_ERROR, 'HM-Script result is not wellformed');
-            return false;
+            throw new Exception('HM-Script result is not wellformed', E_USER_NOTICE);
         }
-
         if ((string) $xml->State == 'true')
             return true;
         else
@@ -515,22 +520,34 @@ class HMSystemVariable extends HMBase
 //        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
         $VarID = $this->GetStatusVarIDex($Ident);
         if (!$this->HasActiveParent())
-            throw new Exception('Instance has no active Parent Instance!');
+        {
+            trigger_error('Instance has no active Parent Instance!', E_USER_NOTICE);
+            return false;
+        }
         switch (IPS_GetVariable($VarID)['VariableType'])
         {
             case vtBoolean:
                 if (!is_bool($Value))
-                    throw new Exception('Wrong Datatype for ' . $VarID);
+                {
+                    trigger_error('Wrong Datatype for ' . $VarID, E_USER_NOTICE);
+                    return false;
+                }
                 $this->WriteValueBoolean($Ident, (bool) $Value);
                 break;
             case vtInteger:
                 if (!is_numeric($Value))
-                    throw new Exception('Wrong Datatype for ' . $VarID);
+                {
+                    trigger_error('Wrong Datatype for ' . $VarID, E_USER_NOTICE);
+                    return false;
+                }
                 $this->WriteValueInteger($Ident, (int) $Value);
                 break;
             case vtFloat:
                 if ((!is_float($Value)) and ( !is_numeric($Value)))
-                    throw new Exception('Wrong Datatype for ' . $VarID);
+                {
+                    trigger_error('Wrong Datatype for ' . $VarID, E_USER_NOTICE);
+                    return false;
+                }
                 $this->WriteValueFloat($Ident, (float) $Value);
                 break;
             case vtString:
@@ -543,7 +560,7 @@ class HMSystemVariable extends HMBase
     {
         $VarID = @IPS_GetObjectIDByIdent($Ident, $this->InstanceID);
         if ($VarID === false)
-            throw new Exception('Ident ' . $Ident . ' do not exist.');
+            throw new Exception('Ident ' . $Ident . ' do not exist.', E_USER_NOTICE);
         else
             return $VarID;
     }
@@ -559,11 +576,18 @@ class HMSystemVariable extends HMBase
 //        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
 
         if (!$this->HasActiveParent())
-            throw new Exception("Instance has no active Parent Instance!");
-        else
         {
-            $this->GetParentData();
+            trigger_error("Instance has no active Parent Instance!", E_USER_NOTICE);
+            return false;
+        }
+        
+        $this->GetParentData();
+        try
+        {
             return $this->ReadSysVars();
+        } catch (Exception $exc)
+        {
+            trigger_error($exc->getMessage(), $exc->getCode());
         }
     }
 
@@ -576,23 +600,34 @@ class HMSystemVariable extends HMBase
     {
         $VarID = $this->GetStatusVarIDex($Parameter);
         if (IPS_GetVariable($VarID)['VariableType'] <> vtBoolean)
-            throw new Exception('Wrong Datatype for ' . $VarID);
-        else
         {
-            if ($Value)
-                $ValueStr = 'true';
-            else
-                $ValueStr = 'false';
-
-            if (!$this->WriteSysVar($Parameter, $ValueStr))
-                throw new Exception('Error on write Data ' . $VarID);
-            else
-            {
-                if ($this->ReadPropertyBoolean('EmulateStatus') === true)
-                    SetValueBoolean($VarID, $Value);
-                return true;
-            }
+            trigger_error('Wrong Datatype for ' . $VarID, E_USER_NOTICE);
+            return false;
         }
+
+        if ($Value)
+            $ValueStr = 'true';
+        else
+            $ValueStr = 'false';
+
+        try
+        {
+            $Result = $this->WriteSysVar($Parameter, $ValueStr);
+        } catch (Exception $exc)
+        {
+            trigger_error($exc->getMessage(), $exc->getCode());
+            return false;
+        }
+
+        if ($Result === true)
+        {
+            if ($this->ReadPropertyBoolean('EmulateStatus') === true)
+                SetValueBoolean($VarID, $Value);
+            return true;
+        }
+
+        trigger_error('Error on write Data ' . $VarID, E_USER_NOTICE);
+        return false;
     }
 
     public function WriteValueInteger(string $Parameter, integer $Value)
@@ -603,19 +638,29 @@ class HMSystemVariable extends HMBase
     public function WriteValueInteger2(string $Parameter, integer $Value)
     {
         $VarID = $this->GetStatusVarIDex($Parameter);
+
         if (IPS_GetVariable($VarID)['VariableType'] <> vtInteger)
-            throw new Exception('Wrong Datatype for ' . $VarID);
-        else
         {
-            if (!$this->WriteSysVar($Parameter, (string) $Value))
-                throw new Exception('Error on write Data ' . $VarID);
-            else
-            {
-                if ($this->ReadPropertyBoolean('EmulateStatus') === true)
-                    SetValueInteger($VarID, $Value);
-                return true;
-            }
+            trigger_error('Wrong Datatype for ' . $VarID, E_USER_NOTICE);
+            return false;
         }
+
+        try
+        {
+            $Result = $this->WriteSysVar($Parameter, (string) $Value);
+        } catch (Exception $exc)
+        {
+            trigger_error($exc->getMessage(), $exc->getCode());
+            return false;
+        }
+        if ($Result === true)
+        {
+            if ($this->ReadPropertyBoolean('EmulateStatus') === true)
+                SetValueInteger($VarID, $Value);
+            return true;
+        }
+        trigger_error('Error on write Data ' . $VarID, E_USER_NOTICE);
+        return false;
     }
 
     public function WriteValueFloat(string $Parameter, float $Value)
@@ -627,18 +672,29 @@ class HMSystemVariable extends HMBase
     {
         $VarID = $this->GetStatusVarIDex($Parameter);
         if (IPS_GetVariable($VarID)['VariableType'] <> vtFloat)
-            throw new Exception('Wrong Datatype for ' . $VarID);
-        else
         {
-            if (!$this->WriteSysVar($Parameter, (string) $Value))
-                throw new Exception('Error on write Data ' . $VarID);
-            else
-            {
-                if ($this->ReadPropertyBoolean('EmulateStatus') === true)
-                    SetValueFloat($VarID, $Value);
-                return true;
-            }
+            trigger_error('Wrong Datatype for ' . $VarID, E_USER_NOTICE);
+            return false;
         }
+
+        try
+        {
+            $Result = $this->WriteSysVar($Parameter, (string) $Value);
+        } catch (Exception $exc)
+        {
+            trigger_error($exc->getMessage(), $exc->getCode());
+            return false;
+        }
+
+        if ($Result === true)
+        {
+            if ($this->ReadPropertyBoolean('EmulateStatus') === true)
+                SetValueFloat($VarID, $Value);
+            return true;
+        }
+
+        trigger_error('Error on write Data ' . $VarID, E_USER_NOTICE);
+        return false;
     }
 
     public function WriteValueString(string $Parameter, string $Value)
@@ -650,18 +706,28 @@ class HMSystemVariable extends HMBase
     {
         $VarID = $this->GetStatusVarIDex($Parameter);
         if (IPS_GetVariable($VarID)['VariableType'] <> vtString)
-            throw new Exception('Wrong Datatype for ' . $VarID);
-        else
         {
-            if (!$this->WriteSysVar($Parameter, (string) $Value))
-                throw new Exception('Error on write Data ' . $VarID);
-            else
-            {
-                if ($this->ReadPropertyBoolean('EmulateStatus') === true)
-                    SetValueString($VarID, $Value);
-                return true;
-            }
+            trigger_error('Wrong Datatype for ' . $VarID, E_USER_NOTICE);
+            return false;
         }
+        try
+        {
+            $Result = $this->WriteSysVar($Parameter, (string) $Value);
+        } catch (Exception $exc)
+        {
+            trigger_error($exc->getMessage(), $exc->getCode());
+            return false;
+        }
+
+        if ($Result === true)
+        {
+            if ($this->ReadPropertyBoolean('EmulateStatus') === true)
+                SetValueString($VarID, $Value);
+            return true;
+        }
+
+        trigger_error('Error on write Data ' . $VarID, E_USER_NOTICE);
+        return false;
     }
 
 }
