@@ -240,7 +240,7 @@ class HMBase extends IPSModule
         if ($id > 0)
         {
             if (!IPS_EventExists($id))
-                throw new Exception("Ident with name " . $Name . " is used for wrong object type", E_USER_ERROR);
+                throw new Exception("Ident with name " . $Name . " is used for wrong object type", E_USER_WARNING);
 
             if (IPS_GetEvent($id)['EventType'] <> 1)
             {
@@ -286,9 +286,9 @@ class HMBase extends IPSModule
     {
         $id = @IPS_GetObjectIDByIdent($Name, $this->InstanceID);
         if ($id === false)
-            throw new Exception('Timer not present', E_USER_ERROR);
+            throw new Exception('Timer not present', E_USER_WARNING);
         if (!IPS_EventExists($id))
-            throw new Exception('Timer not present', E_USER_ERROR);
+            throw new Exception('Timer not present', E_USER_WARNING);
 
         $Event = IPS_GetEvent($id);
 
