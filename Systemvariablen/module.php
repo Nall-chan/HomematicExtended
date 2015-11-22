@@ -375,9 +375,12 @@ class HMSystemVariable extends HMBase
             $HMScript = 'Name=dom.GetObject(' . $SysVar . ').Name();' . PHP_EOL
                     . 'ValueType=dom.GetObject(' . $SysVar . ').ValueType();' . PHP_EOL
                     . 'ValueSubType=dom.GetObject(' . $SysVar . ').ValueSubType();' . PHP_EOL
-                    . 'Value=dom.GetObject(' . $SysVar . ').Value();' . PHP_EOL
-                    . 'Variable=dom.GetObject(' . $SysVar . ').Variable();' . PHP_EOL
-                    . 'LastValue=dom.GetObject(' . $SysVar . ').LastValue();' . PHP_EOL
+//                    . 'Value=dom.GetObject(' . $SysVar . ').Value();' . PHP_EOL
+//                    . 'Variable=dom.GetObject(' . $SysVar . ').Variable();' . PHP_EOL
+//                    . 'LastValue=dom.GetObject(' . $SysVar . ').LastValue();' . PHP_EOL
+                    . 'WriteLine("\""+dom.GetObject(' . $SysVar . ').Value()+"\"");' . PHP_EOL
+                    . 'WriteLine("\""+dom.GetObject(' . $SysVar . ').Variable()+"\"");' . PHP_EOL
+                    . 'WriteLine("\""+dom.GetObject(' . $SysVar . ').LastValue()+"\"");' . PHP_EOL                    
                     . 'Timestamp=dom.GetObject(' . $SysVar . ').Timestamp();' . PHP_EOL
                     . 'ValueList=dom.GetObject(' . $SysVar . ').ValueList();' . PHP_EOL
                     . 'ValueName0=dom.GetObject(' . $SysVar . ').ValueName0();' . PHP_EOL
@@ -393,14 +396,19 @@ class HMSystemVariable extends HMBase
                 trigger_error("Error on Read CCU Systemvariable:" . $SysVar, E_USER_NOTICE);
                 continue;
             }
-            try
-            {
-                $xmlVar = new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NONET);
-            } catch (Exception $ex)
+#            try
+#            {
+            $lines = explode("\r\n",$HMScriptResult);
+            $xmlVar = @new SimpleXMLElement(utf8_encode(array_pop($lines)), LIBXML_NONET);
+#            } catch (Exception $ex)
+            if ($xmlVar===false)
             {
                 trigger_error("HM-Script result is not wellformed. SysVar:" . $SysVar, E_USER_NOTICE);
                 continue;
             }
+            $xmlVar->addChild('Value',$lines[0]);
+            $xmlVar->addChild('Variable',$lines[1]);
+            $xmlVar->addChild('LastValue',$lines[2]);
             $VarName = /* utf8_decode( */(string) $xmlVar->Name;
             $VarID = @IPS_GetObjectIDByIdent($SysVar, $this->InstanceID);
             $VarType = $this->CcuVarType[(int) $xmlVar->ValueType];
