@@ -378,9 +378,9 @@ class HMSystemVariable extends HMBase
 //                    . 'Value=dom.GetObject(' . $SysVar . ').Value();' . PHP_EOL
 //                    . 'Variable=dom.GetObject(' . $SysVar . ').Variable();' . PHP_EOL
 //                    . 'LastValue=dom.GetObject(' . $SysVar . ').LastValue();' . PHP_EOL
-                    . 'WriteLine("\""+dom.GetObject(' . $SysVar . ').Value()+"\"");' . PHP_EOL
-                    . 'WriteLine("\""+dom.GetObject(' . $SysVar . ').Variable()+"\"");' . PHP_EOL
-                    . 'WriteLine("\""+dom.GetObject(' . $SysVar . ').LastValue()+"\"");' . PHP_EOL                    
+                    . 'WriteLine(dom.GetObject(' . $SysVar . ').Value());' . PHP_EOL
+                    . 'WriteLine(dom.GetObject(' . $SysVar . ').Variable());' . PHP_EOL
+                    . 'WriteLine(dom.GetObject(' . $SysVar . ').LastValue());' . PHP_EOL                    
                     . 'Timestamp=dom.GetObject(' . $SysVar . ').Timestamp();' . PHP_EOL
                     . 'ValueList=dom.GetObject(' . $SysVar . ').ValueList();' . PHP_EOL
                     . 'ValueName0=dom.GetObject(' . $SysVar . ').ValueName0();' . PHP_EOL
