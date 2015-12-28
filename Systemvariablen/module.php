@@ -271,7 +271,7 @@ class HMSystemVariable extends HMBase
                     }
                     else
                     {  //ist HM Device
-                        if (strpos( IPS_GetProperty($parent, "Address"),'BidCoS-RF:') === false)
+                        if (strpos(IPS_GetProperty($parent, "Address"), 'BidCoS-RF:') === false)
                         {
                             $this->SetStatus(107);  //Warnung vermutlich falscher Trigger                        
                         }
@@ -396,6 +396,7 @@ class HMSystemVariable extends HMBase
 
         foreach (explode(chr(0x09), (string) $xmlVars->SysVars) as $SysVar)
         {
+            $VarIdent = $SysVar;
             $HMScript = 'Name=dom.GetObject(' . $SysVar . ').Name();' . PHP_EOL
                     . 'ValueType=dom.GetObject(' . $SysVar . ').ValueType();' . PHP_EOL
                     . 'integer Type=dom.GetObject(' . $SysVar . ').Type();' . PHP_EOL
@@ -423,10 +424,12 @@ class HMSystemVariable extends HMBase
             if ((int) $xmlVar->Type == 2113)
                 if (!$this->ReadPropertyBoolean('EnableAlarmDP'))
                     continue;
+                else
+                    $VarIdent = 'AlDP' . $SysVar;
             $xmlVar->addChild('Value', $lines[0]);
             $xmlVar->addChild('Variable', $lines[1]);
             $xmlVar->addChild('LastValue', $lines[2]);
-            $VarID = @IPS_GetObjectIDByIdent($SysVar, $this->InstanceID);
+            $VarID = @IPS_GetObjectIDByIdent($VarIdent, $this->InstanceID);
             $VarType = $this->CcuVarType[(int) $xmlVar->ValueType];
             $VarProfil = 'HM.SysVar' . (string) $this->InstanceID . '.' . (string) $SysVar;
             $VarName = /* utf8_decode( */(string) $xmlVar->Name;
@@ -490,12 +493,11 @@ class HMSystemVariable extends HMBase
             }
             if ($VarID === false)
             {
-                $this->MaintainVariable($SysVar, $VarName, $VarType, $VarProfil, 0, true);
-                if ((int) $xmlVar->Type <> 2113)
-                    $this->EnableAction($SysVar);
-
+                $this->MaintainVariable($VarIdent, $VarName, $VarType, $VarProfil, 0, true);
+//                if ((int) $xmlVar->Type <> 2113)
+//                    $this->EnableAction($VarIdent);
 //                $this->MaintainAction($SysVar, 'ActionHandler', true);
-                $VarID = @IPS_GetObjectIDByIdent($SysVar, $this->InstanceID);
+                $VarID = @IPS_GetObjectIDByIdent($VarIdent, $this->InstanceID);
             }
             else
             {
@@ -539,7 +541,7 @@ class HMSystemVariable extends HMBase
 
     private function ProcessAlarmVariable($ParentID, $SysVar, $CCUTimeZone)
     {
-        $HMScript =    'Value = dom.GetObject(' . $SysVar . ').Value();
+        $HMScript = 'Value = dom.GetObject(' . $SysVar . ').Value();
                         string FirstTime = dom.GetObject(' . $SysVar . ').AlOccurrenceTime();
                         string LastTime = dom.GetObject(' . $SysVar . ').LastTriggerTime();
                         integer LastTriggerID = dom.GetObject(' . $SysVar . ').LastTriggerID();
@@ -598,8 +600,16 @@ class HMSystemVariable extends HMBase
             $ScriptData['Room'] = (string) $xmlData->Room;
             $ScriptData['ChannelName'] = (string) $xmlData->ChannelName;
             $Channel = explode('.', (string) $xmlData->oLastTrigger);
-            $ScriptData['Channel'] = $Channel[1];
-            $ScriptData['DP'] = $Channel[2];
+            if (count($Channel) >= 2)
+            {
+                $ScriptData['Channel'] = $Channel[1];
+                $ScriptData['DP'] = $Channel[2];
+            }
+            else
+            {
+                $ScriptData['Channel'] = 'unbekannt';
+                $ScriptData['DP'] = 'unbekannt';
+            }
         }
         else
         {
@@ -609,13 +619,6 @@ class HMSystemVariable extends HMBase
             $ScriptData['ChannelName'] = '';
             $ScriptData['Channel'] = '';
             $ScriptData['DP'] = '';
-        }
-        $ReceiptVarID = @IPS_GetObjectIDByIdent('Receipt', $ParentID);
-        if ($ReceiptVarID == false)
-        {
-            $this->RegisterSubVariable($ParentID, 'Receipt', 'Alarmbearbeitung', vtInteger, 'HM.AlReceipt');
-            $this->EnableAction('Receipt');
-//            IPS_EnableAction($ParentID, 'Receipt');
         }
 
         SetValueBoolean($ParentID, $ScriptData['VALUE']);
@@ -701,17 +704,6 @@ class HMSystemVariable extends HMBase
 
 
 
-
-
-
-
-
-
-
-
-
-
-
                 
 //check for type mismatch
             if (IPS_GetVariable($vid)["VariableType"] != $Type)
@@ -753,10 +745,10 @@ class HMSystemVariable extends HMBase
             trigger_error('Instance has no active Parent Instance!', E_USER_NOTICE);
             return false;
         }
-        if ($Ident == 'Receipt')
+        if (strpos($Ident, 'AlDP') !== false)
         {
-            //$this->AlarmReceipt();
-            IPS_LogMessage('Request', print_r($_IPS, true));
+            $this->AlarmReceipt(substr($Ident, 4));
+//            IPS_LogMessage('Request', print_r($_IPS, true));
             return true;
         }
         $VarID = $this->GetStatusVarIDex($Ident);
@@ -793,6 +785,31 @@ class HMSystemVariable extends HMBase
      * This function will be available automatically after the module is imported with the module control.
      * Using the custom prefix this function will be callable from PHP and JSON-RPC through:
      */
+
+    public function AlarmReceipt($Ident)
+    {
+        $HMScript = 'oitemID = dom.GetObject(' . $Ident . ');
+                   if (oitemID.AlState() == asOncoming )
+                   {
+                    oitemID.AlReceipt();
+                   }';
+        try
+        {
+            $HMScriptResult = $this->LoadHMScript('SysVar.exe', $HMScript);
+        }
+        catch (Exception $exc)
+        {
+            trigger_error($exc->getMessage(), E_USER_NOTICE);
+            return false;
+        }
+        $xmlData = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NONET);
+        if ($xmlData === false)
+        {
+            trigger_error("HM-Script result is not wellformed. SysVar:" . $SysVar, E_USER_NOTICE);
+            return false;
+        }
+        IPS_LogMessage('ALARM', print_r($xmlData, true));
+    }
 
     public function ReadSystemVariables()
     {
