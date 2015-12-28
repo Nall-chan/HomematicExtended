@@ -747,7 +747,7 @@ class HMSystemVariable extends HMBase
         }
         if (strpos($Ident, 'AlDP') !== false)
         {
-            $this->AlarmReceipt(substr($Ident, 4));
+            if ((bool)$Value ===false) $this->AlarmReceipt(substr($Ident, 4));
 //            IPS_LogMessage('Request', print_r($_IPS, true));
             return true;
         }
