@@ -614,8 +614,8 @@ class HMSystemVariable extends HMBase
         if ($ReceiptVarID == false)
         {
             $this->RegisterSubVariable($ParentID, 'Receipt', 'Alarmbearbeitung', vtInteger, 'HM.AlReceipt');
-//            $this->EnableAction('Receipt');
-            IPS_EnableAction($ParentID, 'Receipt');
+            $this->EnableAction('Receipt');
+//            IPS_EnableAction($ParentID, 'Receipt');
         }
 
         SetValueBoolean($ParentID, $ScriptData['VALUE']);
