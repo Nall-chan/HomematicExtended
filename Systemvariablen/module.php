@@ -495,7 +495,7 @@ class HMSystemVariable extends HMBase
             {
                 $this->MaintainVariable($VarIdent, $VarName, $VarType, $VarProfil, 0, true);
 //                if ((int) $xmlVar->Type <> 2113)
-//                    $this->EnableAction($VarIdent);
+                    $this->EnableAction($VarIdent);
 //                $this->MaintainAction($SysVar, 'ActionHandler', true);
                 $VarID = @IPS_GetObjectIDByIdent($VarIdent, $this->InstanceID);
             }
@@ -786,7 +786,7 @@ class HMSystemVariable extends HMBase
      * Using the custom prefix this function will be callable from PHP and JSON-RPC through:
      */
 
-    public function AlarmReceipt($Ident)
+    public function AlarmReceipt(string $Ident)
     {
         $HMScript = 'oitemID = dom.GetObject(' . $Ident . ');
                    if (oitemID.AlState() == asOncoming )
