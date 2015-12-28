@@ -216,7 +216,14 @@ class HMBase extends IPSModule
     }
 
 ################## DUMMYS / WOARKAROUNDS - protected
-
+    protected function SetStatus($InstanceStatus)
+    {
+        IPS_LogMessage('Status',$InstanceStatus);
+        if ($InstanceStatus <>
+                IPS_GetInstance($this->InstanceID)['InstanceStatus'])
+            parent::SetStatus($InstanceStatus);
+    }
+    
     protected function HasActiveParent()
     {
 //        IPS_LogMessage(__CLASS__, __FUNCTION__); //          

@@ -4,7 +4,7 @@
                 {
                     "name": "EventID",
                     "type": "SelectVariable",
-                    "caption": "Trigger fÃ¼r Refresh"
+                    "caption": "Trigger für Refresh"
                 },
                 {
                     "name": "Interval",
@@ -15,14 +15,24 @@
                     "name": "EmulateStatus",
                     "type": "CheckBox",
                     "caption": "Status emulieren"
-                }
+                },
+                {
+                    "name": "EnableAlarmDP",
+                    "type": "CheckBox",
+                    "caption": "Alarm-Variablen aktiv"
+                },
+                {
+                    "name": "AlarmScriptID",
+                    "type": "SelectScript",
+                    "caption": "Script für Alarmverarbeitung"
+                }                
             ],
     "status":
             [
                 {
                     "code": 102,
                     "icon": "active",
-                    "caption": "Konfiguration gÃ¼ltig."
+                    "caption": "Konfiguration gültig."
                 },
                 {
                     "code": 104,
