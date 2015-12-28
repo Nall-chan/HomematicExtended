@@ -799,7 +799,7 @@ class HMSystemVariable extends HMBase
         if ($this->HMAddress == '')
             return;
         
-        $HMScript = 'oitemID = dom.GetObject(' . $Ident . ');
+        $HMScript = 'object oitemID = dom.GetObject(' . $Ident . ');
                    if (oitemID.AlState() == asOncoming )
                    {
                     oitemID.AlReceipt();
