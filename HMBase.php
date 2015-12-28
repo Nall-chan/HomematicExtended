@@ -203,7 +203,7 @@ class HMBase extends IPSModule
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_CONNECTTIMEOUT_MS, 1000);
             curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
-            curl_setopt($ch, CURLOPT_TIMEOUT_MS, 1000);
+            curl_setopt($ch, CURLOPT_TIMEOUT_MS, 5000);
             $result = curl_exec($ch);
             curl_close($ch);
             if ($result === false)

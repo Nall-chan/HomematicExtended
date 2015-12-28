@@ -445,7 +445,7 @@ class HMSystemVariable extends HMBase
             }
             catch (Exception $exc)
             {
-                trigger_error("Error on Read CCU Systemvariable:" . $SysVar, E_USER_NOTICE);
+                trigger_error($exc->getMessage(), E_USER_NOTICE);
                 continue;
             }
 #            try
