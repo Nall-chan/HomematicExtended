@@ -585,12 +585,12 @@ class HMSystemVariable extends HMBase
         $FirstTimeID = $this->RegisterSubVariable($ParentID, 'FirstTime', 'Erster Alarm', vtInteger, '~UnixTimestamp');
         SetValueInteger($FirstTimeID, $ScriptData['FirstTime']);
         $RoomID = $this->RegisterSubVariable($ParentID, 'Room', 'Raum', vtString);
-        SetValueInteger($RoomID, $ScriptData['Room']);
+        SetValueString($RoomID, $ScriptData['Room']);
         $ChannelNameID = $this->RegisterSubVariable($ParentID, 'ChannelName', 'Name', vtString);
-        SetValueInteger($ChannelNameID, $ScriptData['ChannelName']);
+        SetValueString($ChannelNameID, $ScriptData['ChannelName']);
         
         $ScriptID = $this->ReadPropertyString('AlarmScriptID');
-        if ($ScriptData > 0)
+        if ($ScriptID > 0)
         {
             IPS_RunScriptEx($ScriptID,$ScriptData);
         }
