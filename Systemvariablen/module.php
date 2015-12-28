@@ -788,6 +788,17 @@ class HMSystemVariable extends HMBase
 
     public function AlarmReceipt(string $Ident)
     {
+        if ($this->fKernelRunlevel <> KR_READY)
+            return false;
+        if (!$this->HasActiveParent())
+        {
+            trigger_error("Instance has no active Parent Instance!", E_USER_NOTICE);
+            return false;
+        }
+        $this->GetParentData();
+        if ($this->HMAddress == '')
+            return;
+        
         $HMScript = 'oitemID = dom.GetObject(' . $Ident . ');
                    if (oitemID.AlState() == asOncoming )
                    {
