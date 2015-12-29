@@ -495,7 +495,7 @@ class HMSystemVariable extends HMBase
             {
                 $this->MaintainVariable($VarIdent, $VarName, $VarType, $VarProfil, 0, true);
 //                if ((int) $xmlVar->Type <> 2113)
-                    $this->EnableAction($VarIdent);
+                $this->EnableAction($VarIdent);
 //                $this->MaintainAction($SysVar, 'ActionHandler', true);
                 $VarID = @IPS_GetObjectIDByIdent($VarIdent, $this->InstanceID);
             }
@@ -704,6 +704,7 @@ class HMSystemVariable extends HMBase
 
 
 
+
                 
 //check for type mismatch
             if (IPS_GetVariable($vid)["VariableType"] != $Type)
@@ -747,7 +748,8 @@ class HMSystemVariable extends HMBase
         }
         if (strpos($Ident, 'AlDP') !== false)
         {
-            if ((bool)$Value ===false) $this->AlarmReceipt($Ident);
+            if ((bool) $Value === false)
+                $this->AlarmReceipt($Ident);
 //            IPS_LogMessage('Request', print_r($_IPS, true));
             return true;
         }
@@ -798,7 +800,8 @@ class HMSystemVariable extends HMBase
         $this->GetParentData();
         if ($this->HMAddress == '')
             return;
-        
+        $VarID = $this->GetStatusVarIDex($Ident);
+
         $HMScript = 'object oitemID = dom.GetObject(' . substr($Ident, 4) . ');
                    if (oitemID.AlState() == asOncoming )
                    {
@@ -819,7 +822,15 @@ class HMSystemVariable extends HMBase
             trigger_error("HM-Script result is not wellformed. SysVar:" . $Ident, E_USER_NOTICE);
             return false;
         }
-        IPS_LogMessage('ALARM', print_r($xmlData, true));
+        if ((int) $xmlData->State == 1)
+        {
+            if ($this->ReadPropertyBoolean('EmulateStatus') === true)
+                SetValueBoolean($VarID, false);
+            return true;
+        }
+
+        trigger_error('Error on receipt alarm of ' . $VarID, E_USER_NOTICE);
+        return false;
     }
 
     public function ReadSystemVariables()
