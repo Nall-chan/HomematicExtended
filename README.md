@@ -160,6 +160,8 @@ Erweitert IPS um die native Unterstützung von:
     Hier entspricht der Parameter mit dem Namen 'Parameter' dem IDENT der Systemvariable.  
     (Die IDENT werden unter dem Reiter 'Statusvariablen' des Einstellungsdialogs der Instanz angezeigt.)  
 
+   **ACHTUNG bei IPS 4.0: Aktuell müssen die Funktionen HM_WriteValueBoolean2, HM_WriteValueFloat2, HM_WriteValueInteger2 und HM_WriteValueString2 verwendet werden!**
+
     **Beispiele:**  
 
         HM_WriteValueBoolean(integer $InstantID /*[HomeMatic Systemvariablen]*/, string '950' /* IDENT von Anwesenheit */, boolean true);  
