@@ -747,7 +747,7 @@ class HMSystemVariable extends HMBase
         }
         if (strpos($Ident, 'AlDP') !== false)
         {
-            if ((bool)$Value ===false) $this->AlarmReceipt(substr($Ident, 4));
+            if ((bool)$Value ===false) $this->AlarmReceipt($Ident);
 //            IPS_LogMessage('Request', print_r($_IPS, true));
             return true;
         }
@@ -799,10 +799,10 @@ class HMSystemVariable extends HMBase
         if ($this->HMAddress == '')
             return;
         
-        $HMScript = 'object oitemID = dom.GetObject(' . $Ident . ');
+        $HMScript = 'object oitemID = dom.GetObject(' . substr($Ident, 4) . ');
                    if (oitemID.AlState() == asOncoming )
                    {
-                    oitemID.AlReceipt();
+                    var State = oitemID.AlReceipt();
                    }';
         try
         {
@@ -816,7 +816,7 @@ class HMSystemVariable extends HMBase
         $xmlData = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NONET);
         if ($xmlData === false)
         {
-            trigger_error("HM-Script result is not wellformed. SysVar:" . $SysVar, E_USER_NOTICE);
+            trigger_error("HM-Script result is not wellformed. SysVar:" . $Ident, E_USER_NOTICE);
             return false;
         }
         IPS_LogMessage('ALARM', print_r($xmlData, true));
