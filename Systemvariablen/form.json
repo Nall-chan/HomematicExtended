@@ -40,29 +40,14 @@
                     "caption": "Kein Trigger oder Interval aktiv."
                 },
                 {
-                    "code": 105,
-                    "icon": "active",
-                    "caption": "Status emulieren nur empfohlen bei Interval."
-                },
-                {
-                    "code": 106,
-                    "icon": "active",
-                    "caption": "Nur Trigger oder Interval empfohlen."
-                },
-                {
-                    "code": 107,
-                    "icon": "active",
-                    "caption": "Trigger scheint keine Virt. FB der CCU zu sein."
-                },
-                {
-                    "code": 108,
-                    "icon": "inactive",
-                    "caption": "Interval kleiner 5 nicht möglich."
-                },
-                {
                     "code": 202,
                     "icon": "error",
                     "caption": "Interval darf nicht kleiner 1 sein."
+                },
+                {
+                    "code": 203,
+                    "icon": "inactive",
+                    "caption": "Interval kleiner 5 nicht möglich."
                 }
             ],
     "actions":

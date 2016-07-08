@@ -7,35 +7,50 @@ class HMCCUProgram extends HMBase
 
     public function Create()
     {
-//        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
-//Never delete this line!
         parent::Create();
         $this->RegisterPropertyInteger("Protocol", 0);
-        $this->RegisterPropertyString("Address", "XXX9999999:2");
+        $count = @IPS_GetInstanceListByModuleID('{A5010577-C443-4A85-ABF2-3F2D6CDD2465}');
+        if (is_array($count))
+        {
+            $this->RegisterPropertyString("Address", "XXX9999998:" . count($count));
+        }
+        else
+        {
+            $this->RegisterPropertyString("Address", "XXX9999998:0");
+        }
+
+
         $this->RegisterPropertyBoolean("EmulateStatus", false);
-//These lines are parsed on Symcon Startup or Instance creation
-//You cannot use variables here. Just static values.
     }
 
     public function ApplyChanges()
     {
-//        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
-//Never delete this line!
         parent::ApplyChanges();
 
         $this->CreateProfil();
-        try
+        $this->GetParentData();
+
+        if ($this->HMAddress == '')
+            return;
+
+        if ($this->HasActiveParent())
         {
-            $this->ReadCCUPrograms();
-        } catch (Exception $exc)
-        {
-            trigger_error($exc->getMessage(), $exc->getCode());
+            try
+            {
+                $this->ReadCCUPrograms();
+            }
+            catch (Exception $exc)
+            {
+                trigger_error($exc->getMessage(), $exc->getCode());
+            }
         }
+//        $this->RegisterMessage(0, KR_READY);
+//        $this->RegisterMessage($this->InstanceID, DM_CONNECT);
+//        $this->RegisterMessage($this->InstanceID, DM_DISCONNECT);
     }
 
     private function CreateProfil()
     {
-        //IPS_LogMessage(__CLASS__, __FUNCTION__); //            
         if (!IPS_VariableProfileExists('Execute.HM'))
         {
             IPS_CreateVariableProfile('Execute.HM', 1);
@@ -45,18 +60,14 @@ class HMCCUProgram extends HMBase
 
     protected function GetParentData()
     {
-        //IPS_LogMessage(__CLASS__, __FUNCTION__); //            
         parent::GetParentData();
         $this->SetSummary($this->HMAddress);
     }
 
     private function ReadCCUPrograms()
     {
-        //IPS_LogMessage(__CLASS__, __FUNCTION__); //            
         if (!$this->HasActiveParent())
-        {
-            throw new Exception("Instance has no active Parent Instance!", E_USER_NOTICE);
-        }
+            return false;
         $this->GetParentData();
         if ($this->HMAddress == '')
         {
@@ -67,14 +78,16 @@ class HMCCUProgram extends HMBase
         try
         {
             $HMScriptResult = $this->LoadHMScript($url, $HMScript);
-        } catch (Exception $exc)
+        }
+        catch (Exception $exc)
         {
             throw new Exception("Error on Read CCU-Programs", E_USER_NOTICE);
         }
         try
         {
             $xml = new SimpleXMLElement($HMScriptResult, LIBXML_NOBLANKS + LIBXML_NONET);
-        } catch (Exception $ex)
+        }
+        catch (Exception $ex)
         {
             $this->LogMessage(KL_ERROR, 'HM-Script result is not wellformed');
             throw new Exception("Error on Read CCU-Programs", E_USER_NOTICE);
@@ -87,7 +100,8 @@ class HMCCUProgram extends HMBase
             try
             {
                 $HMScriptResult = $this->LoadHMScript($url, $HMScript);
-            } catch (Exception $exc)
+            }
+            catch (Exception $exc)
             {
                 $Result = false;
                 trigger_error("Error on read info of CCU-Program " . $SysPrg, E_USER_NOTICE);
@@ -97,7 +111,8 @@ class HMCCUProgram extends HMBase
             try
             {
                 $varXml = new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
-            } catch (Exception $ex)
+            }
+            catch (Exception $ex)
             {
                 $Result = false;
                 trigger_error("Error on read info of CCU-Program " . $SysPrg, E_USER_NOTICE);
@@ -114,7 +129,8 @@ class HMCCUProgram extends HMBase
                 $this->EnableAction($SysPrg);
                 $var = IPS_GetObjectIDByIdent($SysPrg, $this->InstanceID);
                 IPS_SetInfo($var, $Info);
-            } else
+            }
+            else
             {
                 if (IPS_GetName($var) <> $Name)
                     IPS_SetName($var, $Name);
@@ -127,11 +143,8 @@ class HMCCUProgram extends HMBase
 
     private function StartCCUProgram($Ident)
     {
-        //IPS_LogMessage(__CLASS__, __FUNCTION__); //            
         if (!$this->HasActiveParent())
-        {
-            throw new Exception("Instance has no active Parent Instance!", E_USER_NOTICE);
-        }
+            return false;
         $this->GetParentData();
         if ($this->HMAddress == '')
         {
@@ -147,7 +160,8 @@ class HMCCUProgram extends HMBase
         try
         {
             $HMScriptResult = $this->LoadHMScript($url, $HMScript);
-        } catch (Exception $exc)
+        }
+        catch (Exception $exc)
         {
             throw new Exception("Error on start CCU-Program", E_USER_NOTICE);
         }
@@ -155,7 +169,8 @@ class HMCCUProgram extends HMBase
         try
         {
             $xml = new SimpleXMLElement($HMScriptResult, LIBXML_NOBLANKS + LIBXML_NONET);
-        } catch (Exception $ex)
+        }
+        catch (Exception $ex)
         {
             throw new Exception("Error on start CCU-Program", E_USER_NOTICE);
         }
@@ -163,7 +178,8 @@ class HMCCUProgram extends HMBase
         {
             SetValueInteger($var, 0);
             return true;
-        } else
+        }
+        else
             throw new Exception("Error on start CCU-Program", E_USER_NOTICE);
     }
 
@@ -171,12 +187,12 @@ class HMCCUProgram extends HMBase
 
     public function RequestAction($Ident, $Value)
     {
-        //IPS_LogMessage(__CLASS__, __FUNCTION__ . ' Ident:.' . $Ident); //     
         unset($Value);
         try
         {
             $this->StartCCUProgram($Ident);
-        } catch (Exception $exc)
+        }
+        catch (Exception $exc)
         {
             trigger_error($exc->getMessage(), $exc->getCode());
         }
@@ -190,13 +206,14 @@ class HMCCUProgram extends HMBase
 
     public function ReadPrograms()
     {
-        //IPS_LogMessage(__CLASS__, __FUNCTION__); //            
+        if (!$this->HasActiveParent())
+            return false;
 
         try
         {
-            return $this->ReadCCUPrograms(); 
-
-        } catch (Exception $exc)
+            return $this->ReadCCUPrograms();
+        }
+        catch (Exception $exc)
         {
             trigger_error($exc->getMessage(), $exc->getCode());
             return false;
@@ -205,11 +222,14 @@ class HMCCUProgram extends HMBase
 
     public function StartProgram(string $Parameter)
     {
-        //IPS_LogMessage(__CLASS__, __FUNCTION__); //            
+        if (!$this->HasActiveParent())
+            return false;
+
         try
         {
             return $this->StartCCUProgram($Parameter);
-        } catch (Exception $exc)
+        }
+        catch (Exception $exc)
         {
             trigger_error($exc->getMessage(), $exc->getCode());
             return false;

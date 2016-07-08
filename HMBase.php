@@ -169,7 +169,7 @@ class HMBase extends IPSModule
 
     public function ReceiveData($JSONString)
     {
-        //We dont need any Data...
+        //We dont need any Data...here
     }
 
 ################## protected
@@ -225,7 +225,6 @@ class HMBase extends IPSModule
     
     protected function HasActiveParent()
     {
-//        IPS_LogMessage(__CLASS__, __FUNCTION__); //          
         $instance = @IPS_GetInstance($this->InstanceID);
         if ($instance['ConnectionID'] > 0)
         {
@@ -235,7 +234,7 @@ class HMBase extends IPSModule
         }
         return false;
     }
-
+/*
     protected function RegisterTimer($Name, $Interval, $Script)
     {
         $id = @IPS_GetObjectIDByIdent($Name, $this->InstanceID);
@@ -276,7 +275,7 @@ class HMBase extends IPSModule
             IPS_SetEventActive($id, false);
         }
     }
-
+*/
     protected function UnregisterTimer($Name)
     {
         $id = @IPS_GetObjectIDByIdent($Name, $this->InstanceID);
@@ -287,7 +286,7 @@ class HMBase extends IPSModule
             IPS_DeleteEvent($id);
         }
     }
-
+/*
     protected function SetTimerInterval($Name, $Interval)
     {
         $id = @IPS_GetObjectIDByIdent($Name, $this->InstanceID);
@@ -311,17 +310,14 @@ class HMBase extends IPSModule
                 IPS_SetEventActive($id, true);
         }
     }
-
+*/
+    /*
     protected function LogMessage($data, $cata)
     {
         IPS_LogMessage(__CLASS__, __FUNCTION__ . ':' . $data . ':' . $cata); //
-    }
+    }*/
 
-    protected function SetSummary($data)
-    {
-        //IPS_LogMessage(__CLASS__, __FUNCTION__ . "Data:" . $data); //                   
-    }
-    //Remove on next Symcon update
+    //Remove on next Symcon update...  year ;) ?
     protected function RegisterProfileInteger($Name, $Icon, $Prefix, $Suffix, $MinValue, $MaxValue, $StepSize)
     {
 

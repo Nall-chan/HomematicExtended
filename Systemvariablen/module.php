@@ -11,15 +11,17 @@ class HMSystemVariable extends HMBase
 
     public function Create()
     {
-//        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
-//Never delete this line!
         parent::Create();
-
-//These lines are parsed on Symcon Startup or Instance creation
-//You cannot use variables here. Just static values.
         $this->RegisterPropertyInteger("Protocol", 0);
-        $this->RegisterPropertyString("Address", "XXX9999999:1");
-
+        $count = @IPS_GetInstanceListByModuleID('{AF50C42B-7183-4992-B04A-FAFB07BB1B90}');
+        if (is_array($count))
+        {
+            $this->RegisterPropertyString("Address", "XXX9999999:" . count($count));
+        }
+        else
+        {
+            $this->RegisterPropertyString("Address", "XXX9999999:0");
+        }
         $this->RegisterPropertyInteger("EventID", 0);
         $this->RegisterPropertyInteger("Interval", 0);
         $this->RegisterPropertyBoolean("EmulateStatus", false);
@@ -30,157 +32,42 @@ class HMSystemVariable extends HMBase
         $this->RegisterTimer("ReadHMSysVar", 0, 'HM_ReadSystemVariables($_IPS[\'TARGET\']);');
     }
 
-    /*
-      //public function ProcessInstanceStatusChange($InstanceID, $Status)
-      {
-      IPS_LogMessage(__CLASS__, __FUNCTION__); //
-
-      if ($this->fKernelRunlevel == KR_READY)
-      { */
+    public function MessageSink($TimeStamp, $SenderID, $Message, $Data)
+    {
+        ob_start();
+        var_dump($Data);
+        $dump = ob_get_clean();
+        IPS_LogMessage('MessageSink:'.$Message .":". $SenderID, $dump);
+    }
 
 // FIX ME....
     /*
-     * @IPS_GetInstanceParentID replace
-      protected function GetParentData()
-      {
-      IPS_LogMessage(__CLASS__, __FUNCTION__); //
-      $result = '';
-      $instance = IPS_GetInstance($this->InstanceID);
-      if ($instance['ConnectionID'] > 0)
-      {
-      $parent = IPS_GetInstance($instance['ConnectionID']);
-      $result = IPS_ReadProperty($parent, 'Host');
-      }
-      $this->SetSummary($result);
-      return $result;
-      }
-     */
-    /*          if (($InstanceID == @IPS_GetInstanceParentID($this->InstanceID)) or ( $InstanceID == 0))
-      {
-      $HMAdress = $this->GetParentData();
-      if ($this->HasActiveParent())
-      {
-      if ($this->CheckConfig())
-      {
-      if ($HMAdress <> '')
-      {
-      if ($this->ReadPropertyInteger('Interval') >= 5)
-      $this->SetTimerInterval('ReadHMSysVar', $this->ReadPropertyInteger('Interval'));
-      $this->ReadSysVars();
-      }
-      } else
-      {
-      if ($this->ReadPropertyInteger('Interval') >= 5)
-      $this->SetTimerInterval('ReadHMSysVar', 0);
-      }
-      } else
-      {
-      if ($this->ReadPropertyInteger('Interval') >= 5)
-      $this->SetTimerInterval('ReadHMSysVar', 0);
-      }
-      }
-      }
-      parent::ProcessInstanceStatusChange($InstanceID, $Status);
-      }
-
-      //public function MessageSink($Msg)
-      {
-      IPS_LogMessage(__CLASS__, __FUNCTION__); //
-     */
-    /*
-     *   if (msg.Message = IPS_KERNELMESSAGE) and (msg.SenderID=0) and (Msg.Data[0] = KR_READY) then
-      begin
-      if  CheckConfig() then
-      begin
-      GetParentData();
-      if HMAddress <> '' then
-      begin
-      ReadSysVars();
-      if (GetProperty('Interval') >= 5) then SetTimerInterval('ReadHMSysVar', GetProperty('Interval'));
-      end;
-      end;
-      end;
-      if msg.SenderID <> 0 then
-      begin
-      if msg.Message=VM_DELETE then
-      begin
-      for I := (SysIdents.Count - 1) downto 0 do
-      begin
-      if SysIdents.Items[i].IPSVarID = msg.SenderID then
-      begin
-      if fKernel.ProfilePool.VariableProfileExists('HM.SysVar'+ IntToStr(fInstanceID) +'.'+SysIdents.Items[i].HMVarID) then
-      fKernel.ProfilePool.DeleteVariableProfile('HM.SysVar'+ IntToStr(fInstanceID) +'.'+SysIdents.Items[i].HMVarID);
-      SysIdents.Delete(i);
-      end;
-      end;
-      end;
       if msg.Message=DM_CONNECT then
       begin
       if not HasActiveParent then sleep(250);
       if not HasActiveParent then exit;
       if (msg.SenderID = fInstanceID) or (msg.SenderID = fKernel.DataHandlerEx.GetInstanceParentID(fInstanceID)) then
-      begin
       GetParentData();
       if HMAddress = '' then exit;
-      if (GetProperty('Interval') >= 5) then SetTimerInterval('ReadHMSysVar', GetProperty('Interval'));
-      end;
       end;
       if msg.Message=DM_DISCONNECT then
       begin
       if (msg.SenderID = fInstanceID) or (msg.SenderID = fKernel.DataHandlerEx.GetInstanceParentID(fInstanceID)) then
-      begin
       SetSummary('No parent');
-      if (GetProperty('Interval') >= 5) then SetTimerInterval('ReadHMSysVar', 0);
-      HMAddress:='';
       end;
-      end;
-      if msg.SenderID=GetProperty('EventID') then
-      begin
-      if msg.Message=VM_UPDATE then
-      begin
-      if HasActiveParent then
-      begin
-      ReadSysVars;
-      end else begin
-      LogMessage(KL_WARNING,'EventRefresh Error - Instance has no active Parent Instance.');
-      end;
-      end else if msg.Message=VM_DELETE then
+
+      if msg.Message=VM_DELETE then
       begin
       SetProperty('EventID',0);
       ApplyChanges();
       SaveSettings();
       end;
-      end;
-      end;
-
      */
 //  }
 
     public function ApplyChanges()
     {
-//        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
-//        IPS_LogMessage('Config', print_r(json_decode(IPS_GetConfiguration($this->InstanceID)), 1));
-//Never delete this line!
         parent::ApplyChanges();
-
-//        IPS_LogMessage(__CLASS__, __FUNCTION__); //                   
-//        IPS_LogMessage('Config', print_r(json_decode(IPS_GetConfiguration($this->InstanceID)), 1));
-
-        /*
-          if ($this->fKernelRunlevel == KR_INIT)
-          {
-          foreach (IPS_GetChildrenIDs($this->InstanceID) as $Child)
-          {
-          $Objekt = IPS_GetObject($Child);
-          if ($Objekt['ObjectType'] <> 2)
-          continue;
-          $Var = IPS_GetVariable($Child);
-          $this->MaintainVariable($Objekt['ObjectIdent'], $Objekt['ObjectName'], $Var['ValueType'], 'HM.SysVar' . $this->InstanceID . '.' . $Objekt['ObjectIdent'], $Objekt['ObjectPosition'], true);
-          $this->EnableAction($Objekt['ObjectIdent']);
-          //                $this->MaintainAction($Objekt['ObjectIdent'], 'ActionHandler', true);
-          }
-          } else
-          { */
 
         $this->RegisterProfileIntegerEx('HM.AlReceipt', "", "", "", Array(
             Array(0, "Quittieren", "", 0x00FF00)
@@ -190,7 +77,7 @@ class HMSystemVariable extends HMBase
         {
             if ($this->ReadPropertyInteger("Interval") >= 5)
             {
-                $this->SetTimerInterval("ReadHMSysVar", $this->ReadPropertyInteger("Interval"));
+                $this->SetTimerInterval("ReadHMSysVar", $this->ReadPropertyInteger("Interval") * 1000);
             }
             else
             {
@@ -221,15 +108,18 @@ class HMSystemVariable extends HMBase
                 trigger_error($exc->getMessage(), $exc->getCode());
             }
         }
+        $this->RegisterMessage(0, KR_READY);
+        $this->RegisterMessage($this->InstanceID, DM_CONNECT);
+        $this->RegisterMessage($this->InstanceID, DM_DISCONNECT);
 
-//        }
+        if ($this->GetTriggerVar())
+            $this->SetReceiveDataFilter(".*" . $this->HMTriggerAddress . ".*" . $this->HMTriggerName . ".*");
     }
 
 ################## PRIVATE                
 
     private function CheckConfig()
     {
-//        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
         $Interval = $this->ReadPropertyInteger("Interval");
         $Event = $this->ReadPropertyInteger("EventID");
 
@@ -242,74 +132,63 @@ class HMSystemVariable extends HMBase
         elseif ($Interval > 4)
         {
             if ($Event == 0)
-            {
                 $this->SetStatus(IS_ACTIVE); //OK
-            }
             else
-            {
-                $this->SetStatus(106); //Trigger und Timer aktiv                      
-            }
+                $this->SetStatus(IS_ACTIVE); //Trigger und Timer aktiv                      
         }
         elseif ($Interval == 0)
         {
             if ($Event == 0)
-            {
                 $this->SetStatus(IS_INACTIVE); // kein Trigger und Timer aktiv
-            }
             else
-            {
-                if ($this->ReadPropertyBoolean("EmulateStatus") == true)
-                {
-                    $this->SetStatus(105); //Status emulieren nur empfohlen bei Interval.
-                }
-                else
-                {
-                    $parent = IPS_GetParent($Event);
-                    if (IPS_GetInstance($parent)['ModuleInfo']['ModuleID'] <> '{EE4A81C6-5C90-4DB7-AD2F-F6BBD521412E}')
-                    {
-                        $this->SetStatus(107);  //Warnung vermutlich falscher Trigger                        
-                    }
-                    else
-                    {  //ist HM Device
-                        if (strpos(IPS_GetProperty($parent, "Address"), 'BidCoS-RF:') === false)
-                        {
-                            $this->SetStatus(107);  //Warnung vermutlich falscher Trigger                        
-                        }
-                        else
-                        {
-                            $this->SetStatus(IS_ACTIVE); //OK
-                        }
-                    }
-                }
-            }
+                $this->SetStatus(IS_ACTIVE); //OK
+                /*
+                  }
+                  else
+                  {
+                  if ($this->ReadPropertyBoolean("EmulateStatus") == true)
+                  {
+                  $this->SetStatus(105); //Status emulieren nur empfohlen bei Interval.
+                  }
+                  else
+                  {
+                  $parent = IPS_GetParent($Event);
+                  if (IPS_GetInstance($parent)['ModuleInfo']['ModuleID'] <> '{EE4A81C6-5C90-4DB7-AD2F-F6BBD521412E}')
+                  {
+                  $this->SetStatus(107);  //Warnung vermutlich falscher Trigger
+                  }
+                  else
+                  {  //ist HM Device
+                  if (strpos(IPS_GetProperty($parent, "Address"), 'BidCoS-RF:') === false)
+                  {
+                  $this->SetStatus(107);  //Warnung vermutlich falscher Trigger
+                  }
+                  else
+                  {
+                  $this->SetStatus(IS_ACTIVE); //OK
+                  }
+                  }
+                  }
+                  } */
         }
         elseif ($Interval < 5)
         {
-            $this->SetStatus(108);  //Warnung Trigger zu klein                  
+            $this->SetStatus(203);  //Warnung Trigger zu klein                  
+            return false;
         }
         return true;
     }
 
-    /*
-      private function TimerFire()
-      {
-      //        IPS_LogMessage(__CLASS__, __FUNCTION__); //
-      $this->GetParentData();
-      if ($this->HMAddress == '')
-      return;
-      $this->ReadSysVars();
-      } */
-
     public function ReceiveData($JSONString)
     {
-//        IPS_LogMessage(__CLASS__, __FUNCTION__); //    
-        if (!$this->GetTriggerVar())
-            return;
-        $Data = json_decode($JSONString);
-        if ($this->HMTriggerAddress <> (string) $Data->DeviceID)
-            return;
-        if ($this->HMTriggerName <> (string) $Data->VariableName)
-            return;
+        //TODO
+//        if (!$this->GetTriggerVar())
+//            return;
+//        $Data = json_decode($JSONString);
+//        if ($this->HMTriggerAddress <> (string) $Data->DeviceID)
+//            return;
+//        if ($this->HMTriggerName <> (string) $Data->VariableName)
+//            return;
         $this->GetParentData();
         if ($this->HMAddress == '')
             return;
@@ -343,13 +222,7 @@ class HMSystemVariable extends HMBase
 
     private function ReadSysVars()
     {
-//        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
-//                    IPS_LogMessage("HomeMaticSystemvariablen", "Dummy-Module");
 
-        if (!$this->HasActiveParent())
-        {
-            throw new Exception("Instance has no active Parent Instance!", E_USER_NOTICE);
-        }
         $HMScript = 'SysVars=dom.GetObject(ID_SYSTEM_VARIABLES).EnumUsedIDs();';
         try
         {
@@ -640,7 +513,6 @@ class HMSystemVariable extends HMBase
 
     private function WriteSysVar($Parameter, $ValueStr)
     {
-//        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
         if ($this->fKernelRunlevel <> KR_READY)
             return false;
         if (!$this->HasActiveParent())
@@ -701,11 +573,6 @@ class HMSystemVariable extends HMBase
             //check if we really have a variable
             if (!IPS_VariableExists($vid))
                 throw new Exception("Ident with name " . $Ident . " is used for wrong object type"); //bail out
-
-
-
-
-                
 //check for type mismatch
             if (IPS_GetVariable($vid)["VariableType"] != $Type)
             {
@@ -740,7 +607,6 @@ class HMSystemVariable extends HMBase
 
     public function RequestAction($Ident, $Value)
     {
-//        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
         if (!$this->HasActiveParent())
         {
             trigger_error('Instance has no active Parent Instance!', E_USER_NOTICE);
@@ -750,7 +616,6 @@ class HMSystemVariable extends HMBase
         {
             if ((bool) $Value === false)
                 $this->AlarmReceipt($Ident);
-//            IPS_LogMessage('Request', print_r($_IPS, true));
             return true;
         }
         $VarID = $this->GetStatusVarIDex($Ident);
@@ -835,13 +700,8 @@ class HMSystemVariable extends HMBase
 
     public function ReadSystemVariables()
     {
-//        IPS_LogMessage(__CLASS__, __FUNCTION__); //           
-
         if (!$this->HasActiveParent())
-        {
-            trigger_error("Instance has no active Parent Instance!", E_USER_NOTICE);
             return false;
-        }
 
         $this->GetParentData();
         try
@@ -854,12 +714,12 @@ class HMSystemVariable extends HMBase
         }
     }
 
-    public function WriteValueBoolean(string $Parameter, boolean $Value)
+    public function WriteValueBoolean(string $Parameter, bool $Value)
     {
         return $this->WriteValueBoolean2($Parameter, $Value);
     }
 
-    public function WriteValueBoolean2(string $Parameter, boolean $Value)
+    public function WriteValueBoolean2(string $Parameter, bool $Value)
     {
         $VarID = $this->GetStatusVarIDex($Parameter);
         if (IPS_GetVariable($VarID)['VariableType'] <> vtBoolean)
@@ -894,12 +754,12 @@ class HMSystemVariable extends HMBase
         return false;
     }
 
-    public function WriteValueInteger(string $Parameter, integer $Value)
+    public function WriteValueInteger(string $Parameter, int $Value)
     {
         return $this->WriteValueInteger2($Parameter, $Value);
     }
 
-    public function WriteValueInteger2(string $Parameter, integer $Value)
+    public function WriteValueInteger2(string $Parameter, int $Value)
     {
         $VarID = $this->GetStatusVarIDex($Parameter);
 
