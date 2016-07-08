@@ -111,6 +111,8 @@ class HMSystemVariable extends HMBase
         $this->RegisterMessage(0, KR_READY);
         $this->RegisterMessage($this->InstanceID, DM_CONNECT);
         $this->RegisterMessage($this->InstanceID, DM_DISCONNECT);
+        $this->RegisterMessage($this->InstanceID, IM_CHANGESTATUS);
+        $this->RegisterMessage(0, KR_UNINIT);
 
         if ($this->GetTriggerVar())
             $this->SetReceiveDataFilter(".*" . $this->HMTriggerAddress . ".*" . $this->HMTriggerName . ".*");
@@ -176,6 +178,8 @@ class HMSystemVariable extends HMBase
             $this->SetStatus(203);  //Warnung Trigger zu klein                  
             return false;
         }
+        $this->RegisterMessage($Event, VM_DELETE);        
+
         return true;
     }
 
