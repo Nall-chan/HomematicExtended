@@ -67,6 +67,12 @@ class HMSystemVariable extends HMBase
 
     public function ApplyChanges()
     {
+        $this->RegisterMessage(0, IPS_KERNELMESSAGE);
+        $this->RegisterMessage($this->InstanceID, DM_CONNECT);
+        $this->RegisterMessage($this->InstanceID, DM_DISCONNECT);
+        $this->RegisterMessage($this->InstanceID, IM_CHANGESTATUS);
+        $this->RegisterMessage($this->InstanceID, IPS_INSTANCEMESSAGE);        
+
         parent::ApplyChanges();
 
         $this->RegisterProfileIntegerEx('HM.AlReceipt', "", "", "", Array(
@@ -108,10 +114,7 @@ class HMSystemVariable extends HMBase
                 trigger_error($exc->getMessage(), $exc->getCode());
             }
         }
-        $this->RegisterMessage(0, IPS_KERNELMESSAGE);
-        $this->RegisterMessage($this->InstanceID, DM_CONNECT);
-        $this->RegisterMessage($this->InstanceID, DM_DISCONNECT);
-        $this->RegisterMessage($this->InstanceID, IM_CHANGESTATUS);
+      
 
         if ($this->GetTriggerVar())
             $this->SetReceiveDataFilter(".*" . $this->HMTriggerAddress . ".*" . $this->HMTriggerName . ".*");
