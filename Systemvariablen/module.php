@@ -108,11 +108,10 @@ class HMSystemVariable extends HMBase
                 trigger_error($exc->getMessage(), $exc->getCode());
             }
         }
-        $this->RegisterMessage(0, KR_READY);
+        $this->RegisterMessage(0, IPS_KERNELMESSAGE);
         $this->RegisterMessage($this->InstanceID, DM_CONNECT);
         $this->RegisterMessage($this->InstanceID, DM_DISCONNECT);
         $this->RegisterMessage($this->InstanceID, IM_CHANGESTATUS);
-        $this->RegisterMessage(0, KR_UNINIT);
 
         if ($this->GetTriggerVar())
             $this->SetReceiveDataFilter(".*" . $this->HMTriggerAddress . ".*" . $this->HMTriggerName . ".*");
