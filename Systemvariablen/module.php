@@ -1,6 +1,5 @@
 <?
 
-// TODO DOKU !!!
 require_once(__DIR__ . "/../HMBase.php");  // HMBase Klasse
 
 class HMSystemVariable extends HMBase
