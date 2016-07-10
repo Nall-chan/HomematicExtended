@@ -69,11 +69,20 @@ class HMDisWM55 extends HMBase
               ); */
 
 //            $this->SetReceiveDataFilter(".*" . $this->HMTriggerAddress . ".*" . $this->HMTriggerName . ".*");
+// "DeviceID":"LEQ0401586:4","VariableName":"VALVE_STATE"            
+            $Lines = array();
+            foreach ($this->HMEventData as $Trigger)
+            {
+                $Lines[] = '.*"DeviceID":"' . $Trigger['DeviceID'] . '","VariableName":"' . $Trigger['VariableName'] . '".*';
+            }
+            $Line = implode('|', $Lines);
+            $this->SetReceiveDataFilter("(" . $Line . ")");
+            IPS_LogMessage("RegEx", "(" . $Line . ")");
         }
         else
         {
             $this->SetSummary('');
-            //$this->SetReceiveDataFilter(".*9999999999.*");
+            $this->SetReceiveDataFilter(".*9999999999.*");
         }
     }
 
