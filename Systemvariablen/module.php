@@ -1,6 +1,6 @@
 <?
 
-// TOFO DOKU !!!
+// TODO DOKU !!!
 require_once(__DIR__ . "/../HMBase.php");  // HMBase Klasse
 
 class HMSystemVariable extends HMBase
@@ -13,16 +13,8 @@ class HMSystemVariable extends HMBase
     public function Create()
     {
         parent::Create();
-        $this->RegisterPropertyInteger("Protocol", 0);
-        $count = @IPS_GetInstanceListByModuleID('{AF50C42B-7183-4992-B04A-FAFB07BB1B90}');
-        if (is_array($count))
-        {
-            $this->RegisterPropertyString("Address", "XXX9999999:" . count($count));
-        }
-        else
-        {
-            $this->RegisterPropertyString("Address", "XXX9999999:0");
-        }
+        $this->RegisterHMPropertys('XXX9999999');
+
         $this->RegisterPropertyInteger("EventID", 0);
         $this->RegisterPropertyInteger("Interval", 0);
         $this->RegisterPropertyBoolean("EmulateStatus", false);
@@ -35,81 +27,44 @@ class HMSystemVariable extends HMBase
 
     public function MessageSink($TimeStamp, $SenderID, $Message, $Data)
     {
-        ob_start();
-        var_dump($Data);
-        $dump = ob_get_clean();
-        IPS_LogMessage('MessageSink:' . $Message . ":" . $SenderID, $dump);
-
+        parent::MessageSink($TimeStamp, $SenderID, $Message, $Data);
         switch ($Message)
         {
-            /* case IPS_KERNELMESSAGE:
-              if ($Data[0] == KR_READY)
-              {
-              if ($this->HasActiveParent())
-              {
-              try
-              {
-              $this->ReadSysVars();
-              }
-              catch (Exception $exc)
-              {
-              return;
-              }
-              }
-              }
-              /*                else if ($Data[0] == KR_SHUTDOWN)
-              {
-              //
-              }
-              break; */
-            case IM_CONNECT:
-            case DM_CONNECT:
-            case DM_DISCONNECT:
-                $this->GetParentData();
-                break;
-            case IM_CHANGESTATUS:
-                if (($SenderID == @IPS_GetInstance($this->InstanceID)['ConnectionID']) and ( $Data[0] == IS_ACTIVE))
-                    try
-                    {
-                        $this->ReadSysVars();
-                    }
-                    catch (Exception $exc)
-                    {
-                        return;
-                    }
-                break;
             case VM_DELETE:
-                IPS_LogMessage('VM_DELETE:' . $Message . ":" . $SenderID, $dump);
-                if (($SenderID == @IPS_GetInstance($this->InstanceID)['ConnectionID']) and ( $Data[0] == IS_ACTIVE))
-                    break;
+                $this->UnregisterMessage($SenderID, VM_DELETE);
+                if ($SenderID == $this->ReadPropertyInteger("EventID"))
+                {
+                    IPS_SetProperty($this->InstanceID, "EventID", 0);
+                    IPS_ApplyChanges($this->InstanceID);
+                }
+                break;
         }
     }
 
-// FIX ME....
-    /*
-      if msg.Message=VM_DELETE then
-      begin
-      SetProperty('EventID',0);
-      ApplyChanges();
-      SaveSettings();
-      end;
-     */
-//  }
+    protected function KernelReady()
+    {
+        $this->ReadSysVars();
+    }
+
+    protected function ForceRefresh()
+    {
+        $this->ReadSysVars();
+    }
+
+    protected function GetParentData()
+    {
+        parent::GetParentData();
+        $this->SetSummary($this->HMAddress);
+    }
 
     public function ApplyChanges()
     {
         parent::ApplyChanges();
 
-//        $this->RegisterMessage(0, IPS_KERNELMESSAGE); // use IM_CONNECT
-        $this->RegisterMessage($this->InstanceID, DM_CONNECT);
-        $this->RegisterMessage($this->InstanceID, DM_DISCONNECT);
-//        $this->RegisterMessage($this->InstanceID, IPS_INSTANCEMESSAGE);
-//        $this->RegisterMessage($this->InstanceID, IM_DELETE);
-        $this->RegisterMessage($this->InstanceID, IM_CONNECT);
-//        $this->RegisterMessage($this->InstanceID, IM_DISCONNECT);
-//        $this->RegisterMessage($this->InstanceID, IM_CHANGESETTINGS);
         if ($this->GetTriggerVar())
             $this->SetReceiveDataFilter(".*" . $this->HMTriggerAddress . ".*" . $this->HMTriggerName . ".*");
+        else
+            $this->SetReceiveDataFilter(".*9999999999.*");
 
 
         $this->RegisterProfileIntegerEx('HM.AlReceipt', "", "", "", Array(
@@ -144,7 +99,6 @@ class HMSystemVariable extends HMBase
     {
         $Interval = $this->ReadPropertyInteger("Interval");
         $Event = $this->ReadPropertyInteger("EventID");
-
         if ($Event > 0)
             $this->RegisterMessage($Event, VM_DELETE);
 
@@ -208,14 +162,6 @@ class HMSystemVariable extends HMBase
 
     public function ReceiveData($JSONString)
     {
-//TODO
-//        if (!$this->GetTriggerVar())
-//            return;
-//        $Data = json_decode($JSONString);
-//        if ($this->HMTriggerAddress <> (string) $Data->DeviceID)
-//            return;
-//        if ($this->HMTriggerName <> (string) $Data->VariableName)
-//            return;
         $this->GetParentData();
         if ($this->HMAddress == '')
             return;
@@ -229,11 +175,6 @@ class HMSystemVariable extends HMBase
             return;
         }
     }
-
-    /*    protected function GetParentData()
-      {
-      parent::GetParentData();
-      } */
 
     private function GetTriggerVar()
     {
@@ -250,7 +191,6 @@ class HMSystemVariable extends HMBase
     {
         // Sysvars
         $HMScript = 'SysVars=dom.GetObject(ID_SYSTEM_VARIABLES).EnumUsedIDs();';
-        $this->SendDebug('SysVar.exe', $HMScript, 0);
         try
         {
             $HMScriptResult = $this->LoadHMScript('SysVar.exe', $HMScript);
@@ -271,7 +211,6 @@ class HMSystemVariable extends HMBase
         //Time & Timezone
         $HMScript = 'Now=system.Date("%F %T%z");' . PHP_EOL
                 . 'TimeZone=system.Date("%z");' . PHP_EOL;
-        $this->SendDebug('Time.exe', $HMScript, 0);
         try
         {
             $HMScriptResult = $this->LoadHMScript('Time.exe', $HMScript);
@@ -295,7 +234,7 @@ class HMSystemVariable extends HMBase
         $NowTime = $Date->getTimestamp();
         $TimeDiff = $NowTime - $CCUTime;
         $CCUTimeZone = (string) $xmlTime->TimeZone;
-
+        $Result = true;
         foreach (explode(chr(0x09), (string) $xmlVars->SysVars) as $SysVar)
         {
             $VarIdent = $SysVar;
@@ -307,7 +246,6 @@ class HMSystemVariable extends HMBase
                     . 'WriteLine(dom.GetObject(' . $SysVar . ').LastValue());' . PHP_EOL
                     . 'Timestamp=dom.GetObject(' . $SysVar . ').Timestamp();' . PHP_EOL;
 
-            $this->SendDebug('SysVar.exe', $HMScript, 0);
             try
             {
                 $HMScriptResult = $this->LoadHMScript('SysVar.exe', $HMScript);
@@ -316,6 +254,7 @@ class HMSystemVariable extends HMBase
             {
                 $this->SendDebug($SysVar, $exc->getMessage(), 0);
                 trigger_error($exc->getMessage(), E_USER_NOTICE);
+                $Result = false;
                 continue;
             }
             $this->SendDebug($SysVar, $HMScriptResult, 0);
@@ -326,6 +265,7 @@ class HMSystemVariable extends HMBase
             {
                 $this->SendDebug($SysVar, $exc->getMessage(), 0);
                 trigger_error("HM-Script result is not wellformed. SysVar:" . $SysVar, E_USER_NOTICE);
+                $Result = false;
                 continue;
             }
             if ((int) $xmlVar->Type == 2113)
@@ -351,8 +291,6 @@ class HMSystemVariable extends HMBase
                         . 'ValueMin=dom.GetObject(' . $SysVar . ').ValueMin();' . PHP_EOL
                         . 'ValueMax=dom.GetObject(' . $SysVar . ').ValueMax();' . PHP_EOL
                         . 'ValueUnit=dom.GetObject(' . $SysVar . ').ValueUnit();' . PHP_EOL;
-                $this->SendDebug('SysVar.exe', $HMScript, 0);
-
                 try
                 {
                     $HMScriptResult = $this->LoadHMScript('SysVar.exe', $HMScript);
@@ -360,8 +298,8 @@ class HMSystemVariable extends HMBase
                 catch (Exception $exc)
                 {
                     $this->SendDebug($SysVar, $exc->getMessage(), 0);
-
                     trigger_error($exc->getMessage(), E_USER_NOTICE);
+                    $Result = false;
                     continue;
                 }
                 $this->SendDebug($SysVar, $HMScriptResult, 0);
@@ -372,6 +310,7 @@ class HMSystemVariable extends HMBase
                     $this->SendDebug($SysVar, 'XML error', 0);
 
                     trigger_error("HM-Script result is not wellformed. SysVar:" . $SysVar, E_USER_NOTICE);
+                    $Result = false;
                     continue;
                 }
                 if (IPS_VariableProfileExists($VarProfil))
@@ -421,6 +360,7 @@ class HMSystemVariable extends HMBase
             {
                 $this->SendDebug($SysVar, 'Type of CCU Systemvariable ' . IPS_GetName($VarID) . ' has changed.', 0);
                 trigger_error('Type of CCU Systemvariable ' . IPS_GetName($VarID) . ' has changed.', E_USER_NOTICE);
+                $Result = false;
                 continue;
             }
             $VarTime = new DateTime((string) $xmlVar->Timestamp . $CCUTimeZone);
@@ -450,7 +390,7 @@ class HMSystemVariable extends HMBase
                     break;
             }
         }
-        return true;
+        return $Result;
     }
 
     private function ProcessAlarmVariable($ParentID, $SysVar, $CCUTimeZone)
@@ -484,8 +424,6 @@ class HMSystemVariable extends HMBase
                          }
                         }
                        }' . PHP_EOL;
-        $this->SendDebug('AlarmVar.exe', $HMScript, 0);
-
         try
         {
             $HMScriptResult = $this->LoadHMScript('AlarmVar.exe', $HMScript);
@@ -567,8 +505,6 @@ class HMSystemVariable extends HMBase
             return;
         $url = 'SysVar.exe';
         $HMScript = 'State=dom.GetObject(' . $Parameter . ').State("' . $ValueStr . '");';
-        $this->SendDebug('SysVar.exe', $HMScript, 0);
-
         try
         {
             $HMScriptResult = $this->LoadHMScript($url, $HMScript);
@@ -597,7 +533,6 @@ class HMSystemVariable extends HMBase
 
         if ($Profile != "")
         {
-//prefer system profiles
             if (IPS_VariableProfileExists("~" . $Profile))
             {
                 $Profile = "~" . $Profile;
@@ -608,44 +543,33 @@ class HMSystemVariable extends HMBase
             }
         }
 
-//search for already available variables with proper ident
         $vid = @IPS_GetObjectIDByIdent($Ident, $ParentID);
 
-//properly update variableID
         if ($vid === false)
             $vid = 0;
 
-//we have a variable with the proper ident. check if it fits
         if ($vid > 0)
         {
-//check if we really have a variable
             if (!IPS_VariableExists($vid))
                 throw new Exception("Ident with name " . $Ident . " is used for wrong object type"); //bail out
-//check for type mismatch
             if (IPS_GetVariable($vid)["VariableType"] != $Type)
             {
-//mismatch detected. delete this one. we will create a new below
                 IPS_DeleteVariable($vid);
-//this will ensure, that a new one is created
                 $vid = 0;
             }
         }
 
-//we need to create one
         if ($vid == 0)
         {
             $vid = IPS_CreateVariable($Type);
 
-//configure it
             IPS_SetParent($vid, $ParentID);
             IPS_SetIdent($vid, $Ident);
             IPS_SetName($vid, $Name);
             IPS_SetPosition($vid, $Position);
-//IPS_SetReadOnly($vid, true);
+            //IPS_SetReadOnly($vid, true);
         }
 
-//update variable profile. profiles may be changed in module development.
-//this update does not affect any custom profile choices
         IPS_SetVariableCustomProfile($vid, $Profile);
 
         return $vid;
@@ -696,7 +620,6 @@ class HMSystemVariable extends HMBase
     }
 
 ################## PUBLIC    
-    // TODO SendDebug ergänzen
 
     public function AlarmReceipt(string $Ident)
     {
@@ -719,16 +642,18 @@ class HMSystemVariable extends HMBase
                    }';
         try
         {
-            $HMScriptResult = $this->LoadHMScript('SysVar.exe', $HMScript);
+            $HMScriptResult = $this->LoadHMScript('AlarmVar.exe', $HMScript);
         }
         catch (Exception $exc)
         {
+            $this->SendDebug('AlarmVar.exe', $exc->getMessage(), 0);
             trigger_error($exc->getMessage(), E_USER_NOTICE);
             return false;
         }
         $xmlData = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NONET);
         if ($xmlData === false)
         {
+            $this->SendDebug('AlarmVar.' . $Ident, 'XML error', 0);
             trigger_error("HM-Script result is not wellformed. SysVar:" . $Ident, E_USER_NOTICE);
             return false;
         }
@@ -739,6 +664,7 @@ class HMSystemVariable extends HMBase
             return true;
         }
 
+        $this->SendDebug('AlarmVar.' . $Ident, 'error on receipt', 0);
         trigger_error('Error on receipt alarm of ' . $VarID, E_USER_NOTICE);
         return false;
     }

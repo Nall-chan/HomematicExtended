@@ -144,7 +144,7 @@ if (@constant('IPS_BASE') == null) //Nur wenn Konstanten noch nicht bekannt sind
     define('vtString', 3);
 }
 
-class HMBase extends IPSModule
+abstract class HMBase extends IPSModule
 {
 
     protected $fKernelRunlevel;
@@ -162,15 +162,83 @@ class HMBase extends IPSModule
         $this->ConnectParent("{A151ECE9-D733-4FB9-AA15-7F7DD10C58AF}");
     }
 
+    protected function RegisterHMPropertys($Address)
+    {
+        $this->RegisterPropertyInteger("Protocol", 0);
+
+        $count = @IPS_GetInstanceListByModuleID(IPS_GetInstance($this->InstanceID)["ModuleInfo"]["ModuleID"]);
+        if (is_array($count))
+        {
+            $this->RegisterPropertyString("Address", $Address . ":" . count($count));
+        }
+        else
+        {
+            $this->RegisterPropertyString("Address", $Address . ":0");
+        }
+    }
+
     public function ApplyChanges()
     {
         parent::ApplyChanges();
+        $this->RegisterMessage(0, IPS_KERNELMESSAGE); // use IM_CONNECT
+        $this->RegisterMessage($this->InstanceID, DM_CONNECT);
+        $this->RegisterMessage($this->InstanceID, DM_DISCONNECT);
     }
 
-    public function ReceiveData($JSONString)
+    public function MessageSink($TimeStamp, $SenderID, $Message, $Data)
     {
-        //We dont need any Data...here
+        switch ($Message)
+        {
+            case IPS_KERNELMESSAGE:
+                if ($Data[0] == KR_READY)
+                {
+                    if ($this->HasActiveParent())
+                    {
+                        $this->GetParentData();
+                        if ($this->HMAddress == '')
+                            return;
+                        try
+                        {
+                            $this->KernelReady();
+                        }
+                        catch (Exception $exc)
+                        {
+                            return;
+                        }
+                    }
+                }
+                break;
+            case DM_CONNECT:
+            case DM_DISCONNECT:
+                $this->GetParentData();
+                break;
+            case IM_CHANGESTATUS:
+                $this->GetParentData();
+                if ($this->HMAddress == '')
+                    return;
+
+                if (($SenderID == @IPS_GetInstance($this->InstanceID)['ConnectionID']) and ( $Data[0] == IS_ACTIVE))
+                    try
+                    {
+                        $this->ForceRefresh();
+                    }
+                    catch (Exception $exc)
+                    {
+                        return;
+                    }
+                break;
+        }
     }
+
+    abstract protected function KernelReady();
+
+    abstract protected function ForceRefresh();
+
+
+    /*    public function ReceiveData($JSONString)
+      {
+      //We dont need any Data...here
+      } */
 
 ################## protected
 
@@ -178,7 +246,6 @@ class HMBase extends IPSModule
     {
         $OldParentId = $this->GetBuffer('Parent');
         $ParentId = @IPS_GetInstance($this->InstanceID)['ConnectionID'];
-
         if ($ParentId <> $OldParentId)
         {
             if ($OldParentId > 0)
@@ -191,18 +258,16 @@ class HMBase extends IPSModule
                 $this->SetBuffer('Parent', $ParentId);
             }
         }
-
+        $this->HMAddress = '';
         if ($ParentId > 0)
-        {
             $this->HMAddress = (string) IPS_GetProperty($ParentId, 'Host');
-            $this->SetSummary($this->HMAddress);
-        }
     }
 
     protected function LoadHMScript($url, $HMScript)
     {
         if ($this->HMAddress <> '')
         {
+            $this->SendDebug($url, $HMScript, 0);            
             $header[] = "Accept: text/plain,text/xml,application/xml,application/xhtml+xml,text/html";
             $header[] = "Cache-Control: max-age=0";
             $header[] = "Connection: close";

@@ -7,26 +7,28 @@ class HMScript extends HMBase
 
     public function Create()
     {
-//Never delete this line!
-//        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
         parent::Create();
-        $this->RegisterPropertyInteger("Protocol", 0);
-        $this->RegisterPropertyString("Address", "XXX9999999:3");
+        $this->RegisterHMPropertys('XXX9999993');
         $this->RegisterPropertyBoolean("EmulateStatus", false);
-        ////These lines are parsed on Symcon Startup or Instance creation
-//You cannot use variables here. Just static values.
     }
 
     public function ApplyChanges()
     {
-        //IPS_LogMessage(__CLASS__, __FUNCTION__); //            
-//Never delete this line!
         parent::ApplyChanges();
+    }
+
+    protected function KernelReady();
+
+    protected function ForceRefresh();
+
+    protected function GetParentData()
+    {
+        parent::GetParentData();
+        $this->SetSummary($this->HMAddress);
     }
 
     private function SendScript($Script)
     {
-        //IPS_LogMessage(__CLASS__, __FUNCTION__); //            
         if (!$this->HasActiveParent())
         {
             throw new Exception("Instance has no active Parent Instance!", E_USER_NOTICE);
@@ -40,29 +42,22 @@ class HMScript extends HMBase
         try
         {
             $HMScriptResult = $this->LoadHMScript($url, $Script);
-        } catch (Exception $exc)
+        }
+        catch (Exception $exc)
         {
+            $this->SendDebug($url, $exc->getMessage(), 0);
             throw $exc;
         }
-        try
+        $xml = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
+        if ($xml === false)
         {
-            $xml = new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
-        } catch (Exception $ex)
-        {
-//            $this->LogMessage(KL_ERROR, 'HM-Script result is not wellformed');
+            $this->SendDebug($url, 'XML error', 0);
             throw new Exception("HM-Script result is not wellformed", E_USER_NOTICE);
         }
         unset($xml->exec);
         unset($xml->sessionId);
         unset($xml->httpUserAgent);
         return json_encode($xml);
-    }
-
-    protected function GetParentData()
-    {
-        //IPS_LogMessage(__CLASS__, __FUNCTION__); //            
-        parent::GetParentData();
-        $this->SetSummary($this->HMAddress);
     }
 
 ################## PUBLIC
@@ -76,9 +71,11 @@ class HMScript extends HMBase
         try
         {
             return $this->SendScript($Script);
-        } catch (Exception $exc)
+        }
+        catch (Exception $exc)
         {
             trigger_error($exc->getMessage(), $exc->getCode());
+            return false;
         }
     }
 

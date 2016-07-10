@@ -9,26 +9,18 @@ class HMPowerMeter extends HMBase
 
     public function Create()
     {
-//        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
-        //Never delete this line!
         parent::Create();
-        $this->RegisterPropertyInteger("Protocol", 0);
-        $this->RegisterPropertyString("Address", "XXX9999999:4");
+        $this->RegisterHMPropertys('XXX9999997');
+
         $this->RegisterPropertyBoolean("EmulateStatus", false);
         $this->RegisterPropertyInteger("EventID", 0);
         $this->RegisterVariableFloat("ENERGY_COUNTER_TOTAL", "ENERGY_COUNTER_TOTAL", "~Electricity");
-        //These lines are parsed on Symcon Startup or Instance creation
-        //You cannot use variables here. Just static values.
     }
 
     public function ApplyChanges()
     {
-//        IPS_LogMessage(__CLASS__, __FUNCTION__); //            
-        //Never delete this line!
         parent::ApplyChanges();
 
-//        $this->ReadPropertyInteger("EventID");
-//        IPS_Sleep(500);
         if (($this->CheckConfig()) and ( $this->GetPowerAddress()))
         {
             $this->SetSummary($this->HMDeviceAddress);
@@ -50,7 +42,15 @@ class HMPowerMeter extends HMBase
         }
         $this->SetSummary('');
     }
+    protected function KernelReady()
+    {
+//        $this->ReadCCUPrograms();
+    }
 
+    protected function ForceRefresh()
+    {
+//        $this->ReadCCUPrograms();
+    }
     public function ReceiveData($JSONString)
     {
 //        IPS_LogMessage(__CLASS__, __FUNCTION__); // 
