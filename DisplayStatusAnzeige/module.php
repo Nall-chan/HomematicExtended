@@ -77,9 +77,15 @@ class HMDisWM55 extends HMBase
         }
     }
 
-    protected function KernelReady();
+    protected function KernelReady()
+    {
+        
+    }
 
-    protected function ForceRefresh();
+    protected function ForceRefresh()
+    {
+        
+    }
 
     public function ReceiveData($JSONString)
     {
