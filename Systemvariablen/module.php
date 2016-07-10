@@ -42,33 +42,46 @@ class HMSystemVariable extends HMBase
 
         switch ($Message)
         {
-            case IPS_KERNELMESSAGE:
-                if ($Data[0] == KR_READY)
-                {
-                    if ($this->HasActiveParent())
-                    {
-                        try
-                        {
-                            $this->ReadSysVars();
-                        }
-                        catch (Exception $exc)
-                        {
-                            return;
-                        }
-                    }
-                }
-                /*                else if ($Data[0] == KR_SHUTDOWN)
-                  {
-                  //
-                  } */
-                break;
+            /* case IPS_KERNELMESSAGE:
+              if ($Data[0] == KR_READY)
+              {
+              if ($this->HasActiveParent())
+              {
+              try
+              {
+              $this->ReadSysVars();
+              }
+              catch (Exception $exc)
+              {
+              return;
+              }
+              }
+              }
+              /*                else if ($Data[0] == KR_SHUTDOWN)
+              {
+              //
+              }
+              break; */
+            case IM_CONNECT:
             case DM_CONNECT:
             case DM_DISCONNECT:
                 $this->GetParentData();
                 break;
+            case IM_CHANGESTATUS:
+                if (($SenderID == @IPS_GetInstance($this->InstanceID)['ConnectionID']) and ( $Data[0] == IS_ACTIVE))
+                    try
+                    {
+                        $this->ReadSysVars();
+                    }
+                    catch (Exception $exc)
+                    {
+                        return;
+                    }
+                break;
             case VM_DELETE:
                 IPS_LogMessage('VM_DELETE:' . $Message . ":" . $SenderID, $dump);
-                break;
+                if (($SenderID == @IPS_GetInstance($this->InstanceID)['ConnectionID']) and ( $Data[0] == IS_ACTIVE))
+                    break;
         }
     }
 
@@ -87,14 +100,14 @@ class HMSystemVariable extends HMBase
     {
         parent::ApplyChanges();
 
-        $this->RegisterMessage(0, IPS_KERNELMESSAGE);
+//        $this->RegisterMessage(0, IPS_KERNELMESSAGE); // use IM_CONNECT
         $this->RegisterMessage($this->InstanceID, DM_CONNECT);
         $this->RegisterMessage($this->InstanceID, DM_DISCONNECT);
-        $this->RegisterMessage($this->InstanceID, IPS_INSTANCEMESSAGE);
-        $this->RegisterMessage($this->InstanceID, IM_DELETE);
+//        $this->RegisterMessage($this->InstanceID, IPS_INSTANCEMESSAGE);
+//        $this->RegisterMessage($this->InstanceID, IM_DELETE);
         $this->RegisterMessage($this->InstanceID, IM_CONNECT);
-        $this->RegisterMessage($this->InstanceID, IM_DISCONNECT);
-        $this->RegisterMessage($this->InstanceID, IM_CHANGESETTINGS);
+//        $this->RegisterMessage($this->InstanceID, IM_DISCONNECT);
+//        $this->RegisterMessage($this->InstanceID, IM_CHANGESETTINGS);
         if ($this->GetTriggerVar())
             $this->SetReceiveDataFilter(".*" . $this->HMTriggerAddress . ".*" . $this->HMTriggerName . ".*");
 
@@ -131,6 +144,9 @@ class HMSystemVariable extends HMBase
     {
         $Interval = $this->ReadPropertyInteger("Interval");
         $Event = $this->ReadPropertyInteger("EventID");
+
+        if ($Event > 0)
+            $this->RegisterMessage($Event, VM_DELETE);
 
         if ($Interval < 0)
         {
@@ -185,8 +201,7 @@ class HMSystemVariable extends HMBase
             $this->SetStatus(203);  //Warnung Trigger zu klein                  
             return false;
         }
-        if ($Event > 0)
-            $this->RegisterMessage($Event, VM_DELETE);
+
 
         return true;
     }
@@ -215,15 +230,10 @@ class HMSystemVariable extends HMBase
         }
     }
 
-    protected function GetParentData()
-    {
-        $parentId = parent::GetParentData();
-        if ($parentId > 0)
-        {
-            $this->RegisterMessage($parentId, IM_CHANGESTATUS);
-        }
-        $this->SetSummary($this->HMAddress);
-    }
+    /*    protected function GetParentData()
+      {
+      parent::GetParentData();
+      } */
 
     private function GetTriggerVar()
     {

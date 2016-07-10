@@ -176,14 +176,27 @@ class HMBase extends IPSModule
 
     protected function GetParentData()
     {
-        $result = '';
-        $instance = @IPS_GetInstance($this->InstanceID);
-        if ($instance['ConnectionID'] > 0)
+        $OldParentId = $this->GetBuffer('Parent');
+        $ParentId = @IPS_GetInstance($this->InstanceID)['ConnectionID'];
+
+        if ($ParentId <> $OldParentId)
         {
-            $result = (string) IPS_GetProperty($instance['ConnectionID'], 'Host');
+            if ($OldParentId > 0)
+            {
+                $this->UnregisterMessage($OldParentId, IM_CHANGESTATUS);
+            }
+            if ($ParentId > 0)
+            {
+                $this->RegisterMessage($ParentId, IM_CHANGESTATUS);
+                $this->SetBuffer('Parent', $ParentId);
+            }
         }
-        $this->HMAddress = $result;
-        return $instance['ConnectionID'];
+
+        if ($ParentId > 0)
+        {
+            $this->HMAddress = (string) IPS_GetProperty($ParentId, 'Host');
+            $this->SetSummary($this->HMAddress);
+        }
     }
 
     protected function LoadHMScript($url, $HMScript)
@@ -212,18 +225,20 @@ class HMBase extends IPSModule
                 throw new Exception('CCU unreachable', E_USER_NOTICE);
             }
             return $result;
-        } else
+        }
+        else
             throw new Exception('CCU Address not set.', E_USER_NOTICE);
     }
 
 ################## DUMMYS / WOARKAROUNDS - protected
+
     protected function SetStatus($InstanceStatus)
     {
         if ($InstanceStatus <>
                 IPS_GetInstance($this->InstanceID)['InstanceStatus'])
             parent::SetStatus($InstanceStatus);
     }
-    
+
     protected function HasActiveParent()
     {
         $instance = @IPS_GetInstance($this->InstanceID);
@@ -246,6 +261,7 @@ class HMBase extends IPSModule
             IPS_DeleteEvent($id);
         }
     }
+
     //Remove on next Symcon update...  year ;) ?
     protected function RegisterProfileInteger($Name, $Icon, $Prefix, $Suffix, $MinValue, $MaxValue, $StepSize)
     {
@@ -253,7 +269,8 @@ class HMBase extends IPSModule
         if (!IPS_VariableProfileExists($Name))
         {
             IPS_CreateVariableProfile($Name, 1);
-        } else
+        }
+        else
         {
             $profile = IPS_GetVariableProfile($Name);
             if ($profile['ProfileType'] != 1)
@@ -271,7 +288,8 @@ class HMBase extends IPSModule
         {
             $MinValue = 0;
             $MaxValue = 0;
-        } else
+        }
+        else
         {
             $MinValue = $Associations[0][0];
             $MaxValue = $Associations[sizeof($Associations) - 1][0];
@@ -284,6 +302,7 @@ class HMBase extends IPSModule
             IPS_SetVariableProfileAssociation($Name, $Association[0], $Association[1], $Association[2], $Association[3]);
         }
     }
+
 }
 
 ?>
