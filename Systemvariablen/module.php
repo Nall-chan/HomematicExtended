@@ -217,7 +217,11 @@ class HMSystemVariable extends HMBase
 
     protected function GetParentData()
     {
-        parent::GetParentData();
+        $parentId = parent::GetParentData();
+        if ($parentId > 0)
+        {
+            $this->RegisterMessage($parentId, IM_CHANGESTATUS);
+        }
         $this->SetSummary($this->HMAddress);
     }
 
@@ -683,6 +687,7 @@ class HMSystemVariable extends HMBase
 
 ################## PUBLIC    
     // TODO SendDebug ergänzen
+
     public function AlarmReceipt(string $Ident)
     {
         if ($this->fKernelRunlevel <> KR_READY)

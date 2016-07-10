@@ -183,6 +183,7 @@ class HMBase extends IPSModule
             $result = (string) IPS_GetProperty($instance['ConnectionID'], 'Host');
         }
         $this->HMAddress = $result;
+        return $instance['ConnectionID'];
     }
 
     protected function LoadHMScript($url, $HMScript)
