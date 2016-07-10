@@ -728,7 +728,7 @@ class HMSystemVariable extends HMBase
         return false;
     }
 
-    public function HM_SystemVariablesTimer()
+    public function SystemVariablesTimer()
     {
         if (!$this->HasActiveParent())
             return;
