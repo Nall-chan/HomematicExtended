@@ -62,14 +62,6 @@ class HMDisWM55 extends HMBase
 
         if (($this->CheckConfig()) and ( $this->GetDisplayAddress()))
         {
-            $this->SetSummary($this->HMDeviceAddress);
-            /* $this->HMEventData[$Name] = array(
-              "DeviceID" => IPS_GetProperty($parent, 'Address'),
-              "VariableName" => IPS_GetObject($EventID)['ObjectIdent']
-              ); */
-
-//            $this->SetReceiveDataFilter(".*" . $this->HMTriggerAddress . ".*" . $this->HMTriggerName . ".*");
-// "DeviceID":"LEQ0401586:4","VariableName":"VALVE_STATE"            
             $Lines = array();
             foreach ($this->HMEventData as $Trigger)
             {
@@ -77,7 +69,7 @@ class HMDisWM55 extends HMBase
             }
             $Line = implode('|', $Lines);
             $this->SetReceiveDataFilter("(" . $Line . ")");
-            IPS_LogMessage("RegEx", "(" . $Line . ")");
+            $this->SetSummary($this->HMEventData[0]['DeviceID']);
         }
         else
         {
