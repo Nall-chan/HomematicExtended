@@ -17,9 +17,15 @@ class HMScript extends HMBase
         parent::ApplyChanges();
     }
 
-    protected function KernelReady();
+    protected function KernelReady()
+    {
+        
+    }
 
-    protected function ForceRefresh();
+    protected function ForceRefresh()
+    {
+        
+    }
 
     protected function GetParentData()
     {

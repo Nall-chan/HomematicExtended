@@ -73,7 +73,7 @@ class HMDisWM55 extends HMBase
         else
         {
             $this->SetSummary('');
-            $this->SetReceiveDataFilter(".*9999999999.*");
+            //$this->SetReceiveDataFilter(".*9999999999.*");
         }
     }
 

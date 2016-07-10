@@ -80,9 +80,9 @@ class HMPowerMeter extends HMBase
 
     public function ReceiveData($JSONString)
     {
-        if (!$this->GetPowerAddress())
-            return;
-        $Data = json_decode($JSONString);
+//        if (!$this->GetPowerAddress())
+//            return;
+//        $Data = json_decode($JSONString);
 /*        if ($this->HMDeviceAddress <> (string) $Data->DeviceID)
             return;
         if ((string) $Data->VariableName <> 'ENERGY_COUNTER')
