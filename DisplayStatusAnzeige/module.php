@@ -167,6 +167,9 @@ class HMDisWM55 extends HMBase
                 $Result = false;
             }
 
+        if ($Result)
+            $this->SetStatus(IS_ACTIVE);
+
         return $Result;
     }
 
