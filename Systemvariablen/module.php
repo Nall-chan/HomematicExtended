@@ -97,15 +97,25 @@ class HMSystemVariable extends HMBase
 
     private function CheckConfig()
     {
+        $OldEvent = $this->GetBuffer("Event");
         $Interval = $this->ReadPropertyInteger("Interval");
         $Event = $this->ReadPropertyInteger("EventID");
-        if ($Event > 0)
-            $this->RegisterMessage($Event, VM_DELETE);
+
+        if ($Event <> $OldEvent)
+        {
+            if ($OldEvent > 0)
+                $this->UnregisterMessage($OldEvent, VM_DELETE);
+            if ($Event > 0)
+            {
+                $this->RegisterMessage($Event, VM_DELETE);
+                $this->SetBuffer('Event', $Event);
+            }
+        }
 
         if ($Interval < 0)
         {
 
-            $this->SetStatus(202); //Error Timer is negativ
+            $this->SetStatus(IS_EBASE + 2); //Error Timer is negativ
             return false;
         }
         elseif ($Interval > 4)
@@ -152,7 +162,7 @@ class HMSystemVariable extends HMBase
         }
         elseif ($Interval < 5)
         {
-            $this->SetStatus(203);  //Warnung Trigger zu klein                  
+            $this->SetStatus(IS_EBASE + 3);  //Warnung Trigger zu klein                  
             return false;
         }
 

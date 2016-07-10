@@ -249,9 +249,7 @@ abstract class HMBase extends IPSModule
         if ($ParentId <> $OldParentId)
         {
             if ($OldParentId > 0)
-            {
                 $this->UnregisterMessage($OldParentId, IM_CHANGESTATUS);
-            }
             if ($ParentId > 0)
             {
                 $this->RegisterMessage($ParentId, IM_CHANGESTATUS);
