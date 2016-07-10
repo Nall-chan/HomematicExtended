@@ -69,7 +69,7 @@ class HMDisWM55 extends HMBase
             }
             $Line = implode('|', $Lines);
             $this->SetReceiveDataFilter("(" . $Line . ")");
-            $this->SetSummary($this->HMEventData[0]['DeviceID']);
+            $this->SetSummary($Trigger['DeviceID']);
         }
         else
         {
