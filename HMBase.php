@@ -180,9 +180,10 @@ abstract class HMBase extends IPSModule
     public function ApplyChanges()
     {
         parent::ApplyChanges();
-        $this->RegisterMessage(0, IPS_KERNELMESSAGE); // use IM_CONNECT
+        $this->RegisterMessage(0, IPS_KERNELMESSAGE);
         $this->RegisterMessage($this->InstanceID, DM_CONNECT);
         $this->RegisterMessage($this->InstanceID, DM_DISCONNECT);
+        $this->GetParentData();
     }
 
     public function MessageSink($TimeStamp, $SenderID, $Message, $Data)
