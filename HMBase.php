@@ -183,6 +183,8 @@ abstract class HMBase extends IPSModule
         $this->RegisterMessage(0, IPS_KERNELMESSAGE);
         $this->RegisterMessage($this->InstanceID, DM_CONNECT);
         $this->RegisterMessage($this->InstanceID, DM_DISCONNECT);
+        if (IPS_GetKernelRunlevel() <> KR_READY)
+            return;
         $this->GetParentData();
     }
 
@@ -266,7 +268,7 @@ abstract class HMBase extends IPSModule
     {
         if ($this->HMAddress <> '')
         {
-            $this->SendDebug($url, $HMScript, 0);            
+            $this->SendDebug($url, $HMScript, 0);
             $header[] = "Accept: text/plain,text/xml,application/xml,application/xhtml+xml,text/html";
             $header[] = "Cache-Control: max-age=0";
             $header[] = "Connection: close";

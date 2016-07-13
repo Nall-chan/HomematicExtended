@@ -62,33 +62,33 @@ class HMDisWM55 extends HMBase
     public function ApplyChanges()
     {
         parent::ApplyChanges();
-
-        if (($this->CheckConfig()) and ( $this->GetDisplayAddress()))
+        if (IPS_GetKernelRunlevel() == KR_READY)
         {
-            $Lines = array();
-            foreach ($this->HMEventData as $Trigger)
+            if (($this->CheckConfig()) and ( $this->GetDisplayAddress()))
             {
-                $Lines[] = '.*"DeviceID":"' . $Trigger['DeviceID'] . '","VariableName":"' . $Trigger['VariableName'] . '".*';
+                $Lines = array();
+                foreach ($this->HMEventData as $Trigger)
+                {
+                    $Lines[] = '.*"DeviceID":"' . $Trigger['DeviceID'] . '","VariableName":"' . $Trigger['VariableName'] . '".*';
+                }
+                $Line = implode('|', $Lines);
+                $this->SetReceiveDataFilter("(" . $Line . ")");
+                $this->SetSummary($Trigger['DeviceID']);
+                return;
             }
-            $Line = implode('|', $Lines);
-            $this->SetReceiveDataFilter("(" . $Line . ")");
-            $this->SetSummary($Trigger['DeviceID']);
         }
-        else
-        {
-            $this->SetSummary('');
-            $this->SetReceiveDataFilter(".*9999999999.*");
-        }
+        $this->SetSummary('');
+        $this->SetReceiveDataFilter(".*9999999999.*");
     }
 
     protected function KernelReady()
     {
-        
+        $this->ApplyChanges();
     }
 
     protected function ForceRefresh()
     {
-        
+        $this->ApplyChanges();
     }
 
     public function ReceiveData($JSONString)

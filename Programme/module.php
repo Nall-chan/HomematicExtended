@@ -17,6 +17,8 @@ class HMCCUProgram extends HMBase
         parent::ApplyChanges();
 
         $this->CreateProfil();
+        if (IPS_GetKernelRunlevel() <> KR_READY)
+            return;        
         $this->GetParentData();
 
         if ($this->HMAddress == '')
@@ -37,12 +39,12 @@ class HMCCUProgram extends HMBase
 
     protected function KernelReady()
     {
-        $this->ReadCCUPrograms();
+        $this->ApplyChanges();
     }
 
     protected function ForceRefresh()
     {
-        $this->ReadCCUPrograms();
+        $this->ApplyChanges();
     }
 
     protected function GetParentData()

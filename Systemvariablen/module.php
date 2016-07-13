@@ -42,12 +42,12 @@ class HMSystemVariable extends HMBase
 
     protected function KernelReady()
     {
-        $this->ReadSysVars();
+        $this->ApplyChanges();
     }
 
     protected function ForceRefresh()
     {
-        $this->ReadSysVars();
+        $this->ApplyChanges();
     }
 
     protected function GetParentData()

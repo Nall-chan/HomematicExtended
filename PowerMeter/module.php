@@ -36,27 +36,29 @@ class HMPowerMeter extends HMBase
     public function ApplyChanges()
     {
         parent::ApplyChanges();
-
-        if (($this->CheckConfig()) and ( $this->GetPowerAddress()))
+        if (IPS_GetKernelRunlevel() == KR_READY)
         {
-            $this->SetSummary($this->HMDeviceAddress);
-            $this->SetReceiveDataFilter(".*" . $this->HMDeviceAddress . ".*ENERGY_COUNTER.*");
-            if ($this->fKernelRunlevel == KR_READY)
-                if ($this->HasActiveParent())
-                {
-                    $this->GetParentData();
-                    if ($this->HMAddress <> '')
-                        try
-                        {
-                            $this->ReadPowerSysVar();
-                        }
-                        catch (Exception $exc)
-                        {
-                            trigger_error($exc->getMessage(), $exc->getCode());
-                            return false;
-                        }
-                }
-            return true;
+            if (($this->CheckConfig()) and ( $this->GetPowerAddress()))
+            {
+                $this->SetSummary($this->HMDeviceAddress);
+                $this->SetReceiveDataFilter(".*" . $this->HMDeviceAddress . ".*ENERGY_COUNTER.*");
+                if ($this->fKernelRunlevel == KR_READY)
+                    if ($this->HasActiveParent())
+                    {
+                        $this->GetParentData();
+                        if ($this->HMAddress <> '')
+                            try
+                            {
+                                $this->ReadPowerSysVar();
+                            }
+                            catch (Exception $exc)
+                            {
+                                trigger_error($exc->getMessage(), $exc->getCode());
+                                return false;
+                            }
+                    }
+                return true;
+            }
         }
         $this->SetReceiveDataFilter(".*9999999999.*");
         $this->SetSummary('');
@@ -64,18 +66,12 @@ class HMPowerMeter extends HMBase
 
     protected function KernelReady()
     {
-        if (!$this->GetPowerAddress())
-            return;
-        if ($this->HMAddress <> '')
-            $this->ReadPowerSysVar();
+        $this->ApplyChanges();
     }
 
     protected function ForceRefresh()
     {
-        if (!$this->GetPowerAddress())
-            return;
-        if ($this->HMAddress <> '')
-            $this->ReadPowerSysVar();
+        $this->ApplyChanges();
     }
 
     public function ReceiveData($JSONString)
@@ -83,10 +79,10 @@ class HMPowerMeter extends HMBase
 //        if (!$this->GetPowerAddress())
 //            return;
 //        $Data = json_decode($JSONString);
-/*        if ($this->HMDeviceAddress <> (string) $Data->DeviceID)
-            return;
-        if ((string) $Data->VariableName <> 'ENERGY_COUNTER')
-            return;*/
+        /*        if ($this->HMDeviceAddress <> (string) $Data->DeviceID)
+          return;
+          if ((string) $Data->VariableName <> 'ENERGY_COUNTER')
+          return; */
         try
         {
             $this->ReadPowerSysVar();
@@ -169,8 +165,8 @@ class HMPowerMeter extends HMBase
             $this->SendDebug('GetPowerMeter', $exc->getMessage(), 0);
             throw new Exception('Error on read PowerMeterData', E_USER_NOTICE);
         }
-            $xml = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
-        if ($xml === false)            
+        $xml = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
+        if ($xml === false)
         {
             $this->SendDebug('GetPowerMeter', 'XML error', 0);
             throw new Exception('Error on read PowerMeterAddress', E_USER_NOTICE);
