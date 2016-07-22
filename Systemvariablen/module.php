@@ -23,7 +23,6 @@ class HMSystemVariable extends HMBase
         $this->RegisterPropertyInteger("EventID", 0);
         $this->RegisterPropertyInteger("Interval", 0);
         $this->RegisterPropertyBoolean("EmulateStatus", false);
-        $this->RegisterPropertyBoolean("EmulateStatus", false);
         $this->RegisterPropertyBoolean("EnableAlarmDP", true);
         $this->RegisterPropertyInteger("AlarmScriptID", 0);
 
