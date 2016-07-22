@@ -4,7 +4,7 @@
                 {
                     "name": "EventID",
                     "type": "SelectVariable",
-                    "caption": "Trigger für Refresh"
+                    "caption": "Trigger for refresh"
                 },
                 {
                     "name": "Interval",
@@ -14,17 +14,17 @@
                 {
                     "name": "EmulateStatus",
                     "type": "CheckBox",
-                    "caption": "Status emulieren"
+                    "caption": "emulate state"
                 },
                 {
                     "name": "EnableAlarmDP",
                     "type": "CheckBox",
-                    "caption": "Alarm-Variablen aktiv"
+                    "caption": "enable alarm variable"
                 },
                 {
                     "name": "AlarmScriptID",
                     "type": "SelectScript",
-                    "caption": "Script für Alarmverarbeitung"
+                    "caption": "Alarmmanagement-Script"
                 }                
             ],
     "status":
@@ -32,29 +32,29 @@
                 {
                     "code": 102,
                     "icon": "active",
-                    "caption": "Konfiguration gültig."
+                    "caption": "Configuration is valid."
                 },
                 {
                     "code": 104,
                     "icon": "inactive",
-                    "caption": "Kein Trigger oder Interval aktiv."
+                    "caption": "No trigger or interval active."
                 },
                 {
                     "code": 202,
                     "icon": "error",
-                    "caption": "Interval darf nicht kleiner 1 sein."
+                    "caption": "Interval to small."
                 },
                 {
                     "code": 203,
                     "icon": "inactive",
-                    "caption": "Interval kleiner 5 nicht mÃ¶glich."
+                    "caption": "Interval smaller as 5 not possible."
                 }
             ],
     "actions":
             [
                 {
                     "type": "Button",
-                    "label": "CCU auslesen",
+                    "label": "read CCU",
                     "onClick": "HM_ReadSystemVariables($id);"
                 }
             ]

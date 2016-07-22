@@ -4,32 +4,32 @@
                 {
                     "name": "PageUpID",
                     "type": "SelectVariable",
-                    "caption": "Hoch-Taste"
+                    "caption": "Up-Button"
                 },
                 {
                     "name": "PageDownID",
                     "type": "SelectVariable",
-                    "caption": "Runter-Taste"
+                    "caption": "Down-Button"
                 },
                 {
                     "name": "ActionUpID",
                     "type": "SelectVariable",
-                    "caption": "Aktion Hoch-Taste"
+                    "caption": "Action Up-Button"
                 },
                 {
                     "name": "ActionDownID",
                     "type": "SelectVariable",
-                    "caption": "Aktion Runter-Taste"
+                    "caption": "Action Down-Button"
                 },
                 {
                     "name": "MaxPage",
                     "type": "NumberSpinner",
-                    "caption": "Seitenanzahl"
+                    "caption": "Number of pages"
                 },
                 {
                     "name": "Timeout",
                     "type": "NumberSpinner",
-                    "caption": "Display Timeout"
+                    "caption": "Display timeout"
                 },
                 {
                     "name": "ScriptID",
@@ -42,32 +42,32 @@
                 {
                     "code": 102,
                     "icon": "active",
-                    "caption": "Konfiguration gültig."
+                    "caption": "Configuration is valid."
                 },
                 {
                     "code": 104,
                     "icon": "inactive",
-                    "caption": "Kein PRESS Datenpunkt ausgewählt."
+                    "caption": "No PRESS datapoint selected."
                 },
                 {
                     "code": 202,
                     "icon": "inactive",
-                    "caption": "Mindestens ein gewählter Datenpunkt ist ungültig."
+                    "caption": "One or more invalid datapoints selected."
                 },
                 {
                     "code": 203,
                     "icon": "inactive",
-                    "caption": "Kein Display-Script ausgewählt."
+                    "caption": "No Display-Script selected."
                 },
                 {
                     "code": 204,
                     "icon": "inactive",
-                    "caption": "Timeout darf nicht negativ sein."
+                    "caption": "Timeout too small."
                 },
                 {
                     "code": 205,
                     "icon": "inactive",
-                    "caption": "Seitenanzahl darf nicht negativ sein."
+                    "caption": "Number of pages to small."
                 }
             ]
 }
