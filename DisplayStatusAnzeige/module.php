@@ -32,11 +32,13 @@ class HMDisWM55 extends HMBase
         $this->RegisterPropertyInteger("Timeout", 0);
 
         $ID = $this->RegisterScript('HM_OLED', 'HM_OLED.inc.php', $this->CreateHM_OLEDScript(), -2);
+        IPS_SetHidden($ID, true);
         $ID = $this->RegisterScript('DisplayScript', 'Display Script', $this->CreateDisplayScript($ID), -1);
         IPS_SetHidden($ID, true);
         $this->RegisterPropertyInteger("ScriptID", $ID);
 
-        $this->RegisterVariableInteger('PAGE', 'PAGE');
+//        $this->RegisterVariableInteger('PAGE', 'PAGE');
+        $this->SetBuffer("PAGE", (string) 0);
         $this->RegisterTimer('DisplayTimeout', 0, 'HM_ResetTimer($_IPS[\'TARGET\']);');
     }
 
@@ -207,7 +209,8 @@ class HMDisWM55 extends HMBase
         {
             throw new Exception("Instance has no active Parent Instance!", E_USER_WARNING);
         }
-        $Page = GetValueInteger($this->GetIDForIdent('PAGE'));
+//        $Page = GetValueInteger($this->GetIDForIdent('PAGE'));
+        $Page = (int) GetBuffer('PAGE');
         $MaxPage = $this->ReadPropertyInteger('MaxPage');
         switch ($Action)
         {
@@ -217,8 +220,8 @@ class HMDisWM55 extends HMBase
                 else
                     $Page++;
                 $ActionString = "UP";
-                SetValueInteger($this->GetIDForIdent('PAGE'), $Page);
-
+                //SetValueInteger($this->GetIDForIdent('PAGE'), $Page);
+                $this->SetBuffer('PAGE', (string) $Page);
                 break;
             case "PageDownID":
                 if ($Page <= 1)
@@ -226,8 +229,8 @@ class HMDisWM55 extends HMBase
                 else
                     $Page--;
                 $ActionString = "DOWN";
-                SetValueInteger($this->GetIDForIdent('PAGE'), $Page);
-
+//                SetValueInteger($this->GetIDForIdent('PAGE'), $Page);
+                $this->SetBuffer('PAGE', (string) $Page);
                 break;
             case "ActionUpID":
                 $ActionString = "ActionUP";
@@ -302,7 +305,9 @@ class HMDisWM55 extends HMBase
 
     public function ResetTimer()
     {
-        SetValueInteger($this->GetIDForIdent('PAGE'), 0);
+//        SetValueInteger($this->GetIDForIdent('PAGE'), 0);
+        $this->SetBuffer('PAGE', (string) 0);
+
         $this->SetTimerInterval('DisplayTimeout', 0);
     }
 
