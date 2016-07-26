@@ -23,9 +23,10 @@ Erweitert IPS um die native Unterstützung von:
 
 ## 1. Funktionsumfang
 
-   Abfragen von Systemvariablen inkl. Profilen und Werten von der CCU.  
+   Abfragen von System- und Alarmvariablen inkl. Profilen und Werten von der CCU.  
    Schreiben von Werten der Systemvariablen zur CCU.    
-   Standard Actionhandler für die Bedienung der Systemvariablen aus dem IPS-Webfront.  
+   Standard Actionhandler für die Bedienung der System- und Alarmvariablen aus dem IPS-Webfront.  
+   (Die Alarmvariablen werden erst ab IPS4.0 untersützt.)  
 
    Abfragen des Summenzählers der Schaltaktoren mit Leistungsmessung aus der CCU.  
    (Weitere Energiemesser folgen)  
@@ -36,7 +37,7 @@ Erweitert IPS um die native Unterstützung von:
 
    Dynamische Textanzeige auf dem Display-Wandtaster mit Statusdisplay.  
    Unterstützt mehrseite Anzeigen und das durchblättern per Tastendruck.  
-   Ausführen von benutzerspezifischen Aktionen, auch in abhängigkeit der angezeigten Seite.  
+   Ausführen von benutzerspezifischen Aktionen, auch in Abhängigkeit der angezeigten Seite.  
    
    Native Schnittstelle zur CCU, um HomeMatic-Scripte durch die CCU ausführen zu lassen.  
    Direkte Rückmeldung der Ausführung durch einen Antwortstring im JSON-Format.  
@@ -135,6 +136,7 @@ Erweitert IPS um die native Unterstützung von:
 
     Der Profilname lautet immer:
     'HM.SysVar\<ID der Systemvariablen Instanz\>.\<IDENT der Systemvariable\>; (z.B. HM.SysVar12345.950).  
+
     Alle Statusvariablen dieses Moduls werden so benannt wie in der CCU.  
 
     **Hinweis:**  
@@ -152,7 +154,25 @@ Erweitert IPS um die native Unterstützung von:
     Eventuelle Differenzen der Uhrzeiten und/oder Zeitzonen beider Systeme werden dabei
     automatisch berücksichtigt und erfordern somit keinen Eingriff durch den Benutzer.  
 
-    ### PHP-Funktionen
+    **Hinweis:**  
+    Eine Aktualisierung einer Alarmvariable, kann ein in der Instanz hinterlegtes Script starten.  
+    Hierzu werden folgene Werte in der Variable $_IPS übergeben und stehen im Alarm-Script zur Verfügung.  
+
+| Indexname   | Type    | Bedeutung                          |
+| :---------: | :-----: | :--------------------------------: |
+| Channel     | string  | Kannalbezeichnung des Melders      |
+| ChannelName | string  | Bezeichnung des Kanals aus der CCU |
+| DP          | string  | Bezeichnung des Datenpunktes       |
+| FirstTime   | integer | Erste Auslösung (Unixtimestamp)    |
+| LastTime    | integer | Letzte Auslösung (Unixtimestamp)   |
+| OLDVALUE    | boolean | Vorheriger Wert                    |
+| SENDER      | string  | FixWert 'AlarmDP'                  |
+| VALUE       | boolean | Aktueller Wert                     |
+| VARIABLE    | integer | ObjektID der Alarmvariable         |
+
+![Alarmvariable.png](Alarmvariable.png)
+    
+### PHP-Funktionen
 
     Um einen Wert einer Systemvariable aus IPS heraus in die CCU zu schreiben, werden die
     schon vorhandenen HM_WriteValue* Befehle von IPS genutzt.  
