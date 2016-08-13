@@ -59,12 +59,6 @@ class HMSystemVariable extends HMBase
     {
         parent::ApplyChanges();
 
-        if ($this->GetTriggerVar())
-            $this->SetReceiveDataFilter(".*" . $this->HMTriggerAddress . ".*" . $this->HMTriggerName . ".*");
-        else
-            $this->SetReceiveDataFilter(".*9999999999.*");
-
-
         $this->RegisterProfileIntegerEx('HM.AlReceipt', "", "", "", Array(
             Array(0, "Quittieren", "", 0x00FF00)
         ));
@@ -87,6 +81,12 @@ class HMSystemVariable extends HMBase
 
         if ($this->fKernelRunlevel <> KR_READY)
             return;
+
+        if ($this->GetTriggerVar())
+            $this->SetReceiveDataFilter(".*" . $this->HMTriggerAddress . ".*" . $this->HMTriggerName . ".*");
+        else
+            $this->SetReceiveDataFilter(".*9999999999.*");
+
 
         $this->GetParentData();
     }
