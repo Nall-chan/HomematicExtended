@@ -2,9 +2,9 @@
     "translations": {
         "de": {
             "ENERGY_COUNTER from device": "ENERGY_COUNTER vom Device",
-            "Configuration is valid.": "Konfiguration gültig.",
-            "No ENERGY_COUNTER variable selected.": "Kein ENERGY_COUNTER Datenpunkt ausgewählt.",
-            "Selected variable invalid.": "Gewählter Datenpunkt ist ungültig."
+            "Configuration is valid.": "Konfiguration gÃ¼ltig.",
+            "No ENERGY_COUNTER variable selected.": "Kein ENERGY_COUNTER Datenpunkt ausgewÃ¤hlt.",
+            "Selected variable invalid.": "GewÃ¤hlter Datenpunkt ist ungÃ¼ltig."
         }
     }
 }

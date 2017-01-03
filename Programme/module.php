@@ -5,6 +5,9 @@ require_once(__DIR__ . "/../HMBase.php");  // HMBase Klasse
 class HMCCUProgram extends HMBase
 {
 
+    use DebugHelper,
+        Profile;
+
     public function Create()
     {
         parent::Create();
@@ -12,13 +15,19 @@ class HMCCUProgram extends HMBase
         $this->RegisterPropertyBoolean("EmulateStatus", false);
     }
 
+    public function Destroy()
+    {
+        $this->UnregisterProfil('Execute.HM');
+        parent::Destroy();
+    }
+
     public function ApplyChanges()
     {
         parent::ApplyChanges();
-
+        $this->SetReceiveDataFilter(".*9999999999.*");
         $this->CreateProfil();
         if (IPS_GetKernelRunlevel() <> KR_READY)
-            return;        
+            return;
         $this->GetParentData();
 
         if ($this->HMAddress == '')
@@ -82,7 +91,7 @@ class HMCCUProgram extends HMBase
             $this->SendDebug('SysPrg', 'XML error', 0);
             throw new Exception("Error on Read CCU-Programs", E_USER_NOTICE);
         }
-
+        $this->SendDebug("FOUND", (string) $xml->SysPrgs, 0);
         $Result = true;
         foreach (explode(chr(0x09), (string) $xml->SysPrgs) as $SysPrg)
         {
@@ -108,7 +117,7 @@ class HMCCUProgram extends HMBase
                 trigger_error("Error on read info of CCU-Program " . $SysPrg, E_USER_NOTICE);
                 continue;
             }
-
+            $this->SendDebug($SysPrg, utf8_decode((string) $varXml->Name), 0);
             $var = @IPS_GetObjectIDByIdent($SysPrg, $this->InstanceID);
             $Name = /* utf8_decode( */(string) $varXml->Name;
             $Info = utf8_decode((string) $varXml->Name);

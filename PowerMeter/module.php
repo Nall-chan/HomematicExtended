@@ -42,26 +42,28 @@ class HMPowerMeter extends HMBase
             {
                 $this->SetSummary($this->HMDeviceAddress);
                 $this->SetReceiveDataFilter(".*" . $this->HMDeviceAddress . ".*ENERGY_COUNTER.*");
-                if ($this->fKernelRunlevel == KR_READY)
-                    if ($this->HasActiveParent())
-                    {
-                        $this->GetParentData();
-                        if ($this->HMAddress <> '')
-                            try
-                            {
-                                $this->ReadPowerSysVar();
-                            }
-                            catch (Exception $exc)
-                            {
-                                trigger_error($exc->getMessage(), $exc->getCode());
-                                return false;
-                            }
-                    }
+                if ($this->HasActiveParent())
+                {
+                    $this->GetParentData();
+                    if ($this->HMAddress <> '')
+                        try
+                        {
+                            $this->ReadPowerSysVar();
+                        }
+                        catch (Exception $exc)
+                        {
+                            trigger_error($exc->getMessage(), $exc->getCode());
+                            return false;
+                        }
+                }
                 return true;
             }
         }
-        $this->SetReceiveDataFilter(".*9999999999.*");
-        $this->SetSummary('');
+        else
+        {
+            $this->SetReceiveDataFilter(".*9999999999.*");
+            $this->SetSummary('');
+        }
     }
 
     protected function KernelReady()
@@ -171,7 +173,7 @@ class HMPowerMeter extends HMBase
             $this->SendDebug('GetPowerMeter', 'XML error', 0);
             throw new Exception('Error on read PowerMeterAddress', E_USER_NOTICE);
         }
-
+        $this->SendDebug('ENERGY_COUNTER_TOTAL', (string) $xml->Value, 0);
         $Value = ((float) $xml->Value) / 1000;
         $VarID = @IPS_GetObjectIDByIdent('ENERGY_COUNTER_TOTAL', $this->InstanceID);
         if ($VarID === false)

@@ -5,6 +5,9 @@ require_once(__DIR__ . "/../HMBase.php");  // HMBase Klasse
 class HMSystemVariable extends HMBase
 {
 
+    use Profile,
+        DebugHelper;
+
     private $CcuVarType = array(2 => vtBoolean, 4 => vtFloat, 16 => vtInteger, 20 => vtString);
     private $HMTriggerAddress;
     private $HMTriggerName;
@@ -21,6 +24,24 @@ class HMSystemVariable extends HMBase
         $this->RegisterPropertyInteger("AlarmScriptID", 0);
 
         $this->RegisterTimer("ReadHMSysVar", 0, 'HM_SystemVariablesTimer($_IPS[\'TARGET\']);');
+    }
+
+    public function Destroy()
+    {
+        $this->UnregisterProfil("HM.AlReceipt");
+
+        $MyVars = IPS_GetChildrenIDs($this->InstanceID);
+        foreach ($MyVars as $Var)
+        {
+            $Object = IPS_GetObject($Var);
+            if ($Object["ObjectType"] <> 2)
+                continue;
+            $VarProfil = 'HM.SysVar' . (string) $this->InstanceID . '.' . (string) $Object["ObjectIdent"];
+            if (IPS_VariableProfileExists($VarProfil))
+                IPS_DeleteVariableProfile($VarProfil);
+        }
+
+        parent::Destroy();
     }
 
     public function MessageSink($TimeStamp, $SenderID, $Message, $Data)
@@ -79,7 +100,7 @@ class HMSystemVariable extends HMBase
             $this->SetTimerInterval("ReadHMSysVar", 0);
         }
 
-        if ($this->fKernelRunlevel <> KR_READY)
+        if (IPS_GetKernelRunlevel() <> KR_READY)
             return;
 
         if ($this->GetTriggerVar())
@@ -504,7 +525,7 @@ class HMSystemVariable extends HMBase
 
     private function WriteSysVar($Parameter, $ValueStr)
     {
-        if ($this->fKernelRunlevel <> KR_READY)
+        if (IPS_GetKernelRunlevel() <> KR_READY)
             return false;
         if (!$this->HasActiveParent())
             return false;
@@ -631,7 +652,7 @@ class HMSystemVariable extends HMBase
 
     public function AlarmReceipt(string $Ident)
     {
-        if ($this->fKernelRunlevel <> KR_READY)
+        if (IPS_GetKernelRunlevel() <> KR_READY)
             return false;
         if (!$this->HasActiveParent())
         {

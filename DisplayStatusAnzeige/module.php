@@ -5,6 +5,8 @@ require_once(__DIR__ . "/../HMBase.php");  // HMBase Klasse
 class HMDisWM55 extends HMBase
 {
 
+    use DebugHelper;
+
     const PageUP = 0;
     const PageDown = 1;
     const ActionUp = 2;
@@ -95,11 +97,12 @@ class HMDisWM55 extends HMBase
 
     public function ReceiveData($JSONString)
     {
-        $this->SendDebug('Receive', $JSONString, 0);
+
 
         if (!$this->GetDisplayAddress())
             return;
         $Data = json_decode($JSONString);
+        $this->SendDebug('Receive', $Data, 0);
         $ReceiveData = array("DeviceID" => (string) $Data->DeviceID, "VariableName" => (string) $Data->VariableName);
         $Action = array_search($ReceiveData, $this->HMEventData);
         if ($Action === false)
@@ -315,7 +318,7 @@ class HMDisWM55 extends HMBase
     {
         $Script = '<?
 //-----------------------------------
-// Definition der Werte für die Icons
+// Definition der Werte fÃ¼r die Icons
 //-----------------------------------
 // 0x80 AUS                 Icon_on
 // 0x81 EIN                 Icon_off
@@ -326,7 +329,7 @@ class HMDisWM55 extends HMBase
 // 0x86 information         Icon_information
 // 0x87 neue nachricht      Icon_message
 // 0x88 servicemeldung      Icon_service
-// 0x89 Signal grün         Icon_green
+// 0x89 Signal grÃ¼n         Icon_green
 // 0x8A Signal gelb         Icon_yellow
 // 0x8B Signal rot          Icon_red
 //      ohne Icon           Icon_no
@@ -345,13 +348,13 @@ define ("Icon_signal_red"   ,0x8B);
 define ("Icon_no"           ,0);
 
 //------------------------------------
-// Definition der Werte für die Farben
+// Definition der Werte fÃ¼r die Farben
 //------------------------------------
 // 0x80 weiss               Color_white
 // 0x81 rot                 Color_red
 // 0x82 orange              Color_orange
 // 0x83 gelb                Color_yellow
-// 0x84 grün                Color_green
+// 0x84 grÃ¼n                Color_green
 // 0x85 blau                Color_blue
 define ("Color_white"       ,0x82);
 define ("Color_red"         ,0x81);
@@ -368,10 +371,10 @@ define ("Color_blue"        ,0x85);
         $Script = '<?
 ### GRUNDFUNKTION
 /*
-Beispiel für das Zusammenstellern der Daten für die Dis-WM55 Instanz.
-Das Script wird als "Display-Script" in der dazugehörigen Dis-WM55 Instanze eingetragen.
-Die vorbereiteten Daten für das Display werden als JSON kodierter String an die
-Dis-WM55 Instanz als Rückgabewert "Script-Result" übergeben.
+Beispiel fÃ¼r das Zusammenstellern der Daten fÃ¼r die Dis-WM55 Instanz.
+Das Script wird als "Display-Script" in der dazugehÃ¶rigen Dis-WM55 Instanze eingetragen.
+Die vorbereiteten Daten fÃ¼r das Display werden als JSON kodierter String an die
+Dis-WM55 Instanz als RÃ¼ckgabewert "Script-Result" Ã¼bergeben.
 Beispiel der erzeugten Daten:
 {"1":{"Text":"SEITE 1","Icon":130,"Color":129},"2":{"Text":"Zeile2","Icon":0,"Color":129},"3":{"Text":"Zeile3","Icon":130,"Color":130},"4":{"Text":"Zeile4","Icon":0,"Color":130},"5":{"Text":"Zeile5","Icon":131,"Color":132},"6":{"Text":"Zeile6","Icon":0,"Color":132}}
 
@@ -391,25 +394,25 @@ Zeile[6]["Text"]  = Text Zeile 6
 Zeile[6]["Icon"]  = Icon Zeile 6
 Zeile[6]["Color"]  = Farbe Zeile 6
 
-Um nicht immer die Zahlen für die Icons und Farben eintragen zu müssen wurden
+Um nicht immer die Zahlen fÃ¼r die Icons und Farben eintragen zu mÃ¼ssen wurden
 Konstanten definiert.
-Des weiteresn müssen Textzeilen mit der Funktion text_encode("Zeile müt Ümlaut")
-übergeben werden, wenn Umlaute in der Zeile verwendet werden.
+Des weiteresn mÃ¼ssen Textzeilen mit der Funktion text_encode("Zeile mit Umlaut")
+Ã¼bergeben werden, wenn Umlaute in der Zeile verwendet werden.
 */
 
 ### VERWENDUNG VON $_IPS
 
 /*
-Die Dis-WM55 Instanz stellt über die IPS-Systemvariable $_IPS folgende Daten zur Verfügung:
+Die Dis-WM55 Instanz stellt Ã¼ber die IPS-Systemvariable $_IPS folgende Daten zur VerfÃ¼gung:
 
 (string) $_IPS["ACTION"]
-	"UP"				=>  Trigger für Taste-Hoch wurde ausgelößt
-	"DOWN"			=>  Trigger für Taste-Runter wurde ausgelößt
-	"ActionUP"		=>  Trigger für Aktion-Hoch wurde ausgelößt
-	"ActionDOWN"	=>  Trigger für Aktion-Runter wurde ausgelößt
+	"UP"				=>  Trigger fÃ¼r Taste-Hoch wurde ausgelÃ¶ÃŸt
+	"DOWN"			=>  Trigger fÃ¼r Taste-Runter wurde ausgelÃ¶ÃŸt
+	"ActionUP"		=>  Trigger fÃ¼r Aktion-Hoch wurde ausgelÃ¶ÃŸt
+	"ActionDOWN"	=>  Trigger fÃ¼r Aktion-Runter wurde ausgelÃ¶ÃŸt
 
 (int) $_IPS["PAGE"]
-	Die "Seite" welche dargestellt oder deren Aktion ausgeführt werden soll.
+	Die "Seite" welche dargestellt oder deren Aktion ausgefÃ¼hrt werden soll.
 
 (string) $_IPS["SENDER"] => "HMDisWM55"
 	Fester Wert
@@ -418,20 +421,20 @@ Die Dis-WM55 Instanz stellt über die IPS-Systemvariable $_IPS folgende Daten zur
 	Die Instanz-ID der HMDis-WM55 Instanz.
 
 
-Auf der Basis der Variable $_IPS["PAGE"] ist es nun möglich verschiedene Daten
-je nach "Seite" zu berechnen und übergeben.
-Ebenso ist es möglich (z.B. durch langen und kurzen Tastendruck) zwischen UP/DOWN
-und ActionUP/ActionDOWN zu unterscheiden und so Aktionen wie das Schalten von Licht ausführen zu lassen.
+Auf der Basis der Variable $_IPS["PAGE"] ist es nun mÃ¶glich verschiedene Daten
+je nach "Seite" zu berechnen und Ã¼bergeben.
+Ebenso ist es mÃ¶glich (z.B. durch langen und kurzen Tastendruck) zwischen UP/DOWN
+und ActionUP/ActionDOWN zu unterscheiden und so Aktionen wie das Schalten von Licht ausfÃ¼hren zu lassen.
 
-Natürlich kann man auch nur kurze Tastendrücke verwenden und z.B. Kanal:2 als ActionUP und Kanal:1 als DOWN zu definieren.
+NatÃ¼rlich kann man auch nur kurze TastendrÃ¼cke verwenden und z.B. Kanal:2 als ActionUP und Kanal:1 als DOWN zu definieren.
 
 */
 if ($_IPS["SENDER"] <> "HMDisWM55")
 {
-    echo "Dieses Skript wird automatisch über die Homematic Dis-WM55 Instanz ausgeführt";
+    echo "Dieses Skript wird automatisch Ã¼ber die Homematic Dis-WM55 Instanz ausgefÃ¼hrt";
     return;
 }
-include IPS_GetScriptFile(' . $ID . '); // Konstanten für die Icons und Farben
+include IPS_GetScriptFile(' . $ID . '); // Konstanten fÃ¼r die Icons und Farben
 
 if (($_IPS["ACTION"] == "UP") or ( $_IPS["ACTION"] == "DOWN"))
 {
@@ -513,7 +516,7 @@ if (($_IPS["ACTION"] == "UP") or ( $_IPS["ACTION"] == "DOWN"))
 
 if ($_IPS["ACTION"] == "ActionUP")
 {
-    $display_line[1] = array("Text" => hex_encode("Führe"),
+    $display_line[1] = array("Text" => hex_encode("FÃ¼hre"),
         "Icon" => Icon_no,
         "Color" => Color_orange);
 
@@ -539,7 +542,7 @@ if ($_IPS["ACTION"] == "ActionUP")
 
 if ($_IPS["ACTION"] == "ActionDOWN")
 {
-    $display_line[1] = array("Text" => hex_encode("Führe"),
+    $display_line[1] = array("Text" => hex_encode("FÃ¼hre"),
         "Icon" => Icon_no,
         "Color" => Color_orange);
 
@@ -564,11 +567,11 @@ if ($_IPS["ACTION"] == "ActionDOWN")
 }
 
 $data = json_encode($display_line);
-echo $data; //Daten zurückgeben an Dis-WM55-Instanz
+echo $data; //Daten zurÃ¼ckgeben an Dis-WM55-Instanz
 
 function hex_encode ($string)
 {
-	$umlaut =  array("Ä"   ,"Ö"   ,"Ü"   ,"ä"   ,"ö"   ,"ü"   ,"ß"   ,":"   );
+   $umlaut =  array("Ã„"   ,"Ã–"   ,"Ãœ"   ,"Ã¤"   ,"Ã¶"   ,"Ã¼"   ,"ÃŸ"   ,":"   );
    $hex_neu = array(chr(0x5b),chr(0x23),chr(0x24),chr(0x7b),chr(0x7c),chr(0x7d),chr(0x5f),chr(0x3a));
    $return = str_replace($umlaut, $hex_neu, $string);
    return $return;

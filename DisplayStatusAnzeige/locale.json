@@ -8,10 +8,10 @@
             "Number of pages": "Seitenanzahl",
             "Display timeout": "Display Timeout",
             "Display-Script": "Display-Script",
-            "Configuration is valid.": "Konfiguration g¸ltig.",
-            "No PRESS datapoint selected.": "Kein PRESS Datenpunkt ausgew‰hlt.",
-            "One or more invalid datapoints selected.": "Mindestens ein gew‰hlter Datenpunkt ist ung¸ltig.",
-            "No Display-Script selected.": "Kein Display-Script ausgew‰hlt.",
+            "Configuration is valid.": "Konfiguration g√ºltig.",
+            "No PRESS datapoint selected.": "Kein PRESS Datenpunkt ausgew√§hlt.",
+            "One or more invalid datapoints selected.": "Mindestens ein gew√§hlter Datenpunkt ist ung√ºltig.",
+            "No Display-Script selected.": "Kein Display-Script ausgew√§hlt.",
             "Timeout too small.": "Timeout darf nicht negativ sein.",
             "Number of pages to small.": "Seitenanzahl darf nicht negativ sein."
         }

@@ -1,0 +1,12 @@
+{
+    "translations": {
+        "de": {
+            "Configuration is valid.": "Konfiguration gültig.",
+            "No interval active.": "Kein Interval aktiv.",
+            "Interval to small.": "Interval darf nicht kleiner 1 sein.",
+            "Interval smaller as 5 not possible.": "Interval kleiner 5 nicht möglich.",
+            "read RF-Interfaces": "RF-Interfaces auslesen",
+            "Create all RF-Interfaces in IPS":"Alle Instanzen in IPS anlegen"
+        }
+    }
+}

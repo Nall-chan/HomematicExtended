@@ -1,15 +1,15 @@
 {
     "translations": {
         "de": {
-            "Trigger for refresh": "Trigger für Refresh",
+            "Trigger for refresh": "Trigger fÃ¼r Refresh",
             "seconds": "Sekunden",
             "emulate state": "Status emulieren",
             "enable alarm variable": "Alarm-Variablen aktiv",
-            "Alarmmanagement-Script": "Script für Alarmverarbeitung",
-            "Configuration is valid.": "Konfiguration gültig.",
+            "Alarmmanagement-Script": "Script fÃ¼r Alarmverarbeitung",
+            "Configuration is valid.": "Konfiguration gÃ¼ltig.",
             "No trigger or interval active.": "Kein Trigger oder Interval aktiv.",
             "Interval to small.": "Interval darf nicht kleiner 1 sein.",
-            "Interval smaller as 5 not possible.": "Interval kleiner 5 nicht möglich.",
+            "Interval smaller as 5 not possible.": "Interval kleiner 5 nicht mÃ¶glich.",
             "read CCU": "CCU auslesen"
         }
     }

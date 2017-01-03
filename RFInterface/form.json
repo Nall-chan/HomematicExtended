@@ -1,0 +1,8 @@
+{
+    "elements":
+            [{
+                    "name": "Address",
+                    "type": "ValidationTextBox",
+                    "caption": "Address"
+                }]
+}

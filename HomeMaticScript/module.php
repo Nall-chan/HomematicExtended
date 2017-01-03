@@ -5,6 +5,8 @@ require_once(__DIR__ . "/../HMBase.php");
 class HMScript extends HMBase
 {
 
+    use DebugHelper;
+
     public function Create()
     {
         parent::Create();
@@ -54,6 +56,7 @@ class HMScript extends HMBase
             $this->SendDebug($url, $exc->getMessage(), 0);
             throw $exc;
         }
+        $this->SendDebug('Result', $HMScriptResult, 0);
         $xml = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
         if ($xml === false)
         {

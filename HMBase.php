@@ -147,14 +147,7 @@ if (@constant('IPS_BASE') == null) //Nur wenn Konstanten noch nicht bekannt sind
 abstract class HMBase extends IPSModule
 {
 
-    protected $fKernelRunlevel;
     protected $HMAddress;
-
-    public function __construct($InstanceID)
-    {
-        parent::__construct($InstanceID);
-        $this->fKernelRunlevel = IPS_GetKernelRunlevel();
-    }
 
     public function Create()
     {
@@ -262,6 +255,7 @@ abstract class HMBase extends IPSModule
         $this->HMAddress = '';
         if ($ParentId > 0)
             $this->HMAddress = (string) IPS_GetProperty($ParentId, 'Host');
+        return $ParentId;
     }
 
     protected function LoadHMScript($url, $HMScript)
@@ -285,11 +279,12 @@ abstract class HMBase extends IPSModule
             curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
             curl_setopt($ch, CURLOPT_TIMEOUT_MS, 5000);
             $result = curl_exec($ch);
+            $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             curl_close($ch);
+            if ($http_code >= 400)
+                throw new Exception('CCU unreachable:' . $http_code, E_USER_NOTICE);
             if ($result === false)
-            {
                 throw new Exception('CCU unreachable', E_USER_NOTICE);
-            }
             return $result;
         }
         else
@@ -328,26 +323,24 @@ abstract class HMBase extends IPSModule
         }
     }
 
-    //Remove on next Symcon update...  year ;) ?
-    protected function RegisterProfileInteger($Name, $Icon, $Prefix, $Suffix, $MinValue, $MaxValue, $StepSize)
-    {
+}
 
-        if (!IPS_VariableProfileExists($Name))
-        {
-            IPS_CreateVariableProfile($Name, 1);
-        }
-        else
-        {
-            $profile = IPS_GetVariableProfile($Name);
-            if ($profile['ProfileType'] != 1)
-                throw new Exception("Variable profile type does not match for profile " . $Name, E_USER_WARNING);
-        }
+/**
+ * Trait mit Hilfsfunktionen für Variablenprofile.
+ */
+trait Profile
+{
 
-        IPS_SetVariableProfileIcon($Name, $Icon);
-        IPS_SetVariableProfileText($Name, $Prefix, $Suffix);
-        IPS_SetVariableProfileValues($Name, $MinValue, $MaxValue, $StepSize);
-    }
-
+    /**
+     * Erstell und konfiguriert ein VariablenProfil für den Typ integer mit Assoziationen
+     *
+     * @access protected
+     * @param string $Name Name des Profils.
+     * @param string $Icon Name des Icon.
+     * @param string $Prefix Prefix für die Darstellung.
+     * @param string $Suffix Suffix für die Darstellung.
+     * @param array $Associations Assoziationen der Werte als Array.
+     */
     protected function RegisterProfileIntegerEx($Name, $Icon, $Prefix, $Suffix, $Associations)
     {
         if (sizeof($Associations) === 0)
@@ -366,6 +359,95 @@ abstract class HMBase extends IPSModule
         foreach ($Associations as $Association)
         {
             IPS_SetVariableProfileAssociation($Name, $Association[0], $Association[1], $Association[2], $Association[3]);
+        }
+    }
+
+    /**
+     * Erstell und konfiguriert ein VariablenProfil für den Typ integer
+     *
+     * @access protected
+     * @param string $Name Name des Profils.
+     * @param string $Icon Name des Icon.
+     * @param string $Prefix Prefix für die Darstellung.
+     * @param string $Suffix Suffix für die Darstellung.
+     * @param int $MinValue Minimaler Wert.
+     * @param int $MaxValue Maximaler wert.
+     * @param int $StepSize Schrittweite
+     */
+    protected function RegisterProfileInteger($Name, $Icon, $Prefix, $Suffix, $MinValue, $MaxValue, $StepSize)
+    {
+
+        if (!IPS_VariableProfileExists($Name))
+        {
+            IPS_CreateVariableProfile($Name, 1);
+        }
+        else
+        {
+            $profile = IPS_GetVariableProfile($Name);
+            if ($profile['ProfileType'] != 1)
+                throw new Exception("Variable profile type does not match for profile " . $Name, E_USER_NOTICE);
+        }
+
+        IPS_SetVariableProfileIcon($Name, $Icon);
+        IPS_SetVariableProfileText($Name, $Prefix, $Suffix);
+        IPS_SetVariableProfileValues($Name, $MinValue, $MaxValue, $StepSize);
+    }
+
+    /**
+     * Löscht ein Variablenprofile, sofern es nicht außerhalb dieser Instanz noch verwendet wird.
+     * @param string $Profil Name des zu löschenden Profils.
+     */
+    protected function UnregisterProfil(string $Profil)
+    {
+        if (!IPS_VariableProfileExists($Profil))
+            return;
+        foreach (IPS_GetVariableList() as $VarID)
+        {
+            if (IPS_GetParent($VarID) == $this->InstanceID)
+                continue;
+            if (IPS_GetVariable($VarID)['VariableCustomProfile'] == $Profil)
+                return;
+        }
+        IPS_DeleteVariableProfile($Profil);
+    }
+
+}
+
+/**
+ * DebugHelper ergänzt SendDebug um die Möglichkeit Array und Objekte auszugeben.
+ * 
+ */
+trait DebugHelper
+{
+
+    /**
+     * Ergänzt SendDebug um Möglichkeit Objekte und Array auszugeben.
+     *
+     * @access protected
+     * @param string $Message Nachricht für Data.
+     * @param TXB_API_Data|mixed $Data Daten für die Ausgabe.
+     * @return int $Format Ausgabeformat für Strings.
+     */
+    protected function SendDebug($Message, $Data, $Format)
+    {
+        if (is_object($Data))
+        {
+            foreach ($Data as $Key => $DebugData)
+            {
+
+                $this->SendDebug($Message . ":" . $Key, $DebugData, 0);
+            }
+        }
+        else if (is_array($Data))
+        {
+            foreach ($Data as $Key => $DebugData)
+            {
+                $this->SendDebug($Message . ":" . $Key, $DebugData, 0);
+            }
+        }
+        else
+        {
+            parent::SendDebug($Message, (string) $Data, $Format);
         }
     }
 
