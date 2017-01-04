@@ -1,17 +1,39 @@
 <?
 
+/**
+ * @addtogroup homematicextended
+ * @{
+ *
+ * @package       HomematicExtended
+ * @file          module.php
+ * @author        Michael Tröger <micha@nall-chan.net>
+ * @copyright     2017 Michael Tröger
+ * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
+ * @version       2.2
+ */
 require_once(__DIR__ . "/../HMBase.php");  // HMBase Klasse
 
+/**
+ * HMSystemVariable ist die Klasse für das IPS-Modul 'HomeMatic Systemvariablen'.
+ * Erweitert HMBase 
+ *
+ * @property string $HMDeviceAddress Die Geräte-Adresse welche eine Aktualisierung auslöst.
+ * @property string $HMDeviceDatapoint Der zu überwachende Datenpunkt welcher eine Aktualisierung auslöst.
+ * @property int $Event Die IPS-ID der Variable des Datenpunkt welcher eine Aktualisierung auslöst.
+ * @property array $SystemVars Ein Array mit allen IPS-Var-IDs welche den Namen des IDENT (ID der Systemvariable in der CCU) enthalten.
+ */
 class HMSystemVariable extends HMBase
 {
 
-    use Profile,
-        DebugHelper;
+    use Profile;
 
-    private $CcuVarType = array(2 => vtBoolean, 4 => vtFloat, 16 => vtInteger, 20 => vtString);
-    private $HMTriggerAddress;
-    private $HMTriggerName;
+    static private $CcuVarType = array(2 => vtBoolean, 4 => vtFloat, 16 => vtInteger, 20 => vtString);
 
+    /**
+     * Interne Funktion des SDK.
+     *
+     * @access public
+     */
     public function Create()
     {
         parent::Create();
@@ -26,17 +48,20 @@ class HMSystemVariable extends HMBase
         $this->RegisterTimer("ReadHMSysVar", 0, 'HM_SystemVariablesTimer($_IPS[\'TARGET\']);');
     }
 
+    /**
+     * Interne Funktion des SDK.
+     *
+     * @access public
+     */
     public function Destroy()
     {
+        if (!IPS_InstanceExists($this->InstanceID))
+            return;
         $this->UnregisterProfil("HM.AlReceipt");
 
-        $MyVars = IPS_GetChildrenIDs($this->InstanceID);
-        foreach ($MyVars as $Var)
+        foreach ($this->SystemVars as $Ident)
         {
-            $Object = IPS_GetObject($Var);
-            if ($Object["ObjectType"] <> 2)
-                continue;
-            $VarProfil = 'HM.SysVar' . (string) $this->InstanceID . '.' . (string) $Object["ObjectIdent"];
+            $VarProfil = 'HM.SysVar' . (string) $this->InstanceID . '.' . (string) $this->SystemVars[$SenderID];
             if (IPS_VariableProfileExists($VarProfil))
                 IPS_DeleteVariableProfile($VarProfil);
         }
@@ -44,8 +69,20 @@ class HMSystemVariable extends HMBase
         parent::Destroy();
     }
 
+    /**
+     * Nachrichten aus der Nachrichtenschlange verarbeiten.
+     *
+     * @access public
+     * @param int $TimeStamp
+     * @param int $SenderID
+     * @param int $Message
+     * @param array|int $Data
+     */
     public function MessageSink($TimeStamp, $SenderID, $Message, $Data)
     {
+        $OldVars = $this->SystemVars;
+        if (!IPS_InstanceExists($this->InstanceID))
+            return;
         parent::MessageSink($TimeStamp, $SenderID, $Message, $Data);
         switch ($Message)
         {
@@ -56,26 +93,21 @@ class HMSystemVariable extends HMBase
                     IPS_SetProperty($this->InstanceID, "EventID", 0);
                     IPS_ApplyChanges($this->InstanceID);
                 }
+                if (array_key_exists($SenderID, $OldVars))
+                {
+                    $VarProfil = 'HM.SysVar' . (string) $this->InstanceID . '.' . (string) $OldVars[$SenderID];
+                    if (IPS_VariableProfileExists($VarProfil))
+                        IPS_DeleteVariableProfile($VarProfil);
+                }
                 break;
         }
     }
 
-    protected function KernelReady()
-    {
-        $this->ApplyChanges();
-    }
-
-    protected function ForceRefresh()
-    {
-        $this->ApplyChanges();
-    }
-
-    protected function GetParentData()
-    {
-        parent::GetParentData();
-        $this->SetSummary($this->HMAddress);
-    }
-
+    /**
+     * Interne Funktion des SDK.
+     *
+     * @access public
+     */
     public function ApplyChanges()
     {
         parent::ApplyChanges();
@@ -84,116 +116,47 @@ class HMSystemVariable extends HMBase
             Array(0, "Quittieren", "", 0x00FF00)
         ));
 
+        if (IPS_GetKernelRunlevel() <> KR_READY)
+        {
+            $this->HMDeviceAddress = '';
+            $this->HMDeviceDatapoint = '';
+            $this->SystemVars = array();
+            $this->SetReceiveDataFilter(".*9999999999.*");
+            $this->SetSummary('');
+            return;
+        }
+
+        $MyVars = IPS_GetChildrenIDs($this->InstanceID);
+        $OldVars = $this->SystemVars;
+        foreach ($MyVars as $Var)
+        {
+            $Object = IPS_GetObject($Var);
+            if ($Object["ObjectType"] <> 2)
+                continue;
+            if (strpos($Object["ObjectIdent"], 'AlDP') !== false)
+                $Object["ObjectIdent"] = substr($Object["ObjectIdent"], 4);
+            $OldVars[$Var] = $Object["ObjectIdent"];
+            $this->RegisterMessage($Var, VM_DELETE);
+        }
+        $this->SystemVars = $OldVars;
+
         if ($this->CheckConfig())
         {
             if ($this->ReadPropertyInteger("Interval") >= 5)
-            {
                 $this->SetTimerInterval("ReadHMSysVar", $this->ReadPropertyInteger("Interval") * 1000);
-            }
             else
-            {
                 $this->SetTimerInterval("ReadHMSysVar", 0);
-            }
         }
         else
-        {
             $this->SetTimerInterval("ReadHMSysVar", 0);
-        }
-
-        if (IPS_GetKernelRunlevel() <> KR_READY)
-            return;
 
         if ($this->GetTriggerVar())
-            $this->SetReceiveDataFilter(".*" . $this->HMTriggerAddress . ".*" . $this->HMTriggerName . ".*");
+            $this->SetReceiveDataFilter(".*" . $this->HMDeviceAddress . ".*" . $this->HMDeviceDatapoint . ".*");
         else
             $this->SetReceiveDataFilter(".*9999999999.*");
 
-
         $this->GetParentData();
-    }
 
-################## PRIVATE                
-
-    private function CheckConfig()
-    {
-        $OldEvent = $this->GetBuffer("Event");
-        $Interval = $this->ReadPropertyInteger("Interval");
-        $Event = $this->ReadPropertyInteger("EventID");
-
-        if ($Event <> $OldEvent)
-        {
-            if ($OldEvent > 0)
-                $this->UnregisterMessage($OldEvent, VM_DELETE);
-            if ($Event > 0)
-            {
-                $this->RegisterMessage($Event, VM_DELETE);
-                $this->SetBuffer('Event', $Event);
-            }
-        }
-
-        if ($Interval < 0)
-        {
-
-            $this->SetStatus(IS_EBASE + 2); //Error Timer is negativ
-            return false;
-        }
-        elseif ($Interval > 4)
-        {
-            if ($Event == 0)
-                $this->SetStatus(IS_ACTIVE); //OK
-            else
-                $this->SetStatus(IS_ACTIVE); //Trigger und Timer aktiv                      
-        }
-        elseif ($Interval == 0)
-        {
-            if ($Event == 0)
-                $this->SetStatus(IS_INACTIVE); // kein Trigger und Timer aktiv
-            else
-                $this->SetStatus(IS_ACTIVE); //OK
-                /*
-                  }
-                  else
-                  {
-                  if ($this->ReadPropertyBoolean("EmulateStatus") == true)
-                  {
-                  $this->SetStatus(105); //Status emulieren nur empfohlen bei Interval.
-                  }
-                  else
-                  {
-                  $parent = IPS_GetParent($Event);
-                  if (IPS_GetInstance($parent)['ModuleInfo']['ModuleID'] <> '{EE4A81C6-5C90-4DB7-AD2F-F6BBD521412E}')
-                  {
-                  $this->SetStatus(107);  //Warnung vermutlich falscher Trigger
-                  }
-                  else
-                  {  //ist HM Device
-                  if (strpos(IPS_GetProperty($parent, "Address"), 'BidCoS-RF:') === false)
-                  {
-                  $this->SetStatus(107);  //Warnung vermutlich falscher Trigger
-                  }
-                  else
-                  {
-                  $this->SetStatus(IS_ACTIVE); //OK
-                  }
-                  }
-                  }
-                  } */
-        }
-        elseif ($Interval < 5)
-        {
-            $this->SetStatus(IS_EBASE + 3);  //Warnung Trigger zu klein                  
-            return false;
-        }
-
-
-        return true;
-    }
-
-    public function ReceiveData($JSONString)
-    {
-        $this->GetParentData();
-        if ($this->HMAddress == '')
-            return;
         try
         {
             $this->ReadSysVars();
@@ -201,21 +164,131 @@ class HMSystemVariable extends HMBase
         catch (Exception $exc)
         {
             trigger_error($exc->getMessage(), $exc->getCode());
-            return;
         }
+        return;
     }
 
+    ################## protected
+
+    /**
+     * Interne Funktion des SDK.
+     *
+     * @access public
+     */
+    protected function KernelReady()
+    {
+        $this->ApplyChanges();
+    }
+
+    /**
+     * Interne Funktion des SDK.
+     *
+     * @access public
+     */
+    protected function ForceRefresh()
+    {
+        $this->ApplyChanges();
+    }
+
+    /**
+     * Registriert Nachrichten des aktuellen Parent und ließt die Adresse der CCU aus dem Parent.
+     * 
+     * @access protected
+     * @return int ID des Parent.
+     */
+    protected function GetParentData()
+    {
+        parent::GetParentData();
+        $this->SetSummary($this->HMAddress);
+    }
+
+################## PRIVATE                
+
+    /**
+     * Prüft die Konfiguration und setzt den Status der Instanz.
+     * 
+     * @access privat
+     * @return boolean True wenn Konfig ok, sonst false.
+     */
+    private function CheckConfig()
+    {
+        $OldEvent = $this->Event;
+        $Event = $this->ReadPropertyInteger("EventID");
+
+        if ($Event <> $OldEvent)
+        {
+            if ($OldEvent > 0)
+                $this->UnregisterMessage($OldEvent, VM_DELETE);
+            if ($Event > 0)
+                $this->RegisterMessage($Event, VM_DELETE);
+            $this->Event = $Event;
+        }
+
+        $Interval = $this->ReadPropertyInteger("Interval");
+
+        if ($Interval < 0)
+        {
+            $this->SetStatus(IS_EBASE + 2); //Error Timer is negativ
+            return false;
+        }
+
+        if ($Interval == 0)
+        {
+            if ($Event == 0)
+            {
+                $this->SetStatus(IS_INACTIVE); // kein Trigger und kein Timer aktiv
+                return true;
+            }
+            else
+            {
+                $this->SetStatus(IS_ACTIVE); // OK
+                return true;
+            }
+        }
+
+        if ($Interval < 5)
+        {
+            $this->SetStatus(IS_EBASE + 3);  //Warnung Trigger zu klein                  
+            return false;
+        }
+
+
+        $this->SetStatus(IS_ACTIVE); //OK
+        return true;
+    }
+
+    /**
+     * Prüft und holt alle Daten zu der Event-Variable und Instanz.
+     * 
+     * @access private
+     * @return boolean True wenn Quelle gültig ist, sonst false.
+     */
     private function GetTriggerVar()
     {
         $EventID = $this->ReadPropertyInteger("EventID");
         if ($EventID == 0)
+        {
+            $this->HMDeviceAddress = "";
+            $this->HMDeviceDatapoint = "";
             return false;
+        }
         $parent = IPS_GetParent($EventID);
-        $this->HMTriggerAddress = IPS_GetProperty($parent, 'Address');
-        $this->HMTriggerName = IPS_GetObject($EventID)['ObjectIdent'];
+        if (IPS_GetInstance($parent)['ModuleInfo']['ModuleID'] <> '{EE4A81C6-5C90-4DB7-AD2F-F6BBD521412E}')
+        {
+            $this->HMDeviceAddress = "";
+            $this->HMDeviceDatapoint = "";
+            return false;
+        }
+        $this->HMDeviceAddress = IPS_GetProperty($parent, 'Address');
+        $this->HMDeviceDatapoint = IPS_GetObject($EventID)['ObjectIdent'];
         return true;
     }
 
+    /**
+     * Liest alle Systemvariablen aus der CCU und legt diese in IPS mit dem dazugehörigen Profil an.
+     * @return boolean True bei Erfolg, sonst false.
+     * @throws Exception Wenn CUU nicht erreichbar oder Daten nicht auswertbar sind.
+     */
     private function ReadSysVars()
     {
         // Sysvars
@@ -264,6 +337,8 @@ class HMSystemVariable extends HMBase
         $TimeDiff = $NowTime - $CCUTime;
         $CCUTimeZone = (string) $xmlTime->TimeZone;
         $Result = true;
+        $OldVars = $this->SystemVars;
+        $OldVarsChange = false;
         foreach (explode(chr(0x09), (string) $xmlVars->SysVars) as $SysVar)
         {
             $VarIdent = $SysVar;
@@ -305,12 +380,12 @@ class HMSystemVariable extends HMBase
             $xmlVar->addChild('Value', $lines[0]);
             $xmlVar->addChild('Variable', $lines[1]);
             $xmlVar->addChild('LastValue', $lines[2]);
-            $VarID = @IPS_GetObjectIDByIdent($VarIdent, $this->InstanceID);
-            $VarType = $this->CcuVarType[(int) $xmlVar->ValueType];
+            $VarID = @$this->GetIDForIdent($VarIdent);
+            $VarType = self::$CcuVarType[(int) $xmlVar->ValueType];
             $VarProfil = 'HM.SysVar' . (string) $this->InstanceID . '.' . (string) $SysVar;
             $VarName = /* utf8_decode( */(string) $xmlVar->Name;
 
-            if (($VarID === false) or ( !IPS_VariableProfileExists($VarProfil)))
+            if (((int) $xmlVar->ValueType != vtString) and ( !IPS_VariableProfileExists($VarProfil)))
             {                 // neu anlegen wenn VAR neu ist oder Profil nicht vorhanden
                 $HMScript = 'Name=dom.GetObject(' . $SysVar . ').Name();' . PHP_EOL
                         . 'ValueSubType=dom.GetObject(' . $SysVar . ').ValueSubType();' . PHP_EOL
@@ -345,40 +420,42 @@ class HMSystemVariable extends HMBase
                 if (IPS_VariableProfileExists($VarProfil))
                     IPS_DeleteVariableProfile($VarProfil);
 
-                if ((int) $xmlVar->ValueType == vtString)
+                IPS_CreateVariableProfile($VarProfil, $VarType);
+                switch ($VarType)
                 {
-                    $VarProfil = '~String';
+                    case vtBoolean:
+                        if (isset($xmlVar2->ValueName0))
+                            @IPS_SetVariableProfileAssociation($VarProfil, 0, /* utf8_decode( */ (string) $xmlVar2->ValueName0, '', -1);
+                        if (isset($xmlVar2->ValueName1))
+                            @IPS_SetVariableProfileAssociation($VarProfil, 1, /* utf8_decode( */ (string) $xmlVar2->ValueName1, '', -1);
+                        break;
+                    case vtFloat:
+                        @IPS_SetVariableProfileDigits($VarProfil, strlen((string) $xmlVar2->ValueMin) - strpos('.', (string) $xmlVar2->ValueMin) - 1);
+                        @IPS_SetVariableProfileValues($VarProfil, (float) $xmlVar2->ValueMin, (float) $xmlVar2->ValueMax, 1);
+                        break;
                 }
-                else
-                {
-                    IPS_CreateVariableProfile($VarProfil, $VarType);
-                    switch ($VarType)
+                if (isset($xmlVar2->ValueUnit))
+                    @IPS_SetVariableProfileText($VarProfil, '', ' ' . /* utf8_decode( */(string) $xmlVar2->ValueUnit);
+                if ((isset($xmlVar2->ValueSubType)) and ( (int) $xmlVar2->ValueSubType == 29))
+                    foreach (explode(';', (string) $xmlVar2->ValueList) as $Index => $ValueList)
                     {
-                        case vtBoolean:
-                            if (isset($xmlVar2->ValueName0))
-                                @IPS_SetVariableProfileAssociation($VarProfil, 0, /* utf8_decode( */ (string) $xmlVar2->ValueName0, '', -1);
-                            if (isset($xmlVar2->ValueName1))
-                                @IPS_SetVariableProfileAssociation($VarProfil, 1, /* utf8_decode( */ (string) $xmlVar2->ValueName1, '', -1);
-                            break;
-                        case vtFloat:
-                            @IPS_SetVariableProfileDigits($VarProfil, strlen((string) $xmlVar2->ValueMin) - strpos('.', (string) $xmlVar2->ValueMin) - 1);
-                            @IPS_SetVariableProfileValues($VarProfil, (float) $xmlVar2->ValueMin, (float) $xmlVar2->ValueMax, 1);
-                            break;
+                        @IPS_SetVariableProfileAssociation($VarProfil, $Index, /* utf8_decode( */ trim($ValueList), '', -1);
                     }
-                    if (isset($xmlVar2->ValueUnit))
-                        @IPS_SetVariableProfileText($VarProfil, '', ' ' . /* utf8_decode( */(string) $xmlVar2->ValueUnit);
-                    if ((isset($xmlVar2->ValueSubType)) and ( (int) $xmlVar2->ValueSubType == 29))
-                        foreach (explode(';', (string) $xmlVar2->ValueList) as $Index => $ValueList)
-                        {
-                            @IPS_SetVariableProfileAssociation($VarProfil, $Index, /* utf8_decode( */ trim($ValueList), '', -1);
-                        }
-                }
             }
             if ($VarID === false)
             {
+                if ((int) $xmlVar->ValueType == vtString)
+                    $VarProfil = "~String";
                 $this->MaintainVariable($VarIdent, $VarName, $VarType, $VarProfil, 0, true);
                 $this->EnableAction($VarIdent);
-                $VarID = @IPS_GetObjectIDByIdent($VarIdent, $this->InstanceID);
+                $VarID = @$this->GetIDForIdent($VarIdent);
+                if ((int) $xmlVar->ValueType <> vtString)
+                {
+                    $OldVars[$VarID] = $SysVar;
+                    $OldVarsChange = true;
+                    $this->RegisterMessage($VarID, VM_DELETE);
+                    $this->SendDebug($VarID, IPS_GetObject($VarID), 0);
+                }
             }
             else
             {
@@ -419,10 +496,20 @@ class HMSystemVariable extends HMBase
                     break;
             }
         }
+        if ($OldVarsChange)
+            $this->SystemVars = $OldVars;
         return $Result;
     }
 
-    private function ProcessAlarmVariable($ParentID, $SysVar, $CCUTimeZone)
+    /**
+     * Liest die Daten einer Systemvariable vom Typ 'Alarm' aus. Visualisiert den Status und startet bei Bedarf ein Script in IPS.
+     * 
+     * @param int $ParentID IPS-ID der Alarmvariable.
+     * @param string $SysVar ID der Alarmvariable in der CCU.
+     * @param string $CCUTimeZone Die Zeitzone der CCU.
+     * @return boolean True bei Erfolg, sonst false.
+     */
+    private function ProcessAlarmVariable(int $ParentID, string $SysVar, string $CCUTimeZone)
     {
         $HMScript = 'Value = dom.GetObject(' . $SysVar . ').Value();
                         string FirstTime = dom.GetObject(' . $SysVar . ').AlOccurrenceTime();
@@ -521,17 +608,23 @@ class HMSystemVariable extends HMBase
         {
             IPS_RunScriptEx($ScriptID, $ScriptData);
         }
+        return true;
     }
 
-    private function WriteSysVar($Parameter, $ValueStr)
+    /**
+     * Schreibt einen Wert in eine Systemvariable auf der CCU.
+     * 
+     * @param string $Parameter Der IDENT der IPS-Statusvariable = Die ID der Systemvariable in der CCU.
+     * @param string $ValueStr Der neue Wert der Systemvariable.
+     * @return boolean True bei Erfolg, sonst false.
+     * @throws Exception Wenn CUU nicht erreichbar oder Daten nicht auswertbar sind.
+     */
+    private function WriteSysVar(string $Parameter, string $ValueStr)
     {
         if (IPS_GetKernelRunlevel() <> KR_READY)
             return false;
         if (!$this->HasActiveParent())
-            return false;
-        $this->GetParentData();
-        if ($this->HMAddress == '')
-            return;
+            throw new Exception("Instance has no active Parent Instance!", E_USER_NOTICE);
         $url = 'SysVar.exe';
         $HMScript = 'State=dom.GetObject(' . $Parameter . ').State("' . $ValueStr . '");';
         try
@@ -557,6 +650,18 @@ class HMSystemVariable extends HMBase
             return false;
     }
 
+    /**
+     * Erstellt eine Untervariable in IPS.
+     * 
+     * @param int $ParentID IPS-ID der übergeordneten Variable.
+     * @param string $Ident IDENT der neuen Statusvariable.
+     * @param string $Name Name der neuen Statusvariable.
+     * @param int $Type Der zu erstellende Typ von Variable.
+     * @param string $Profile Das dazugehörige Variabelprofil.
+     * @param int $Position Position der Variable.
+     * @return int IPS-ID der neuen Variable.
+     * @throws Exception Wenn Variable nicht erstellt werden konnte.
+     */
     private function RegisterSubVariable($ParentID, $Ident, $Name, $Type, $Profile = "", $Position = 0)
     {
 
@@ -606,24 +711,29 @@ class HMSystemVariable extends HMBase
 
 ################## ActionHandler
 
+    /**
+     * Interne Funktion des SDK.
+     *
+     * @access public
+     */
     public function RequestAction($Ident, $Value)
     {
         if (!$this->HasActiveParent())
         {
             trigger_error('Instance has no active Parent Instance!', E_USER_NOTICE);
-            return false;
+            return;
         }
         if (strpos($Ident, 'AlDP') !== false)
         {
             if ((bool) $Value === false)
                 $this->AlarmReceipt($Ident);
-            return true;
+            return;
         }
-        $VarID = $this->GetStatusVarIDex($Ident);
+        $VarID = @$this->GetIDForIdent($Ident);
         if ($VarID === false)
         {
             trigger_error('Ident ' . $Ident . ' do not exist.', E_USER_NOTICE);
-            return false;
+            return;
         }
         switch (IPS_GetVariable($VarID)['VariableType'])
         {
@@ -642,14 +752,34 @@ class HMSystemVariable extends HMBase
         }
     }
 
-    private function GetStatusVarIDex($Ident)
+################## Datenaustausch
+
+    /**
+     * Interne Funktion des SDK.
+     *
+     * @access public
+     */
+    public function ReceiveData($JSONString)
     {
-        $VarID = @IPS_GetObjectIDByIdent($Ident, $this->InstanceID);
-        return $VarID;
+        try
+        {
+            $this->ReadSysVars();
+        }
+        catch (Exception $exc)
+        {
+            trigger_error($exc->getMessage(), $exc->getCode());
+        }
     }
 
 ################## PUBLIC    
 
+    /**
+     * IPS-Instanz-Funktion 'HM_AlarmReceipt'.
+     * Bestätigt einen Alarm auf der CCU
+     * 
+     * @param string $Ident Der IDENT der IPS-Statusvariable = Die ID der Alarmvariable in der CCU.
+     * @return boolean True bei erfolg, sonst false.
+     */
     public function AlarmReceipt(string $Ident)
     {
         if (IPS_GetKernelRunlevel() <> KR_READY)
@@ -659,11 +789,12 @@ class HMSystemVariable extends HMBase
             trigger_error("Instance has no active Parent Instance!", E_USER_NOTICE);
             return false;
         }
-        $this->GetParentData();
-        if ($this->HMAddress == '')
-            return;
-        $VarID = $this->GetStatusVarIDex($Ident);
-
+        $VarID = @$this->GetIDForIdent($Ident);
+        if ($VarID === false)
+        {
+            trigger_error('Ident ' . $Ident . ' do not exist.', E_USER_NOTICE);
+            return false;
+        }
         $HMScript = 'object oitemID = dom.GetObject(' . substr($Ident, 4) . ');
                    if (oitemID.AlState() == asOncoming )
                    {
@@ -698,14 +829,19 @@ class HMSystemVariable extends HMBase
         return false;
     }
 
+    /**
+     * IPS-Instanz-Funktion 'HM_SystemVariablesTimer'.
+     * Wird durch den Timer ausgeführt und liest alle Systemvariablen von der CCU.
+     * 
+     * @access public
+     */
     public function SystemVariablesTimer()
     {
         if (!$this->HasActiveParent())
             return;
-        $this->GetParentData();
         try
         {
-            return $this->ReadSysVars();
+            $this->ReadSysVars();
         }
         catch (Exception $exc)
         {
@@ -713,6 +849,13 @@ class HMSystemVariable extends HMBase
         }
     }
 
+    /**
+     * IPS-Instanz-Funktion 'HM_ReadSystemVariables'.
+     * Liest alle Systemvariablen von der CCU.
+     * 
+     * @access public
+     * @return boolean True bei Erfolg, sonst false.
+     */
     public function ReadSystemVariables()
     {
         if (!$this->HasActiveParent())
@@ -720,8 +863,6 @@ class HMSystemVariable extends HMBase
             trigger_error("Instance has no active Parent Instance!", E_USER_NOTICE);
             return false;
         }
-
-        $this->GetParentData();
         try
         {
             return $this->ReadSysVars();
@@ -729,17 +870,42 @@ class HMSystemVariable extends HMBase
         catch (Exception $exc)
         {
             trigger_error($exc->getMessage(), $exc->getCode());
+            return false;
         }
     }
 
+    /**
+     * IPS-Instanz-Funktion 'HM_WriteValueBoolean'.
+     * Schreibt einen bool-Wert in eine Systemvariable der CCU.
+     * 
+     * @access public
+     * @param string $Parameter Der IDENT der IPS-Statusvariable = Die ID der Alarmvariable in der CCU.
+     * @param bool $Value Der zu schreibende Wert.
+     * @return boolean True bei Erfolg, sonst false.
+     */
     public function WriteValueBoolean(string $Parameter, bool $Value)
     {
         return $this->WriteValueBoolean2($Parameter, $Value);
     }
 
+    /**
+     * IPS-Instanz-Funktion 'HM_WriteValueBoolean2'.
+     * Schreibt einen bool-Wert in eine Systemvariable der CCU.
+     * 
+     * @access public
+     * @param string $Parameter Der IDENT der IPS-Statusvariable = Die ID der Alarmvariable in der CCU.
+     * @param bool $Value Der zu schreibende Wert.
+     * @return boolean True bei Erfolg, sonst false.
+     */
     public function WriteValueBoolean2(string $Parameter, bool $Value)
     {
-        $VarID = $this->GetStatusVarIDex($Parameter);
+        $VarID = @$this->GetIDForIdent($Parameter);
+        if ($VarID === false)
+        {
+            trigger_error('Ident ' . $Parameter . ' do not exist.', E_USER_NOTICE);
+            return false;
+        }
+
         if (IPS_GetVariable($VarID)['VariableType'] <> vtBoolean)
         {
             trigger_error('Wrong Datatype for ' . $VarID, E_USER_NOTICE);
@@ -772,14 +938,38 @@ class HMSystemVariable extends HMBase
         return false;
     }
 
+    /**
+     * IPS-Instanz-Funktion 'HM_WriteValueInteger'.
+     * Schreibt einen integer-Wert in eine Systemvariable der CCU.
+     * 
+     * @access public
+     * @param string $Parameter Der IDENT der IPS-Statusvariable = Die ID der Alarmvariable in der CCU.
+     * @param int $Value Der zu schreibende Wert.
+     * @return boolean True bei Erfolg, sonst false.
+     */
     public function WriteValueInteger(string $Parameter, int $Value)
     {
         return $this->WriteValueInteger2($Parameter, $Value);
     }
 
+    /**
+     * IPS-Instanz-Funktion 'HM_WriteValueInteger2'.
+     * Schreibt einen integer-Wert in eine Systemvariable der CCU.
+     * 
+     * @access public
+     * @param string $Parameter Der IDENT der IPS-Statusvariable = Die ID der Alarmvariable in der CCU.
+     * @param int $Value Der zu schreibende Wert.
+     * @return boolean True bei Erfolg, sonst false.
+     */
     public function WriteValueInteger2(string $Parameter, int $Value)
     {
-        $VarID = $this->GetStatusVarIDex($Parameter);
+        $VarID = @$this->GetIDForIdent($Parameter);
+        if ($VarID === false)
+        {
+            trigger_error('Ident ' . $Parameter . ' do not exist.', E_USER_NOTICE);
+            return false;
+        }
+
 
         if (IPS_GetVariable($VarID)['VariableType'] <> vtInteger)
         {
@@ -806,14 +996,38 @@ class HMSystemVariable extends HMBase
         return false;
     }
 
+    /**
+     * IPS-Instanz-Funktion 'HM_WriteValueFloat'.
+     * Schreibt einen float-Wert in eine Systemvariable der CCU.
+     * 
+     * @access public
+     * @param string $Parameter Der IDENT der IPS-Statusvariable = Die ID der Alarmvariable in der CCU.
+     * @param float $Value Der zu schreibende Wert.
+     * @return boolean True bei Erfolg, sonst false.
+     */
     public function WriteValueFloat(string $Parameter, float $Value)
     {
         return $this->WriteValueFloat2($Parameter, $Value);
     }
 
+    /**
+     * IPS-Instanz-Funktion 'HM_WriteValueFloat2'.
+     * Schreibt einen float-Wert in eine Systemvariable der CCU.
+     * 
+     * @access public
+     * @param string $Parameter Der IDENT der IPS-Statusvariable = Die ID der Alarmvariable in der CCU.
+     * @param float $Value Der zu schreibende Wert.
+     * @return boolean True bei Erfolg, sonst false.
+     */
     public function WriteValueFloat2(string $Parameter, float $Value)
     {
-        $VarID = $this->GetStatusVarIDex($Parameter);
+        $VarID = @$this->GetIDForIdent($Parameter);
+        if ($VarID === false)
+        {
+            trigger_error('Ident ' . $Parameter . ' do not exist.', E_USER_NOTICE);
+            return false;
+        }
+
         if (IPS_GetVariable($VarID)['VariableType'] <> vtFloat)
         {
             trigger_error('Wrong Datatype for ' . $VarID, E_USER_NOTICE);
@@ -841,14 +1055,38 @@ class HMSystemVariable extends HMBase
         return false;
     }
 
+    /**
+     * IPS-Instanz-Funktion 'HM_WriteValueString'.
+     * Schreibt einen string-Wert in eine Systemvariable der CCU.
+     * 
+     * @access public
+     * @param string $Parameter Der IDENT der IPS-Statusvariable = Die ID der Alarmvariable in der CCU.
+     * @param string $Value Der zu schreibende Wert.
+     * @return boolean True bei Erfolg, sonst false.
+     */
     public function WriteValueString(string $Parameter, string $Value)
     {
         return $this->WriteValueString2($Parameter, $Value);
     }
 
+    /**
+     * IPS-Instanz-Funktion 'HM_WriteValueString2'.
+     * Schreibt einen string-Wert in eine Systemvariable der CCU.
+     * 
+     * @access public
+     * @param string $Parameter Der IDENT der IPS-Statusvariable = Die ID der Alarmvariable in der CCU.
+     * @param string $Value Der zu schreibende Wert.
+     * @return boolean True bei Erfolg, sonst false.
+     */
     public function WriteValueString2(string $Parameter, string $Value)
     {
-        $VarID = $this->GetStatusVarIDex($Parameter);
+        $VarID = @$this->GetIDForIdent($Parameter);
+        if ($VarID === false)
+        {
+            trigger_error('Ident ' . $Parameter . ' do not exist.', E_USER_NOTICE);
+            return false;
+        }
+
         if (IPS_GetVariable($VarID)['VariableType'] <> vtString)
         {
             trigger_error('Wrong Datatype for ' . $VarID, E_USER_NOTICE);
@@ -877,4 +1115,4 @@ class HMSystemVariable extends HMBase
 
 }
 
-?>
+/** @} */

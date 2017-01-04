@@ -1,12 +1,30 @@
 <?
 
+/**
+ * @addtogroup homematicextended
+ * @{
+ *
+ * @package       HomematicExtended
+ * @file          module.php
+ * @author        Michael Tröger <micha@nall-chan.net>
+ * @copyright     2017 Michael Tröger
+ * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
+ * @version       2.2
+ */
 require_once(__DIR__ . "/../HMBase.php");
 
+/**
+ * HMScript ist die Klasse für das IPS-Modul 'HomeMatic RemoteScript Interface'.
+ * Erweitert HMBase 
+ */
 class HMScript extends HMBase
 {
 
-    use DebugHelper;
-
+    /**
+     * Interne Funktion des SDK.
+     *
+     * @access public
+     */
     public function Create()
     {
         parent::Create();
@@ -14,34 +32,65 @@ class HMScript extends HMBase
         $this->RegisterPropertyBoolean("EmulateStatus", false);
     }
 
+    /**
+     * Interne Funktion des SDK.
+     *
+     * @access public
+     */
     public function ApplyChanges()
     {
         parent::ApplyChanges();
     }
 
+################## protected
+
+    /**
+     * Wird ausgeführt wenn der Kernel hochgefahren wurde.
+     * 
+     * @access protected
+     */
     protected function KernelReady()
     {
         
     }
 
+    /**
+     * Wird ausgeführt wenn sich der Parent ändert.
+     * 
+     * @access protected
+     */
     protected function ForceRefresh()
     {
         
     }
 
+    /**
+     * Registriert Nachrichten des aktuellen Parent und ließt die Adresse der CCU aus dem Parent.
+     * 
+     * @access protected
+     */
     protected function GetParentData()
     {
         parent::GetParentData();
         $this->SetSummary($this->HMAddress);
     }
 
-    private function SendScript($Script)
+################## private
+
+    /**
+     * Sendet ein HM-Script an die CCU und liefert das Ergebnis.
+     * 
+     * @access private
+     * @param string $Script Das HM-Script.
+     * @return string das Ergebnis von der CCU als JSON-String.
+     * @throws Exception Wenn die CCU nicht erreicht wurde.
+     */
+    private function SendScript(string $Script)
     {
         if (!$this->HasActiveParent())
         {
             throw new Exception("Instance has no active Parent Instance!", E_USER_NOTICE);
         }
-        $this->GetParentData();
         if ($this->HMAddress == '')
         {
             throw new Exception("Instance has no active Parent Instance!", E_USER_NOTICE);
@@ -70,11 +119,15 @@ class HMScript extends HMBase
     }
 
 ################## PUBLIC
-    /**
-     * This function will be available automatically after the module is imported with the module control.
-     * Using the custom prefix this function will be callable from PHP and JSON-RPC through:
-     */
 
+    /**
+     * IPS-Instanzfunktion HM_RunScript.
+     * Startet das übergebene Script auf der CCU und liefert das Ergbnis als JSON-String.
+     * 
+     * @access public
+     * @param string $Script
+     * @return string|boolean Das Ergebnis als JSON-String oder FALSE im Fehlerfall.
+     */
     public function RunScript(string $Script)
     {
         try
@@ -90,4 +143,4 @@ class HMScript extends HMBase
 
 }
 
-?>
+/** @} */

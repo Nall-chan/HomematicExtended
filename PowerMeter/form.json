@@ -2,9 +2,13 @@
     "elements":
             [
                 {
+                    "type": "Label",
+                    "label": "Select GAS_ENERGY_COUNTER, IEC_ENERGY_COUNTER or ENERGY_COUNTER as source"
+                },
+                {
                     "name": "EventID",
                     "type": "SelectVariable",
-                    "caption": "ENERGY_COUNTER from device"
+                    "caption": "Variable"
                 }
             ],
     "status":

@@ -1,12 +1,32 @@
 <?
 
+/**
+ * @addtogroup homematicextended
+ * @{
+ *
+ * @package       HomematicExtended
+ * @file          HMBase.php
+ * @author        Michael Tröger <micha@nall-chan.net>
+ * @copyright     2017 Michael Tröger
+ * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
+ * @version       2.2
+ */
 require_once(__DIR__ . "/../HMBase.php");  // HMBase Klasse
 
+/**
+ * HMRFInterface ist die Klasse für das IPS-Modul 'HomeMatic RF-Interface'.
+ * Erweitert IPSModule 
+ */
 class HMRFInterface extends IPSModule
 {
 
     use DebugHelper;
 
+    /**
+     * Interne Funktion des SDK.
+     *
+     * @access public
+     */
     public function Create()
     {
         parent::Create();
@@ -14,11 +34,15 @@ class HMRFInterface extends IPSModule
         $this->ConnectParent("{6EE35B5B-9DD9-4B23-89F6-37589134852F}");
     }
 
+    /**
+     * Interne Funktion des SDK.
+     *
+     * @access public
+     */
     public function ApplyChanges()
     {
         parent::ApplyChanges();
 
-        //$this->CreateProfil();
         $Address = $this->ReadPropertyString("Address");
         $this->SetSummary($Address);
 
@@ -28,6 +52,13 @@ class HMRFInterface extends IPSModule
             $this->SetReceiveDataFilter(".*9999999999.*");
     }
 
+################## Datenaustausch
+
+    /**
+     * Interne Funktion des SDK.
+     *
+     * @access public
+     */
     public function ReceiveData($JSONString)
     {
         $Data = json_decode($JSONString);
@@ -71,3 +102,5 @@ class HMRFInterface extends IPSModule
     }
 
 }
+
+/** @} */

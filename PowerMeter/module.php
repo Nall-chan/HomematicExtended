@@ -1,22 +1,53 @@
 <?
 
+/**
+ * @addtogroup homematicextended
+ * @{
+ *
+ * @package       HomematicExtended
+ * @file          module.php
+ * @author        Michael Tröger <micha@nall-chan.net>
+ * @copyright     2017 Michael Tröger
+ * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
+ * @version       2.2
+ */
 require_once(__DIR__ . "/../HMBase.php");  // HMBase Klasse
 
+/**
+ * HMPowerMeter ist die Klasse für das IPS-Modul 'HomeMatic PowerMeter'.
+ * Erweitert HMBase 
+ *
+ * @property int $Event Die IPS-ID der Variable welche als Trigger dient.
+ * @property string $HMDeviceAddress Die Geräte-Adresse des Zählers.
+ * @property string $HMDeviceDatapoint Der zu überwachende Datenpunkt. 
+ * @property string $HMProtocol HmIP-RF oder BidCos-RF BidCos-WR
+ * @property string $HMSufix Anhang für die HMSystemvariable
+ */
 class HMPowerMeter extends HMBase
 {
 
-    private $HMDeviceAddress;
-
+    /**
+     * Interne Funktion des SDK.
+     *
+     * @access public
+     */
     public function Create()
     {
         parent::Create();
         $this->RegisterHMPropertys('XXX9999997');
-
         $this->RegisterPropertyBoolean("EmulateStatus", false);
         $this->RegisterPropertyInteger("EventID", 0);
-        $this->RegisterVariableFloat("ENERGY_COUNTER_TOTAL", "ENERGY_COUNTER_TOTAL", "~Electricity");
     }
 
+    /**
+     * Nachrichten aus der Nachrichtenschlange verarbeiten.
+     *
+     * @access public
+     * @param int $TimeStamp
+     * @param int $SenderID
+     * @param int $Message
+     * @param array|int $Data
+     */
     public function MessageSink($TimeStamp, $SenderID, $Message, $Data)
     {
         parent::MessageSink($TimeStamp, $SenderID, $Message, $Data);
@@ -33,58 +64,93 @@ class HMPowerMeter extends HMBase
         }
     }
 
+    /**
+     * Interne Funktion des SDK.
+     *
+     * @access public
+     */
     public function ApplyChanges()
     {
         parent::ApplyChanges();
-        if (IPS_GetKernelRunlevel() == KR_READY)
+        if (IPS_GetKernelRunlevel() <> KR_READY)
         {
-            if (($this->CheckConfig()) and ( $this->GetPowerAddress()))
-            {
-                $this->SetSummary($this->HMDeviceAddress);
-                $this->SetReceiveDataFilter(".*" . $this->HMDeviceAddress . ".*ENERGY_COUNTER.*");
-                if ($this->HasActiveParent())
-                {
-                    $this->GetParentData();
-                    if ($this->HMAddress <> '')
-                        try
-                        {
-                            $this->ReadPowerSysVar();
-                        }
-                        catch (Exception $exc)
-                        {
-                            trigger_error($exc->getMessage(), $exc->getCode());
-                            return false;
-                        }
-                }
-                return true;
-            }
-        }
-        else
-        {
+            $this->HMDeviceAddress = '';
+            $this->HMDeviceDatapoint = '';
+            $this->HMSufix = '';
+            $this->HMProtocol = 'BidCos-RF';
+            $this->Event = 0;
             $this->SetReceiveDataFilter(".*9999999999.*");
             $this->SetSummary('');
+            return;
         }
+        if ($this->CheckConfig())
+        {
+            $HMDeviceDatapoint = $this->HMDeviceDatapoint;
+            $this->SetReceiveDataFilter(".*" . $this->HMDeviceAddress . ".*'.$HMDeviceDatapoint.'.*");
+
+            switch ($HMDeviceDatapoint)
+            {
+                case "GAS_ENERGY_COUNTER":
+                    $Profil = "~Gas";
+                    $this->HMSufix = 'Gas';
+                    break;
+                case "IEC_ENERGY_COUNTER":
+                    $this->HMSufix = 'IEC';
+                    $Profil = "~Electricity";
+                    break;
+                case "ENERGY_COUNTER":
+                    $this->HMSufix = '';
+                    $Profil = "~Electricity";
+                    break;
+            }
+
+            $this->RegisterVariableFloat($HMDeviceDatapoint . "_TOTAL", $HMDeviceDatapoint . "_TOTAL", $Profil);
+            $this->GetParentData();
+            $this->SetSummary($this->HMDeviceAddress);
+            try
+            {
+                $this->ReadPowerSysVar();
+            }
+            catch (Exception $exc)
+            {
+                trigger_error($exc->getMessage(), $exc->getCode());
+            }
+            return;
+        }
+        $this->SetReceiveDataFilter(".*9999999999.*");
     }
 
+    ################## protected
+
+    /**
+     * Wird ausgeführt wenn der Kernel hochgefahren wurde.
+     * 
+     * @access protected
+     */
     protected function KernelReady()
     {
         $this->ApplyChanges();
     }
 
+    /**
+     * Wird ausgeführt wenn sich der Parent ändert.
+     * 
+     * @access protected
+     */
     protected function ForceRefresh()
     {
         $this->ApplyChanges();
     }
 
+################## Datenaustausch
+
+    /**
+     * Interne Funktion des SDK.
+     *
+     * @access public
+     */
     public function ReceiveData($JSONString)
     {
-//        if (!$this->GetPowerAddress())
-//            return;
-//        $Data = json_decode($JSONString);
-        /*        if ($this->HMDeviceAddress <> (string) $Data->DeviceID)
-          return;
-          if ((string) $Data->VariableName <> 'ENERGY_COUNTER')
-          return; */
         try
         {
             $this->ReadPowerSysVar();
@@ -92,63 +158,105 @@ class HMPowerMeter extends HMBase
         catch (Exception $exc)
         {
             trigger_error($exc->getMessage(), $exc->getCode());
-            return false;
         }
     }
 
 ################## PRIVATE                
 
+    /**
+     * Prüft die Konfiguration und setzt den Status der Instanz.
+     * 
+     * @access privat
+     * @return boolean True wenn Konfig ok, sonst false.
+     */
     private function CheckConfig()
     {
-        $OldEvent = $this->GetBuffer("Event");
+        $OldEvent = $this->Event;
         $Event = $this->ReadPropertyInteger("EventID");
 
-        if ($this->ReadPropertyInteger("EventID") == 0)
+        if ($Event == 0)
         {
             if ($OldEvent > 0)
                 $this->UnregisterMessage($OldEvent, VM_DELETE);
             $this->SetStatus(IS_INACTIVE);
             return false;
         }
-        else
+        if ($this->GetPowerAddress($Event))
         {
-            $parent = IPS_GetParent($this->ReadPropertyInteger("EventID"));
-            if ((IPS_GetInstance($parent)['ModuleInfo']['ModuleID'] == '{EE4A81C6-5C90-4DB7-AD2F-F6BBD521412E}')
-                    and ( IPS_GetObject($this->ReadPropertyInteger("EventID"))['ObjectIdent'] == 'ENERGY_COUNTER'))
-            {
-                $this->RegisterMessage($Event, VM_DELETE);
-                $this->SetBuffer('Event', $Event);
-                $this->SetStatus(IS_ACTIVE);
-                return true;
-            }
-            else
-            {
-                if ($OldEvent > 0)
-                    $this->UnregisterMessage($OldEvent, VM_DELETE);
-
-                $this->SetStatus(IS_EBASE + 2);
-                return false;
-            }
+            $this->RegisterMessage($Event, VM_DELETE);
+            $this->Event = $Event;
+            $this->SetStatus(IS_ACTIVE);
+            return true;
         }
+        if ($OldEvent > 0)
+            $this->UnregisterMessage($OldEvent, VM_DELETE);
+
+        $this->SetStatus(IS_EBASE + 2);
+        return false;
     }
 
-    private function GetPowerAddress()
+    /**
+     * Prüft und holt alle Daten zu der Quell-Variable und Instanz.
+     * 
+     * @access private
+     * @param int IPD-VarID des Datenpunktes, welcher als Event dient.
+     * @return boolean True wenn Quelle gültig ist, sonst false.
+     */
+    private function GetPowerAddress(int $EventID)
     {
-        $EventID = $this->ReadPropertyInteger("EventID");
         if ($EventID == 0)
+        {
+            $this->HMDeviceAddress = "";
+            $this->HMDeviceDatapoint = "";
+            $this->HMProtocol = 'BidCos-RF';
             return false;
+        }
         $parent = IPS_GetParent($EventID);
-        $this->HMDeviceAddress = IPS_GetProperty($parent, 'Address');
-        return true;
+        if (IPS_GetInstance($parent)['ModuleInfo']['ModuleID'] <> '{EE4A81C6-5C90-4DB7-AD2F-F6BBD521412E}')
+        {
+            $this->HMDeviceAddress = "";
+            $this->HMDeviceDatapoint = "";
+            $this->HMProtocol = 'BidCos-RF';
+            return false;
+        }
+        $EventIdent = IPS_GetObject($EventID)["ObjectIdent"];
+        $PossibleIdent = array("GAS_ENERGY_COUNTER", "IEC_ENERGY_COUNTER", "ENERGY_COUNTER");
+        if (in_array($EventIdent, $PossibleIdent))
+        {
+            $this->HMDeviceAddress = IPS_GetProperty($parent, 'Address');
+            $this->HMDeviceDatapoint = $EventIdent;
+            switch (IPS_GetProperty($parent, 'Protocol'))
+            {
+                case 0:
+                    $this->HMProtocol = 'BidCos-RF';
+                    break;
+                case 1:
+                    $this->HMProtocol = 'BidCos-WR';
+                    break;
+                case 2:
+                    $this->HMProtocol = 'HmIP-RF';
+                    break;
+            }
+            return true;
+        }
+        $this->HMDeviceAddress = "";
+        $this->HMDeviceDatapoint = "";
+        $this->HMProtocol = 'BidCos-RF';
+        return false;
     }
 
+    /**
+     * Holt den Wert des Summenzähler per HM-Script aus der CCU.
+     * 
+     * @access private
+     * @throws Exception Wenn CCU nicht erreicht wurde.
+     */
     private function ReadPowerSysVar()
     {
         if (!$this->HasActiveParent())
         {
             throw new Exception("Instance has no active Parent Instance!", E_USER_NOTICE);
         }
-        $this->GetParentData();
         if ($this->HMAddress == '')
         {
             throw new Exception("Instance has no active Parent Instance!", E_USER_NOTICE);
@@ -156,7 +264,7 @@ class HMPowerMeter extends HMBase
 
         $url = 'GetPowerMeter.exe';
         $HMScript = 'object oitemID;' . PHP_EOL
-                . 'oitemID = dom.GetObject("svEnergyCounter_" # dom.GetObject("BidCos-RF.' . $this->HMDeviceAddress . '.ENERGY_COUNTER").Device() # "_' . $this->HMDeviceAddress . '");' . PHP_EOL
+                . 'oitemID = dom.GetObject("svEnergyCounter' . $this->HMSufix . '_" # dom.GetObject("' . $this->HMProtocol . '.' . $this->HMDeviceAddress . '.' . $this->HMDeviceDatapoint . '").Device() # "_' . $this->HMDeviceAddress . '");' . PHP_EOL
                 . 'Value=oitemID.Value();' . PHP_EOL;
         try
         {
@@ -173,15 +281,14 @@ class HMPowerMeter extends HMBase
             $this->SendDebug('GetPowerMeter', 'XML error', 0);
             throw new Exception('Error on read PowerMeterAddress', E_USER_NOTICE);
         }
-        $this->SendDebug('ENERGY_COUNTER_TOTAL', (string) $xml->Value, 0);
+        $this->SendDebug($this->HMDeviceDatapoint, (string) $xml->Value, 0);
         $Value = ((float) $xml->Value) / 1000;
-        $VarID = @IPS_GetObjectIDByIdent('ENERGY_COUNTER_TOTAL', $this->InstanceID);
+        $VarID = @IPS_GetObjectIDByIdent($this->HMDeviceDatapoint . '_TOTAL', $this->InstanceID);
         if ($VarID === false)
             return;
         SetValueFloat($VarID, $Value);
     }
 
-################## PUBLIC
 }
 
-?>
+/** @} */

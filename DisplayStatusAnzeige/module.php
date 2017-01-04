@@ -5,7 +5,7 @@ require_once(__DIR__ . "/../HMBase.php");  // HMBase Klasse
 class HMDisWM55 extends HMBase
 {
 
-    use DebugHelper;
+
 
     const PageUP = 0;
     const PageDown = 1;

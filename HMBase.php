@@ -1,5 +1,16 @@
 <?
 
+/**
+ * @addtogroup homematicextended
+ * @{
+ *
+ * @package       HomematicExtended
+ * @file          HMBase.php
+ * @author        Michael Tröger <micha@nall-chan.net>
+ * @copyright     2017 Michael Tröger
+ * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
+ * @version       2.2
+ */
 if (@constant('IPS_BASE') == null) //Nur wenn Konstanten noch nicht bekannt sind.
 {
 // --- BASE MESSAGE
@@ -144,32 +155,62 @@ if (@constant('IPS_BASE') == null) //Nur wenn Konstanten noch nicht bekannt sind
     define('vtString', 3);
 }
 
+/**
+ * HMBase ist die Basis-Klasse für alle Module welche HMScript verwenden.
+ * Erweitert ipsmodule 
+ *
+ * @property string $HMAddress Die Adresse der CCU.
+ * @property int $ParentId Aktueller IO-Parent. 
+ */
 abstract class HMBase extends IPSModule
 {
 
-    protected $HMAddress;
+    use DebugHelper,
+        InstanceStatus
+    {
+        InstanceStatus::GetParentData as GetInstanceParent;
+    }
 
+    /**
+     * Wert einer Eigenschaft aus den InstanceBuffer lesen.
+     * 
+     * @access public
+     * @param string $name Propertyname
+     * @return mixed Value of Name
+     */
+    public function __get($name)
+    {
+        return unserialize($this->GetBuffer($name));
+    }
+
+    /**
+     * Wert einer Eigenschaft in den InstanceBuffer schreiben.
+     * 
+     * @access public
+     * @param string $name Propertyname
+     * @param mixed Value of Name
+     */
+    public function __set($name, $value)
+    {
+        $this->SetBuffer($name, serialize($value));
+    }
+
+    /**
+     * Interne Funktion des SDK.
+     *
+     * @access public
+     */
     public function Create()
     {
         parent::Create();
         $this->ConnectParent("{A151ECE9-D733-4FB9-AA15-7F7DD10C58AF}");
     }
 
-    protected function RegisterHMPropertys($Address)
-    {
-        $this->RegisterPropertyInteger("Protocol", 0);
-
-        $count = @IPS_GetInstanceListByModuleID(IPS_GetInstance($this->InstanceID)["ModuleInfo"]["ModuleID"]);
-        if (is_array($count))
-        {
-            $this->RegisterPropertyString("Address", $Address . ":" . count($count));
-        }
-        else
-        {
-            $this->RegisterPropertyString("Address", $Address . ":0");
-        }
-    }
-
+    /**
+     * Interne Funktion des SDK.
+     *
+     * @access public
+     */
     public function ApplyChanges()
     {
         parent::ApplyChanges();
@@ -181,6 +222,15 @@ abstract class HMBase extends IPSModule
         $this->GetParentData();
     }
 
+    /**
+     * Nachrichten aus der Nachrichtenschlange verarbeiten.
+     *
+     * @access public
+     * @param int $TimeStamp
+     * @param int $SenderID
+     * @param int $Message
+     * @param array|int $Data
+     */
     public function MessageSink($TimeStamp, $SenderID, $Message, $Data)
     {
         switch ($Message)
@@ -188,11 +238,11 @@ abstract class HMBase extends IPSModule
             case IPS_KERNELMESSAGE:
                 if ($Data[0] == KR_READY)
                 {
+                    $this->GetParentData();
+                    if ($this->HMAddress == '')
+                        return;
                     if ($this->HasActiveParent())
                     {
-                        $this->GetParentData();
-                        if ($this->HMAddress == '')
-                            return;
                         try
                         {
                             $this->KernelReady();
@@ -209,10 +259,8 @@ abstract class HMBase extends IPSModule
                 $this->GetParentData();
                 break;
             case IM_CHANGESTATUS:
-                $this->GetParentData();
                 if ($this->HMAddress == '')
                     return;
-
                 if (($SenderID == @IPS_GetInstance($this->InstanceID)['ConnectionID']) and ( $Data[0] == IS_ACTIVE))
                     try
                     {
@@ -226,39 +274,69 @@ abstract class HMBase extends IPSModule
         }
     }
 
-    abstract protected function KernelReady();
-
-    abstract protected function ForceRefresh();
-
-
-    /*    public function ReceiveData($JSONString)
-      {
-      //We dont need any Data...here
-      } */
-
 ################## protected
 
+    /**
+     * Wird ausgeführt wenn der Kernel hochgefahren wurde.
+     * 
+     * @access protected
+     */
+    abstract protected function KernelReady();
+
+    /**
+     * Wird ausgeführt wenn sich der Parent ändert.
+     * 
+     * @access protected
+     */
+    abstract protected function ForceRefresh();
+
+    /**
+     * Setzte alle Eigenschaften, welche Instanzen die mit einem Homematic-Socket verbunden sind, haben müssen.
+     *
+     * @access protected
+     * @param string $Address Die zu verwendene HM-Device Adresse.
+     */
+    protected function RegisterHMPropertys(string $Address)
+    {
+        $this->RegisterPropertyInteger("Protocol", 0);
+        $count = @IPS_GetInstanceListByModuleID(IPS_GetInstance($this->InstanceID)["ModuleInfo"]["ModuleID"]);
+        if (is_array($count))
+            $this->RegisterPropertyString("Address", $Address . ":" . count($count));
+        else
+            $this->RegisterPropertyString("Address", $Address . ":0");
+    }
+
+    /**
+     * Registriert Nachrichten des aktuellen Parent und ließt die Adresse der CCU aus dem Parent.
+     * 
+     * @access protected
+     * @return int ID des Parent.
+     */
     protected function GetParentData()
     {
         $OldParentId = $this->GetBuffer('Parent');
-        $ParentId = @IPS_GetInstance($this->InstanceID)['ConnectionID'];
+        $ParentId = $this->GetInstanceParent();
         if ($ParentId <> $OldParentId)
         {
-            if ($OldParentId > 0)
-                $this->UnregisterMessage($OldParentId, IM_CHANGESTATUS);
+
             if ($ParentId > 0)
-            {
-                $this->RegisterMessage($ParentId, IM_CHANGESTATUS);
-                $this->SetBuffer('Parent', $ParentId);
-            }
+                $this->HMAddress = (string) IPS_GetProperty($ParentId, 'Host');
+            else
+                $this->HMAddress = '';
         }
-        $this->HMAddress = '';
-        if ($ParentId > 0)
-            $this->HMAddress = (string) IPS_GetProperty($ParentId, 'Host');
         return $ParentId;
     }
 
-    protected function LoadHMScript($url, $HMScript)
+    /**
+     * Überträgt das übergeben HM-Script an die CCU und liefert das Ergebnis.
+     * 
+     * @access protected
+     * @param string $url Die URL auf der CCU.
+     * @param string $HMScript Das zu übertragende HM-Script.
+     * @return string Das Ergebnis von der CCU.
+     * @throws Exception Wenn die CCU nicht erreicht wurde.
+     */
+    protected function LoadHMScript(string $url, string $HMScript)
     {
         if ($this->HMAddress <> '')
         {
@@ -285,6 +363,7 @@ abstract class HMBase extends IPSModule
                 throw new Exception('CCU unreachable:' . $http_code, E_USER_NOTICE);
             if ($result === false)
                 throw new Exception('CCU unreachable', E_USER_NOTICE);
+            $this->SendDebug("Result", $result, 0);
             return $result;
         }
         else
@@ -293,25 +372,12 @@ abstract class HMBase extends IPSModule
 
 ################## DUMMYS / WOARKAROUNDS - protected
 
-    protected function SetStatus($InstanceStatus)
-    {
-        if ($InstanceStatus <>
-                IPS_GetInstance($this->InstanceID)['InstanceStatus'])
-            parent::SetStatus($InstanceStatus);
-    }
-
-    protected function HasActiveParent()
-    {
-        $instance = @IPS_GetInstance($this->InstanceID);
-        if ($instance['ConnectionID'] > 0)
-        {
-            $parent = IPS_GetInstance($instance['ConnectionID']);
-            if ($parent['InstanceStatus'] == IS_ACTIVE)
-                return true;
-        }
-        return false;
-    }
-
+    /**
+     * Löscht einen Timer.
+     * 
+     * @param string $Name Name des Timers.
+     * @throws Exception Wenn Timer nicht vorhanden.
+     */
     protected function UnregisterTimer($Name)
     {
         $id = @IPS_GetObjectIDByIdent($Name, $this->InstanceID);
@@ -453,4 +519,67 @@ trait DebugHelper
 
 }
 
-?>
+/**
+ * Trait mit Hilfsfunktionen für den Datenaustausch.
+ */
+trait InstanceStatus
+{
+
+    /**
+     * Ermittelt den Parent und verwaltet die Einträge des Parent im MessageSink
+     * Ermöglicht es das Statusänderungen des Parent empfangen werden können.
+     * 
+     * @access protected
+     * @return int ID des Parent.
+     */
+    protected function GetParentData()
+    {
+        $OldParentId = $this->Parent;
+        $ParentId = @IPS_GetInstance($this->InstanceID)['ConnectionID'];
+        if ($ParentId <> $OldParentId)
+        {
+            if ($OldParentId > 0)
+                $this->UnregisterMessage($OldParentId, IM_CHANGESTATUS);
+            if ($ParentId > 0)
+                $this->RegisterMessage($ParentId, IM_CHANGESTATUS);
+            else
+                $ParentId = 0;
+            $this->Parent = $ParentId;
+        }
+        return $ParentId;
+    }
+
+    /**
+     * Setzt den Status dieser Instanz auf den übergebenen Status.
+     * Prüft vorher noch ob sich dieser vom aktuellen Status unterscheidet.
+     * 
+     * @access protected
+     * @param int $InstanceStatus
+     */
+    protected function SetStatus($InstanceStatus)
+    {
+        if ($InstanceStatus <> IPS_GetInstance($this->InstanceID)['InstanceStatus'])
+            parent::SetStatus($InstanceStatus);
+    }
+
+    /**
+     * Prüft den Parent auf vorhandensein und Status.
+     * 
+     * @access protected
+     * @return bool True wenn Parent vorhanden und in Status 102, sonst false.
+     */
+    protected function HasActiveParent()
+    {
+        $instance = IPS_GetInstance($this->InstanceID);
+        if ($instance['ConnectionID'] > 0)
+        {
+            $parent = IPS_GetInstance($instance['ConnectionID']);
+            if ($parent['InstanceStatus'] == 102)
+                return true;
+        }
+        return false;
+    }
+
+}
+
+/** @} */

@@ -1,7 +1,7 @@
 {
     "translations": {
         "de": {
-            "ENERGY_COUNTER from device": "ENERGY_COUNTER vom Device",
+            "Select GAS_ENERGY_COUNTER, IEC_ENERGY_COUNTER or ENERGY_COUNTER as source": "Wähle GAS_ENERGY_COUNTER, IEC_ENERGY_COUNTER oder ENERGY_COUNTER als Quelle",
             "Configuration is valid.": "Konfiguration gültig.",
             "No ENERGY_COUNTER variable selected.": "Kein ENERGY_COUNTER Datenpunkt ausgewählt.",
             "Selected variable invalid.": "Gewählter Datenpunkt ist ungültig."
