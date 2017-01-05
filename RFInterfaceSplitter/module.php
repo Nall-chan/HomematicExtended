@@ -195,7 +195,7 @@ class HMRFInterfaceSplitter extends HMBase
 
         $DevicesIDs = IPS_GetInstanceListByModuleID("{36549B96-FA11-4651-8662-F310EEEC5C7D}");
         $CreatedDevices = array();
-
+        $KnownDevices = array();
         foreach ($DevicesIDs as $Device)
         {
             $KnownDevices[] = IPS_GetProperty($Device, 'Address');

@@ -38,7 +38,7 @@
                                 {
                     "type": "Button",
                     "label": "Create all RF-Interfaces in IPS",
-                    "onClick": "HM_CreateAllInstances($id);"
+                    "onClick": "HM_CreateAllRFInstances($id);"
                 }
             ]
 }

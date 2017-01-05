@@ -1,11 +1,12 @@
 # IPSHomeMaticExtended
-Erweitert IPS um die native Unterst�tzung von:
+Erweitert IPS um die native Unterstützung von:
 
 * Systemvariablen der CCU
 * Programmen auf der CCU
 * Summenzähler der Leistungsmesser
 * Display Status-Anzeige
 * HomeMaticScript
+* Status der Funk-Interfaces
 
 ## Dokumentation
 
@@ -193,10 +194,9 @@ Erweitert IPS um die native Unterst�tzung von:
 
    **ACHTUNG bei IPS 4.0: Aktuell müssen die Funktionen HM_WriteValueBoolean2, HM_WriteValueFloat2, HM_WriteValueInteger2 und HM_WriteValueString2 verwendet werden!**
 
-    **Beispiele:**  
+   **Beispiele:**  
 
 ```php
-
         HM_WriteValueBoolean(integer $InstantID /*[HomeMatic Systemvariablen]*/, string '950' /* IDENT von Anwesenheit */, boolean true);  
         HM_WriteValueFloat(integer $InstantID /*[HomeMatic Systemvariablen]*/, string '2588' /* IDENT von Solltemp Tag */, float 21.0);  
         HM_WriteValueInteger(integer $InstantID /*[HomeMatic Systemvariablen]*/, string '12829', integer 56);  
@@ -364,24 +364,27 @@ Eigenschaften von xxx:
  
 **Changelog:**
 
-Version 2.03:
+Version 2.04:  
+ Fix: RFInstance-Splitter hat fehler gemeldet beim Anlegen von Instanzen, wenn keine vorhanden waren.  
+
+Version 2.03:  
  Fix: Doku geändert (Teil1).
 
-Version 2.02:
- Fix: Powermeter-Instanz kann jetzt auch mit allen Varianten von HM-ES-TX-WM umgehen.
- Fix: Powermeter-Instanz unterstützt jetzt auch HMIP-PSM und ähnliche HMIP-'Mess-Steckdosen' 
+Version 2.02:  
+ Fix: Powermeter-Instanz kann jetzt auch mit allen Varianten von HM-ES-TX-WM umgehen.  
+ Fix: Powermeter-Instanz unterstützt jetzt auch HMIP-PSM und ähnliche HMIP-'Mess-Steckdosen'  
 
-Version 2.01:
- Neu: RF-Interface-Splitter zum auslesen der RF-Interfaces aus der CCU
- Neu: RF-Interface zum darstellen der Werte eines RF-Interfaces der CCU.
+Version 2.01:  
+ Neu: RF-Interface-Splitter zum auslesen der RF-Interfaces aus der CCU.  
+ Neu: RF-Interface zum darstellen der Werte eines RF-Interfaces der CCU.  
 
-Version 2.0:
+Version 2.0:  
 
-Version 1.5:
+Version 1.5:  
 
-Version 1.3:
+Version 1.3:  
 
-Version 1.1:
+Version 1.1:  
 
 ## 12. Lizenz
 
