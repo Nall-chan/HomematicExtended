@@ -1,24 +1,47 @@
 <?
 
+/**
+ * @addtogroup homematicextended
+ * @{
+ *
+ * @package       HomematicExtended
+ * @file          module.php
+ * @author        Michael Tröger <micha@nall-chan.net>
+ * @copyright     2017 Michael Tröger
+ * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
+ * @version       2.2
+ */
 require_once(__DIR__ . "/../HMBase.php");  // HMBase Klasse
 
+/**
+ * HMDisWM55 ist die Klasse für das IPS-Modul 'HomeMatic Dis-WM55'.
+ * Erweitert HMBase 
+ *
+ * @property int $Page Die aktuelle Seite.
+ * @property array $HMEventData [self::$PropertysName]  
+  ["HMDeviceAddress"] => string $HMDeviceAddress Die Geräte-Adresse des Trigger.
+  ["HMDeviceDatapoint"] => string $HMDeviceDatapoint  Der zu überwachende Datenpunkt vom $HMDeviceAddress
+ * @property array $Events [self::$PropertysName]  Die IPS-ID der Variable des Datenpunkt welcher eine Aktualisierung auslöst.
+ */
 class HMDisWM55 extends HMBase
 {
 
-
-
-    const PageUP = 0;
-    const PageDown = 1;
-    const ActionUp = 2;
-    const ActionDown = 3;
-
+    private static $EmptyHMEventData = array(
+        "HMDeviceAddress" => "",
+        "HMDeviceDatapoint" => ""
+    );
     private static $PropertysName = array(
-        "PageUpID",
-        "PageDownID",
-        "ActionUpID",
-        "ActionDownID");
-    private $HMEventData = array();
+        "PageUpID" => 0,
+        "PageDownID" => 0,
+        "ActionUpID" => 0,
+        "ActionDownID" => 0
+    );
 
+    /**
+     * Interne Funktion des SDK.
+     *
+     * @access public
+     */
     public function Create()
     {
         parent::Create();
@@ -39,11 +62,28 @@ class HMDisWM55 extends HMBase
         IPS_SetHidden($ID, true);
         $this->RegisterPropertyInteger("ScriptID", $ID);
 
-//        $this->RegisterVariableInteger('PAGE', 'PAGE');
-        $this->SetBuffer("PAGE", (string) 0);
+        $this->UnregisterVariable('PAGE');
+        $this->Page = 0;
+        $this->Events = self::$PropertysName;
+        $this->HMEventData = array(
+            "PageUpID" => self::$EmptyHMEventData,
+            "PageDownID" => self::$EmptyHMEventData,
+            "ActionUpID" => self::$EmptyHMEventData,
+            "ActionDownID" => self::$EmptyHMEventData
+        );
+
         $this->RegisterTimer('DisplayTimeout', 0, 'HM_ResetTimer($_IPS[\'TARGET\']);');
     }
 
+    /**
+     * Nachrichten aus der Nachrichtenschlange verarbeiten.
+     *
+     * @access public
+     * @param int $TimeStamp
+     * @param int $SenderID
+     * @param int $Message
+     * @param array|int $Data
+     */
     public function MessageSink($TimeStamp, $SenderID, $Message, $Data)
     {
         parent::MessageSink($TimeStamp, $SenderID, $Message, $Data);
@@ -51,7 +91,7 @@ class HMDisWM55 extends HMBase
         {
             case VM_DELETE:
                 $this->UnregisterMessage($SenderID, VM_DELETE);
-                foreach (self::$PropertysName as $Name)
+                foreach (array_keys(self::$PropertysName) as $Name)
                 {
                     if ($SenderID == $this->ReadPropertyInteger($Name))
                     {
@@ -63,47 +103,78 @@ class HMDisWM55 extends HMBase
         }
     }
 
+    /**
+     * Interne Funktion des SDK.
+     *
+     * @access public
+     */
     public function ApplyChanges()
     {
         parent::ApplyChanges();
         if (IPS_GetKernelRunlevel() == KR_READY)
         {
-            if (($this->CheckConfig()) and ( $this->GetDisplayAddress()))
+            if ($this->CheckConfig())
             {
                 $Lines = array();
-                foreach ($this->HMEventData as $Trigger)
+                $Events = $this->Events;
+                foreach ($this->HMEventData as $Event => $Trigger)
                 {
-                    $Lines[] = '.*"DeviceID":"' . $Trigger['DeviceID'] . '","VariableName":"' . $Trigger['VariableName'] . '".*';
+                    if ($Events[$Event] != 0)
+                        $Lines[] = '.*"DeviceID":"' . $Trigger['HMDeviceAddress'] . '","VariableName":"' . $Trigger['HMDeviceDatapoint'] . '".*';
                 }
                 $Line = implode('|', $Lines);
+
                 $this->SetReceiveDataFilter("(" . $Line . ")");
-                $this->SetSummary($Trigger['DeviceID']);
+                $this->SetSummary($Trigger['HMDeviceAddress']);
                 return;
             }
         }
-        $this->SetSummary('');
+        $this->HMEventData = array(
+            "PageUpID" => self::$EmptyHMEventData,
+            "PageDownID" => self::$EmptyHMEventData,
+            "ActionUpID" => self::$EmptyHMEventData,
+            "ActionDownID" => self::$EmptyHMEventData
+        );
+        $this->Page = 0;
         $this->SetReceiveDataFilter(".*9999999999.*");
+        $this->SetSummary('');
+        return;
     }
 
+################## protected
+
+    /**
+     * Wird ausgeführt wenn der Kernel hochgefahren wurde.
+     * 
+     * @access protected
+     */
     protected function KernelReady()
     {
         $this->ApplyChanges();
     }
 
+    /**
+     * Wird ausgeführt wenn sich der Parent ändert.
+     * 
+     * @access protected
+     */
     protected function ForceRefresh()
     {
         $this->ApplyChanges();
     }
 
+################## Datenaustausch
+
+    /**
+     * Interne Funktion des SDK.
+     *
+     * @access public
+     */
     public function ReceiveData($JSONString)
     {
-
-
-        if (!$this->GetDisplayAddress())
-            return;
         $Data = json_decode($JSONString);
         $this->SendDebug('Receive', $Data, 0);
-        $ReceiveData = array("DeviceID" => (string) $Data->DeviceID, "VariableName" => (string) $Data->VariableName);
+        $ReceiveData = array("HMDeviceAddress" => (string) $Data->DeviceID, "HMDeviceDatapoint" => (string) $Data->VariableName);
         $Action = array_search($ReceiveData, $this->HMEventData);
         if ($Action === false)
             return;
@@ -119,101 +190,128 @@ class HMDisWM55 extends HMBase
 
 ################## PRIVATE                
 
+    /**
+     * Prüft die Konfiguration und setzt den Status der Instanz.
+     * 
+     * @access privat
+     * @return boolean True wenn Konfig ok, sonst false.
+     */
     private function CheckConfig()
     {
-        $Events = array();
         $Result = true;
-
-        foreach (self::$PropertysName as $Name)
+        $OldHMEventDatas = $this->HMEventData;
+        $OldEvents = $this->Events;
+        $Events = array();
+        foreach (array_keys(self::$PropertysName) as $Name)
         {
             $Event = $this->ReadPropertyInteger($Name);
-            $OldEvent = $this->GetBuffer($Name);
-            if ($Event <> $OldEvent)
+            if ($Event <> $OldEvents[$Name])
             {
-                if ($OldEvent > 0)
-                    $this->UnregisterMessage($OldEvent, VM_DELETE);
+
+                if ($OldEvents[$Name] > 0)
+                {
+                    $this->UnregisterMessage($OldEvents[$Name], VM_DELETE);
+                    $OldEvents[$Name] = 0;
+                }
 
                 if ($Event > 0)
-                    if (in_array($Event, $Events))
+                {
+                    if (in_array($Event, $Events)) //doppelt ?
                     {
-                        $this->SetStatus(IS_EBASE + 2);
+                        $OldHMEventDatas[$Name] = self::$EmptyHMEventData;
+                        $OldEvents[$Name] = 0;
                         $Result = false;
+                        continue;
                     }
-                    else
+                    $HMEventData = $this->GetDisplayAddress($Event);
+                    if ($HMEventData === false)
                     {
-                        $Events[] = $Event;
-                        $this->RegisterMessage($Event, VM_DELETE);
-                        $this->SetBuffer('Event', $Event);
+                        $OldHMEventDatas[$Name] = self::$EmptyHMEventData;
+                        $OldEvents[$Name] = 0;
+                        $Result = false;
+                        continue;
                     }
+                    $OldHMEventDatas[$Name] = $HMEventData;
+                    $OldEvents[$Name] = $Event;
+                    $this->RegisterMessage($Event, VM_DELETE);
+                }
             }
+            if ($Event > 0)
+                $Events[] = $Event;
+        }
+
+        $this->HMEventData = $OldHMEventDatas;
+        $this->Events = $OldEvents;
+
+        if ($Result === false)
+        {
+            $this->SetStatus(IS_EBASE + 2);
+            return false;
         }
 
         if (count($Events) == 0)
         {
             $this->SetStatus(IS_INACTIVE);
-            $Result = false;
-        }
-
-        if ($Result)
-            if ($this->ReadPropertyInteger('ScriptID') == 0)
-            {
-                $this->SetStatus(IS_EBASE + 3);
-                $Result = false;
-            }
-
-        if ($Result)
-            if ($this->ReadPropertyInteger('Timeout') < 0)
-            {
-                $this->SetStatus(IS_EBASE + 4);
-                $Result = false;
-            }
-
-        if ($Result)
-            if ($this->ReadPropertyInteger('MaxPage') < 0)
-            {
-                $this->SetStatus(IS_EBASE + 5);
-                $Result = false;
-            }
-
-        if ($Result)
-            $this->SetStatus(IS_ACTIVE);
-
-        return $Result;
-    }
-
-    private function GetDisplayAddress()
-    {
-        foreach (self::$PropertysName as $Name)
-        {
-            $EventID = $this->ReadPropertyInteger((string) $Name);
-            if ($EventID <> 0)
-            {
-                $parent = IPS_GetParent($EventID);
-                $this->HMEventData[$Name] = array(
-                    "DeviceID" => IPS_GetProperty($parent, 'Address'),
-                    "VariableName" => IPS_GetObject($EventID)['ObjectIdent']
-                );
-            }
-        }
-        if (sizeof($this->HMEventData) > 0)
-            return true;
-        else
             return false;
+        }
+
+        if ($this->ReadPropertyInteger('ScriptID') == 0)
+        {
+            $this->SetStatus(IS_EBASE + 3);
+            return false;
+        }
+
+        if ($this->ReadPropertyInteger('Timeout') < 0)
+        {
+            $this->SetStatus(IS_EBASE + 4);
+            return false;
+        }
+
+        if ($this->ReadPropertyInteger('MaxPage') < 0)
+        {
+            $this->SetStatus(IS_EBASE + 5);
+            return false;
+        }
+
+        $this->SetStatus(IS_ACTIVE);
+
+        return true;
     }
 
+    /**
+     * Prüft und holt alle Daten zu den Quell-Variablen und Instanzen.
+     * 
+     * @access private
+     * @param int $EventID IPD-VarID des Datenpunktes, welcher als Event dient.
+     * @return array|boolean Array mit den Daten zum Datenpunkt. False im Fehlerfall.
+     */
+    private function GetDisplayAddress(int $EventID)
+    {
+        $parent = IPS_GetParent($EventID);
+        if (IPS_GetInstance($parent)['ModuleInfo']['ModuleID'] <> '{EE4A81C6-5C90-4DB7-AD2F-F6BBD521412E}')
+            return false;
+        return array(
+            "HMDeviceAddress" => IPS_GetProperty($parent, 'Address'),
+            "HMDeviceDatapoint" => IPS_GetObject($EventID)['ObjectIdent']
+        );
+    }
+
+    /**
+     * Führt das User-Script aus und überträgt das Ergebnis an die CCU.
+     * 
+     * @access private
+     * @param string $Action Die auszuführende Aktion.
+     * @throws Exception Wenn CCU nicht erreicht wurde.
+     */
     private function RunDisplayScript($Action)
     {
         if (!$this->HasActiveParent())
-        {
             throw new Exception("Instance has no active Parent Instance!", E_USER_WARNING);
-        }
-        $this->GetParentData();
+
         if ($this->HMAddress == '')
-        {
             throw new Exception("Instance has no active Parent Instance!", E_USER_WARNING);
-        }
-//        $Page = GetValueInteger($this->GetIDForIdent('PAGE'));
-        $Page = (int) GetBuffer('PAGE');
+
+        $Page = $this->Page;
         $MaxPage = $this->ReadPropertyInteger('MaxPage');
         switch ($Action)
         {
@@ -223,8 +321,7 @@ class HMDisWM55 extends HMBase
                 else
                     $Page++;
                 $ActionString = "UP";
-                //SetValueInteger($this->GetIDForIdent('PAGE'), $Page);
-                $this->SetBuffer('PAGE', (string) $Page);
+                $this->Page = $Page;
                 break;
             case "PageDownID":
                 if ($Page <= 1)
@@ -232,8 +329,7 @@ class HMDisWM55 extends HMBase
                 else
                     $Page--;
                 $ActionString = "DOWN";
-//                SetValueInteger($this->GetIDForIdent('PAGE'), $Page);
-                $this->SetBuffer('PAGE', (string) $Page);
+                $this->Page = $Page;
                 break;
             case "ActionUpID":
                 $ActionString = "ActionUP";
@@ -247,13 +343,10 @@ class HMDisWM55 extends HMBase
         if ($ScriptID <> 0)
         {
             $Result = IPS_RunScriptWaitEx($ScriptID, array('SENDER' => 'HMDisWM55', 'ACTION' => $ActionString, 'PAGE' => $Page, 'EVENT' => $this->InstanceID));
-
-            $Data = $this->ConvertDisplayData(json_decode($Result));
-            if ($Data === false)
-            {
-                trigger_error("Error in Display Script.", E_USER_NOTICE);
-                return false;
-            }
+            $ResultData = json_decode($Result);
+            if (is_null($ResultData))
+                throw new Exception("Error in Display Script.", E_USER_NOTICE);
+            $Data = $this->ConvertDisplayData($ResultData);
             $url = 'GetDisplay.exe';
             $HMScript = 'string DisplayKeySubmit;' . PHP_EOL;
             $HMScript.='DisplayKeySubmit=dom.GetObject("BidCos-RF.' . (string) $this->HMEventData[$Action]['DeviceID'] . '.SUBMIT").ID();' . PHP_EOL;
@@ -264,8 +357,7 @@ class HMDisWM55 extends HMBase
             }
             catch (Exception $exc)
             {
-                trigger_error('Error on send Data to HM-Dis-WM55.', E_USER_NOTICE);
-                return false;
+                throw new Exception('Error on send Data to HM-Dis-WM55.', E_USER_NOTICE);
             }
         }
         $Timeout = $this->ReadPropertyInteger('Timeout');
@@ -276,12 +368,13 @@ class HMDisWM55 extends HMBase
         }
     }
 
+    /**
+     * Konvertiert die Daten in ein für das Display benötigte Format.
+     * @param object $Data Enthält die Daten für das Display
+     * @return string Die konvertierten Daten als String.
+     */
     private function ConvertDisplayData($Data)
     {
-        if ($Data === null)
-        {
-            return false;
-        }
         $SendData = "0x02";
         foreach ($Data as $Line)
         {
@@ -306,14 +399,12 @@ class HMDisWM55 extends HMBase
         return $SendData;
     }
 
-    public function ResetTimer()
-    {
-//        SetValueInteger($this->GetIDForIdent('PAGE'), 0);
-        $this->SetBuffer('PAGE', (string) 0);
-
-        $this->SetTimerInterval('DisplayTimeout', 0);
-    }
-
+    /**
+     * Liefert das Script welches im Objektbaum als HM_OLED-Script mit den Kostanten für das DisplayScript angelegt wird.
+     * 
+     * @access private
+     * @return string
+     */
     private function CreateHM_OLEDScript()
     {
         $Script = '<?
@@ -366,6 +457,13 @@ define ("Color_blue"        ,0x85);
         return $Script;
     }
 
+    /**
+     * Liefert das Script welches im Objektbaum als Vorlage für das DisplayScript angelegt wird.
+     * 
+     * @access private
+     * @param type $ID Die IPS-ID des HM_OLED Scriptes mit den Konstanten für das Display-Script.
+     * @return string
+     */
     private function CreateDisplayScript($ID)
     {
         $Script = '<?
@@ -418,7 +516,7 @@ Die Dis-WM55 Instanz stellt über die IPS-Systemvariable $_IPS folgende Daten zu
 	Fester Wert
 	
 (int) $_IPS["EVENT"]
-	Die Instanz-ID der HMDis-WM55 Instanz.
+	Die Instanz-ID der HMDis-WM55 Instanz, welche dieses Script ausführt.
 
 
 Auf der Basis der Variable $_IPS["PAGE"] ist es nun möglich verschiedene Daten
@@ -581,6 +679,17 @@ function hex_encode ($string)
         return $Script;
     }
 
+    /**
+     *  Wird bei einem timeout ausgeführt und setzt die aktuelle Seite wieder auf Null.
+     * 
+     * @access public
+     */
+    public function ResetTimer()
+    {
+        $this->Page = 0;
+        $this->SetTimerInterval('DisplayTimeout', 0);
+    }
+
 }
 
-?>
+/** @} */

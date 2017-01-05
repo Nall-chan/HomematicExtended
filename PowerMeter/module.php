@@ -120,7 +120,7 @@ class HMPowerMeter extends HMBase
         $this->SetReceiveDataFilter(".*9999999999.*");
     }
 
-    ################## protected
+################## protected
 
     /**
      * Wird ausgeführt wenn der Kernel hochgefahren wurde.
@@ -199,7 +199,7 @@ class HMPowerMeter extends HMBase
      * Prüft und holt alle Daten zu der Quell-Variable und Instanz.
      * 
      * @access private
-     * @param int IPD-VarID des Datenpunktes, welcher als Event dient.
+     * @param int $EventID IPD-VarID des Datenpunktes, welcher als Event dient.
      * @return boolean True wenn Quelle gültig ist, sonst false.
      */
     private function GetPowerAddress(int $EventID)
@@ -254,13 +254,9 @@ class HMPowerMeter extends HMBase
     private function ReadPowerSysVar()
     {
         if (!$this->HasActiveParent())
-        {
             throw new Exception("Instance has no active Parent Instance!", E_USER_NOTICE);
-        }
         if ($this->HMAddress == '')
-        {
             throw new Exception("Instance has no active Parent Instance!", E_USER_NOTICE);
-        }
 
         $url = 'GetPowerMeter.exe';
         $HMScript = 'object oitemID;' . PHP_EOL

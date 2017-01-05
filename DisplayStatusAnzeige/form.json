@@ -62,7 +62,7 @@
                 {
                     "code": 204,
                     "icon": "inactive",
-                    "caption": "Timeout too small."
+                    "caption": "Timeout to small."
                 },
                 {
                     "code": 205,

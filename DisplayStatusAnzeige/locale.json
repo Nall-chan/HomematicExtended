@@ -12,7 +12,7 @@
             "No PRESS datapoint selected.": "Kein PRESS Datenpunkt ausgewählt.",
             "One or more invalid datapoints selected.": "Mindestens ein gewählter Datenpunkt ist ungültig.",
             "No Display-Script selected.": "Kein Display-Script ausgewählt.",
-            "Timeout too small.": "Timeout darf nicht negativ sein.",
+            "Timeout to small.": "Timeout darf nicht negativ sein.",
             "Number of pages to small.": "Seitenanzahl darf nicht negativ sein."
         }
     }

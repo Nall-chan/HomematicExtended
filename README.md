@@ -14,22 +14,22 @@ Erweitert IPS um die native Unterst�tzung von:
 1. [Funktionsumfang](#1-funktionsumfang) 
 2. [Voraussetzungen](#2-voraussetzungen)
 3. [Installation](#3-installation)
-4. [HomeMatic Systemvariablen] (#4-homematic-systemvariablen)
+4. [HomeMatic Systemvariablen](#4-homematic-systemvariablen)
 5. [HomeMatic Powermeter](#5-homematic-powermeter)
 6. [HomeMatic Programme](#6-homematic-programme)
 7. [HomeMatic WM55-Dis](#7-homematic-wm55-dis)
 8. [HomeMatic-Script](#8-homematic-script) 
-9. [Anhang](#9-anhang)
+11. [Anhang](#11-anhang)
+12. [Lizenz](#12-lizenz)
 
 ## 1. Funktionsumfang
 
    Abfragen von System- und Alarmvariablen inkl. Profilen und Werten von der CCU.  
-   Schreiben von Werten der Systemvariablen zur CCU.    
+   Schreiben von Werten der Systemvariablen zur CCU.  
    Standard Actionhandler für die Bedienung der System- und Alarmvariablen aus dem IPS-Webfront.  
    (Die Alarmvariablen werden erst ab IPS4.0 untersützt.)  
 
-   Abfragen des Summenzählers der Schaltaktoren mit Leistungsmessung aus der CCU.  
-   (Weitere Energiemesser folgen)  
+   Abfragen des Summenzählers der Geräte mit Leistungsmessung aus der CCU.  
 
    Abfragen der auf der CCU vorhandenen HM-Programme.  
    Ausführen der HM-Programme auf der CCU.  
@@ -42,22 +42,27 @@ Erweitert IPS um die native Unterst�tzung von:
    Native Schnittstelle zur CCU, um HomeMatic-Scripte durch die CCU ausführen zu lassen.  
    Direkte Rückmeldung der Ausführung durch einen Antwortstring im JSON-Format.  
 
+   Auslesen der Informationen zu jedem Funk-Interface der CCU.
+
    XML-API-Patch wird nicht benötigt.  
    Unterstützung von mehreren CCUs.  
    Einfache Einrichtung und Handhabung.  
-   PHP-Befehle entsprechen dem vorhanden Standard von IPS.  
+   PHP-Befehle entsprechen dem vorhandenen Standard von IPS.  
  
 ## 2. Voraussetzungen
 
    Funktionsfähige CCU1 und/oder CCU2, welche schon mit einem HomeMatic Socket in IPS eingerichtet ist.  
-   In der CCU muß die Firewall entsprechend eingerichtet sein, das IPS auf die 'Remote HomeMatic-Script API' der CCU zugreifen kann.
+   In der CCU muß die Firewall entsprechend eingerichtet sein, das IPS auf die 'Remote HomeMatic-Script API' der CCU zugreifen kann.  
 
     Einstellungen -> Systemsteuerung -> Firewall
 
    Bei 'Remote HomeMatic-Script API' muß entweder 'Vollzugriff' oder 'Eingeschränkt' eingestellt sein.
    Bei 'Eingeschränkt' ist dann unter 'IP-Adressen für eingeschränkten Zugriff' euer LAN / IPS-PC einzugeben.  
-   (z.B. 192.168.178.0/24 => /24 ist die Subnet-Maske für das Netzwerk. Bei 255.255.255.0 ist das 24 bei 255.255.0.0. ist es 16.
-   Oder es kann direkt eine einzelne Adresse eingetragen werden. z.B. 192.168.0.2
+   (z.B. 192.168.178.0/24 => /24 ist die Subnet-Maske für das Netzwerk. Bei 255.255.255.0 ist das 24 bei 255.255.0.0. ist es 16.  
+   Oder es kann direkt eine einzelne Adresse eingetragen werden. z.B. 192.168.0.2  
+
+   TODO: Screenshots fehlen!  
+
 
 ## 3. Installation
 
@@ -71,6 +76,8 @@ Erweitert IPS um die native Unterst�tzung von:
         über das 'Modul Control' folgende URL hinzufügen:  
         `git://github.com/Nall-chan/IPSHomematicExtended.git`  
 
+   **Bei kommerzieller Nutzung (z.B. als Errichter oder Integrator) wenden Sie sich bitte an den Autor.**  
+
 ## 4. HomeMatic Systemvariablen
 
    Unter Instanz hinzufügen sind die Systemvariablen unter dem Hersteller 'HomeMatic' zu finden.  
@@ -79,7 +86,7 @@ Erweitert IPS um die native Unterst�tzung von:
 
    Dieses Modul unterstützt zwei Möglichkeiten die Systemvariablen von der CCU abzufragen:  
 
-   - Abfrage erfolgt über einen einstellbaren Intervall (Pull).
+   - Abfrage erfolgt über einen einstellbaren Intervall (Pull).  
 
    - Die CCU löst einen Tastendruck einer virtuellen Fernbedienung aus,  
      welche in diesem Modul als Trigger für eine Abfrage verwendet wird (Push).
@@ -120,6 +127,8 @@ Erweitert IPS um die native Unterst�tzung von:
     Hier kann mit dem entfernen des Haken 'Benutze Standardaktion' die Bedienung einer
     Variable, aus dem WebFront heraus, unterbunden werden.  
 
+    TODO: Screenshots fehlen!  
+
     **Achtung:**  
     Die Profile der Systemvariablen werden nur beim Anlegen in IPS aus der CCU ausgelesen
     und übernommen.  
@@ -154,6 +163,8 @@ Erweitert IPS um die native Unterst�tzung von:
     Eventuelle Differenzen der Uhrzeiten und/oder Zeitzonen beider Systeme werden dabei
     automatisch berücksichtigt und erfordern somit keinen Eingriff durch den Benutzer.  
 
+    TODO: Screenshots fehlen!  
+
     **Hinweis:**  
     Eine Aktualisierung einer Alarmvariable, kann ein in der Instanz hinterlegtes Script starten.  
     Hierzu werden folgene Werte in der Variable $_IPS übergeben und stehen im Alarm-Script zur Verfügung.  
@@ -174,53 +185,66 @@ Erweitert IPS um die native Unterst�tzung von:
     
 ### PHP-Funktionen
 
-    Um einen Wert einer Systemvariable aus IPS heraus in die CCU zu schreiben, werden die
-    schon vorhandenen HM_WriteValue* Befehle von IPS genutzt.  
+   Um einen Wert einer Systemvariable aus IPS heraus in die CCU zu schreiben, werden die
+   schon vorhandenen HM_WriteValue* Befehle von IPS genutzt.  
 
-    Hier entspricht der Parameter mit dem Namen 'Parameter' dem IDENT der Systemvariable.  
-    (Die IDENT werden unter dem Reiter 'Statusvariablen' des Einstellungsdialogs der Instanz angezeigt.)  
+   Hier entspricht der Parameter mit dem Namen 'Parameter' dem IDENT der Systemvariable.  
+   (Die IDENT werden unter dem Reiter 'Statusvariablen' des Einstellungsdialogs der Instanz angezeigt.)  
 
    **ACHTUNG bei IPS 4.0: Aktuell müssen die Funktionen HM_WriteValueBoolean2, HM_WriteValueFloat2, HM_WriteValueInteger2 und HM_WriteValueString2 verwendet werden!**
 
     **Beispiele:**  
 
+```php
+
         HM_WriteValueBoolean(integer $InstantID /*[HomeMatic Systemvariablen]*/, string '950' /* IDENT von Anwesenheit */, boolean true);  
         HM_WriteValueFloat(integer $InstantID /*[HomeMatic Systemvariablen]*/, string '2588' /* IDENT von Solltemp Tag */, float 21.0);  
         HM_WriteValueInteger(integer $InstantID /*[HomeMatic Systemvariablen]*/, string '12829', integer 56);  
         HM_WriteValueString(integer $InstantID /*[HomeMatic Systemvariablen]*/, string '14901', string 'TestString');  
+```
+
+   TODO: Beispiele sind falsch / veraltet und Alarmvariablen fehlen !  
+
 
 ## 5. HomeMatic Powermeter
 
-   Die CCU legt für jeden 'Schaltaktor mit Leistungsmessung' automatisch eine Systemvariable
-   und ein Programm an, welches den Totalwert dieses Aktors hoch zählt.  
+   Die CCU legt für jeden 'Schaltaktor mit Leistungsmessung' und
+   jeden Energiezähler 'HM-ES-TX' automatisch eine Systemvariable  
+   und ein Programm an, welches den Totalwert dieses Gerätes hoch zählt.  
 
    Dieser Wert wird auch bei Stromausfall bzw. ausstecken des entsprechenden Aktors, gehalten.  
 
-   Diese Systemvariable unterscheidet sich von den 'normalen' Systemvariablen dahingehend,
+   Diese Systemvariable unterscheidet sich von den 'normalen' Systemvariablen dahingehend,  
    dass Sie nicht in der der Übersicht aller Systemvariablen in der CCU auftaucht.  
    (Im Gegensatz zu den Regenmengen Zählern des OC3.)  
 
-   Entsprechend war es nötig für diesen Typ von Systemvariable ein eingenes IPS-Device zu
+   Entsprechend war es nötig für diesen Typ von Systemvariable ein eingenes IPS-Device zu  
    implementieren.  
 
-   Unter Instanz hinzufügen ist die Systemvariable 'Powermeter' unter dem Hersteller
+   Unter Instanz hinzufügen ist die Systemvariable 'Powermeter' unter dem Hersteller  
    'HomeMatic' zu finden.  
 
-   Nach dem Anlegen der Instanz sollte als übergeordnetes Gerät schon der HomeMatic Socket
+   Nach dem Anlegen der Instanz sollte als übergeordnetes Gerät schon der HomeMatic Socket  
    ausgewählt sein.  
-   Existieren in IPS mehrere Homematic Socket, so ist der auszuwählen, der der CCU
-   entspricht an dem der Aktor angelernt ist.  
+   Existieren in IPS mehrere Homematic Socket, so ist der auszuwählen, der der CCU  
+   entspricht an dem das Gerät angelernt ist.  
 
-   Dieses Modul fragt den Wert aus der CCU immer dann ab, wenn der Wert
-   der Variable 'ENERGY_COUNTER' des entsprechenden Aktors sich in IPS aktualisiert.  
+   Dieses Modul fragt den Wert aus der CCU immer dann ab, wenn der Wert  
+   der Variable 'GAS_ENERGY_COUNTER', 'IEC_ENERGY_COUNTER' oder 'ENERGY_COUNTER'  
+   des entsprechenden Gerätes sich in IPS aktualisiert.  
    Oder der IPS-Dienst startet bzw. wenn eine Instanz neu konfiguriert wurde.  
 
-   Im Einstellungsdialog der Instanz ist entsprechend die zugehörige 'ENERGY_COUNTER'
-   Variable des Aktors auszuwählen, von dem der 'ENERGY_COUNTER_TOTAL' Wert
+   Im Einstellungsdialog der Instanz ist entsprechend die zugehörige  
+   'GAS_ENERGY_COUNTER', 'IEC_ENERGY_COUNTER' oder 'ENERGY_COUNTER'  
+   Variable des Aktors auszuwählen, von dem der 'ENERGY_COUNTER_TOTAL' Wert  
    gelesen werden soll.  
 
-   Als Profil für diese Variable ist ein Standard-IPS-Profil zugeordnet, und die Werte werden
+   Als Profil für diese Variable ist ein Standard-IPS-Profil zugeordnet, und die Werte werden  
    automatisch nach kWh umgerechnet.  
+
+   Tip: Auch die HmIP Geräte mit Leistungsmessung funktionieren.  
+
+   TODO: Screenshots fehlen!  
 
    
 ## 6. HomeMatic Programme
@@ -233,7 +257,7 @@ Erweitert IPS um die native Unterst�tzung von:
 
    Dieses Modul hat keinerlei Einstellungen, welche konfiguriert werden müssen.  
 
-   Im Testcenter ist es jedoch über den Button 'CCU auslesen' möglich, die auf der CCU vorhandenen Programme auszulesen.
+   Im Testcenter ist es jedoch über den Button 'CCU auslesen' möglich, die auf der CCU vorhandenen Programme auszulesen.  
    Dies erfolgt auch autoamtisch bei Systemstart von IPS und wenn die Instanz angelegt wird.  
 
    Die Programme werden als Integer-Variable unterhalb der Instanz erzeugt. Es wird automatisch der Name und die Beschreibung aus der CCU übernommen.  
@@ -244,20 +268,27 @@ Erweitert IPS um die native Unterst�tzung von:
 
    Werden in der CCU Programme gelöscht, so müssen die dazugehörigen Variablen in IPS bei Bedarf manuell gelöscht werden.  
 
+   TODO: Screenshots fehlen!  
+
 ### PHP-Funktionen
 
+```php
     string HM_ReadPrograms(integer $InstantID /*[HomeMatic Programme]*/)
+```
    Alle Programme auf der CCU werden ausgelesen und bei Bedarf umbenannt oder neu angelegt.
 
+```php
     string HM_StartProgram(integer $InstantID /*[HomeMatic Programme]*/, string $IDENT);
+```
    Startet ein auf der CCU hinterlegtes Programm. Als `$IDENT` muss der Ident der Variable des Programmes übergeben werden.  
    (Die IDENT werden unter dem Reiter 'Statusvariablen' des Einstellungsdialogs der Instanz angezeigt.)  
 
    **Beispiele:**
 
+```php
         HM_ReadPrograms(12345 /*[HomeMatic Programme]*/);  
-        HM_StartProgram(12345 /*[HomeMatic Programme]*/, string '4711' /* IDENT von Programm Licht Alles aus */);  
-
+        HM_StartProgram(12345 /*[HomeMatic Programme]*/, '4711' /* IDENT von Programm Licht Alles aus */);  
+```
 
 ## 7. HomeMatic WM55-Dis
 
@@ -270,32 +301,47 @@ Erweitert IPS um die native Unterst�tzung von:
   Die Anzahl der möglichen Seiten läßt sich in der Konfiguration der Instanz einstellen (1 ist auch möglich).  
   Ebenso ist das Timeout einstellbar, nach wieviel Sekunden wieder auf Seite 1 gesprungen wird.  
   
-  Details zu dem Display-Script und die dort Verfügbaren $_IPS-Variablen, sind dem Script zu entnehemen.
+  Details zu dem Display-Script und die dort Verfügbaren $_IPS-Variablen, sind dem Script zu entnehemen.  
+
+  TODO: Screenshots fehlen!  
+
 
 ## 8. HomeMatic-Script
 
-Dies Instanz ermöglicht es eigene Homematic-Scripte zur CCU zu senden.  
-Des weiteren wird die Rückgabe der Ausführung an den Aufrufer zurück gegeben.  
-So kann z.B. per PHP-Script in IPS ein dynamisches Homematic-Script als String erstellt werden,
-und die erfolgte Ausführung ausgewertet werden.  
+  Dies Instanz ermöglicht es eigene Homematic-Scripte zur CCU zu senden.  
+  Des weiteren wird die Rückgabe der Ausführung an den Aufrufer zurück gegeben.  
+  So kann z.B. per PHP-Script in IPS ein dynamisches Homematic-Script als String erstellt werden,  
+  und die erfolgte Ausführung ausgewertet werden.  
 
-### PHP-Funktionen
+   TODO: Screenshots fehlen!  
 
-    string HM_RunScript(integer $InstantID /*[HomeMatic RemoteScript Interface]*/,string $Script)
+### PHP-Funktionen  
 
+ ```php
+string HM_RunScript(integer $InstantID /*[HomeMatic RemoteScript Interface]*/,string $Script)
+```
    **Beispiel:**
 
    Abfrage der Uhrzeit und Zeitzone von der CCU:
-
+```php
     $HMScript = 'Now=system.Date("%F %T%z");' . PHP_EOL  
               . 'TimeZone=system.Date("%z");' . PHP_EOL;   
     $HMScriptResult = HM_RunScript(12345 /*[HomeMatic RemoteScript Interface]*/, $HMScript);  
     var_dump(json_decode($HMScriptResult));  
+```
 
+## 9. HomeMatic RF-Interface Splitter
 
-## 9. Anhang
+   TODO: Beschreibung fehlt.  
+
+## 10. HomeMatic RF-Interface
+
+   TODO: Beschreibung fehlt.  
+
+## 11. Anhang
 
 **GUID's:**  
+GUIDs der Instanzen (z.B. wenn Instanz per PHP angelegt werden soll):  
 
 | Device                           | GUID                                   |
 | :------------------------------: | :------------------------------------: |
@@ -304,14 +350,28 @@ und die erfolgte Ausführung ausgewertet werden.
 | HomeMatic Programme              | {A5010577-C443-4A85-ABF2-3F2D6CDD2465} |
 | HomeMatic RemoteScript Interface | {246EDB89-70BC-403B-A1FA-3B3B1B540401} |
 | HomeMatic Dis-WM55               | {271BCAB1-0658-46D9-A164-985AEB641B48} |
+| HomeMatic RF-Interface Splitter  | {6EE35B5B-9DD9-4B23-89F6-37589134852F} |
+| HomeMatic RF-Interface           | {36549B96-FA11-4651-8662-F310EEEC5C7D} |
 
+
+Eigenschaften von xxx:  
+
+| Eigenschaft     | Typ     | Standardwert | Funktion                                      |
+| :-------------: | :-----: | :----------: | :-------------------------------------------: |
+| todo            | boolean | true         |                                               |
+| todo            | integer | auto         |                                               |
+| todo            | integer | 100          |                                               |
+ 
 **Changelog:**
 
-Version 2.2:
+Version 2.03:
+ Fix: Doku geändert (Teil1).
+
+Version 2.02:
  Fix: Powermeter-Instanz kann jetzt auch mit allen Varianten von HM-ES-TX-WM umgehen.
  Fix: Powermeter-Instanz unterstützt jetzt auch HMIP-PSM und ähnliche HMIP-'Mess-Steckdosen' 
 
-Version 2.1:
+Version 2.01:
  Neu: RF-Interface-Splitter zum auslesen der RF-Interfaces aus der CCU
  Neu: RF-Interface zum darstellen der Werte eines RF-Interfaces der CCU.
 
@@ -323,4 +383,6 @@ Version 1.3:
 
 Version 1.1:
 
+## 12. Lizenz
 
+  [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)  
