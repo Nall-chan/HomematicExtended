@@ -364,6 +364,10 @@ Eigenschaften von xxx:
  
 **Changelog:**
 
+Version 2.05:  
+ Fix: Unter Umständen konnte die Adresse der CCU nicht aus dem HomeMatic-Socket ermitteln werden.  
+ New: Beschreibung in module.json ergänzt.
+
 Version 2.04:  
  Fix: RFInstance-Splitter hat fehler gemeldet beim Anlegen von Instanzen, wenn keine vorhanden waren.  
 

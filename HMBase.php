@@ -238,25 +238,19 @@ abstract class HMBase extends IPSModule
             case IPS_KERNELMESSAGE:
                 if ($Data[0] == KR_READY)
                 {
-                    $this->GetParentData();
-                    if ($this->HMAddress == '')
-                        return;
-                    if ($this->HasActiveParent())
+                    try
                     {
-                        try
-                        {
-                            $this->KernelReady();
-                        }
-                        catch (Exception $exc)
-                        {
-                            return;
-                        }
+                        $this->KernelReady();
+                    }
+                    catch (Exception $exc)
+                    {
+                        return;
                     }
                 }
                 break;
             case DM_CONNECT:
             case DM_DISCONNECT:
-                $this->GetParentData();
+                $this->ForceRefresh();
                 break;
             case IM_CHANGESTATUS:
                 if ($this->HMAddress == '')
@@ -314,7 +308,7 @@ abstract class HMBase extends IPSModule
      */
     protected function GetParentData()
     {
-        $OldParentId = $this->GetBuffer('Parent');
+        $OldParentId = $this->HMAddress;
         $ParentId = $this->GetInstanceParent();
         if ($ParentId <> $OldParentId)
         {

@@ -155,8 +155,8 @@ class HMSystemVariable extends HMBase
         else
             $this->SetReceiveDataFilter(".*9999999999.*");
 
-        $this->GetParentData();
-
+        if (!$this->HasActiveParent())
+            return;
         try
         {
             $this->ReadSysVars();

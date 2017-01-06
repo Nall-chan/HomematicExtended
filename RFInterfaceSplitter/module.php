@@ -58,16 +58,15 @@ class HMRFInterfaceSplitter extends HMBase
             $this->SetTimerInterval("ReadRFInterfaces", 0);
 
 
-        if ($this->HasActiveParent())
+        if (!$this->HasActiveParent())
+            return;
+        try
         {
-            try
-            {
-                $this->ReadRFInterfaces();
-            }
-            catch (Exception $exc)
-            {
-                trigger_error($exc->getMessage(), $exc->getCode());
-            }
+            $this->ReadRFInterfaces();
+        }
+        catch (Exception $exc)
+        {
+            trigger_error($exc->getMessage(), $exc->getCode());
         }
     }
 

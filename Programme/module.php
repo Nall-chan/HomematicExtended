@@ -64,6 +64,8 @@ class HMCCUProgram extends HMBase
 
         if (IPS_GetKernelRunlevel() <> KR_READY)
             return;
+        if (!$this->HasActiveParent())
+            return;
         try
         {
             $this->ReadCCUPrograms();
