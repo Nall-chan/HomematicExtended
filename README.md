@@ -74,7 +74,7 @@ Erweitert IPS um die native Unterstützung von:
    (z.B. 192.168.178.0/24 => /24 ist die Subnet-Maske für das Netzwerk. Bei 255.255.255.0 ist das 24 bei 255.255.0.0. ist es 16.  
    Oder es kann direkt eine einzelne Adresse eingetragen werden. z.B. 192.168.0.2  
 
-   TODO: Screenshots fehlen!  
+![Doku/CCUFirewall.png](Doku/CCUFirewall.png)  
 
 
 ## 3. Installation
@@ -134,6 +134,8 @@ Erweitert IPS um die native Unterstützung von:
 
     **Hinweis:** Über den Homematic Konfigurator in IPS kann das benötigte Homematic Device
     komfortabel angelegt werden.  
+
+![Doku/CCUPushSystemvariablen.png](Doku/CCUPushSystemvariablen.png)  
 
     Mit dem Testcenter des Einstellungsdialog können die Systemvariablen sofort eingelesen
     werden, ohne auf den Intervall oder einen Trigger zu warten.  
@@ -411,7 +413,7 @@ GUIDs der Instanzen (z.B. wenn Instanz per PHP angelegt werden soll):
 | HomeMatic RF-Interface           | {36549B96-FA11-4651-8662-F310EEEC5C7D} |
 
 
-Eigenschaften von HomeMatic Systemvariablen:  
+**Eigenschaften von HomeMatic Systemvariablen:**  
 
 | Eigenschaft     | Typ     | Standardwert | Funktion                                                    |
 | :-------------: | :-----: | :----------: | :---------------------------------------------------------: |
@@ -421,21 +423,21 @@ Eigenschaften von HomeMatic Systemvariablen:
 | EnableAlarmDP   | boolean | true         | Aktiviert die verarbeitung von Alarmvariablen               |
 | AlarmScriptID   | integer | 0            | Script-ID welches bei der Alarmverarbeitung ausgeführt wird |
 
-Eigenschaften von HomeMatic Powermeter:  
+**Eigenschaften von HomeMatic Powermeter:**  
 
 | Eigenschaft     | Typ     | Standardwert | Funktion                                        |
 | :-------------: | :-----: | :----------: | :---------------------------------------------: |
 | EventID         | integer | 0            | Variable-ID von einem ENERGY_COUNTER Datenpunkt |
 
-Eigenschaften von HomeMatic Programme:  
+**Eigenschaften von HomeMatic Programme:**  
 
  Keine Eigenschaften vorhanden.  
 
-Eigenschaften von HomeMatic RemoteScript Interface:  
+**Eigenschaften von HomeMatic RemoteScript Interface:**  
 
  Keine Eigenschaften vorhanden.  
 
-Eigenschaften von HomeMatic Dis-WM55:  
+**Eigenschaften von HomeMatic Dis-WM55:**  
 
 | Eigenschaft     | Typ     | Standardwert | Funktion                                             |
 | :-------------: | :-----: | :----------: | :--------------------------------------------------: |
@@ -447,13 +449,13 @@ Eigenschaften von HomeMatic Dis-WM55:
 | Timeout         | integer | 0            | Zeit in Sekunden bis wieder Seite 1 angezeigt wird   |
 | ScriptID        | integer | 0            | Script-ID welches beim Tastendruck ausgeführt wird   |
 
-Eigenschaften von HomeMatic RF-Interface Splitter:  
+**Eigenschaften von HomeMatic RF-Interface Splitter:**
 
 | Eigenschaft     | Typ     | Standardwert | Funktion                                      |
 | :-------------: | :-----: | :----------: | :-------------------------------------------: |
 | Interval        | integer | 0            | Intervall in Sekunden für den Datenabruf      |
  
-Eigenschaften von HomeMatic RF-Interface:  
+**Eigenschaften von HomeMatic RF-Interface:**  
 
 | Eigenschaft     | Typ     | Standardwert | Funktion                                      |
 | :-------------: | :-----: | :----------: | :-------------------------------------------: |
@@ -470,10 +472,10 @@ GUIDs für den Datenaustausch zwischen RF-Interface Splitter und RF-Interface:
 **Changelog:**
 
 Version 2.06:  
- Fix: Doku geändert (Final).
- Fix: GUID für Empfang vom RF-Interface Splitter.
- Fix: Trigger für Powermeter und Systemvariablen waren unter Umständen falsch.
- Fix: HM-Systemvariablen vom Typ String wurden falsch dargestellt, wenn Umlaute enthalten waren.
+ Fix: Doku geändert (Final).  
+ Fix: GUID für Empfang vom RF-Interface Splitter.  
+ Fix: Trigger für Powermeter und Systemvariablen waren unter Umständen falsch.  
+ Fix: HM-Systemvariablen vom Typ String wurden falsch dargestellt, wenn Umlaute enthalten waren.  
  
 Version 2.05:  
  Fix: Unter Umständen konnte die Adresse der CCU nicht aus dem HomeMatic-Socket ermitteln werden.  
