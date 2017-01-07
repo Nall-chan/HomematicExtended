@@ -86,7 +86,7 @@ class HMPowerMeter extends HMBase
         if ($this->CheckConfig())
         {
             $HMDeviceDatapoint = $this->HMDeviceDatapoint;
-            $this->SetReceiveDataFilter(".*" . $this->HMDeviceAddress . ".*'.$HMDeviceDatapoint.'.*");
+            $this->SetReceiveDataFilter('.*"DeviceID":"' . $this->HMDeviceAddress . '","VariableName":"' . $HMDeviceDatapoint . '".*');
 
             switch ($HMDeviceDatapoint)
             {

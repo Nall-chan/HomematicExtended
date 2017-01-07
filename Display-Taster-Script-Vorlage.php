@@ -1,39 +1,39 @@
 <?
+
 ### GRUNDFUNKTION
 /*
-Beispiel für das Zusammenstellern der Daten für die Dis-WM55 Instanz.
-Das Script wird als 'Display-Script' in der dazugehörigen Dis-WM55 Instanze eingetragen.
-Die vorbereiteten Daten für das Display werden als JSON kodierter String an die
-Dis-WM55 Instanz als Rückgabewert 'Script-Result' übergeben.
-Beispiel der erzeugten Daten:
-{"1":{"Text":"SEITE 1","Icon":130,"Color":129},"2":{"Text":"Zeile2","Icon":0,"Color":129},"3":{"Text":"Zeile3","Icon":130,"Color":130},"4":{"Text":"Zeile4","Icon":0,"Color":130},"5":{"Text":"Zeile5","Icon":131,"Color":132},"6":{"Text":"Zeile6","Icon":0,"Color":132}}
+  Beispiel fÃ¼r das Zusammenstellern der Daten fÃ¼r die Dis-WM55 Instanz.
+  Das Script wird als "Display-Script" in der dazugehÃ¶rigen Dis-WM55 Instanze eingetragen.
+  Die vorbereiteten Daten fÃ¼r das Display werden als JSON kodierter String an die
+  Dis-WM55 Instanz als RÃ¼ckgabewert "Script-Result" Ã¼bergeben.
+  Beispiel der erzeugten Daten:
+  {"1":{"Text":"SEITE 1","Icon":130,"Color":129},"2":{"Text":"Zeile2","Icon":0,"Color":129},"3":{"Text":"Zeile3","Icon":130,"Color":130},"4":{"Text":"Zeile4","Icon":0,"Color":130},"5":{"Text":"Zeile5","Icon":131,"Color":132},"6":{"Text":"Zeile6","Icon":0,"Color":132}}
 
-Der JSON-String wird aus einem Array erzeugt, welches folgendem Aufbau haben
-__MUSS__, damit die Dis-WM55 Instanz die Daten verarbeiten und an das Display
-senden kann.
-Zeile[1]['Text']  = Text Zeile 1
-Zeile[1]['Icon']  = Icon Zeile 1
-Zeile[1]['Color']  = Farbe Zeile 1
-Zeile[2]['Text']  = Text Zeile 2
-Zeile[2]['Icon']  = Icon Zeile 2
-Zeile[2]['Color']  = Farbe Zeile 2
-.
-.
-.
-Zeile[6]['Text']  = Text Zeile 6
-Zeile[6]['Icon']  = Icon Zeile 6
-Zeile[6]['Color']  = Farbe Zeile 6
+  Der JSON-String wird aus einem Array erzeugt, welches folgendem Aufbau haben
+  __MUSS__, damit die Dis-WM55 Instanz die Daten verarbeiten und an das Display
+  senden kann.
+  Zeile[1]['Text']  = Text Zeile 1
+  Zeile[1]['Icon']  = Icon Zeile 1
+  Zeile[1]['Color']  = Farbe Zeile 1
+  Zeile[2]['Text']  = Text Zeile 2
+  Zeile[2]['Icon']  = Icon Zeile 2
+  Zeile[2]['Color']  = Farbe Zeile 2
+  .
+  .
+  .
+  Zeile[6]['Text']  = Text Zeile 6
+  Zeile[6]['Icon']  = Icon Zeile 6
+  Zeile[6]['Color']  = Farbe Zeile 6
 
-Um nicht immer die Zahlen für die Icons und Farben eintragen zu müssen wurden
-Konstanten definiert.
-Des weiteresn müssen Textzeilen mit der Funktion text_encode("Zeile müt Ümlaut")
-übergeben werden, wenn Umlaute in der Zeile verwendet werden.
-*/
+  Um nicht immer die Zahlen fÃ¼r die Icons und Farben eintragen zu mÃ¼ssen wurden
+  Konstanten definiert.
+  Des weiteresn mÃ¼ssen Textzeilen mit der Funktion text_encode("Zeile mit Umlaut")
+  Ã¼bergeben werden, wenn Umlaute in der Zeile verwendet werden.
+ */
 
 ### Konstanten
 //--------------------------------
-// Definition der Werte für die Icons
-
+// Definition der Werte fÃ¼r die Icons
 // 0x80 AUS                Icon_on
 // 0x81 EIN                Icon_off
 // 0x82 OFFEN              Icon_open
@@ -43,74 +43,74 @@ Des weiteresn müssen Textzeilen mit der Funktion text_encode("Zeile müt Ümlaut")
 // 0x86 information        Icon_information
 // 0x87 neue nachricht     Icon_message
 // 0x88 servicemeldung     Icon_service
-// 0x89 Signal grün        Icon_green
+// 0x89 Signal grÃ¼n        Icon_green
 // 0x8A Signal gelb        Icon_yellow
 // 0x8B Signal rot         Icon_red
 //      ohne Icon          Icon_no
 
-define ("Icon_on"		,0x80);
-define ("Icon_off"		,0x81);
-define ("Icon_open"		,0x82);
-define ("Icon_closed"		,0x83);
-define ("Icon_error"		,0x84);
-define ("Icon_ok"		,0x85);
-define ("Icon_information"	,0x86);
-define ("Icon_message"		,0x87);
-define ("Icon_service"		,0x88);
-define ("Icon_signal_green"	,0x89);
-define ("Icon_signal_yellow"	,0x8A);
-define ("Icon_signal_red"	,0x8B);
-define ("Icon_no"		,0);
+define("Icon_on", 0x80);
+define("Icon_off", 0x81);
+define("Icon_open", 0x82);
+define("Icon_closed", 0x83);
+define("Icon_error", 0x84);
+define("Icon_ok", 0x85);
+define("Icon_information", 0x86);
+define("Icon_message", 0x87);
+define("Icon_service", 0x88);
+define("Icon_signal_green", 0x89);
+define("Icon_signal_yellow", 0x8A);
+define("Icon_signal_red", 0x8B);
+define("Icon_no", 0);
 
 
-// Definition der Werte für die Farben
-
+// Definition der Werte fÃ¼r die Farben
 // 0x80 weiss              Color_white
 // 0x81 rot                Color_red
 // 0x82 orange             Color_orange
 // 0x83 gelb               Color_yellow
-// 0x84 grün               color_green
+// 0x84 grÃ¼n               color_green
 // 0x85 blau               color_blue
 
-define ("Color_white"	,0x82);
-define ("Color_red"	,0x81);
-define ("Color_orange"	,0x82);
-define ("Color_yellow"	,0x83);
-define ("Color_green"	,0x84);
-define ("Color_blue"	,0x85);
+define("Color_white", 0x82);
+define("Color_red", 0x81);
+define("Color_orange", 0x82);
+define("Color_yellow", 0x83);
+define("Color_green", 0x84);
+define("Color_blue", 0x85);
 
 ### VERWENDUNG VON $_IPS
 
 /*
-Die Dis-WM55 Instanz stellt über die IPS-Systemvariable $_IPS folgende Daten zur Verfügung:
+  Die Dis-WM55 Instanz stellt Ã¼ber die IPS-Systemvariable $_IPS folgende Daten zur VerfÃ¼gung:
 
-(string) $_IPS['ACTION']
-	'UP'				=>  Trigger für Taste-Hoch wurde ausgelößt
-	'DOWN'			=>  Trigger für Taste-Runter wurde ausgelößt
-	'ActionUP'		=>  Trigger für Aktion-Hoch wurde ausgelößt
-	'ActionDOWN'	=>  Trigger für Aktion-Runter wurde ausgelößt
+  (string) $_IPS["ACTION"]
+  "UP"				=>  Trigger fÃ¼r Taste-Hoch wurde ausgelÃ¶ÃŸt
+  "DOWN"			=>  Trigger fÃ¼r Taste-Runter wurde ausgelÃ¶ÃŸt
+  "ActionUP"		=>  Trigger fÃ¼r Aktion-Hoch wurde ausgelÃ¶ÃŸt
+  "ActionDOWN"	=>  Trigger fÃ¼r Aktion-Runter wurde ausgelÃ¶ÃŸt
 
-(int) $_IPS['PAGE']
-	Die 'Seite' welche dargestellt oder deren Aktion ausgeführt werden soll.
+  (int) $_IPS["PAGE"]
+  Die "Seite" welche dargestellt oder deren Aktion ausgefÃ¼hrt werden soll.
 
-(string) $_IPS['SENDER'] => 'HMDisWM55'
-	Fester Wert
-	
-(int) $_IPS['EVENT']
-	Die Instanz-ID der HMDis-WM55 Instanz.
+  (string) $_IPS["SENDER"] => "HMDisWM55"
+  Fester Wert
+
+  (int) $_IPS["EVENT"]
+  Die Instanz-ID der HMDis-WM55 Instanz, welche dieses Script ausfÃ¼hrt.
 
 
-Auf der Basis der Variable $_IPS['PAGE'] ist es nun möglich verschiedene Daten
-je nach 'Seite' zu berechnen und übergeben.
-Ebenso ist es möglich (z.B. durch langen und kurzen Tastendruck) zwischen UP/DOWN
-und ActionUP/ActionDOWN zu unterscheiden und so Aktionen wie das Schalten von Licht ausführen zu lassen.
+  Auf der Basis der Variable $_IPS["PAGE"] ist es nun mÃ¶glich verschiedene Daten
+  je nach "Seite" zu berechnen und Ã¼bergeben.
+  Ebenso ist es mÃ¶glich (z.B. durch langen und kurzen Tastendruck) zwischen UP/DOWN
+  und ActionUP/ActionDOWN zu unterscheiden und so Aktionen wie das Schalten von Licht ausfÃ¼hren zu lassen.
 
-Natürlich kann man auch nur kurze Tastendrücke verwenden und z.B. Kanal:2 als ActionUP und Kanal:1 als DOWN zu definieren.
+  NatÃ¼rlich kann man auch nur kurze TastendrÃ¼cke verwenden und z.B. Kanal:2 als ActionUP und Kanal:1 als DOWN zu definieren.
 
-*/
+ */
+
 if ($_IPS['SENDER'] <> 'HMDisWM55')
 {
-    echo 'Dieses Skript wird automatisch über die Homematic Dis-WM55 Instanz ausgeführt';
+    echo 'Dieses Skript wird automatisch Ã¼ber die Homematic Dis-WM55 Instanz ausgefÃ¼hrt';
     return;
 }
 
@@ -120,8 +120,8 @@ if (($_IPS['ACTION'] == 'UP') or ( $_IPS['ACTION'] == 'DOWN'))
     {
         case 1:  // Seite 1
 
-            $display_line[1] = array('Text' => "SEITE 1",   // Text  Seite 1 Zeile 1
-                'Icon' => Icon_open,                        // Icon  Seite 1 Zeile 1
+            $display_line[1] = array('Text' => "SEITE 1", // Text  Seite 1 Zeile 1
+                'Icon' => Icon_open, // Icon  Seite 1 Zeile 1
                 'Color' => Color_red);                      // Farbe Seite 1 Zeile 1
 
             $display_line[2] = array('Text' => "Zeile2",
@@ -160,7 +160,7 @@ if (($_IPS['ACTION'] == 'UP') or ( $_IPS['ACTION'] == 'DOWN'))
                 'Color' => Color_white);
 
 
-            $display_line[5] = array('Text' => date("H:i:s",time()),  // Uhrzeit
+            $display_line[5] = array('Text' => date("H:i:s", time()), // Uhrzeit
                 'Icon' => Icon_no,
                 'Color' => Color_white);
 
@@ -176,7 +176,7 @@ if (($_IPS['ACTION'] == 'UP') or ( $_IPS['ACTION'] == 'DOWN'))
                 'Icon' => Icon_open,
                 'Color' => Color_orange);
 
-            $display_line[2] = array('Text' => "",  // GetValueFormatted(12345 /*[Objekt #12345 existiert nicht]*/);
+            $display_line[2] = array('Text' => "", // GetValueFormatted(12345 /*[Objekt #12345 existiert nicht]*/);
                 'Icon' => Icon_no);
 
             $display_line[3] = array('Text' => "",
@@ -195,7 +195,7 @@ if (($_IPS['ACTION'] == 'UP') or ( $_IPS['ACTION'] == 'DOWN'))
 if ($_IPS['ACTION'] == 'ActionUP')                              // Aktion & Anzeige bei ActionUP
 {
     // Hier kann auch wie oben bei 'PAGE' noch je nach Seite unterschieden werden !
-    $display_line[1] = array('Text' => hex_encode("Führe"),
+    $display_line[1] = array('Text' => hex_encode("FÃ¼hre"),
         'Icon' => Icon_no,
         'Color' => Color_orange);
 
@@ -222,7 +222,7 @@ if ($_IPS['ACTION'] == 'ActionUP')                              // Aktion & Anze
 if ($_IPS['ACTION'] == 'ActionDOWN')                             // Aktion & Anzeige bei ActionDOWN
 {
     // Hier kann auch wie oben bei 'PAGE' noch je nach Seite unterschieden werden !
-    $display_line[1] = array('Text' => hex_encode("Führe"),
+    $display_line[1] = array('Text' => hex_encode("FÃ¼hre"),
         'Icon' => Icon_no,
         'Color' => Color_orange);
 
@@ -247,14 +247,14 @@ if ($_IPS['ACTION'] == 'ActionDOWN')                             // Aktion & Anz
 }
 
 $data = json_encode($display_line);
-echo $data; //Daten zurückgeben an Dis-WM55-Instanz
+echo $data; //Daten zurÃ¼ckgeben an Dis-WM55-Instanz
 
-function hex_encode ($string)
+function hex_encode($string)
 {
-	$umlaut =  array("Ä"   ,"Ö"   ,"Ü"   ,"ä"   ,"ö"   ,"ü"   ,"ß"   ,":"   );
-   $hex_neu = array(chr(0x5b),chr(0x23),chr(0x24),chr(0x7b),chr(0x7c),chr(0x7d),chr(0x5f),chr(0x3a));
-   $return = str_replace($umlaut, $hex_neu, $string);
-   return $return;
+    $umlaut = array("Ã„", "Ã–", "Ãœ", "Ã¤", "Ã¶", "Ã¼", "ÃŸ", ":");
+    $hex_neu = array(chr(0x5b), chr(0x23), chr(0x24), chr(0x7b), chr(0x7c), chr(0x7d), chr(0x5f), chr(0x3a));
+    $return = str_replace($umlaut, $hex_neu, $string);
+    return $return;
 }
 
 ?>

@@ -46,6 +46,11 @@ class HMSystemVariable extends HMBase
         $this->RegisterPropertyInteger("AlarmScriptID", 0);
 
         $this->RegisterTimer("ReadHMSysVar", 0, 'HM_SystemVariablesTimer($_IPS[\'TARGET\']);');
+        $this->HMDeviceAddress = '';
+        $this->HMDeviceDatapoint = '';
+        $this->SystemVars = array();
+        $this->SetReceiveDataFilter(".*9999999999.*");
+        $this->SetSummary('');
     }
 
     /**
@@ -98,6 +103,8 @@ class HMSystemVariable extends HMBase
                     $VarProfil = 'HM.SysVar' . (string) $this->InstanceID . '.' . (string) $OldVars[$SenderID];
                     if (IPS_VariableProfileExists($VarProfil))
                         IPS_DeleteVariableProfile($VarProfil);
+                    unset($OldVars[$SenderID]);
+                    $this->SystemVars = $OldVars;
                 }
                 break;
         }
@@ -151,7 +158,7 @@ class HMSystemVariable extends HMBase
             $this->SetTimerInterval("ReadHMSysVar", 0);
 
         if ($this->GetTriggerVar())
-            $this->SetReceiveDataFilter(".*" . $this->HMDeviceAddress . ".*" . $this->HMDeviceDatapoint . ".*");
+            $this->SetReceiveDataFilter('.*"DeviceID":"' . $this->HMDeviceAddress . '","VariableName":"' . $this->HMDeviceDatapoint . '".*');
         else
             $this->SetReceiveDataFilter(".*9999999999.*");
 
@@ -383,7 +390,7 @@ class HMSystemVariable extends HMBase
             $VarID = @$this->GetIDForIdent($VarIdent);
             $VarType = self::$CcuVarType[(int) $xmlVar->ValueType];
             $VarProfil = 'HM.SysVar' . (string) $this->InstanceID . '.' . (string) $SysVar;
-            $VarName = /* utf8_decode( */(string) $xmlVar->Name;
+            $VarName = (string) $xmlVar->Name;
 
             if (((int) $xmlVar->ValueType != vtString) and ( !IPS_VariableProfileExists($VarProfil)))
             {                 // neu anlegen wenn VAR neu ist oder Profil nicht vorhanden
@@ -425,9 +432,9 @@ class HMSystemVariable extends HMBase
                 {
                     case vtBoolean:
                         if (isset($xmlVar2->ValueName0))
-                            @IPS_SetVariableProfileAssociation($VarProfil, 0, /* utf8_decode( */ (string) $xmlVar2->ValueName0, '', -1);
+                            @IPS_SetVariableProfileAssociation($VarProfil, 0, (string) $xmlVar2->ValueName0, '', -1);
                         if (isset($xmlVar2->ValueName1))
-                            @IPS_SetVariableProfileAssociation($VarProfil, 1, /* utf8_decode( */ (string) $xmlVar2->ValueName1, '', -1);
+                            @IPS_SetVariableProfileAssociation($VarProfil, 1, (string) $xmlVar2->ValueName1, '', -1);
                         break;
                     case vtFloat:
                         @IPS_SetVariableProfileDigits($VarProfil, strlen((string) $xmlVar2->ValueMin) - strpos('.', (string) $xmlVar2->ValueMin) - 1);
@@ -435,11 +442,11 @@ class HMSystemVariable extends HMBase
                         break;
                 }
                 if (isset($xmlVar2->ValueUnit))
-                    @IPS_SetVariableProfileText($VarProfil, '', ' ' . /* utf8_decode( */(string) $xmlVar2->ValueUnit);
+                    @IPS_SetVariableProfileText($VarProfil, '', ' ' . (string) $xmlVar2->ValueUnit);
                 if ((isset($xmlVar2->ValueSubType)) and ( (int) $xmlVar2->ValueSubType == 29))
                     foreach (explode(';', (string) $xmlVar2->ValueList) as $Index => $ValueList)
                     {
-                        @IPS_SetVariableProfileAssociation($VarProfil, $Index, /* utf8_decode( */ trim($ValueList), '', -1);
+                        @IPS_SetVariableProfileAssociation($VarProfil, $Index, trim($ValueList), '', -1);
                     }
             }
             if ($VarID === false)
@@ -454,7 +461,6 @@ class HMSystemVariable extends HMBase
                     $OldVars[$VarID] = $SysVar;
                     $OldVarsChange = true;
                     $this->RegisterMessage($VarID, VM_DELETE);
-                    $this->SendDebug($VarID, IPS_GetObject($VarID), 0);
                 }
             }
             else
@@ -492,7 +498,7 @@ class HMSystemVariable extends HMBase
                     SetValueFloat($VarID, (float) $xmlVar->Variable);
                     break;
                 case vtString:
-                    SetValueString($VarID, utf8_decode((string) $xmlVar->Variable));
+                    SetValueString($VarID, (string) $xmlVar->Variable);
                     break;
             }
         }

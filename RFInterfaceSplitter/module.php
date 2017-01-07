@@ -241,7 +241,7 @@ class HMRFInterfaceSplitter extends HMBase
             foreach ($Protocol as $InterfaceIndex => $Interface)
             {
                 $this->SendDebug("Proto" . $ProtocolID . " If" . $InterfaceIndex, $Interface, 0);
-                $Interface->DataID = "E2966A08-BCE1-4E76-8C4B-7E0136244E1B";
+                $Interface->DataID = "{E2966A08-BCE1-4E76-8C4B-7E0136244E1B}";
                 $Data = json_encode($Interface);
                 $this->SendDataToChildren($Data);
                 $ret = true;
