@@ -471,6 +471,12 @@ GUIDs für den Datenaustausch zwischen RF-Interface Splitter und RF-Interface:
 
 **Changelog:**
 
+Version 2.07:  
+ Fix: Summenzähler für Powermeter hat bei GAS falsche Werte geliefert.  
+ Fix: Dis-WM55 ohne Funktion.  
+ Fix: Dis-WM55 hat immer das Display-Script überschrieben.  
+ New: Mehr Debug-Ausgaben bei Dis-WM55.  
+
 Version 2.06:  
  Fix: Doku geändert (Final).  
  Fix: GUID für Empfang vom RF-Interface Splitter.  

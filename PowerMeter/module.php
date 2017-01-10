@@ -9,7 +9,7 @@
  * @author        Michael Tröger <micha@nall-chan.net>
  * @copyright     2017 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
- * @version       2.2
+ * @version       2.07
  */
 require_once(__DIR__ . "/../HMBase.php");  // HMBase Klasse
 
@@ -22,6 +22,7 @@ require_once(__DIR__ . "/../HMBase.php");  // HMBase Klasse
  * @property string $HMDeviceDatapoint Der zu überwachende Datenpunkt. 
  * @property string $HMProtocol HmIP-RF oder BidCos-RF BidCos-WR
  * @property string $HMSufix Anhang für die HMSystemvariable
+ * @property int $HMFactor Faktor für die Berechnung.
  */
 class HMPowerMeter extends HMBase
 {
@@ -79,6 +80,7 @@ class HMPowerMeter extends HMBase
             $this->HMSufix = '';
             $this->HMProtocol = 'BidCos-RF';
             $this->Event = 0;
+            $this->HMFactor = 1;
             $this->SetReceiveDataFilter(".*9999999999.*");
             $this->SetSummary('');
             return;
@@ -93,14 +95,17 @@ class HMPowerMeter extends HMBase
                 case "GAS_ENERGY_COUNTER":
                     $Profil = "~Gas";
                     $this->HMSufix = 'Gas';
+                    $this->HMFactor = 1;
                     break;
                 case "IEC_ENERGY_COUNTER":
                     $this->HMSufix = 'IEC';
                     $Profil = "~Electricity";
+                    $this->HMFactor = 1000;
                     break;
                 case "ENERGY_COUNTER":
                     $this->HMSufix = '';
                     $Profil = "~Electricity";
+                    $this->HMFactor = 1000;
                     break;
             }
 
@@ -280,7 +285,7 @@ class HMPowerMeter extends HMBase
             throw new Exception('Error on read PowerMeterAddress', E_USER_NOTICE);
         }
         $this->SendDebug($this->HMDeviceDatapoint, (string) $xml->Value, 0);
-        $Value = ((float) $xml->Value) / 1000;
+        $Value = ((float) $xml->Value) / $this->HMFactor;
         $VarID = @IPS_GetObjectIDByIdent($this->HMDeviceDatapoint . '_TOTAL', $this->InstanceID);
         if ($VarID === false)
             return;

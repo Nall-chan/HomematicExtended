@@ -9,7 +9,7 @@
  * @author        Michael Tröger <micha@nall-chan.net>
  * @copyright     2017 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
- * @version       2.2
+ * @version       2.07
  */
 require_once(__DIR__ . "/../HMBase.php");  // HMBase Klasse
 
@@ -58,7 +58,9 @@ class HMDisWM55 extends HMBase
 
         $ID = $this->RegisterScript('HM_OLED', 'HM_OLED.inc.php', $this->CreateHM_OLEDScript(), -2);
         IPS_SetHidden($ID, true);
-        $ID = $this->RegisterScript('DisplayScript', 'Display Script', $this->CreateDisplayScript($ID), -1);
+        $ID = @$this->GetIDForIdent('DisplayScript');
+        if ($ID === false)
+            $ID = $this->RegisterScript('DisplayScript', 'Display Script', $this->CreateDisplayScript($ID), -1);
         IPS_SetHidden($ID, true);
         $this->RegisterPropertyInteger("ScriptID", $ID);
 
@@ -173,6 +175,8 @@ class HMDisWM55 extends HMBase
     public function ReceiveData($JSONString)
     {
         $Data = json_decode($JSONString);
+        unset($Data->DataID);
+        unset($Data->VariableValue);
         $this->SendDebug('Receive', $Data, 0);
         $ReceiveData = array("HMDeviceAddress" => (string) $Data->DeviceID, "HMDeviceDatapoint" => (string) $Data->VariableName);
         $Action = array_search($ReceiveData, $this->HMEventData);
@@ -184,6 +188,7 @@ class HMDisWM55 extends HMBase
         }
         catch (Exception $exc)
         {
+            $this->SendDebug('Error', $exc->getMessage(), 0);
             trigger_error($exc->getMessage(), $exc->getCode());
         }
     }
@@ -338,7 +343,7 @@ class HMDisWM55 extends HMBase
                 $ActionString = "ActionDOWN";
                 break;
         }
-
+            $this->SendDebug('Action', $ActionString, 0);
         $ScriptID = $this->ReadPropertyInteger('ScriptID');
         if ($ScriptID <> 0)
         {
@@ -346,10 +351,11 @@ class HMDisWM55 extends HMBase
             $ResultData = json_decode($Result);
             if (is_null($ResultData))
                 throw new Exception("Error in Display Script.", E_USER_NOTICE);
+            $this->SendDebug('DisplayScript', $ResultData, 0);            
             $Data = $this->ConvertDisplayData($ResultData);
             $url = 'GetDisplay.exe';
             $HMScript = 'string DisplayKeySubmit;' . PHP_EOL;
-            $HMScript.='DisplayKeySubmit=dom.GetObject("BidCos-RF.' . (string) $this->HMEventData[$Action]['DeviceID'] . '.SUBMIT").ID();' . PHP_EOL;
+            $HMScript.='DisplayKeySubmit=dom.GetObject("BidCos-RF.' . (string) $this->HMEventData[$Action]['HMDeviceAddress'] . '.SUBMIT").ID();' . PHP_EOL;
             $HMScript .= 'State=dom.GetObject(DisplayKeySubmit).State("' . $Data . '");' . PHP_EOL;
             try
             {
@@ -566,7 +572,8 @@ if (($_IPS["ACTION"] == "UP") or ( $_IPS["ACTION"] == "DOWN"))
             break;
         case 2:  // Seite 2
             $display_line[1] = array("Text" => ":",
-                "Icon" => Icon_no);
+                "Icon" => Icon_no,
+                "Color" => Color_white);
 
             $display_line[2] = array("Text" => "SEITE 2",
                 "Icon" => Icon_open,
