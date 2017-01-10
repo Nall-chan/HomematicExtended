@@ -1,0 +1,12 @@
+{
+    "id": "{01C66202-7E94-49C4-8D8F-6A75CE944E87}",
+    "name": "HMWRInterface",
+    "type": 3,
+    "vendor": "HomeMatic",
+    "aliases": ["HomeMatic WR-Interface"],
+    "parentRequirements": ["{75B6B237-A7B0-46B9-BBCE-8DF0CFE6FA52}"],
+    "childRequirements": [],
+    "implemented": ["{98FEC99D-6AD9-4598-8F50-2976DA0A32C8}"],
+    "prefix": "HM",
+    "description": "Visualisiert die Daten des Wired-Interfaces der CCU.  "
+}

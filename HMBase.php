@@ -308,7 +308,7 @@ abstract class HMBase extends IPSModule
      */
     protected function GetParentData()
     {
-        $OldParentId = $this->HMAddress;
+        $OldParentId = $this->ParentId;
         $ParentId = $this->GetInstanceParent();
         if ($ParentId <> $OldParentId)
         {
@@ -528,7 +528,7 @@ trait InstanceStatus
      */
     protected function GetParentData()
     {
-        $OldParentId = $this->Parent;
+        $OldParentId = $this->ParentId;
         $ParentId = @IPS_GetInstance($this->InstanceID)['ConnectionID'];
         if ($ParentId <> $OldParentId)
         {
@@ -538,7 +538,7 @@ trait InstanceStatus
                 $this->RegisterMessage($ParentId, IM_CHANGESTATUS);
             else
                 $ParentId = 0;
-            $this->Parent = $ParentId;
+            $this->ParentId = $ParentId;
         }
         return $ParentId;
     }

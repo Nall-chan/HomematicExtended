@@ -9,7 +9,7 @@
  * @author        Michael Tröger <micha@nall-chan.net>
  * @copyright     2017 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
- * @version       2.07
+ * @version       2.10
  */
 require_once(__DIR__ . "/../HMBase.php");  // HMBase Klasse
 
@@ -31,7 +31,7 @@ class HMRFInterfaceSplitter extends HMBase
         $this->RegisterHMPropertys('XXX9999994');
         $this->RegisterPropertyBoolean("EmulateStatus", false);
         $this->RegisterPropertyInteger("Interval", 0);
-        $this->RegisterTimer("ReadRFInterfaces", 0, 'HM_ReadRFInterfaces($_IPS[\'TARGET\']);');
+        $this->RegisterTimer("ReadRFInterfaces", 0, '@HM_ReadRFInterfaces($_IPS[\'TARGET\']);');
     }
 
     /**
@@ -45,7 +45,6 @@ class HMRFInterfaceSplitter extends HMBase
         $this->SetReceiveDataFilter(".*9999999999.*");
         if (IPS_GetKernelRunlevel() <> KR_READY)
             return;
-        $this->GetParentData();
 
         if ($this->CheckConfig())
         {
@@ -121,18 +120,20 @@ class HMRFInterfaceSplitter extends HMBase
             $this->SetStatus(IS_EBASE + 2);
             return false;
         }
-
+        
+        if ($Interval == 0)
+        {
+            $this->SetStatus(IS_INACTIVE);
+            return true;
+        }
+        
         if ($Interval < 5)
         {
             $this->SetStatus(IS_EBASE + 3);
             return false;
         }
 
-        if ($Interval == 0)
-            $this->SetStatus(IS_INACTIVE);
-        else
-            $this->SetStatus(IS_ACTIVE);
-
+        $this->SetStatus(IS_ACTIVE);
         return true;
     }
 
@@ -149,7 +150,7 @@ class HMRFInterfaceSplitter extends HMBase
             trigger_error("Instance has no active Parent Instance!", E_USER_NOTICE);
             return array();
         }
-        $ParentId = $this->GetParentData();
+        $ParentId = $this->ParentId;
         $Protocol = array();
         if (IPS_GetProperty($ParentId, "RFOpen") === true)
             $Protocol[] = 0;
@@ -238,6 +239,8 @@ class HMRFInterfaceSplitter extends HMBase
         $ret = false;
         foreach ($Result as $ProtocolID => $Protocol)
         {
+            if (!is_array($Protocol))
+                continue;
             foreach ($Protocol as $InterfaceIndex => $Interface)
             {
                 $this->SendDebug("Proto" . $ProtocolID . " If" . $InterfaceIndex, $Interface, 0);

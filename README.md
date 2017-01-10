@@ -471,6 +471,12 @@ GUIDs für den Datenaustausch zwischen RF-Interface Splitter und RF-Interface:
 
 **Changelog:**
 
+Version 2.10:  
+ Neu: HomeMatic WR-Interface zeigt den Status des Wired-Interfaces der CCU an.  
+ Neu: Alle 'CONNECTED' Statusvariablen der CCU-Interfaces werden immer aktualisiert um Ausfälle besser detektieren zu können.  
+ Fix: Instanzen haben nicht erkannt wenn sich der Parent geändert hat.  
+ Fix: Timer erzeugen keine Fehlermeldungen mehr.  
+ 
 Version 2.07:  
  Fix: Summenzähler für Powermeter hat bei GAS falsche Werte geliefert.  
  Fix: Dis-WM55 ohne Funktion.  

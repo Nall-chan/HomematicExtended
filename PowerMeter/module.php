@@ -110,7 +110,6 @@ class HMPowerMeter extends HMBase
             }
 
             $this->RegisterVariableFloat($HMDeviceDatapoint . "_TOTAL", $HMDeviceDatapoint . "_TOTAL", $Profil);
-            $this->GetParentData();
             $this->SetSummary($this->HMDeviceAddress);
             if (!$this->HasActiveParent())
                 return;

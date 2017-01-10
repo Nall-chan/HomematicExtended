@@ -96,6 +96,11 @@ class HMRFInterface extends IPSModule
                 $this->MaintainVariable($Ident, $Ident, $Typ, $Profil, 0, true);
                 $vid = @$this->GetIDForIdent($Ident);
             }
+            if ($Ident == 'CONNECTED')
+            {
+                SetValue($vid, $Value);
+                continue;
+            }
             if (GetValue($vid) <> $Value)
                 SetValue($vid, $Value);
         }
