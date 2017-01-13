@@ -1,0 +1,27 @@
+{
+    "elements":
+            [{
+                    "name": "Protocol",
+                    "type": "Select",
+                    "caption": "System",
+                    "options": [
+                        {
+                            "label": "Radio",
+                            "value": 0
+                        },
+                        {
+                            "label": "Wired",
+                            "value": 1
+                        },
+                        {
+                            "label": "IP",
+                            "value": 2
+                        }
+                    ]
+                },
+                {
+                    "name": "Address",
+                    "type": "ValidationTextBox",
+                    "caption": "Address"
+                }]
+}

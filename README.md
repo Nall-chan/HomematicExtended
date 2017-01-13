@@ -18,25 +18,29 @@ Erweitert IPS um die native Unterstützung von:
 4. [HomeMatic Systemvariablen](#4-homematic-systemvariablen)
 5. [HomeMatic Powermeter](#5-homematic-powermeter)
 6. [HomeMatic Programme](#6-homematic-programme)
-7. [HomeMatic WM55-Dis](#7-homematic-wm55-dis)
-8. [HomeMatic-Script](#8-homematic-script) 
-11. [Anhang](#11-anhang)
-12. [Lizenz](#12-lizenz)
+7. [HomeMatic Dis-WM55](#7-homematic-dis-wm55)
+8. [HomeMatic Dis-EP-WM55](#8-homematic-dis-ep-wm55)
+9. [HomeMatic-Script](#9-homematic-script) 
+10. [HomeMatic RF-Interface Splitter](#10-homematic-rf-interface-splitter)
+11. [HomeMatic RF-Interface](#11-homematic-rf-interface)
+12. [HomeMatic WR-Interface](#12-homematic-wr-interface)
+13. [Anhang](#11-anhang)
+14. [Lizenz](#12-lizenz)
 
 ## 1. Funktionsumfang
 
-### HomeMatic Systemvariablen
+### HomeMatic Systemvariablen  
 
    Abfragen von System- und Alarmvariablen inkl. Profilen und Werten von der CCU.  
    Schreiben von Werten der Systemvariablen zur CCU.  
    Standard Actionhandler für die Bedienung der System- und Alarmvariablen aus dem IPS-Webfront.  
    Die Alarmvariablen werden erst ab IPS 4.1 untersützt.  
 
-### HomeMatic Powermeter
+### HomeMatic Powermeter  
    Abfragen des Summenzählers der Geräte mit Leistungsmessung aus der CCU.  
    Ab IPS 4.1 werden alle Geräte unterstützt, bei IPS 3.x nur Geräte mit dem Datenpunk 'ENERGY_COUNTER'.  
 
-### HomeMatic Programme
+### HomeMatic Programme  
    Abfragen der auf der CCU vorhandenen HM-Programme.  
    Ausführen der HM-Programme auf der CCU.  
    Standard Actionhandler für die Bedienung der HM-Programme aus dem IPS-Webfront.  
@@ -45,16 +49,23 @@ Erweitert IPS um die native Unterstützung von:
    Dynamische Textanzeige auf dem Display-Wandtaster mit Statusdisplay.  
    Unterstützt mehrseite Anzeigen und das durchblättern per Tastendruck.  
    Ausführen von benutzerspezifischen Aktionen, auch in Abhängigkeit der angezeigten Seite.  
+
+### HomeMatic Dis-EP-WM55 (ab IPS 4.1)  
+   Hier handelt es sich um eine Instanz, welche die Verwendung des ePaper Statusdisplays im 55er-Rahmen vereinfachen soll.  
+   Über spezielle PHP-Befehle ist es möglich das Display anzusteuern.  
    
-### HomeMatic RemoteScript Interface
+### HomeMatic RemoteScript Interface  
    Native Schnittstelle zur CCU, um HomeMatic-Scripte durch die CCU ausführen zu lassen.  
    Direkte Rückmeldung der Ausführung durch einen Antwortstring im JSON-Format.  
 
-### HomeMatic RF-Interface Splitter (ab IPS 4.1)
+### HomeMatic RF-Interface Splitter (ab IPS 4.1)  
    Auslesen der Informationen zu jedem Funk-Interface der CCU.
 
-### HomeMatic RF-Interface (ab IPS 4.1)
+### HomeMatic RF-Interface (ab IPS 4.1)  
    Bereitstellen der Informationen zu den Funk-Interfaces innerhalb von IPS.
+
+### HomeMatic WR-Interface (ab IPS 4.1)  
+   Bereitstellen der Informationen zu dem Wired-Interface innerhalb von IPS.
 
 ### Besonderheiten
    XML-API-Patch wird nicht benötigt.  
@@ -322,7 +333,7 @@ Erweitert IPS um die native Unterstützung von:
     if ($Erfolg === false) echo "Fehler beim starten des Programm";  
 ```
 
-## 7. HomeMatic WM55-Dis
+## 7. HomeMatic Dis-WM55
 
    Hier handelt es sich um eine Instanz, welche die Verwendung des farbigen Statusdisplays im 55er-Rahmen vereinfachen soll.  
    Über eine konfigurierbare Anzahl von 'Seiten' ist es möglich verschiedene Inhalte darzustellen und durch diese zu blättern (z.B. mit den beiden Tasten der Statusanzeige).  
@@ -342,8 +353,163 @@ Erweitert IPS um die native Unterstützung von:
 
 ![Doku/Dis-WM55.png](Doku/Dis-WM55.png)    
 
+## 8. HomeMatic Dis-EP-WM55
 
-## 8. HomeMatic-Script
+   Hier handelt es sich um eine Instanz, welche die Verwendung des ePaper-Statusdisplays vereinfachen soll.  
+  
+   Unter Instanz hinzufügen ist das Gerät 'HomeMatic WM55-EP-Dis' unter dem Hersteller 'HomeMatic' zu finden.  
+   Nach dem Anlegen der Instanz sollte als übergeordnetes Gerät schon der HomeMatic Socket ausgewählt sein.  
+   Existieren in IPS mehrere Homematic Socket, so ist der auszuwählen, an welcher CCU das Ststusdisplay angelern ist.  
+
+   Als Adresse ist der Kanal 3 der Anzeige einzutragen z.B. LEY012345:3  
+
+   Anschließend kann das Display über folgende PHP-Befehle beschrieben werden.  
+   Die Werte für die Paramter sind dabei immer identisch:  
+
+     '$Text' Der darzustellende Text (bis 12 Zeichen).  
+     Es können auch die vorfedinierten Textblöcke durch die Zeichenfolge '0x80' bis '0x89' angesprochen werden.  
+
+     '$Icon' Das anzuzeigende Icon (0-9):  
+| Wert | Icon        |
+| :--: | :---------: |
+| 0    | keins       |
+| 1    | Lampe an    |
+| 2    | Lampe aus   |
+| 3    | Schloss auf |
+| 4    | Schloss zu  |
+| 5    | Fehler      |
+| 6    | OK          |
+| 7    | Info        |
+| 8    | Nachricht   |
+| 9    | Service     |
+
+     '$Chime' Tonfolge (0-6):  
+| Wert | Ton            |
+| :--: | :------------: |
+| 0    | aus            |
+| 1    | lang lang      |
+| 2    | lang kurz      |
+| 3    | lang kurz kurz |
+| 4    | kurz           |
+| 5    | kurz kurz      |
+| 6    | lang           |
+
+     '$Repeat' Anzahl der Wiederholgungen (0-15).  
+
+     '$Wait' Wartezeit in 10 Sekunden zwischen den Wiederholungen.  
+
+     '$Color' Frabe der LED (0-3):  
+| Wert | Farbe  |
+| :--: | :----: |
+| 0    | aus    |
+| 1    | rot    |
+| 2    | grün   |
+| 3    | orange |
+   
+### HM_WriteValueDisplayNotify  
+
+Steuert den Summer und die LED des Display.  
+
+ ```php
+    boolean HM_WriteValueDisplayNotify(integer $InstantID /*[HomeMatic Dis-EP-WM55]*/,int $Chime, int $Repeat, int $Wait, int $Color)
+```  
+
+**Beispiele:**  
+
+```php
+// Ton 1, keine Wiederholung, Farbe rot
+HM_WriteValueDisplayNotify(12345,1,0,0,1);
+
+// Ton 2, eine Wiederholung, 30 Sekunden pause, Farbe grün
+HM_WriteValueDisplayNotify(12345,2,1,3,2);
+
+// Kein Ton, Farbe orange
+HM_WriteValueDisplayNotify(12345,0,0,0,3);
+
+// Ton 3, zwei Wiederholung, 10 Sekunden pause, keine Farbe
+HM_WriteValueDisplayNotify(12345,3,2,1,0);
+```
+
+### HM_WriteValueDisplayLine  
+
+Beschreibt eine Zeile vom Display.  
+Wird ein leerer Text übergeben, wird die Anzeige gelöscht.  
+
+ ```php
+    boolean HM_WriteValueDisplayLine(integer $InstantID /*[HomeMatic Dis-EP-WM55]*/,int $Line, string $Text, int $Icon)
+```  
+
+**Beispiele:**  
+
+```php
+// Zeile 1 mit Text 'Zeile 1' ohne Icon setzen.
+HM_WriteValueDisplayLine(12345,1,'Zeile 1',0);
+
+// Zeile 1 löschen und Icon OK anzeigen.
+HM_WriteValueDisplayLine(12345,1,'',6);
+
+// Zeile 3 mit Text 'Welt!' und Icon Service
+HM_WriteValueDisplayLine(12345,3,'Welt!',9);
+
+// Zeile 2 mit Text 'Hallo' und Icon Information
+HM_WriteValueDisplayLine(12345,2,'Hallo',7);
+```
+
+### HM_WriteValueDisplayLineEx  
+
+Beschreibt eine Zeile vom Display und steuert den Summer sowie die LED des Display an.  
+Wird ein leerer Text übergeben, wird die Anzeige gelöscht.  
+
+ ```php
+    boolean HM_WriteValueDisplayLineEx(integer $InstantID /*[HomeMatic Dis-EP-WM55]*/,int $Line, string $Text, int $Icon, int $Chime, int $Repeat, int $Wait, int $Color)
+```  
+
+**Beispiele:**  
+
+```php
+// Zeile 1 mit Text 'Zeile 1' ohne Icon setzen.
+// Ton 1, keine Wiederholung, Farbe rot
+HM_WriteValueDisplayLine(12345,1,'Zeile 1',0,1,0,0,1);
+```
+
+### HM_WriteValueDisplay  
+
+Beschreibt alle Zeilen vom Display.
+Wird ein leerer Text übergeben, wird die Anzeige gelöscht.  
+
+ ```php
+    boolean HM_WriteValueDisplayLine(integer $InstantID /*[HomeMatic Dis-EP-WM55]*/,string $Text1, int $Icon1, string $Text2, int $Icon2, string $Text3, int $Icon3)
+```  
+
+**Beispiele:**  
+
+```php
+// Zeile 1 mit Text '111' und Icon Licht an
+// Zeile 2 mit Text '222' und Icon Licht aus
+// Zeile 3 mit Text '333' und Icon Schloss offen
+HM_WriteValueDisplayEx(12345,'111',1,'222',2,'333',3);
+```
+
+### HM_WriteValueDisplayEx  
+
+Beschreibt alle Zeilen vom Display und steuert den Summer sowie die LED des Display an.  
+Wird ein leerer Text übergeben, wird die Anzeige gelöscht.  
+
+ ```php
+    boolean HM_WriteValueDisplayLineEx(integer $InstantID /*[HomeMatic Dis-EP-WM55]*/,string $Text1, int $Icon1, string $Text2, int $Icon2, string $Text3, int $Icon3, int $Chime, int $Repeat, int $Wait, int $Color)
+```  
+
+**Beispiele:**  
+
+```php
+// Zeile 1 mit Text '111' und Icon Licht an
+// Zeile 2 mit Text '222' und Icon Licht aus
+// Zeile 3 mit Text '333' und Icon Schloss offen
+// Ton 1, 15 Wiederholungen ohne Pause, Farbe grün
+HM_WriteValueDisplayEx(12345,'111',1,'222',2,'333',3,1,15,0,2);
+```
+
+## 9. HomeMatic-Script
 
    Dies Instanz ermöglicht es eigene Homematic-Scripte zur CCU zu senden.  
    Des weiteren wird die Rückgabe der Ausführung an den Aufrufer zurück gegeben.  
@@ -370,7 +536,7 @@ Erweitert IPS um die native Unterstützung von:
     var_dump(json_decode($HMScriptResult));  
 ```
 
-## 9. HomeMatic RF-Interface Splitter
+## 10. HomeMatic RF-Interface Splitter
 
    Dies Instanz liest alle an einer CCU betriebenen Funk-Interfaces aus und stellt die Daten den Instanzen 'HomeMatic RF-Interface' bereit.
 
@@ -383,7 +549,7 @@ Erweitert IPS um die native Unterstützung von:
 
 ![Doku/RFInterfaceSplitter.png](Doku/RFInterfaceSplitter.png)  
 
-## 10. HomeMatic RF-Interface
+## 11. HomeMatic RF-Interface
 
    Dies Instanz stellt alle Daten eines an einer CCU betriebenen Funk-Interfaces dar.
 
@@ -397,7 +563,18 @@ Erweitert IPS um die native Unterstützung von:
 
 ![Doku/RFInterface_WF.png](Doku/RFInterface_WF.png)  
 
-## 11. Anhang
+## 12. HomeMatic WR-Interface
+
+   Dies Instanz stellt alle Daten des an einer CCU betriebenen Wired-Interfaces dar.
+
+   Unter Instanz hinzufügen ist das Gerät 'HomeMatic WR-Interface' unter dem Hersteller 'HomeMatic' zu finden.  
+   Nach dem Anlegen der Instanz sollte als übergeordnetes Gerät schon der 'HomeMatic Socket' ausgewählt sein.  
+   Existieren in IPS mehrere 'HomeMatic Socket', so ist der auszuwählen, an welche CCU dieses Wired-Interface angeschlossen ist.  
+
+ ![Doku/WRInterface.png](Doku/WRInterface.png)  
+
+
+## 13. Anhang
 
 **GUID's:**  
 GUIDs der Instanzen (z.B. wenn Instanz per PHP angelegt werden soll):  
@@ -409,8 +586,10 @@ GUIDs der Instanzen (z.B. wenn Instanz per PHP angelegt werden soll):
 | HomeMatic Programme              | {A5010577-C443-4A85-ABF2-3F2D6CDD2465} |
 | HomeMatic RemoteScript Interface | {246EDB89-70BC-403B-A1FA-3B3B1B540401} |
 | HomeMatic Dis-WM55               | {271BCAB1-0658-46D9-A164-985AEB641B48} |
+| HomeMatic Dis-EP-WM55            | {E64ED916-FA6C-45B2-B8E3-EDC3191BC4C0} |
 | HomeMatic RF-Interface Splitter  | {6EE35B5B-9DD9-4B23-89F6-37589134852F} |
 | HomeMatic RF-Interface           | {36549B96-FA11-4651-8662-F310EEEC5C7D} |
+| HomeMatic WR-Interface           | {01C66202-7E94-49C4-8D8F-6A75CE944E87} |
 
 
 **Eigenschaften von HomeMatic Systemvariablen:**  
@@ -449,7 +628,13 @@ GUIDs der Instanzen (z.B. wenn Instanz per PHP angelegt werden soll):
 | Timeout         | integer | 0            | Zeit in Sekunden bis wieder Seite 1 angezeigt wird   |
 | ScriptID        | integer | 0            | Script-ID welches beim Tastendruck ausgeführt wird   |
 
-**Eigenschaften von HomeMatic RF-Interface Splitter:**
+**Eigenschaften von HomeMatic Dis-EP-WM55:**  
+
+| Eigenschaft     | Typ     | Standardwert | Funktion                                      |
+| :-------------: | :-----: | :----------: | :-------------------------------------------: |
+| Address         | string  |              | Adresse des Gerätes                           |
+
+**Eigenschaften von HomeMatic RF-Interface Splitter:**  
 
 | Eigenschaft     | Typ     | Standardwert | Funktion                                      |
 | :-------------: | :-----: | :----------: | :-------------------------------------------: |
@@ -461,6 +646,12 @@ GUIDs der Instanzen (z.B. wenn Instanz per PHP angelegt werden soll):
 | :-------------: | :-----: | :----------: | :-------------------------------------------: |
 | Address         | string  |              | Adresse des Interfaces                        |
  
+**Eigenschaften von HomeMatic WR-Interface:**  
+
+| Eigenschaft     | Typ     | Standardwert | Funktion                                      |
+| :-------------: | :-----: | :----------: | :-------------------------------------------: |
+| Interval        | integer | 0            | Intervall in Sekunden für den Datenabruf      |
+ 
 **GUID's Datenaustausch:**  
 GUIDs für den Datenaustausch zwischen RF-Interface Splitter und RF-Interface:  
 
@@ -471,6 +662,10 @@ GUIDs für den Datenaustausch zwischen RF-Interface Splitter und RF-Interface:
 
 **Changelog:**
 
+Version 2.20:  
+ Neu: Dis-EP-WM55 Ermöglicht es per PHP die Anzeige zu beschreiben.
+ Neu: Doku für HomeMatic WR-Interface ergänzt.
+ 
 Version 2.10:  
  Neu: HomeMatic WR-Interface zeigt den Status des Wired-Interfaces der CCU an.  
  Neu: Alle 'CONNECTED' Statusvariablen der CCU-Interfaces werden immer aktualisiert um Ausfälle besser detektieren zu können.  
@@ -515,6 +710,6 @@ Version 1.3:
 
 Version 1.1:  
 
-## 12. Lizenz
+## 14. Lizenz
 
   [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)  

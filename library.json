@@ -3,11 +3,11 @@
     "author": "Michael Tr\u00f6ger",
     "name": "Homematic Erweiterung",
     "url": "https://github.com/Nall-chan/IPSHomematicExtended",
-    "version": "2.10",
-    "build": 141,
-    "date": 1484065851,
+    "version": "2.20",
+    "build": 155,
+    "date": 1484327295,
     "title": "Homematic Erweiterung",
-    "description": "Erweitert IPS um Homematic-Instanzen für Systemvariablen, Programme, Summenzähler, Status-Anzeige WM55-Dis, HomeMaticScript und RF-Interfaces. Nur in Verbindung mit einer CCU1/CC2 o.ä. nutzbar.",
-    "tags": ["Homematic", "CCU", "CCU1", "CCU2", "Homematic-Script", "Systemvariablen"],
+    "description": "Erweitert IPS um Homematic-Instanzen für Systemvariablen, Programme, Summenzähler, Status-Anzeige Dis-WM55 & Dis-EP-WM55, HomeMaticScript und Interfaces. Nur in Verbindung mit einer CCU1/CC2 o.ä. nutzbar.",
+    "tags": ["Homematic", "CCU", "CCU1", "CCU2", "Homematic-Script", "Systemvariablen", "Statusanzeige"],
     "req_ips_version": "4.1"
 }

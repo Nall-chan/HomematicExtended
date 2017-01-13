@@ -15,7 +15,7 @@ require_once(__DIR__ . "/../HMBase.php");  // HMBase Klasse
 
 /**
  * HMWRInterface ist die Klasse für das IPS-Modul 'HomeMatic WR-Interface'.
- * Erweitert IPSModule 
+ * Erweitert HMBase 
  */
 class HMWRInterface extends HMBase
 {
