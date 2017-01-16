@@ -9,7 +9,7 @@
  * @author        Michael Tröger <micha@nall-chan.net>
  * @copyright     2017 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
- * @version       2.20
+ * @version       2.21
  */
 require_once(__DIR__ . "/../HMBase.php");  // HMBase Klasse
 
