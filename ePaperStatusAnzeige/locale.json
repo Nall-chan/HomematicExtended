@@ -1,19 +1,7 @@
 {
     "translations": {
         "de": {
-            "Up-Button": "Hoch-Taste",
-            "Down-Button": "Runter-Taste",
-            "Action Up-Button": "Aktion Hoch-Taste",
-            "Action Down-Button": "Aktion Runter-Taste",
-            "Number of pages": "Seitenanzahl",
-            "Display timeout": "Display Timeout",
-            "Display-Script": "Display-Script",
-            "Configuration is valid.": "Konfiguration gültig.",
-            "No PRESS datapoint selected.": "Kein PRESS Datenpunkt ausgewählt.",
-            "One or more invalid datapoints selected.": "Mindestens ein gewählter Datenpunkt ist ungültig.",
-            "No Display-Script selected.": "Kein Display-Script ausgewählt.",
-            "Timeout to small.": "Timeout darf nicht negativ sein.",
-            "Number of pages to small.": "Seitenanzahl darf nicht negativ sein."
+            "Address": "Adresse"
         }
     }
 }

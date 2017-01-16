@@ -33,7 +33,6 @@ class HMDisEPWM55 extends HMBase
         $this->RegisterPropertyString("Address", "");
         $this->RegisterPropertyInteger("Protocol", 0);
         $this->RegisterPropertyBoolean("EmulateStatus", false);
-        IPS_SetHidden($ID, true);
     }
 
     /**
