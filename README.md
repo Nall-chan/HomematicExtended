@@ -662,6 +662,10 @@ GUIDs für den Datenaustausch zwischen RF-Interface Splitter und RF-Interface:
 
 **Changelog:**
 
+Version 2.22:  
+ Fix: HomeMatic Remote-Script Instanzen belegten unnötig PHP-Slots.  
+ Fix: Fehlermeldung im HomeMatic Systemvariablen durch eine falsche Fehlermeldung wurde ein eigentlicher Fehler überdeckt.  
+
 Version 2.20:  
  Neu: Dis-EP-WM55 Ermöglicht es per PHP die Anzeige zu beschreiben.
  Neu: Doku für HomeMatic WR-Interface ergänzt.

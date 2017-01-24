@@ -170,7 +170,7 @@ class HMSystemVariable extends HMBase
         }
         catch (Exception $exc)
         {
-            trigger_error($exc->getMessage(), $exc->getCode());
+            trigger_error($exc->getMessage(), E_USER_NOTICE);
         }
         return;
     }
