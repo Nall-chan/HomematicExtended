@@ -303,18 +303,12 @@ class HMSystemVariable extends HMBase
         try
         {
             $HMScriptResult = $this->LoadHMScript('SysVar.exe', $HMScript);
+            $xmlVars = new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
         }
         catch (Exception $exc)
         {
             $this->SendDebug('ID_SYSTEM_VARIABLES', $exc->getMessage(), 0);
-            throw new Exception("Error on Read CCU ID_SYSTEM_VARIABLES", E_USER_NOTICE);
-        }
-        $this->SendDebug('ID_SYSTEM_VARIABLES', $HMScriptResult, 0);
-        $xmlVars = @new SimpleXMLElement($HMScriptResult, LIBXML_NOBLANKS + LIBXML_NONET);
-        if ($xmlVars === false)
-        {
-            $this->SendDebug('ID_SYSTEM_VARIABLES', 'XML error', 0);
-            throw new Exception("HM-Script result is not wellformed", E_USER_NOTICE);
+            throw new Exception($exc->getMessage(), E_USER_NOTICE);
         }
 
         //Time & Timezone
@@ -323,20 +317,14 @@ class HMSystemVariable extends HMBase
         try
         {
             $HMScriptResult = $this->LoadHMScript('Time.exe', $HMScript);
+            $xmlTime = new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
         }
         catch (Exception $exc)
         {
             $this->SendDebug('Time', $exc->getMessage(), 0);
-            throw new Exception("Error on Read CCU Time", E_USER_NOTICE);
+            throw new Exception($exc->getMessage(), E_USER_NOTICE);
         }
-        $this->SendDebug('Time', $HMScriptResult, 0);
 
-        $xmlTime = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
-        if ($xmlTime === false)
-        {
-            $this->SendDebug('Time', 'XML error', 0);
-            throw new Exception("HM-Script result is not wellformed", E_USER_NOTICE);
-        }
         $Date = new DateTime((string) $xmlTime->Now);
         $CCUTime = $Date->getTimestamp();
         $Date = new DateTime();
@@ -360,6 +348,8 @@ class HMSystemVariable extends HMBase
             try
             {
                 $HMScriptResult = $this->LoadHMScript('SysVar.exe', $HMScript);
+                $lines = explode("\r\n", $HMScriptResult);
+                $xmlVar = new SimpleXMLElement(utf8_encode(array_pop($lines)), LIBXML_NOBLANKS + LIBXML_NONET);
             }
             catch (Exception $exc)
             {
@@ -368,17 +358,8 @@ class HMSystemVariable extends HMBase
                 $Result = false;
                 continue;
             }
-            $this->SendDebug($SysVar, $HMScriptResult, 0);
 
-            $lines = explode("\r\n", $HMScriptResult);
-            $xmlVar = @new SimpleXMLElement(utf8_encode(array_pop($lines)), LIBXML_NONET);
-            if ($xmlVar === false)
-            {
-                $this->SendDebug($SysVar, $exc->getMessage(), 0);
-                trigger_error("HM-Script result is not wellformed. SysVar:" . $SysVar, E_USER_NOTICE);
-                $Result = false;
-                continue;
-            }
+
             if ((int) $xmlVar->Type == 2113)
                 if (!$this->ReadPropertyBoolean('EnableAlarmDP'))
                     continue;
@@ -405,6 +386,7 @@ class HMSystemVariable extends HMBase
                 try
                 {
                     $HMScriptResult = $this->LoadHMScript('SysVar.exe', $HMScript);
+                    $xmlVar2 = new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
                 }
                 catch (Exception $exc)
                 {
@@ -413,17 +395,8 @@ class HMSystemVariable extends HMBase
                     $Result = false;
                     continue;
                 }
-                $this->SendDebug($SysVar, $HMScriptResult, 0);
 
-                $xmlVar2 = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NONET);
-                if ($xmlVar2 === false)
-                {
-                    $this->SendDebug($SysVar, 'XML error', 0);
 
-                    trigger_error("HM-Script result is not wellformed. SysVar:" . $SysVar, E_USER_NOTICE);
-                    $Result = false;
-                    continue;
-                }
                 if (IPS_VariableProfileExists($VarProfil))
                     IPS_DeleteVariableProfile($VarProfil);
 
@@ -462,11 +435,6 @@ class HMSystemVariable extends HMBase
                     $OldVarsChange = true;
                     $this->RegisterMessage($VarID, VM_DELETE);
                 }
-            }
-            else
-            {
-                if (IPS_GetName($VarID) <> $VarName)
-                    IPS_SetName($VarID, $VarName);
             }
             if (IPS_GetVariable($VarID)['VariableType'] <> $VarType)
             {
@@ -549,6 +517,7 @@ class HMSystemVariable extends HMBase
         try
         {
             $HMScriptResult = $this->LoadHMScript('AlarmVar.exe', $HMScript);
+            $xmlData = new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
         }
         catch (Exception $exc)
         {
@@ -556,14 +525,7 @@ class HMSystemVariable extends HMBase
             trigger_error($exc->getMessage(), E_USER_NOTICE);
             return false;
         }
-        $xmlData = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NONET);
-        if ($xmlData === false)
-        {
-            $this->SendDebug('AlarmVar.' . $SysVar, 'XML error', 0);
 
-            trigger_error("HM-Script result is not wellformed. SysVar:" . $SysVar, E_USER_NOTICE);
-            return false;
-        }
         $ScriptData = array();
         $ScriptData['SENDER'] = 'AlarmDP';
         $ScriptData['VARIABLE'] = $ParentID;
@@ -636,19 +598,12 @@ class HMSystemVariable extends HMBase
         try
         {
             $HMScriptResult = $this->LoadHMScript($url, $HMScript);
+            $xml = new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
         }
         catch (Exception $exc)
         {
             $this->SendDebug('SysVar.exe', $exc->getMessage(), 0);
             throw new Exception("Error on write CCU Systemvariable.", E_USER_NOTICE);
-        }
-
-        $xml = @new SimpleXMLElement($HMScriptResult, LIBXML_NOBLANKS + LIBXML_NONET);
-
-        if ($xml === false)
-        {
-            $this->SendDebug('SysVar.exe', 'XML error', 0);
-            throw new Exception('HM-Script result is not wellformed', E_USER_NOTICE);
         }
         if ((string) $xml->State == 'true')
             return true;
@@ -679,7 +634,7 @@ class HMSystemVariable extends HMBase
             }
             if (!IPS_VariableProfileExists($Profile))
             {
-                throw new Exception("Profile with name " . $Profile . " does not exist");
+                throw new Exception("Profile with name " . $Profile . " does not exist", E_USER_NOTICE);
             }
         }
 
@@ -691,7 +646,7 @@ class HMSystemVariable extends HMBase
         if ($vid > 0)
         {
             if (!IPS_VariableExists($vid))
-                throw new Exception("Ident with name " . $Ident . " is used for wrong object type"); //bail out
+                throw new Exception("Ident with name " . $Ident . " is used for wrong object type", E_USER_NOTICE); //bail out
             if (IPS_GetVariable($vid)["VariableType"] != $Type)
             {
                 IPS_DeleteVariable($vid);
@@ -773,7 +728,7 @@ class HMSystemVariable extends HMBase
         }
         catch (Exception $exc)
         {
-            trigger_error($exc->getMessage(), $exc->getCode());
+            trigger_error($exc->getMessage(), E_USER_NOTICE);
         }
     }
 
@@ -809,18 +764,12 @@ class HMSystemVariable extends HMBase
         try
         {
             $HMScriptResult = $this->LoadHMScript('AlarmVar.exe', $HMScript);
+            $xmlData = new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
         }
         catch (Exception $exc)
         {
             $this->SendDebug('AlarmVar.exe', $exc->getMessage(), 0);
             trigger_error($exc->getMessage(), E_USER_NOTICE);
-            return false;
-        }
-        $xmlData = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NONET);
-        if ($xmlData === false)
-        {
-            $this->SendDebug('AlarmVar.' . $Ident, 'XML error', 0);
-            trigger_error("HM-Script result is not wellformed. SysVar:" . $Ident, E_USER_NOTICE);
             return false;
         }
         if ((int) $xmlData->State == 1)
@@ -851,7 +800,7 @@ class HMSystemVariable extends HMBase
         }
         catch (Exception $exc)
         {
-            trigger_error($exc->getMessage(), $exc->getCode());
+            trigger_error($exc->getMessage(), E_USER_NOTICE);
         }
     }
 
@@ -875,7 +824,7 @@ class HMSystemVariable extends HMBase
         }
         catch (Exception $exc)
         {
-            trigger_error($exc->getMessage(), $exc->getCode());
+            trigger_error($exc->getMessage(), E_USER_NOTICE);
             return false;
         }
     }
@@ -929,7 +878,7 @@ class HMSystemVariable extends HMBase
         }
         catch (Exception $exc)
         {
-            trigger_error($exc->getMessage(), $exc->getCode());
+            trigger_error($exc->getMessage(), E_USER_NOTICE);
             return false;
         }
 
@@ -989,7 +938,7 @@ class HMSystemVariable extends HMBase
         }
         catch (Exception $exc)
         {
-            trigger_error($exc->getMessage(), $exc->getCode());
+            trigger_error($exc->getMessage(), E_USER_NOTICE);
             return false;
         }
         if ($Result === true)
@@ -1046,7 +995,7 @@ class HMSystemVariable extends HMBase
         }
         catch (Exception $exc)
         {
-            trigger_error($exc->getMessage(), $exc->getCode());
+            trigger_error($exc->getMessage(), E_USER_NOTICE);
             return false;
         }
 
@@ -1104,7 +1053,7 @@ class HMSystemVariable extends HMBase
         }
         catch (Exception $exc)
         {
-            trigger_error($exc->getMessage(), $exc->getCode());
+            trigger_error($exc->getMessage(), E_USER_NOTICE);
             return false;
         }
 

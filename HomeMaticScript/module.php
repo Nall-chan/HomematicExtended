@@ -100,18 +100,12 @@ class HMScript extends HMBase
         try
         {
             $HMScriptResult = $this->LoadHMScript($url, $Script);
+            $xml = new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
         }
         catch (Exception $exc)
         {
             $this->SendDebug($url, $exc->getMessage(), 0);
-            throw $exc;
-        }
-        $this->SendDebug('Result', $HMScriptResult, 0);
-        $xml = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
-        if ($xml === false)
-        {
-            $this->SendDebug($url, 'XML error', 0);
-            throw new Exception("HM-Script result is not wellformed", E_USER_NOTICE);
+            throw new Exception($exc->getMessage(), E_USER_NOTICE);
         }
         unset($xml->exec);
         unset($xml->sessionId);

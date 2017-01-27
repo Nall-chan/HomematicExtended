@@ -663,6 +663,10 @@ GUIDs für den Datenaustausch zwischen RF-Interface Splitter und RF-Interface:
 **Changelog:**
 
 Version 2.22:  
+ Fix: Fehlerbehandlung verbessert.  
+ Fix: Eventuelle XML-Fehler durch die CCU versucht abzufangen.  
+
+Version 2.22:  
  Fix: HomeMatic Remote-Script Instanzen belegten unnötig PHP-Slots.  
  Fix: Fehlermeldung im HomeMatic Systemvariablen durch eine falsche Fehlermeldung wurde ein eigentlicher Fehler überdeckt.  
 

@@ -271,17 +271,12 @@ class HMPowerMeter extends HMBase
         try
         {
             $HMScriptResult = $this->LoadHMScript($url, $HMScript);
+            $xml = new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
         }
         catch (Exception $exc)
         {
             $this->SendDebug('GetPowerMeter', $exc->getMessage(), 0);
             throw new Exception('Error on read PowerMeterData', E_USER_NOTICE);
-        }
-        $xml = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
-        if ($xml === false)
-        {
-            $this->SendDebug('GetPowerMeter', 'XML error', 0);
-            throw new Exception('Error on read PowerMeterAddress', E_USER_NOTICE);
         }
         $this->SendDebug($this->HMDeviceDatapoint, (string) $xml->Value, 0);
         $Value = ((float) $xml->Value) / $this->HMFactor;
