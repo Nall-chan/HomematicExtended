@@ -303,7 +303,7 @@ class HMSystemVariable extends HMBase
         try
         {
             $HMScriptResult = $this->LoadHMScript('SysVar.exe', $HMScript);
-            $xmlVars = new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
+            $xmlVars = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
         }
         catch (Exception $exc)
         {
@@ -317,7 +317,7 @@ class HMSystemVariable extends HMBase
         try
         {
             $HMScriptResult = $this->LoadHMScript('Time.exe', $HMScript);
-            $xmlTime = new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
+            $xmlTime = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
         }
         catch (Exception $exc)
         {
@@ -349,7 +349,7 @@ class HMSystemVariable extends HMBase
             {
                 $HMScriptResult = $this->LoadHMScript('SysVar.exe', $HMScript);
                 $lines = explode("\r\n", $HMScriptResult);
-                $xmlVar = new SimpleXMLElement(utf8_encode(array_pop($lines)), LIBXML_NOBLANKS + LIBXML_NONET);
+                $xmlVar = @new SimpleXMLElement(utf8_encode(array_pop($lines)), LIBXML_NOBLANKS + LIBXML_NONET);
             }
             catch (Exception $exc)
             {
@@ -386,7 +386,7 @@ class HMSystemVariable extends HMBase
                 try
                 {
                     $HMScriptResult = $this->LoadHMScript('SysVar.exe', $HMScript);
-                    $xmlVar2 = new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
+                    $xmlVar2 = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
                 }
                 catch (Exception $exc)
                 {
@@ -517,7 +517,7 @@ class HMSystemVariable extends HMBase
         try
         {
             $HMScriptResult = $this->LoadHMScript('AlarmVar.exe', $HMScript);
-            $xmlData = new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
+            $xmlData = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
         }
         catch (Exception $exc)
         {
@@ -598,7 +598,7 @@ class HMSystemVariable extends HMBase
         try
         {
             $HMScriptResult = $this->LoadHMScript($url, $HMScript);
-            $xml = new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
+            $xml = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
         }
         catch (Exception $exc)
         {
@@ -764,7 +764,7 @@ class HMSystemVariable extends HMBase
         try
         {
             $HMScriptResult = $this->LoadHMScript('AlarmVar.exe', $HMScript);
-            $xmlData = new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
+            $xmlData = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
         }
         catch (Exception $exc)
         {

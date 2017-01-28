@@ -133,7 +133,7 @@ class HMCCUProgram extends HMBase
         try
         {
             $HMScriptResult = $this->LoadHMScript($url, $HMScript);
-            $xml = new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
+            $xml = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
         }
         catch (Exception $exc)
         {
@@ -149,7 +149,7 @@ class HMCCUProgram extends HMBase
             try
             {
                 $HMScriptResult = $this->LoadHMScript($url, $HMScript);
-                $varXml = new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
+                $varXml = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
             }
             catch (Exception $exc)
             {
@@ -200,7 +200,7 @@ class HMCCUProgram extends HMBase
         try
         {
             $HMScriptResult = $this->LoadHMScript($url, $HMScript);
-            $xml = new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
+            $xml = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
         }
         catch (Exception $exc)
         {

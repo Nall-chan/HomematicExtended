@@ -662,7 +662,10 @@ GUIDs für den Datenaustausch zwischen RF-Interface Splitter und RF-Interface:
 
 **Changelog:**
 
-Version 2.22:  
+Version 2.31:  
+ Fix: Fehlerbehandlung verbessert.  
+
+Version 2.30:  
  Fix: Fehlerbehandlung verbessert.  
  Fix: Eventuelle XML-Fehler durch die CCU versucht abzufangen.  
 

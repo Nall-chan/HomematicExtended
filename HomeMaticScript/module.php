@@ -100,7 +100,7 @@ class HMScript extends HMBase
         try
         {
             $HMScriptResult = $this->LoadHMScript($url, $Script);
-            $xml = new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
+            $xml = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
         }
         catch (Exception $exc)
         {
