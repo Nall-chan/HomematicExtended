@@ -373,8 +373,8 @@ Erweitert IPS um die native Unterstützung von:
 | Wert | Icon        |
 | :--: | :---------: |
 | 0    | keins       |
-| 1    | Lampe an    |
-| 2    | Lampe aus   |
+| 1    | Lampe aus   |
+| 2    | Lampe an    |
 | 3    | Schloss auf |
 | 4    | Schloss zu  |
 | 5    | Fehler      |
@@ -661,6 +661,9 @@ GUIDs für den Datenaustausch zwischen RF-Interface Splitter und RF-Interface:
 | Empfang vom RF-Interface Splitter | {E2966A08-BCE1-4E76-8C4B-7E0136244E1B} |
 
 **Changelog:**
+
+Version 2.35:  
+ Fix: Dis-EP-WM55 hat nur Icons von 0-3 angenommen.  
 
 Version 2.31:  
  Fix: Fehlerbehandlung verbessert.  

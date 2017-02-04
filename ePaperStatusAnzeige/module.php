@@ -9,7 +9,7 @@
  * @author        Michael Tröger <micha@nall-chan.net>
  * @copyright     2017 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
- * @version       2.21
+ * @version       2.35
  */
 require_once(__DIR__ . "/../HMBase.php");  // HMBase Klasse
 
@@ -172,7 +172,7 @@ class HMDisEPWM55 extends HMBase
                 throw new Exception('Text must be string.');
             if (!is_int($Icon))
                 throw new Exception('Icon must be integer.');
-            if (($Icon < 0) or ( $Icon > 3))
+            if (($Icon < 0) or ( $Icon > 9))
                 throw new Exception('Icon out of range.');
         }
         catch (Exception $exc)
