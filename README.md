@@ -85,7 +85,7 @@ Erweitert IPS um die native Unterstützung von:
    (z.B. 192.168.178.0/24 => /24 ist die Subnet-Maske für das Netzwerk. Bei 255.255.255.0 ist das 24 bei 255.255.0.0. ist es 16.  
    Oder es kann direkt eine einzelne Adresse eingetragen werden. z.B. 192.168.0.2  
 
-![Doku/CCUFirewall.png](Doku/CCUFirewall.png)  
+![Doku/CCUFirewall.png](docs/CCUFirewall.png)  
 
 
 ## 3. Installation
@@ -104,7 +104,7 @@ Erweitert IPS um die native Unterstützung von:
    Geräte sind im Diaog 'Instanz hinzufügen' unter dem Hersteller 'HomeMatic' zu finden.  
    **Bei kommerzieller Nutzung (z.B. als Errichter oder Integrator) wenden Sie sich bitte an den Autor.**  
 
-![Doku/HMExtendedInstanzen.png](Doku/HMExtendedInstanzen.png)  
+![Doku/HMExtendedInstanzen.png](docs/HMExtendedInstanzen.png)  
 
 ## 4. HomeMatic Systemvariablen
 
@@ -146,7 +146,7 @@ Erweitert IPS um die native Unterstützung von:
     **Hinweis:** Über den Homematic Konfigurator in IPS kann das benötigte Homematic Device
     komfortabel angelegt werden.  
 
-![Doku/CCUPushSystemvariablen.png](Doku/CCUPushSystemvariablen.png)  
+![Doku/CCUPushSystemvariablen.png](docs/CCUPushSystemvariablen.png)  
 
     Mit dem Testcenter des Einstellungsdialog können die Systemvariablen sofort eingelesen
     werden, ohne auf den Intervall oder einen Trigger zu warten.  
@@ -156,7 +156,7 @@ Erweitert IPS um die native Unterstützung von:
 
     Hier kann mit dem entfernen des Haken 'Benutze Standardaktion' die Bedienung einer
     Variable, aus dem WebFront heraus, unterbunden werden.  
-![Doku/Systemvariablen.png](Doku/Systemvariablen.png)  
+![Doku/Systemvariablen.png](docs/Systemvariablen.png)  
 
     **Achtung:**  
     Die Profile der Systemvariablen werden nur beim Anlegen in IPS aus der CCU ausgelesen
@@ -192,7 +192,7 @@ Erweitert IPS um die native Unterstützung von:
     Eventuelle Differenzen der Uhrzeiten und/oder Zeitzonen beider Systeme werden dabei
     automatisch berücksichtigt und erfordern somit keinen Eingriff durch den Benutzer.  
 
-![Doku/Systemvariablen_WF.png](Doku/Systemvariablen_WF.png)  
+![Doku/Systemvariablen_WF.png](docs/Systemvariablen_WF.png)  
 
     **Hinweis:**  
     Eine Aktualisierung einer Alarmvariable, kann ein in der Instanz hinterlegtes Script starten.  
@@ -210,7 +210,7 @@ Erweitert IPS um die native Unterstützung von:
 | VALUE       | boolean | Aktueller Wert                     |
 | VARIABLE    | integer | ObjektID der Alarmvariable         |
 
-![Doku/Alarmvariable.png](Doku/Alarmvariable.png)
+![Doku/Alarmvariable.png](docs/Alarmvariable.png)
     
 ### PHP-Funktionen
 
@@ -272,14 +272,14 @@ Erweitert IPS um die native Unterstützung von:
    Variable des Aktors auszuwählen, von dem der 'ENERGY_COUNTER_TOTAL' Wert
    gelesen werden soll.  
 
-![Doku/Powermeter.png](Doku/Powermeter.png)  
+![Doku/Powermeter.png](docs/Powermeter.png)  
 
    Als Profil für diese Variable ist ein Standard-IPS-Profil zugeordnet, und die Werte werden
    automatisch nach kWh umgerechnet.  
 
    Tip: Auch die HmIP Geräte mit Leistungsmessung funktionieren.  
 
-![Doku/Powermeter_WF.png](Doku/Powermeter_WF.png)  
+![Doku/Powermeter_WF.png](docs/Powermeter_WF.png)  
 
    
 ## 6. HomeMatic Programme
@@ -297,7 +297,7 @@ Erweitert IPS um die native Unterstützung von:
 
    Die Programme werden als Integer-Variable unterhalb der Instanz erzeugt. Es wird automatisch der Name und die Beschreibung aus der CCU übernommen.  
 
-![Doku/Programme.png](Doku/Programme.png)  
+![Doku/Programme.png](docs/Programme.png)  
 
    Des weiteren wird ein Standard-Profil 'Execute-HM' angelegt und den Variablen zugeordnet.  
 
@@ -305,7 +305,7 @@ Erweitert IPS um die native Unterstützung von:
 
    Werden in der CCU Programme gelöscht, so müssen die dazugehörigen Variablen in IPS bei Bedarf manuell gelöscht werden.  
 
-![Doku/Programme_WF.png](Doku/Programme_WF.png)  
+![Doku/Programme_WF.png](docs/Programme_WF.png)  
 
 ### PHP-Funktionen
 
@@ -351,7 +351,7 @@ Erweitert IPS um die native Unterstützung von:
    Bei dem anlegen der Instanz wird automatisch ein Demo Display-Script erzeugt.  
    Details zu diesem Script und die dort Verfügbaren $_IPS-Variablen, sind dem Script selbst zu entnehemen.  
 
-![Doku/Dis-WM55.png](Doku/Dis-WM55.png)    
+![Doku/Dis-WM55.png](docs/Dis-WM55.png)    
 
 ## 8. HomeMatic Dis-EP-WM55
 
@@ -547,7 +547,7 @@ HM_WriteValueDisplayEx(12345,'111',1,'222',2,'333',3,1,15,0,2);
    Über den Button 'Alle Instanzen in IPS anlegen' werden automatisch alle an der CCU vorhandenen Funk-Interfaces als Instanz in IPS erzeugt.  
    Des weiteren ist in dem Splitter der Intervall in Sekunden einzustellen, in welchem die Daten von der CCU gelesen werden sollen.  
 
-![Doku/RFInterfaceSplitter.png](Doku/RFInterfaceSplitter.png)  
+![Doku/RFInterfaceSplitter.png](docs/RFInterfaceSplitter.png)  
 
 ## 11. HomeMatic RF-Interface
 
@@ -559,9 +559,9 @@ HM_WriteValueDisplayEx(12345,'111',1,'222',2,'333',3,1,15,0,2);
 
    Da das auslesen der Adresse der Funk-Interfaces über die WebUI der CCU relativ schwierig ist, ist es einfach diese Instanzen automatisch durch den Splitter anlegen zu lassen (siehe oben).
 
-![Doku/RFInterface.png](Doku/RFInterface.png)  
+![Doku/RFInterface.png](docs/RFInterface.png)  
 
-![Doku/RFInterface_WF.png](Doku/RFInterface_WF.png)  
+![Doku/RFInterface_WF.png](docs/RFInterface_WF.png)  
 
 ## 12. HomeMatic WR-Interface
 
@@ -571,7 +571,7 @@ HM_WriteValueDisplayEx(12345,'111',1,'222',2,'333',3,1,15,0,2);
    Nach dem Anlegen der Instanz sollte als übergeordnetes Gerät schon der 'HomeMatic Socket' ausgewählt sein.  
    Existieren in IPS mehrere 'HomeMatic Socket', so ist der auszuwählen, an welche CCU dieses Wired-Interface angeschlossen ist.  
 
- ![Doku/WRInterface.png](Doku/WRInterface.png)  
+ ![Doku/WRInterface.png](docs/WRInterface.png)  
 
 
 ## 13. Anhang
