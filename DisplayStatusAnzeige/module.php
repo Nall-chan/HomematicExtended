@@ -9,7 +9,7 @@
  * @author        Michael Tröger <micha@nall-chan.net>
  * @copyright     2017 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
- * @version       2.37
+ * @version       2.38
  */
 require_once(__DIR__ . "/../HMBase.php");  // HMBase Klasse
 
@@ -56,11 +56,11 @@ class HMDisWM55 extends HMBase
         $this->RegisterPropertyInteger("MaxPage", 1);
         $this->RegisterPropertyInteger("Timeout", 0);
 
-        $ID = $this->RegisterScript('HM_OLED', 'HM_OLED.inc.php', $this->CreateHM_OLEDScript(), -2);
+        $ID_OLED = $this->RegisterScript('HM_OLED', 'HM_OLED.inc.php', $this->CreateHM_OLEDScript(), -2);
         IPS_SetHidden($ID, true);
         $ID = @$this->GetIDForIdent('DisplayScript');
         if ($ID === false)
-            $ID = $this->RegisterScript('DisplayScript', 'Display Script', $this->CreateDisplayScript($ID), -1);
+            $ID = $this->RegisterScript('DisplayScript', 'Display Script', $this->CreateDisplayScript($ID_OLED), -1);
         IPS_SetHidden($ID, true);
         $this->RegisterPropertyInteger("ScriptID", $ID);
 
