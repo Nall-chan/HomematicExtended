@@ -57,7 +57,7 @@ class HMDisWM55 extends HMBase
         $this->RegisterPropertyInteger("Timeout", 0);
 
         $ID_OLED = $this->RegisterScript('HM_OLED', 'HM_OLED.inc.php', $this->CreateHM_OLEDScript(), -2);
-        IPS_SetHidden($ID, true);
+        IPS_SetHidden($ID_OLED, true);
         $ID = @$this->GetIDForIdent('DisplayScript');
         if ($ID === false)
             $ID = $this->RegisterScript('DisplayScript', 'Display Script', $this->CreateDisplayScript($ID_OLED), -1);
