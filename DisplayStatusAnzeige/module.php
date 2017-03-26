@@ -9,7 +9,7 @@
  * @author        Michael Tröger <micha@nall-chan.net>
  * @copyright     2017 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
- * @version       2.07
+ * @version       2.37
  */
 require_once(__DIR__ . "/../HMBase.php");  // HMBase Klasse
 
@@ -453,12 +453,21 @@ define ("Icon_no"           ,0);
 // 0x83 gelb                Color_yellow
 // 0x84 grün                Color_green
 // 0x85 blau                Color_blue
-define ("Color_white"       ,0x82);
+define ("Color_white"       ,0x80);
 define ("Color_red"         ,0x81);
 define ("Color_orange"      ,0x82);
 define ("Color_yellow"      ,0x83);
 define ("Color_green"       ,0x84);
 define ("Color_blue"        ,0x85);
+
+function text_encode ($string)
+{
+   $umlaut =  array("Ä"   ,"Ö"   ,"Ü"   ,"ä"   ,"ö"   ,"ü"   ,"ß"   ,":"   );
+   $hex_neu = array(chr(0x5b),chr(0x23),chr(0x24),chr(0x7b),chr(0x7c),chr(0x7d),chr(0x5f),chr(0x3a));
+   $return = str_replace($umlaut, $hex_neu, $string);
+   return $return;
+}
+
 ?>';
         return $Script;
     }
@@ -501,7 +510,16 @@ Zeile[6]["Color"]  = Farbe Zeile 6
 Um nicht immer die Zahlen für die Icons und Farben eintragen zu müssen wurden
 Konstanten definiert.
 Des weiteresn müssen Textzeilen mit der Funktion text_encode("Zeile mit Umlaut")
-übergeben werden, wenn Umlaute in der Zeile verwendet werden.
+übergeben werden, wenn deutsche Umlaute in der Zeile verwendet werden.
+
+Folgende Zeichen werden von der Anzeige zur Darstellung umgewandelt:
+ \' => "="
+ ] => "&"
+ ; => Sanduhr
+ < => Pfeil nach links oben
+ = => Pfeil nach links unten
+ @ => Pfeil nach unten (großes "V")
+ > => Pfeil nach oben ("V" im Kopfstand)
 */
 
 ### VERWENDUNG VON $_IPS
@@ -621,7 +639,7 @@ if (($_IPS["ACTION"] == "UP") or ( $_IPS["ACTION"] == "DOWN"))
 
 if ($_IPS["ACTION"] == "ActionUP")
 {
-    $display_line[1] = array("Text" => hex_encode("Führe"),
+    $display_line[1] = array("Text" => text_encode("Führe"),
         "Icon" => Icon_no,
         "Color" => Color_orange);
 
@@ -647,7 +665,7 @@ if ($_IPS["ACTION"] == "ActionUP")
 
 if ($_IPS["ACTION"] == "ActionDOWN")
 {
-    $display_line[1] = array("Text" => hex_encode("Führe"),
+    $display_line[1] = array("Text" => text_encode("Führe"),
         "Icon" => Icon_no,
         "Color" => Color_orange);
 
@@ -673,14 +691,6 @@ if ($_IPS["ACTION"] == "ActionDOWN")
 
 $data = json_encode($display_line);
 echo $data; //Daten zurückgeben an Dis-WM55-Instanz
-
-function hex_encode ($string)
-{
-   $umlaut =  array("Ä"   ,"Ö"   ,"Ü"   ,"ä"   ,"ö"   ,"ü"   ,"ß"   ,":"   );
-   $hex_neu = array(chr(0x5b),chr(0x23),chr(0x24),chr(0x7b),chr(0x7c),chr(0x7d),chr(0x5f),chr(0x3a));
-   $return = str_replace($umlaut, $hex_neu, $string);
-   return $return;
-}
 
 ?>';
         return $Script;
