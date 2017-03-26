@@ -453,12 +453,30 @@ define ("Icon_no"           ,0);
 // 0x83 gelb                Color_yellow
 // 0x84 grün                Color_green
 // 0x85 blau                Color_blue
-define ("Color_white"       ,0x82);
+define ("Color_white"       ,0x80);
 define ("Color_red"         ,0x81);
 define ("Color_orange"      ,0x82);
 define ("Color_yellow"      ,0x83);
 define ("Color_green"       ,0x84);
 define ("Color_blue"        ,0x85);
+
+//------------------------------------
+// Umlaute - Sonderzeichen:
+//------------------------------------
+// "{" = "ä"
+// "[" = "Ä"
+// "|" = "ö"
+// "#" = "Ö"
+// "}" = "ü"
+// "$" = "Ü"
+// "'" = "="
+// "_" = "ß"
+// "]" = "&"
+// ";" = Sanduhr
+// "<" = Pfeil nach links oben
+// "=" = Pfeil nach links unten
+// "@" = Pfeil nach unten (großes "V")
+// ">" = Pfeil nach oben ("V" im Kopfstand)
 ?>';
         return $Script;
     }
