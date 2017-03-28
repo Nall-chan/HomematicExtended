@@ -173,7 +173,7 @@ class HMWRInterface extends HMBase
         $JSON = json_encode($ParentData);
         $ResultJSON = @$this->SendDataToParent($JSON);
         $Result = @json_decode($ResultJSON);
-        if ($Result === false)
+        if (($Result === false) or is_null($Result))
         {
             trigger_error('Error on Read WR-Interface', E_USER_NOTICE);
             $this->SendDebug('Error', '', 0);
