@@ -9,7 +9,7 @@
  * @author        Michael Tröger <micha@nall-chan.net>
  * @copyright     2017 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
- * @version       2.07
+ * @version       2.38
  */
 require_once(__DIR__ . "/../HMBase.php");
 
@@ -52,7 +52,7 @@ class HMScript extends HMBase
      */
     protected function KernelReady()
     {
-        
+        $this->ApplyChanges(); 
     }
 
     /**
@@ -62,7 +62,7 @@ class HMScript extends HMBase
      */
     protected function ForceRefresh()
     {
-        
+        $this->ApplyChanges(); 
     }
 
     /**
