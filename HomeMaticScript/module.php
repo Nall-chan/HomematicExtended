@@ -9,15 +9,15 @@
  * @author        Michael Tröger <micha@nall-chan.net>
  * @copyright     2017 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
- * @version       2.38
+ * @version       2.40
  */
-require_once(__DIR__ . "/../HMBase.php");
+require_once(__DIR__ . "/../libs/HMBase.php");
 
 /**
- * HMScript ist die Klasse für das IPS-Modul 'HomeMatic RemoteScript Interface'.
+ * HomeMaticRemoteScript ist die Klasse für das IPS-Modul 'HomeMatic RemoteScript Interface'.
  * Erweitert HMBase 
  */
-class HMScript extends HMBase
+class HomeMaticRemoteScript extends HMBase
 {
 
     /**
@@ -52,7 +52,7 @@ class HMScript extends HMBase
      */
     protected function KernelReady()
     {
-        $this->ApplyChanges(); 
+        $this->ApplyChanges();
     }
 
     /**
@@ -62,7 +62,7 @@ class HMScript extends HMBase
      */
     protected function ForceRefresh()
     {
-        $this->ApplyChanges(); 
+        $this->ApplyChanges();
     }
 
     /**
@@ -90,11 +90,11 @@ class HMScript extends HMBase
     {
         if (!$this->HasActiveParent())
         {
-            throw new Exception("Instance has no active Parent Instance!", E_USER_NOTICE);
+            throw new Exception("Instance has no active parent instance!", E_USER_NOTICE);
         }
         if ($this->HMAddress == '')
         {
-            throw new Exception("Instance has no active Parent Instance!", E_USER_NOTICE);
+            throw new Exception("Instance has no active parent instance!", E_USER_NOTICE);
         }
         $url = 'Script.exe';
         try
@@ -131,7 +131,7 @@ class HMScript extends HMBase
         }
         catch (Exception $exc)
         {
-            trigger_error($exc->getMessage(), $exc->getCode());
+            trigger_error($this->Translate($exc->getMessage()), $exc->getCode());
             return false;
         }
     }

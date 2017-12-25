@@ -9,12 +9,12 @@
  * @author        Michael Tröger <micha@nall-chan.net>
  * @copyright     2017 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
- * @version       2.07
+ * @version       2.40
  */
-require_once(__DIR__ . "/../HMBase.php");  // HMBase Klasse
+require_once(__DIR__ . "/../libs/HMBase.php");  // HMBase Klasse
 
 /**
- * HMPowerMeter ist die Klasse für das IPS-Modul 'HomeMatic PowerMeter'.
+ * HomeMaticPowermeter ist die Klasse für das IPS-Modul 'HomeMatic PowerMeter'.
  * Erweitert HMBase 
  *
  * @property int $Event Die IPS-ID der Variable welche als Trigger dient.
@@ -24,7 +24,7 @@ require_once(__DIR__ . "/../HMBase.php");  // HMBase Klasse
  * @property string $HMSufix Anhang für die HMSystemvariable
  * @property int $HMFactor Faktor für die Berechnung.
  */
-class HMPowerMeter extends HMBase
+class HomeMaticPowermeter extends HMBase
 {
 
     /**
@@ -119,7 +119,7 @@ class HMPowerMeter extends HMBase
             }
             catch (Exception $exc)
             {
-                trigger_error($exc->getMessage(), $exc->getCode());
+                echo $this->Translate($exc->getMessage());
             }
             return;
         }
@@ -163,7 +163,7 @@ class HMPowerMeter extends HMBase
         }
         catch (Exception $exc)
         {
-            trigger_error($exc->getMessage(), $exc->getCode());
+            trigger_error($this->Translate($exc->getMessage()), $exc->getCode());
         }
     }
 
@@ -260,9 +260,9 @@ class HMPowerMeter extends HMBase
     private function ReadPowerSysVar()
     {
         if (!$this->HasActiveParent())
-            throw new Exception("Instance has no active Parent Instance!", E_USER_NOTICE);
+            throw new Exception("Instance has no active parent instance!", E_USER_NOTICE);
         if ($this->HMAddress == '')
-            throw new Exception("Instance has no active Parent Instance!", E_USER_NOTICE);
+            throw new Exception("Instance has no active parent instance!", E_USER_NOTICE);
 
         $url = 'GetPowerMeter.exe';
         $HMScript = 'object oitemID;' . PHP_EOL
@@ -276,7 +276,7 @@ class HMPowerMeter extends HMBase
         catch (Exception $exc)
         {
             $this->SendDebug('GetPowerMeter', $exc->getMessage(), 0);
-            throw new Exception('Error on read PowerMeterData', E_USER_NOTICE);
+            throw new Exception('Error on read PowerMeter data.', E_USER_NOTICE);
         }
         $this->SendDebug($this->HMDeviceDatapoint, (string) $xml->Value, 0);
         $Value = ((float) $xml->Value) / $this->HMFactor;

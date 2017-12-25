@@ -9,14 +9,14 @@
  * @author        Michael Tröger <micha@nall-chan.net>
  * @copyright     2017 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
- * @version       2.07
+ * @version       2.40
  */
 if (@constant('IPS_BASE') == null) //Nur wenn Konstanten noch nicht bekannt sind.
 {
 // --- BASE MESSAGE
     define('IPS_BASE', 10000);                             //Base Message
-    define('IPS_KERNELSHUTDOWN', IPS_BASE + 1);            //Pre Shutdown Message, Runlevel UNINIT Follows
-    define('IPS_KERNELSTARTED', IPS_BASE + 2);             //Post Ready Message
+    define('IPS_KERNELSTARTED', IPS_BASE + 1);             //Post Ready Message
+    define('IPS_KERNELSHUTDOWN', IPS_BASE + 2);            //Pre Shutdown Message, Runlevel UNINIT Follows
 // --- KERNEL
     define('IPS_KERNELMESSAGE', IPS_BASE + 100);           //Kernel Message
     define('KR_CREATE', IPS_KERNELMESSAGE + 1);            //Kernel is beeing created
@@ -214,7 +214,7 @@ abstract class HMBase extends IPSModule
     public function ApplyChanges()
     {
         parent::ApplyChanges();
-        $this->RegisterMessage(0, IPS_KERNELMESSAGE);
+        $this->RegisterMessage(0, IPS_KERNELSTARTED);
         $this->RegisterMessage($this->InstanceID, DM_CONNECT);
         $this->RegisterMessage($this->InstanceID, DM_DISCONNECT);
         if (IPS_GetKernelRunlevel() <> KR_READY)
@@ -235,17 +235,14 @@ abstract class HMBase extends IPSModule
     {
         switch ($Message)
         {
-            case IPS_KERNELMESSAGE:
-                if ($Data[0] == KR_READY)
+            case IPS_KERNELSTARTED:
+                try
                 {
-                    try
-                    {
-                        $this->KernelReady();
-                    }
-                    catch (Exception $exc)
-                    {
-                        return;
-                    }
+                    $this->KernelReady();
+                }
+                catch (Exception $exc)
+                {
+                    return;
                 }
                 break;
             case DM_CONNECT:
@@ -355,7 +352,7 @@ abstract class HMBase extends IPSModule
             $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             curl_close($ch);
             if ($http_code >= 400)
-                throw new Exception('CCU unreachable:' . $http_code, E_USER_NOTICE);
+                throw new Exception($this->Translate('CCU unreachable:') . $http_code, E_USER_NOTICE);
             if ($result === false)
                 throw new Exception('CCU unreachable', E_USER_NOTICE);
             $this->SendDebug("Result", $result, 0);

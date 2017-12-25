@@ -6,7 +6,8 @@
             "Interval to small.": "Interval darf nicht kleiner 1 sein.",
             "Interval smaller as 5 not possible.": "Interval kleiner 5 nicht möglich.",
             "read WR-Interfaces": "WR-Interfaces auslesen",
-            "Create all RF-Interfaces in IPS":"Alle Instanzen in IPS anlegen"
+            "Instance has no active parent instance!": "Keine aktive Parent Instanz!",
+            "Error on read WR-Interface.": "Fehler beim lesen des WR-Interface"            
         }
     }
 }

@@ -9,15 +9,15 @@
  * @author        Michael Tröger <micha@nall-chan.net>
  * @copyright     2017 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
- * @version       2.10
+ * @version       2.40
  */
-require_once(__DIR__ . "/../HMBase.php");  // HMBase Klasse
+require_once(__DIR__ . "/../libs/HMBase.php");  // HMBase Klasse
 
 /**
- * HMWRInterface ist die Klasse für das IPS-Modul 'HomeMatic WR-Interface'.
+ * HomeMaticWRInterface ist die Klasse für das IPS-Modul 'HomeMatic WR-Interface'.
  * Erweitert HMBase 
  */
-class HMWRInterface extends HMBase
+class HomeMaticWRInterface extends HMBase
 {
 
     /**
@@ -34,7 +34,7 @@ class HMWRInterface extends HMBase
 
         $this->RegisterPropertyInteger("Interval", 0);
 
-        $this->RegisterTimer("ReadWRInterface", 0, '@HM_ReadWRInterface($_IPS[\'TARGET\']);');
+        $this->RegisterTimer("ReadWRInterface", 0, 'HM_ReadWRInterface($_IPS[\'TARGET\']);');
     }
 
     /**
@@ -63,14 +63,8 @@ class HMWRInterface extends HMBase
 
         if (!$this->HasActiveParent())
             return;
-        try
-        {
-            $this->ReadWRInterface();
-        }
-        catch (Exception $exc)
-        {
-            trigger_error($exc->getMessage(), $exc->getCode());
-        }
+
+        $this->ReadWRInterface();
     }
 
     ################## protected
@@ -151,12 +145,12 @@ class HMWRInterface extends HMBase
     {
         if (!$this->HasActiveParent())
         {
-            trigger_error("Instance has no active Parent Instance!", E_USER_NOTICE);
+            trigger_error($this->Translate("Instance has no active parent instance!"), E_USER_NOTICE);
             return false;
         }
         if (IPS_GetProperty($this->ParentId, "WROpen") !== true)
         {
-            trigger_error("Instance has no active Parent Instance!", E_USER_NOTICE);
+            trigger_error($this->Translate("Instance has no active parent instance!"), E_USER_NOTICE);
             return false;
         }
 
@@ -175,7 +169,7 @@ class HMWRInterface extends HMBase
         $Result = @json_decode($ResultJSON);
         if (($Result === false) or is_null($Result))
         {
-            trigger_error('Error on Read WR-Interface', E_USER_NOTICE);
+            trigger_error($this->Translate('Error on read WR-Interface.'), E_USER_NOTICE);
             $this->SendDebug('Error', '', 0);
         }
         $this->SendDebug('Receive', $Result, 0);

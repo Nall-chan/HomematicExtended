@@ -9,15 +9,15 @@
  * @author        Michael Tröger <micha@nall-chan.net>
  * @copyright     2017 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
- * @version       2.07
+ * @version       2.40
  */
-require_once(__DIR__ . "/../HMBase.php");  // HMBase Klasse
+require_once(__DIR__ . "/../libs/HMBase.php");  // HMBase Klasse
 
 /**
- * HMRFInterface ist die Klasse für das IPS-Modul 'HomeMatic RF-Interface'.
+ * HomeMaticRFInterface ist die Klasse für das IPS-Modul 'HomeMatic RF-Interface'.
  * Erweitert IPSModule 
  */
-class HMRFInterface extends IPSModule
+class HomeMaticRFInterface extends IPSModule
 {
 
     use DebugHelper;

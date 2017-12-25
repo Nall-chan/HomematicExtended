@@ -10,7 +10,17 @@
             "No trigger or interval active.": "Kein Trigger oder Interval aktiv.",
             "Interval to small.": "Interval darf nicht kleiner 1 sein.",
             "Interval smaller as 5 not possible.": "Interval kleiner 5 nicht möglich.",
-            "read CCU": "CCU auslesen"
+            "read CCU": "CCU auslesen",
+            "Instance has no active parent instance!": "Keine aktive Parent Instanz!",
+            "Type of CCU Systemvariable %s has changed.": "Typ der CCU Systemvariable %s hat sich geändert.",
+            "Ident %s do not exist.": "Ident %s existiert nicht.",
+            "Error on receipt alarm of %s.": "Fehler beim bestätigen des Alarms %s.",
+            "Wrong Datatype for %s.": "Falschen Datentyp für %s.",
+            "Error on write Data ": "Fehler beim schreiben der Daten ",
+            "Error on write CCU Systemvariable.": "Fehler beim schreiben der CCU Systemvariable.",
+            "CCU unreachable:": "CCU nicht erreichbar:",
+            "CCU unreachable": "CCU nicht erreichbar",
+            "CCU Address not set.": "CCU Adresse nicht gesetzt."
         }
     }
 }

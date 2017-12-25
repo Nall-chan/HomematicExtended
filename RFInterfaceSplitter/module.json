@@ -1,6 +1,6 @@
 {
     "id": "{6EE35B5B-9DD9-4B23-89F6-37589134852F}",
-    "name": "HMRFInterfaceSplitter",
+    "name": "HomeMatic RF Interface Splitter",
     "type": 2,
     "vendor": "HomeMatic",
     "aliases": ["HomeMatic RF-Interface Splitter"],

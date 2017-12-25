@@ -9,16 +9,16 @@
  * @author        Michael Tröger <micha@nall-chan.net>
  * @copyright     2017 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
- * @version       2.35
+ * @version       2.40
  */
-require_once(__DIR__ . "/../HMBase.php");  // HMBase Klasse
+require_once(__DIR__ . "/../libs/HMBase.php");  // HMBase Klasse
 
 /**
- * HMDisEPWM55 ist die Klasse für das IPS-Modul 'HomeMatic Dis-EP-WM55'.
+ * HomeMaticDisEPWM55 ist die Klasse für das IPS-Modul 'HomeMatic Dis-EP-WM55'.
  * Erweitert HMBase 
  *
  */
-class HMDisEPWM55 extends HMBase
+class HomeMaticDisEPWM55 extends HMBase
 {
 
     /**
@@ -84,7 +84,7 @@ class HMDisEPWM55 extends HMBase
     {
         if (!$this->HasActiveParent())
         {
-            trigger_error("Instance has no active Parent Instance!", E_USER_NOTICE);
+            trigger_error($this->Translate("Instance has no active parent instance!"), E_USER_NOTICE);
             return false;
         }
         $ParentData = Array
@@ -102,7 +102,7 @@ class HMDisEPWM55 extends HMBase
         $Result = @json_decode($ResultJSON);
         if ($Result === false)
         {
-            trigger_error('Error on send Data', E_USER_NOTICE);
+            trigger_error($this->Translate("Error on send Data."), E_USER_NOTICE);
             $this->SendDebug('Error', '', 0);
         }
         $this->SendDebug('Receive', $Result, 0);
@@ -124,21 +124,21 @@ class HMDisEPWM55 extends HMBase
         try
         {
             if (!is_int($Chime))
-                throw new Exception('Chime must be integer.');
+                throw new Exception(sprintf($this->Translate("Parameter %s must be type of integer."), "Chime"));
             if (!is_int($Repeat))
-                throw new Exception('Repeat must be integer.');
+                throw new Exception(sprintf($this->Translate("Parameter %s must be type of integer."), "Repeat"));
             if (!is_int($Wait))
-                throw new Exception('Wait must be integer.');
+                throw new Exception(sprintf($this->Translate("Parameter %s must be type of integer."), "Wait"));
             if (!is_int($Color))
-                throw new Exception('Color must be integer.');
+                throw new Exception(sprintf($this->Translate("Parameter %s must be type of integer."), "Color"));
             if (($Chime < 0) or ( $Chime > 6))
-                throw new Exception('Chime out of range.');
+                throw new Exception(sprintf($this->Translate("Parameter %s out of range."), "Chime"));
             if (($Repeat < 0) or ( $Repeat > 15))
-                throw new Exception('Repeat out of range.');
+                throw new Exception(sprintf($this->Translate("Parameter %s out of range."), "Repeat"));
             if (($Wait < 0) or ( $Wait > 15))
-                throw new Exception('Wait out of range.');
+                throw new Exception(sprintf($this->Translate("Parameter %s out of range."), "Wait"));
             if (($Color < 0) or ( $Color > 3))
-                throw new Exception('Color out of range.');
+                throw new Exception(sprintf($this->Translate("Parameter %s out of range."), "Color"));
         }
         catch (Exception $exc)
         {
@@ -169,11 +169,11 @@ class HMDisEPWM55 extends HMBase
         try
         {
             if (!is_string($Text))
-                throw new Exception('Text must be string.');
+                throw new Exception(sprintf($this->Translate("Parameter %s must be type of string."), "Text"));
             if (!is_int($Icon))
-                throw new Exception('Icon must be integer.');
+                throw new Exception(sprintf($this->Translate("Parameter %s must be type of integer."), "Icon"));
             if (($Icon < 0) or ( $Icon > 9))
-                throw new Exception('Icon out of range.');
+                throw new Exception(sprintf($this->Translate("Parameter %s out of range."), "Icon"));
         }
         catch (Exception $exc)
         {

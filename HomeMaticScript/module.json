@@ -1,6 +1,6 @@
 {
     "id": "{246EDB89-70BC-403B-A1FA-3B3B1B540401}",
-    "name": "HMScript",
+    "name": "HomeMatic RemoteScript",
     "type": 3,
     "vendor": "HomeMatic",
     "aliases": ["HomeMatic RemoteScript Interface"],

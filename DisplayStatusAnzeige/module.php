@@ -9,12 +9,12 @@
  * @author        Michael Tröger <micha@nall-chan.net>
  * @copyright     2017 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
- * @version       2.38
+ * @version       2.40
  */
-require_once(__DIR__ . "/../HMBase.php");  // HMBase Klasse
+require_once(__DIR__ . "/../libs/HMBase.php");  // HMBase Klasse
 
 /**
- * HMDisWM55 ist die Klasse für das IPS-Modul 'HomeMatic Dis-WM55'.
+ * HomeMaticDisWM55 ist die Klasse für das IPS-Modul 'HomeMatic Dis-WM55'.
  * Erweitert HMBase 
  *
  * @property int $Page Die aktuelle Seite.
@@ -23,7 +23,7 @@ require_once(__DIR__ . "/../HMBase.php");  // HMBase Klasse
   ["HMDeviceDatapoint"] => string $HMDeviceDatapoint  Der zu überwachende Datenpunkt vom $HMDeviceAddress
  * @property array $Events [self::$PropertysName]  Die IPS-ID der Variable des Datenpunkt welcher eine Aktualisierung auslöst.
  */
-class HMDisWM55 extends HMBase
+class HomeMaticDisWM55 extends HMBase
 {
 
     private static $EmptyHMEventData = array(
@@ -189,7 +189,7 @@ class HMDisWM55 extends HMBase
         catch (Exception $exc)
         {
             $this->SendDebug('Error', $exc->getMessage(), 0);
-            trigger_error($exc->getMessage(), $exc->getCode());
+            trigger_error($this->Translate($exc->getMessage()), $exc->getCode());
         }
     }
 
@@ -311,10 +311,10 @@ class HMDisWM55 extends HMBase
     private function RunDisplayScript($Action)
     {
         if (!$this->HasActiveParent())
-            throw new Exception("Instance has no active Parent Instance!", E_USER_WARNING);
+            throw new Exception("Instance has no active parent instance!", E_USER_NOTICE);
 
         if ($this->HMAddress == '')
-            throw new Exception("Instance has no active Parent Instance!", E_USER_WARNING);
+            throw new Exception("Instance has no active parent instance!", E_USER_NOTICE);
 
         $Page = $this->Page;
         $MaxPage = $this->ReadPropertyInteger('MaxPage');
@@ -350,7 +350,7 @@ class HMDisWM55 extends HMBase
             $Result = IPS_RunScriptWaitEx($ScriptID, array('SENDER' => 'HMDisWM55', 'ACTION' => $ActionString, 'PAGE' => $Page, 'EVENT' => $this->InstanceID));
             $ResultData = json_decode($Result);
             if (is_null($ResultData))
-                throw new Exception("Error in Display Script.", E_USER_NOTICE);
+                throw new Exception("Error in display-script.", E_USER_NOTICE);
             $this->SendDebug('DisplayScript', $ResultData, 0);            
             $Data = $this->ConvertDisplayData($ResultData);
             $url = 'GetDisplay.exe';
@@ -363,7 +363,7 @@ class HMDisWM55 extends HMBase
             }
             catch (Exception $exc)
             {
-                throw new Exception('Error on send Data to HM-Dis-WM55.', E_USER_NOTICE);
+                throw new Exception('Error on send data to HM-Dis-WM55.', E_USER_NOTICE);
             }
         }
         $Timeout = $this->ReadPropertyInteger('Timeout');

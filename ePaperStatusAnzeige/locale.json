@@ -1,7 +1,12 @@
 {
     "translations": {
         "de": {
-            "Address": "Adresse"
+            "Address": "Adresse",
+            "Instance has no active parent instance!": "Keine aktive Parent Instanz!",
+            "Error on send Data.": "",
+            "Parameter %s must be type of integer.": "Parameter %s muss vom Typ integer sein.",
+            "Parameter %s must be type of string.": "Parameter %s muss vom Typ string sein.",
+            "Parameter %s out of range.": "Parameter %s außerhalb des zulässigen Bereiches."
         }
     }
 }

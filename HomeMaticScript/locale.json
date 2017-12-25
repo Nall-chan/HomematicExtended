@@ -1,0 +1,10 @@
+{
+    "translations": {
+        "de": {
+            "Instance has no active parent instance!": "Keine aktive Parent Instanz!",
+            "CCU unreachable:": "CCU nicht erreichbar:",
+            "CCU unreachable": "CCU nicht erreichbar",
+            "CCU Address not set.": "CCU Adresse nicht gesetzt."
+        }
+    }
+}

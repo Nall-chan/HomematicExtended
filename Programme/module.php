@@ -9,15 +9,15 @@
  * @author        Michael Tröger <micha@nall-chan.net>
  * @copyright     2017 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
- * @version       2.07
+ * @version       2.40
  */
-require_once(__DIR__ . "/../HMBase.php");  // HMBase Klasse
+require_once(__DIR__ . "/../libs/HMBase.php");  // HMBase Klasse
 
 /**
- * HMScript ist die Klasse für das IPS-Modul 'HomeMatic Programme'.
+ * HomeMaticProgramme ist die Klasse für das IPS-Modul 'HomeMatic Programme'.
  * Erweitert HMBase 
  */
-class HMCCUProgram extends HMBase
+class HomeMaticProgramme extends HMBase
 {
 
     use DebugHelper,
@@ -72,7 +72,7 @@ class HMCCUProgram extends HMBase
         }
         catch (Exception $exc)
         {
-            trigger_error($exc->getMessage(), $exc->getCode());
+            echo $this->Translate($exc->getMessage());
         }
     }
 
@@ -122,11 +122,11 @@ class HMCCUProgram extends HMBase
     {
         if (!$this->HasActiveParent())
         {
-            throw new Exception("Instance has no active Parent Instance!", E_USER_NOTICE);
+            throw new Exception("Instance has no active parent instance!", E_USER_NOTICE);
         }
         if ($this->HMAddress == '')
         {
-            throw new Exception("Instance has no active Parent Instance!", E_USER_NOTICE);
+            throw new Exception("Instance has no active parent instance!", E_USER_NOTICE);
         }
         $url = 'SysPrg.exe';
         $HMScript = 'SysPrgs=dom.GetObject(ID_PROGRAMS).EnumUsedIDs();';
@@ -138,7 +138,7 @@ class HMCCUProgram extends HMBase
         catch (Exception $exc)
         {
             $this->SendDebug('SysPrg', $exc->getMessage(), 0);
-            throw new Exception("Error on Read CCU-Programs", E_USER_NOTICE);
+            throw new Exception("Error on read all CCU-Programs.", E_USER_NOTICE);
         }
 
         $Result = true;
@@ -155,7 +155,7 @@ class HMCCUProgram extends HMBase
             {
                 $Result = false;
                 $this->SendDebug($SysPrg, $exc->getMessage(), 0);
-                trigger_error("Error on read info of CCU-Program " . $SysPrg, E_USER_NOTICE);
+                trigger_error(sprintf($this->Translate("Error on read info of CCU-Program %s."), (string) $SysPrg), E_USER_NOTICE);
                 continue;
             }
 
@@ -185,15 +185,15 @@ class HMCCUProgram extends HMBase
     {
         if (!$this->HasActiveParent())
         {
-            throw new Exception("Instance has no active Parent Instance!", E_USER_NOTICE);
+            throw new Exception("Instance has no active parent instance!", E_USER_NOTICE);
         }
         if ($this->HMAddress == '')
         {
-            throw new Exception("Instance has no active Parent Instance!", E_USER_NOTICE);
+            throw new Exception("Instance has no active parent instance!", E_USER_NOTICE);
         }
         $var = @IPS_GetObjectIDByIdent($Ident, $this->InstanceID);
         if ($var === false)
-            throw new Exception('CCU Program ' . $Ident . ' not found!', E_USER_NOTICE);
+            throw new Exception(sprintf($this->Translate("CCU-Program %s not found!'"), $Ident), E_USER_NOTICE);
 
         $url = 'SysPrg.exe';
         $HMScript = 'State=dom.GetObject(' . $Ident . ').ProgramExecute();';
@@ -205,7 +205,7 @@ class HMCCUProgram extends HMBase
         catch (Exception $exc)
         {
             $this->SendDebug($Ident, $exc->getMessage(), 0);
-            throw new Exception("Error on start CCU-Program", E_USER_NOTICE);
+            throw new Exception("Error on start CCU-Program.", E_USER_NOTICE);
         }
 
         $this->SendDebug('Result', (string) $xml->State, 0);
@@ -235,7 +235,7 @@ class HMCCUProgram extends HMBase
         }
         catch (Exception $exc)
         {
-            trigger_error($exc->getMessage(), $exc->getCode());
+            trigger_error($this->Translate($exc->getMessage()), $exc->getCode());
         }
     }
 
@@ -256,7 +256,7 @@ class HMCCUProgram extends HMBase
         }
         catch (Exception $exc)
         {
-            trigger_error($exc->getMessage(), $exc->getCode());
+            trigger_error($this->Translate($exc->getMessage()), $exc->getCode());
             return false;
         }
     }
@@ -276,7 +276,7 @@ class HMCCUProgram extends HMBase
         }
         catch (Exception $exc)
         {
-            trigger_error($exc->getMessage(), $exc->getCode());
+            trigger_error($this->Translate($exc->getMessage()), $exc->getCode());
             return false;
         }
     }

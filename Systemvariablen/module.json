@@ -1,6 +1,6 @@
 {
     "id": "{AF50C42B-7183-4992-B04A-FAFB07BB1B90}",
-    "name": "HMSystemVariable",
+    "name": "HomeMatic Systemvariablen",
     "type": 3,
     "vendor": "HomeMatic",
     "aliases": ["HomeMatic Systemvariablen"],

@@ -9,12 +9,12 @@
  * @author        Michael Tröger <micha@nall-chan.net>
  * @copyright     2017 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
- * @version       2.07
+ * @version       2.40
  */
-require_once(__DIR__ . "/../HMBase.php");  // HMBase Klasse
+require_once(__DIR__ . "/../libs/HMBase.php");  // HMBase Klasse
 
 /**
- * HMSystemVariable ist die Klasse für das IPS-Modul 'HomeMatic Systemvariablen'.
+ * HomeMaticSystemvariablen ist die Klasse für das IPS-Modul 'HomeMatic Systemvariablen'.
  * Erweitert HMBase 
  *
  * @property string $HMDeviceAddress Die Geräte-Adresse welche eine Aktualisierung auslöst.
@@ -22,7 +22,7 @@ require_once(__DIR__ . "/../HMBase.php");  // HMBase Klasse
  * @property int $Event Die IPS-ID der Variable des Datenpunkt welcher eine Aktualisierung auslöst.
  * @property array $SystemVars Ein Array mit allen IPS-Var-IDs welche den Namen des IDENT (ID der Systemvariable in der CCU) enthalten.
  */
-class HMSystemVariable extends HMBase
+class HomeMaticSystemvariablen extends HMBase
 {
 
     use Profile;
@@ -66,7 +66,7 @@ class HMSystemVariable extends HMBase
 
         foreach ($this->SystemVars as $Ident)
         {
-            $VarProfil = 'HM.SysVar' . (string) $this->InstanceID . '.' . (string) $this->SystemVars[$SenderID];
+            $VarProfil = 'HM.SysVar' . (string) $this->InstanceID . '.' . (string) $Ident;
             if (IPS_VariableProfileExists($VarProfil))
                 IPS_DeleteVariableProfile($VarProfil);
         }
@@ -170,7 +170,7 @@ class HMSystemVariable extends HMBase
         }
         catch (Exception $exc)
         {
-            trigger_error($exc->getMessage(), E_USER_NOTICE);
+            echo $this->Translate($exc->getMessage());
         }
         return;
     }
@@ -354,7 +354,7 @@ class HMSystemVariable extends HMBase
             catch (Exception $exc)
             {
                 $this->SendDebug($SysVar, $exc->getMessage(), 0);
-                trigger_error($exc->getMessage(), E_USER_NOTICE);
+                trigger_error($this->Translate($exc->getMessage()), E_USER_NOTICE);
                 $Result = false;
                 continue;
             }
@@ -391,7 +391,7 @@ class HMSystemVariable extends HMBase
                 catch (Exception $exc)
                 {
                     $this->SendDebug($SysVar, $exc->getMessage(), 0);
-                    trigger_error($exc->getMessage(), E_USER_NOTICE);
+                    trigger_error($this->Translate($exc->getMessage()), E_USER_NOTICE);
                     $Result = false;
                     continue;
                 }
@@ -439,7 +439,7 @@ class HMSystemVariable extends HMBase
             if (IPS_GetVariable($VarID)['VariableType'] <> $VarType)
             {
                 $this->SendDebug($SysVar, 'Type of CCU Systemvariable ' . IPS_GetName($VarID) . ' has changed.', 0);
-                trigger_error('Type of CCU Systemvariable ' . IPS_GetName($VarID) . ' has changed.', E_USER_NOTICE);
+                trigger_error(sprintf($this->Translate('Type of CCU Systemvariable %s has changed.'), IPS_GetName($VarID)), E_USER_NOTICE);
                 $Result = false;
                 continue;
             }
@@ -522,7 +522,7 @@ class HMSystemVariable extends HMBase
         catch (Exception $exc)
         {
             $this->SendDebug('AlarmVar.exe', $exc->getMessage(), 0);
-            trigger_error($exc->getMessage(), E_USER_NOTICE);
+            trigger_error($this->Translate($exc->getMessage()), E_USER_NOTICE);
             return false;
         }
 
@@ -592,7 +592,7 @@ class HMSystemVariable extends HMBase
         if (IPS_GetKernelRunlevel() <> KR_READY)
             return false;
         if (!$this->HasActiveParent())
-            throw new Exception("Instance has no active Parent Instance!", E_USER_NOTICE);
+            throw new Exception("Instance has no active parent instance!", E_USER_NOTICE);
         $url = 'SysVar.exe';
         $HMScript = 'State=dom.GetObject(' . $Parameter . ').State("' . $ValueStr . '");';
         try
@@ -681,7 +681,7 @@ class HMSystemVariable extends HMBase
     {
         if (!$this->HasActiveParent())
         {
-            trigger_error('Instance has no active Parent Instance!', E_USER_NOTICE);
+            trigger_error($this->Translate('Instance has no active parent instance!'), E_USER_NOTICE);
             return;
         }
         if (strpos($Ident, 'AlDP') !== false)
@@ -693,7 +693,7 @@ class HMSystemVariable extends HMBase
         $VarID = @$this->GetIDForIdent($Ident);
         if ($VarID === false)
         {
-            trigger_error('Ident ' . $Ident . ' do not exist.', E_USER_NOTICE);
+            trigger_error(sprintf($this->Translate('Ident %s do not exist.'), (string) $Ident), E_USER_NOTICE);
             return;
         }
         switch (IPS_GetVariable($VarID)['VariableType'])
@@ -728,7 +728,7 @@ class HMSystemVariable extends HMBase
         }
         catch (Exception $exc)
         {
-            trigger_error($exc->getMessage(), E_USER_NOTICE);
+            echo $this->Translate($exc->getMessage());
         }
     }
 
@@ -747,13 +747,13 @@ class HMSystemVariable extends HMBase
             return false;
         if (!$this->HasActiveParent())
         {
-            trigger_error("Instance has no active Parent Instance!", E_USER_NOTICE);
+            trigger_error($this->Translate("Instance has no active parent instance!"), E_USER_NOTICE);
             return false;
         }
         $VarID = @$this->GetIDForIdent($Ident);
         if ($VarID === false)
         {
-            trigger_error('Ident ' . $Ident . ' do not exist.', E_USER_NOTICE);
+            trigger_error(sprintf($this->Translate('Ident %s do not exist.'), (string) $Ident), E_USER_NOTICE);
             return false;
         }
         $HMScript = 'object oitemID = dom.GetObject(' . substr($Ident, 4) . ');
@@ -769,7 +769,7 @@ class HMSystemVariable extends HMBase
         catch (Exception $exc)
         {
             $this->SendDebug('AlarmVar.exe', $exc->getMessage(), 0);
-            trigger_error($exc->getMessage(), E_USER_NOTICE);
+            trigger_error($this->Translate($exc->getMessage()), E_USER_NOTICE);
             return false;
         }
         if ((int) $xmlData->State == 1)
@@ -780,7 +780,7 @@ class HMSystemVariable extends HMBase
         }
 
         $this->SendDebug('AlarmVar.' . $Ident, 'error on receipt', 0);
-        trigger_error('Error on receipt alarm of ' . $VarID, E_USER_NOTICE);
+        trigger_error(sprintf($this->Translate('Error on receipt alarm of %s.'), (string) $VarID), E_USER_NOTICE);
         return false;
     }
 
@@ -800,7 +800,7 @@ class HMSystemVariable extends HMBase
         }
         catch (Exception $exc)
         {
-            trigger_error($exc->getMessage(), E_USER_NOTICE);
+            echo $this->Translate($exc->getMessage());
         }
     }
 
@@ -815,7 +815,7 @@ class HMSystemVariable extends HMBase
     {
         if (!$this->HasActiveParent())
         {
-            trigger_error("Instance has no active Parent Instance!", E_USER_NOTICE);
+            trigger_error($this->Translate("Instance has no active parent instance!"), E_USER_NOTICE);
             return false;
         }
         try
@@ -824,7 +824,7 @@ class HMSystemVariable extends HMBase
         }
         catch (Exception $exc)
         {
-            trigger_error($exc->getMessage(), E_USER_NOTICE);
+            trigger_error($this->Translate($exc->getMessage()), E_USER_NOTICE);
             return false;
         }
     }
@@ -857,13 +857,13 @@ class HMSystemVariable extends HMBase
         $VarID = @$this->GetIDForIdent($Parameter);
         if ($VarID === false)
         {
-            trigger_error('Ident ' . $Parameter . ' do not exist.', E_USER_NOTICE);
+            trigger_error(sprintf($this->Translate('Ident %s do not exist.'), (string) $Parameter), E_USER_NOTICE);
             return false;
         }
 
         if (IPS_GetVariable($VarID)['VariableType'] <> vtBoolean)
         {
-            trigger_error('Wrong Datatype for ' . $VarID, E_USER_NOTICE);
+            trigger_error(sprintf($this->Translate('Wrong Datatype for %s.'), (string) $VarID), E_USER_NOTICE);
             return false;
         }
 
@@ -878,7 +878,7 @@ class HMSystemVariable extends HMBase
         }
         catch (Exception $exc)
         {
-            trigger_error($exc->getMessage(), E_USER_NOTICE);
+            trigger_error($this->Translate($exc->getMessage()), E_USER_NOTICE);
             return false;
         }
 
@@ -889,7 +889,7 @@ class HMSystemVariable extends HMBase
             return true;
         }
 
-        trigger_error('Error on write Data ' . $VarID, E_USER_NOTICE);
+        trigger_error($this->Translate('Error on write Data ') . $VarID, E_USER_NOTICE);
         return false;
     }
 
@@ -921,14 +921,14 @@ class HMSystemVariable extends HMBase
         $VarID = @$this->GetIDForIdent($Parameter);
         if ($VarID === false)
         {
-            trigger_error('Ident ' . $Parameter . ' do not exist.', E_USER_NOTICE);
+            trigger_error(sprintf($this->Translate('Ident %s do not exist.'), (string) $Parameter), E_USER_NOTICE);
             return false;
         }
 
 
         if (IPS_GetVariable($VarID)['VariableType'] <> vtInteger)
         {
-            trigger_error('Wrong Datatype for ' . $VarID, E_USER_NOTICE);
+            trigger_error(sprintf($this->Translate('Wrong Datatype for %s.'), (string) $VarID), E_USER_NOTICE);
             return false;
         }
 
@@ -938,7 +938,7 @@ class HMSystemVariable extends HMBase
         }
         catch (Exception $exc)
         {
-            trigger_error($exc->getMessage(), E_USER_NOTICE);
+            trigger_error($this->Translate($exc->getMessage()), E_USER_NOTICE);
             return false;
         }
         if ($Result === true)
@@ -947,7 +947,7 @@ class HMSystemVariable extends HMBase
                 SetValueInteger($VarID, $Value);
             return true;
         }
-        trigger_error('Error on write Data ' . $VarID, E_USER_NOTICE);
+        trigger_error($this->Translate('Error on write Data ') . $VarID, E_USER_NOTICE);
         return false;
     }
 
@@ -979,23 +979,23 @@ class HMSystemVariable extends HMBase
         $VarID = @$this->GetIDForIdent($Parameter);
         if ($VarID === false)
         {
-            trigger_error('Ident ' . $Parameter . ' do not exist.', E_USER_NOTICE);
+            trigger_error(sprintf($this->Translate('Ident %s do not exist.'), (string) $Parameter), E_USER_NOTICE);
             return false;
         }
 
         if (IPS_GetVariable($VarID)['VariableType'] <> vtFloat)
         {
-            trigger_error('Wrong Datatype for ' . $VarID, E_USER_NOTICE);
+            trigger_error(sprintf($this->Translate('Wrong Datatype for %s.'), (string) $VarID), E_USER_NOTICE);
             return false;
         }
 
         try
         {
-            $Result = $this->WriteSysVar($Parameter, (string) $Value);
+            $Result = $this->WriteSysVar($Parameter, (string) sprintf("%.6F",$Value));
         }
         catch (Exception $exc)
         {
-            trigger_error($exc->getMessage(), E_USER_NOTICE);
+            trigger_error($this->Translate($exc->getMessage()), E_USER_NOTICE);
             return false;
         }
 
@@ -1006,7 +1006,7 @@ class HMSystemVariable extends HMBase
             return true;
         }
 
-        trigger_error('Error on write Data ' . $VarID, E_USER_NOTICE);
+        trigger_error($this->Translate('Error on write Data ') . $VarID, E_USER_NOTICE);
         return false;
     }
 
@@ -1038,13 +1038,13 @@ class HMSystemVariable extends HMBase
         $VarID = @$this->GetIDForIdent($Parameter);
         if ($VarID === false)
         {
-            trigger_error('Ident ' . $Parameter . ' do not exist.', E_USER_NOTICE);
+            trigger_error(sprintf($this->Translate('Ident %s do not exist.'), (string) $Parameter), E_USER_NOTICE);
             return false;
         }
 
         if (IPS_GetVariable($VarID)['VariableType'] <> vtString)
         {
-            trigger_error('Wrong Datatype for ' . $VarID, E_USER_NOTICE);
+            trigger_error(sprintf($this->Translate('Wrong Datatype for %s.'), (string) $VarID), E_USER_NOTICE);
             return false;
         }
         try
@@ -1053,7 +1053,7 @@ class HMSystemVariable extends HMBase
         }
         catch (Exception $exc)
         {
-            trigger_error($exc->getMessage(), E_USER_NOTICE);
+            trigger_error($this->Translate($exc->getMessage()), E_USER_NOTICE);
             return false;
         }
 
@@ -1064,7 +1064,7 @@ class HMSystemVariable extends HMBase
             return true;
         }
 
-        trigger_error('Error on write Data ' . $VarID, E_USER_NOTICE);
+        trigger_error($this->Translate('Error on write Data ') . $VarID, E_USER_NOTICE);
         return false;
     }
 

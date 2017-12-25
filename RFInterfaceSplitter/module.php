@@ -9,15 +9,15 @@
  * @author        Michael Tröger <micha@nall-chan.net>
  * @copyright     2017 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
- * @version       2.10
+ * @version       2.40
  */
-require_once(__DIR__ . "/../HMBase.php");  // HMBase Klasse
+require_once(__DIR__ . "/../libs/HMBase.php");  // HMBase Klasse
 
 /**
- * HMRFInterfaceSplitter ist die Klasse für das IPS-Modul 'HomeMatic RFInterface-Splitter'.
+ * HomeMaticRFInterfaceSplitter ist die Klasse für das IPS-Modul 'HomeMatic RFInterface-Splitter'.
  * Erweitert HMBase 
  */
-class HMRFInterfaceSplitter extends HMBase
+class HomeMaticRFInterfaceSplitter extends HMBase
 {
 
     /**
@@ -65,7 +65,7 @@ class HMRFInterfaceSplitter extends HMBase
         }
         catch (Exception $exc)
         {
-            trigger_error($exc->getMessage(), $exc->getCode());
+            echo $this->Translate($exc->getMessage());
         }
     }
 
@@ -147,7 +147,7 @@ class HMRFInterfaceSplitter extends HMBase
     {
         if (!$this->HasActiveParent())
         {
-            trigger_error("Instance has no active Parent Instance!", E_USER_NOTICE);
+            trigger_error($this->Translate("Instance has no active parent instance!"), E_USER_NOTICE);
             return array();
         }
         $ParentId = $this->ParentId;
@@ -174,7 +174,7 @@ class HMRFInterfaceSplitter extends HMBase
             $ResultJSON = @$this->SendDataToParent($JSON);
             $Result = @json_decode($ResultJSON);
             if ($Result === false)
-                trigger_error('Error on Read Interfaces:' . $ProtocolId, E_USER_NOTICE);
+                trigger_error($this->Translate('Error on read interfaces:') . $ProtocolId, E_USER_NOTICE);
             else
                 $ret[$ProtocolId] = $Result;
         }

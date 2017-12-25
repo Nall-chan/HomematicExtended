@@ -1,6 +1,6 @@
 {
     "id": "{36549B96-FA11-4651-8662-F310EEEC5C7D}",
-    "name": "HMRFInterface",
+    "name": "HomeMatic RF Interface",
     "type": 3,
     "vendor": "HomeMatic",
     "aliases": ["HomeMatic RF-Interface"],

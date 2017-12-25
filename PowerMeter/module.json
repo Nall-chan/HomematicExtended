@@ -1,6 +1,6 @@
 {
     "id": "{400F9193-FE79-4086-8D76-958BF9C1B357}",
-    "name": "HMPowerMeter",
+    "name": "HomeMatic Powermeter",
     "type": 3,
     "vendor": "HomeMatic",
     "aliases": ["HomeMatic Powermeter"],
