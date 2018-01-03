@@ -132,8 +132,8 @@ Erweitert IPS um die native Unterstützung:
 
 Version 2.40:  
  Neu: Übersetztungen für IPS 4.3  
- Neu: Doku überarbeitet
- Fix: Systemvariablen vom Typ Float konnten falsch übertragen werden
+ Neu: Doku überarbeitet  
+ Fix: Systemvariablen vom Typ Float konnten falsch übertragen werden  
 
 Version 2.35:  
  Fix: Dis-EP-WM55 hat nur Icons von 0-3 angenommen.  
