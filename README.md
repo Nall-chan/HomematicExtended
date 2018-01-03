@@ -26,6 +26,7 @@ Erweitert IPS um die native Unterstützung:
 5. [Anhang](#5-anhang)  
     1. [GUID der Module](#1-guid-der-module)
     2. [Changlog](#2-changlog)
+    3. [Spenden](#3-spenden)
 6. [Lizenz](#6-lizenz)
 
 ## 1. Funktionsumfang
@@ -195,6 +196,12 @@ Version 1.5:
 Version 1.3:  
 
 Version 1.1:  
+
+### 3. Spenden  
+  
+  Die Library ist für die nicht kommzerielle Nutzung kostenlos, Schenkungen als Unterstützung für den Autor werden hier akzeptiert:  
+
+<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=G2SLW2MEMQZH2" target="_blank"><img src="https://www.paypalobjects.com/de_DE/DE/i/btn/btn_donate_LG.gif" border="0" /></a>
 
 ## 6. Lizenz
 
