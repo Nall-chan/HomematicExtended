@@ -173,7 +173,6 @@ class HomeMaticRFInterfaceSplitter extends HMBase
             $JSON = json_encode($ParentData);
             $ResultJSON = @$this->SendDataToParent($JSON);
             $Result = @json_decode($ResultJSON);
-            $this->SendDebug ('List:' . $ProtocolId , $Result ,0 );
             if ($Result === false)
                 trigger_error($this->Translate('Error on read interfaces:') . $ProtocolId, E_USER_NOTICE);
             else
