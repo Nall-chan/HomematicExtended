@@ -417,8 +417,8 @@ class HomeMaticDisWM55 extends HMBase
 //-----------------------------------
 // Definition der Werte für die Icons
 //-----------------------------------
-// 0x80 AUS                 Icon_on
-// 0x81 EIN                 Icon_off
+// 0x80 AUS                 Icon_off
+// 0x81 EIN                 Icon_on
 // 0x82 OFFEN               Icon_open
 // 0x83 geschlossen         Icon_closed
 // 0x84 fehler              Icon_error
@@ -430,8 +430,8 @@ class HomeMaticDisWM55 extends HMBase
 // 0x8A Signal gelb         Icon_yellow
 // 0x8B Signal rot          Icon_red
 //      ohne Icon           Icon_no
-define ("Icon_on"           ,0x80);
-define ("Icon_off"          ,0x81);
+define ("Icon_off"          ,0x80);
+define ("Icon_on"           ,0x81);
 define ("Icon_open"         ,0x82);
 define ("Icon_closed"       ,0x83);
 define ("Icon_error"        ,0x84);

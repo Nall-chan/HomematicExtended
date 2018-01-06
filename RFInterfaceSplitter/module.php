@@ -120,13 +120,13 @@ class HomeMaticRFInterfaceSplitter extends HMBase
             $this->SetStatus(IS_EBASE + 2);
             return false;
         }
-        
+
         if ($Interval == 0)
         {
             $this->SetStatus(IS_INACTIVE);
             return true;
         }
-        
+
         if ($Interval < 5)
         {
             $this->SetStatus(IS_EBASE + 3);
@@ -200,16 +200,31 @@ class HomeMaticRFInterfaceSplitter extends HMBase
         {
             $KnownDevices[] = IPS_GetProperty($Device, 'Address');
         }
-
         $Result = $this->GetInterfaces();
-        foreach ($Result as $Protocol)
+        foreach ($Result as $ProtocolID => $Protocol)
         {
-            foreach ($Protocol as $Interface)
+            if (!is_array($Protocol))
+                continue;
+            foreach ($Protocol as $InterfaceIndex => $Interface)
             {
                 if (in_array($Interface->ADDRESS, $KnownDevices))
                     continue;
                 $NewDevice = IPS_CreateInstance("{36549B96-FA11-4651-8662-F310EEEC5C7D}");
-                IPS_SetName($NewDevice, $Interface->TYPE);
+                if (property_exists($Interface, 'TYPE'))
+                    IPS_SetName($NewDevice, $Interface->TYPE);
+                else
+                {
+                    switch ($ProtocolID)
+                    {
+                        case 0:
+                            $Name = 'Funk';
+                        case 2:
+                            $Name = 'HmIP';
+                        default:
+                            $Name = 'unknow';
+                    }
+                    IPS_SetName($NewDevice, $Name . ' - Interface ' . $InterfaceIndex);
+                }
                 if (IPS_GetInstance($NewDevice)['ConnectionID'] <> $this->InstanceID)
                 {
                     @IPS_DisconnectInstance($NewDevice);
