@@ -130,6 +130,9 @@ Erweitert IPS um die native Unterstützung:
 
 ### 2. Changlog
 
+Version 2.44:  
+ Fix: ~String-Profil entfernt  
+
 Version 2.43:  
  Fix: Für IPS 5.0  
 

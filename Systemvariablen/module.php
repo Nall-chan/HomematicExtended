@@ -7,9 +7,9 @@
  * @package       HomematicExtended
  * @file          module.php
  * @author        Michael Tröger <micha@nall-chan.net>
- * @copyright     2017 Michael Tröger
+ * @copyright     2018 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
- * @version       2.40
+ * @version       2.44
  */
 require_once(__DIR__ . "/../libs/HMBase.php");  // HMBase Klasse
 
@@ -425,7 +425,7 @@ class HomeMaticSystemvariablen extends HMBase
             if ($VarID === false)
             {
                 if ((int) $xmlVar->ValueType == vtString)
-                    $VarProfil = "~String";
+                    $VarProfil = "";
                 $this->MaintainVariable($VarIdent, $VarName, $VarType, $VarProfil, 0, true);
                 $this->EnableAction($VarIdent);
                 $VarID = @$this->GetIDForIdent($VarIdent);
