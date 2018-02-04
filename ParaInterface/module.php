@@ -1,4 +1,4 @@
-<?
+<?php
 
 /**
  * @addtogroup homematicextended
@@ -92,8 +92,7 @@ class ParaInterface extends HMBase
      */
     private function GetParamset()
     {
-        if (!$this->HasActiveParent())
-        {
+        if (!$this->HasActiveParent()) {
             trigger_error("Instance has no active Parent Instance!", E_USER_NOTICE);
             return false;
         }
@@ -110,8 +109,7 @@ class ParaInterface extends HMBase
         $JSON = json_encode($ParentData);
         $ResultJSON = @$this->SendDataToParent($JSON);
         $Result = @json_decode($ResultJSON, true);
-        if ($Result === false)
-        {
+        if ($Result === false) {
             trigger_error('Error on Read Paramset', E_USER_NOTICE);
             $this->SendDebug('Error', '', 0);
         }
@@ -127,8 +125,7 @@ class ParaInterface extends HMBase
      */
     private function PutParamset($Parameter)
     {
-        if (!$this->HasActiveParent())
-        {
+        if (!$this->HasActiveParent()) {
             trigger_error("Instance has no active Parent Instance!", E_USER_NOTICE);
             return false;
         }
@@ -145,14 +142,12 @@ class ParaInterface extends HMBase
         $JSON = json_encode($ParentData);
         $ResultJSON = @$this->SendDataToParent($JSON);
         $Result = @json_decode($ResultJSON, true);
-        if ($Result === false)
-        {
+        if ($Result === false) {
             trigger_error('Error on Write Paramset', E_USER_NOTICE);
             $this->SendDebug('Error', '', 0);
         }
         $this->SendDebug('Receive', $Result, 0);
         return $Result;
-        
     }
 
 ################## PUBLIC
@@ -180,8 +175,7 @@ class ParaInterface extends HMBase
     public function WritePara(string $Parameter)
     {
         $Data = @json_decode($Parameter, true);
-        if ($Data === false)
-        {
+        if ($Data === false) {
             trigger_error('Error in Parameter', E_USER_NOTICE);
             return false;
         }

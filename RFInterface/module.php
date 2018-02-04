@@ -1,4 +1,4 @@
-<?
+<?php
 
 /**
  * @addtogroup homematicextended
@@ -65,15 +65,13 @@ class HomeMaticRFInterface extends IPSModule
         unset($Data->DataID);
         unset($Data->ADDRESS);
         $this->SendDebug('Receive', $Data, 0);
-        foreach ($Data as $Ident => $Value)
-        {
+        foreach ($Data as $Ident => $Value) {
             if ($Value === "")
                 continue;
             $Profil = "";
             if ($Ident == "DUTY_CYCLE")
                 $Profil = "~Intensity.100";
-            switch (gettype($Value))
-            {
+            switch (gettype($Value)) {
                 case "boolean":
                     $Typ = vtBoolean;
                     break;
@@ -91,13 +89,11 @@ class HomeMaticRFInterface extends IPSModule
                     continue;
             }
             $vid = @$this->GetIDForIdent($Ident);
-            if ($vid === false)
-            {
+            if ($vid === false) {
                 $this->MaintainVariable($Ident, $Ident, $Typ, $Profil, 0, true);
                 $vid = @$this->GetIDForIdent($Ident);
             }
-            if ($Ident == 'CONNECTED')
-            {
+            if ($Ident == 'CONNECTED') {
                 SetValue($vid, $Value);
                 continue;
             }

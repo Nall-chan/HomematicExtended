@@ -1,4 +1,4 @@
-<?
+<?php
 
 /**
  * @addtogroup homematicextended
@@ -88,22 +88,17 @@ class HomeMaticRemoteScript extends HMBase
      */
     private function SendScript(string $Script)
     {
-        if (!$this->HasActiveParent())
-        {
+        if (!$this->HasActiveParent()) {
             throw new Exception("Instance has no active parent instance!", E_USER_NOTICE);
         }
-        if ($this->HMAddress == '')
-        {
+        if ($this->HMAddress == '') {
             throw new Exception("Instance has no active parent instance!", E_USER_NOTICE);
         }
         $url = 'Script.exe';
-        try
-        {
+        try {
             $HMScriptResult = $this->LoadHMScript($url, $Script);
             $xml = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
-        }
-        catch (Exception $exc)
-        {
+        } catch (Exception $exc) {
             $this->SendDebug($url, $exc->getMessage(), 0);
             throw new Exception($exc->getMessage(), E_USER_NOTICE);
         }
@@ -125,12 +120,9 @@ class HomeMaticRemoteScript extends HMBase
      */
     public function RunScript(string $Script)
     {
-        try
-        {
+        try {
             return $this->SendScript($Script);
-        }
-        catch (Exception $exc)
-        {
+        } catch (Exception $exc) {
             trigger_error($this->Translate($exc->getMessage()), $exc->getCode());
             return false;
         }

@@ -1,4 +1,4 @@
-<?
+<?php
 
 /**
  * @addtogroup homematicextended
@@ -82,8 +82,7 @@ class HomeMaticDisEPWM55 extends HMBase
      */
     private function SendData($Submit)
     {
-        if (!$this->HasActiveParent())
-        {
+        if (!$this->HasActiveParent()) {
             trigger_error($this->Translate("Instance has no active parent instance!"), E_USER_NOTICE);
             return false;
         }
@@ -100,8 +99,7 @@ class HomeMaticDisEPWM55 extends HMBase
         $JSON = json_encode($ParentData);
         $ResultJSON = @$this->SendDataToParent($JSON);
         $Result = @json_decode($ResultJSON);
-        if ($Result === false)
-        {
+        if ($Result === false) {
             trigger_error($this->Translate("Error on send Data."), E_USER_NOTICE);
             $this->SendDebug('Error', '', 0);
         }
@@ -121,8 +119,7 @@ class HomeMaticDisEPWM55 extends HMBase
      */
     private function GetSignal(int $Chime, int $Repeat, int $Wait, int $Color)
     {
-        try
-        {
+        try {
             if (!is_int($Chime))
                 throw new Exception(sprintf($this->Translate("Parameter %s must be type of integer."), "Chime"));
             if (!is_int($Repeat))
@@ -139,9 +136,7 @@ class HomeMaticDisEPWM55 extends HMBase
                 throw new Exception(sprintf($this->Translate("Parameter %s out of range."), "Wait"));
             if (($Color < 0) or ( $Color > 3))
                 throw new Exception(sprintf($this->Translate("Parameter %s out of range."), "Color"));
-        }
-        catch (Exception $exc)
-        {
+        } catch (Exception $exc) {
             trigger_error($exc->getMessage(), E_USER_NOTICE);
             return false;
         }
@@ -166,17 +161,14 @@ class HomeMaticDisEPWM55 extends HMBase
      */
     private function GetLine(string $Text, int $Icon)
     {
-        try
-        {
+        try {
             if (!is_string($Text))
                 throw new Exception(sprintf($this->Translate("Parameter %s must be type of string."), "Text"));
             if (!is_int($Icon))
                 throw new Exception(sprintf($this->Translate("Parameter %s must be type of integer."), "Icon"));
             if (($Icon < 0) or ( $Icon > 9))
                 throw new Exception(sprintf($this->Translate("Parameter %s out of range."), "Icon"));
-        }
-        catch (Exception $exc)
-        {
+        } catch (Exception $exc) {
             trigger_error($exc->getMessage(), E_USER_NOTICE);
             return false;
         }
@@ -185,21 +177,17 @@ class HomeMaticDisEPWM55 extends HMBase
         $Data[] = '0x12';
         if ($Text === "")
             $Data[] = '0x20';
-        else
-        {
+        else {
             if (strpos($Text, '0x8') === 0)
                 $Data[] = substr($Text, 0, 4);
-            else
-            {
+            else {
                 $Text = $this->hex_encode($Text);
-                for ($i = 0; $i < ((strlen($Text) < 12) ? strlen($Text) : 12); $i++)
-                {
+                for ($i = 0; $i < ((strlen($Text) < 12) ? strlen($Text) : 12); $i++) {
                     $Data[] = "0x" . dechex(ord($Text[$i]));
                 }
             }
         }
-        if ($Icon <> 0)
-        {
+        if ($Icon <> 0) {
             $Data[] = '0x13';
             $Data[] = '0x8' . dechex($Icon - 1);
         }
@@ -257,16 +245,13 @@ class HomeMaticDisEPWM55 extends HMBase
     public function WriteValueDisplayLine(int $Line, string $Text, int $Icon)
     {
         $Data[] = '0x0A';
-        for ($index = 1; $index <= 3; $index++)
-        {
-            if ($index == $Line)
-            {
+        for ($index = 1; $index <= 3; $index++) {
+            if ($index == $Line) {
                 $Line = $this->GetLine($Text, $Icon);
                 if ($Line === false)
                     return false;
                 $Data = array_merge($Data, $Line);
-            }
-            else
+            } else
                 $Data[] = '0x0A';
         }
 
@@ -290,16 +275,13 @@ class HomeMaticDisEPWM55 extends HMBase
     public function WriteValueDisplayLineEx(int $Line, string $Text, int $Icon, int $Chime, int $Repeat, int $Wait, int $Color)
     {
         $Data[] = '0x0A';
-        for ($index = 1; $index <= 3; $index++)
-        {
-            if ($index == $Line)
-            {
+        for ($index = 1; $index <= 3; $index++) {
+            if ($index == $Line) {
                 $Line = $this->GetLine($Text, $Icon);
                 if ($Line === false)
                     return false;
                 $Data = array_merge($Data, $Line);
-            }
-            else
+            } else
                 $Data[] = '0x0A';
         }
         $Notify = $this->GetSignal($Chime, $Repeat, $Wait, $Color);

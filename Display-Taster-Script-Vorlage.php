@@ -1,4 +1,4 @@
-<?
+<?php
 
 ### GRUNDFUNKTION
 /*
@@ -108,16 +108,13 @@ define("Color_blue", 0x85);
 
  */
 
-if ($_IPS['SENDER'] <> 'HMDisWM55')
-{
+if ($_IPS['SENDER'] <> 'HMDisWM55') {
     echo 'Dieses Skript wird automatisch über die Homematic Dis-WM55 Instanz ausgeführt';
     return;
 }
 
-if (($_IPS['ACTION'] == 'UP') or ( $_IPS['ACTION'] == 'DOWN'))
-{
-    switch ($_IPS['PAGE'])                                  // Anzeige pro Seite
-    {
+if (($_IPS['ACTION'] == 'UP') or ( $_IPS['ACTION'] == 'DOWN')) {
+    switch ($_IPS['PAGE']) {                                  // Anzeige pro Seite
         case 1:  // Seite 1
 
             $display_line[1] = array('Text' => "SEITE 1", // Text  Seite 1 Zeile 1
@@ -192,8 +189,7 @@ if (($_IPS['ACTION'] == 'UP') or ( $_IPS['ACTION'] == 'DOWN'))
     }
 }
 
-if ($_IPS['ACTION'] == 'ActionUP')                              // Aktion & Anzeige bei ActionUP
-{
+if ($_IPS['ACTION'] == 'ActionUP') {                              // Aktion & Anzeige bei ActionUP
     // Hier kann auch wie oben bei 'PAGE' noch je nach Seite unterschieden werden !
     $display_line[1] = array('Text' => hex_encode("Führe"),
         'Icon' => Icon_no,
@@ -219,8 +215,7 @@ if ($_IPS['ACTION'] == 'ActionUP')                              // Aktion & Anze
         'Icon' => Icon_no);
 }
 
-if ($_IPS['ACTION'] == 'ActionDOWN')                             // Aktion & Anzeige bei ActionDOWN
-{
+if ($_IPS['ACTION'] == 'ActionDOWN') {                             // Aktion & Anzeige bei ActionDOWN
     // Hier kann auch wie oben bei 'PAGE' noch je nach Seite unterschieden werden !
     $display_line[1] = array('Text' => hex_encode("Führe"),
         'Icon' => Icon_no,

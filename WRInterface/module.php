@@ -1,4 +1,4 @@
-<?
+<?php
 
 /**
  * @addtogroup homematicextended
@@ -50,14 +50,12 @@ class HomeMaticWRInterface extends HMBase
             return;
 
 
-        if ($this->CheckConfig())
-        {
+        if ($this->CheckConfig()) {
             if ($this->ReadPropertyInteger("Interval") >= 5)
                 $this->SetTimerInterval("ReadWRInterface", $this->ReadPropertyInteger("Interval") * 1000);
             else
                 $this->SetTimerInterval("ReadWRInterface", 0);
-        }
-        else
+        } else
             $this->SetTimerInterval("ReadWRInterface", 0);
 
 
@@ -113,20 +111,17 @@ class HomeMaticWRInterface extends HMBase
     private function CheckConfig()
     {
         $Interval = $this->ReadPropertyInteger("Interval");
-        if ($Interval < 0)
-        {
+        if ($Interval < 0) {
             $this->SetStatus(IS_EBASE + 2);
             return false;
         }
 
-        if ($Interval == 0)
-        {
+        if ($Interval == 0) {
             $this->SetStatus(IS_INACTIVE);
             return true;
         }
 
-        if ($Interval < 5)
-        {
+        if ($Interval < 5) {
             $this->SetStatus(IS_EBASE + 3);
             return false;
         }
@@ -143,13 +138,11 @@ class HomeMaticWRInterface extends HMBase
      */
     private function GetInterface()
     {
-        if (!$this->HasActiveParent())
-        {
+        if (!$this->HasActiveParent()) {
             trigger_error($this->Translate("Instance has no active parent instance!"), E_USER_NOTICE);
             return false;
         }
-        if (IPS_GetProperty($this->ParentId, "WROpen") !== true)
-        {
+        if (IPS_GetProperty($this->ParentId, "WROpen") !== true) {
             trigger_error($this->Translate("Instance has no active parent instance!"), E_USER_NOTICE);
             return false;
         }
@@ -167,8 +160,7 @@ class HomeMaticWRInterface extends HMBase
         $JSON = json_encode($ParentData);
         $ResultJSON = @$this->SendDataToParent($JSON);
         $Result = @json_decode($ResultJSON);
-        if (($Result === false) or is_null($Result))
-        {
+        if (($Result === false) or is_null($Result)) {
             trigger_error($this->Translate('Error on read WR-Interface.'), E_USER_NOTICE);
             $this->SendDebug('Error', '', 0);
         }
@@ -190,12 +182,10 @@ class HomeMaticWRInterface extends HMBase
         $Result = $this->GetInterface();
         if ($Result === false)
             return false;
-        foreach ($Result as $Ident => $Value)
-        {
+        foreach ($Result as $Ident => $Value) {
             if ($Value === "")
                 continue;
-            switch (gettype($Value))
-            {
+            switch (gettype($Value)) {
                 case "boolean":
                     $Typ = vtBoolean;
                     break;
@@ -213,13 +203,11 @@ class HomeMaticWRInterface extends HMBase
                     continue;
             }
             $vid = @$this->GetIDForIdent($Ident);
-            if ($vid === false)
-            {
+            if ($vid === false) {
                 $this->MaintainVariable($Ident, $Ident, $Typ, '', 0, true);
                 $vid = @$this->GetIDForIdent($Ident);
             }
-            if ($Ident == 'CONNECTED')
-            {
+            if ($Ident == 'CONNECTED') {
                 SetValue($vid, $Value);
                 continue;
             }

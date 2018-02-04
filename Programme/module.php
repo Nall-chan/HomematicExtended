@@ -1,4 +1,4 @@
-<?
+<?php
 
 /**
  * @addtogroup homematicextended
@@ -56,8 +56,7 @@ class HomeMaticProgramme extends HMBase
         parent::ApplyChanges();
         $this->SetReceiveDataFilter(".*9999999999.*");
 
-        if (!IPS_VariableProfileExists('Execute.HM'))
-        {
+        if (!IPS_VariableProfileExists('Execute.HM')) {
             IPS_CreateVariableProfile('Execute.HM', 1);
             IPS_SetVariableProfileAssociation('Execute.HM', 0, 'Start', '', -1);
         }
@@ -66,12 +65,9 @@ class HomeMaticProgramme extends HMBase
             return;
         if (!$this->HasActiveParent())
             return;
-        try
-        {
+        try {
             $this->ReadCCUPrograms();
-        }
-        catch (Exception $exc)
-        {
+        } catch (Exception $exc) {
             echo $this->Translate($exc->getMessage());
         }
     }
@@ -120,39 +116,30 @@ class HomeMaticProgramme extends HMBase
      */
     private function ReadCCUPrograms()
     {
-        if (!$this->HasActiveParent())
-        {
+        if (!$this->HasActiveParent()) {
             throw new Exception("Instance has no active parent instance!", E_USER_NOTICE);
         }
-        if ($this->HMAddress == '')
-        {
+        if ($this->HMAddress == '') {
             throw new Exception("Instance has no active parent instance!", E_USER_NOTICE);
         }
         $url = 'SysPrg.exe';
         $HMScript = 'SysPrgs=dom.GetObject(ID_PROGRAMS).EnumUsedIDs();';
-        try
-        {
+        try {
             $HMScriptResult = $this->LoadHMScript($url, $HMScript);
             $xml = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
-        }
-        catch (Exception $exc)
-        {
+        } catch (Exception $exc) {
             $this->SendDebug('SysPrg', $exc->getMessage(), 0);
             throw new Exception("Error on read all CCU-Programs.", E_USER_NOTICE);
         }
 
         $Result = true;
-        foreach (explode(chr(0x09), (string) $xml->SysPrgs) as $SysPrg)
-        {
+        foreach (explode(chr(0x09), (string) $xml->SysPrgs) as $SysPrg) {
             $HMScript = 'Name=dom.GetObject(' . $SysPrg . ').Name();' . PHP_EOL
                     . 'Info=dom.GetObject(' . $SysPrg . ').PrgInfo();' . PHP_EOL;
-            try
-            {
+            try {
                 $HMScriptResult = $this->LoadHMScript($url, $HMScript);
                 $varXml = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
-            }
-            catch (Exception $exc)
-            {
+            } catch (Exception $exc) {
                 $Result = false;
                 $this->SendDebug($SysPrg, $exc->getMessage(), 0);
                 trigger_error(sprintf($this->Translate("Error on read info of CCU-Program %s."), (string) $SysPrg), E_USER_NOTICE);
@@ -163,8 +150,7 @@ class HomeMaticProgramme extends HMBase
             $var = @IPS_GetObjectIDByIdent($SysPrg, $this->InstanceID);
             $Name = (string) $varXml->Name;
             $Info = (string) $varXml->Name;
-            if ($var === false)
-            {
+            if ($var === false) {
                 $this->MaintainVariable($SysPrg, $Name, 1, 'Execute.HM', 0, true);
                 $this->EnableAction($SysPrg);
                 $var = IPS_GetObjectIDByIdent($SysPrg, $this->InstanceID);
@@ -183,12 +169,10 @@ class HomeMaticProgramme extends HMBase
      */
     private function StartCCUProgram($Ident)
     {
-        if (!$this->HasActiveParent())
-        {
+        if (!$this->HasActiveParent()) {
             throw new Exception("Instance has no active parent instance!", E_USER_NOTICE);
         }
-        if ($this->HMAddress == '')
-        {
+        if ($this->HMAddress == '') {
             throw new Exception("Instance has no active parent instance!", E_USER_NOTICE);
         }
         $var = @IPS_GetObjectIDByIdent($Ident, $this->InstanceID);
@@ -197,25 +181,19 @@ class HomeMaticProgramme extends HMBase
 
         $url = 'SysPrg.exe';
         $HMScript = 'State=dom.GetObject(' . $Ident . ').ProgramExecute();';
-        try
-        {
+        try {
             $HMScriptResult = $this->LoadHMScript($url, $HMScript);
             $xml = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
-        }
-        catch (Exception $exc)
-        {
+        } catch (Exception $exc) {
             $this->SendDebug($Ident, $exc->getMessage(), 0);
             throw new Exception("Error on start CCU-Program.", E_USER_NOTICE);
         }
 
         $this->SendDebug('Result', (string) $xml->State, 0);
-        if ((string) $xml->State == 'true')
-        {
+        if ((string) $xml->State == 'true') {
             SetValueInteger($var, 0);
             return true;
-        }
-        else
-        {
+        } else {
             throw new Exception("Error on start CCU-Program", E_USER_NOTICE);
         }
     }
@@ -229,12 +207,9 @@ class HomeMaticProgramme extends HMBase
      */
     public function RequestAction($Ident, $Value)
     {
-        try
-        {
+        try {
             $this->StartCCUProgram($Ident);
-        }
-        catch (Exception $exc)
-        {
+        } catch (Exception $exc) {
             trigger_error($this->Translate($exc->getMessage()), $exc->getCode());
         }
     }
@@ -250,12 +225,9 @@ class HomeMaticProgramme extends HMBase
      */
     public function ReadPrograms()
     {
-        try
-        {
+        try {
             return $this->ReadCCUPrograms();
-        }
-        catch (Exception $exc)
-        {
+        } catch (Exception $exc) {
             trigger_error($this->Translate($exc->getMessage()), $exc->getCode());
             return false;
         }
@@ -270,12 +242,9 @@ class HomeMaticProgramme extends HMBase
      */
     public function StartProgram(string $Parameter)
     {
-        try
-        {
+        try {
             return $this->StartCCUProgram($Parameter);
-        }
-        catch (Exception $exc)
-        {
+        } catch (Exception $exc) {
             trigger_error($this->Translate($exc->getMessage()), $exc->getCode());
             return false;
         }

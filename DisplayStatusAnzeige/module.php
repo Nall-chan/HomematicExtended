@@ -1,4 +1,4 @@
-<?
+<?php
 
 /**
  * @addtogroup homematicextended
@@ -89,14 +89,11 @@ class HomeMaticDisWM55 extends HMBase
     public function MessageSink($TimeStamp, $SenderID, $Message, $Data)
     {
         parent::MessageSink($TimeStamp, $SenderID, $Message, $Data);
-        switch ($Message)
-        {
+        switch ($Message) {
             case VM_DELETE:
                 $this->UnregisterMessage($SenderID, VM_DELETE);
-                foreach (array_keys(self::$PropertysName) as $Name)
-                {
-                    if ($SenderID == $this->ReadPropertyInteger($Name))
-                    {
+                foreach (array_keys(self::$PropertysName) as $Name) {
+                    if ($SenderID == $this->ReadPropertyInteger($Name)) {
                         IPS_SetProperty($this->InstanceID, $Name, 0);
                         IPS_ApplyChanges($this->InstanceID);
                     }
@@ -113,14 +110,11 @@ class HomeMaticDisWM55 extends HMBase
     public function ApplyChanges()
     {
         parent::ApplyChanges();
-        if (IPS_GetKernelRunlevel() == KR_READY)
-        {
-            if ($this->CheckConfig())
-            {
+        if (IPS_GetKernelRunlevel() == KR_READY) {
+            if ($this->CheckConfig()) {
                 $Lines = array();
                 $Events = $this->Events;
-                foreach ($this->HMEventData as $Event => $Trigger)
-                {
+                foreach ($this->HMEventData as $Event => $Trigger) {
                     if ($Events[$Event] != 0)
                         $Lines[] = '.*"DeviceID":"' . $Trigger['HMDeviceAddress'] . '","VariableName":"' . $Trigger['HMDeviceDatapoint'] . '".*';
                 }
@@ -182,12 +176,9 @@ class HomeMaticDisWM55 extends HMBase
         $Action = array_search($ReceiveData, $this->HMEventData);
         if ($Action === false)
             return;
-        try
-        {
+        try {
             $this->RunDisplayScript($Action);
-        }
-        catch (Exception $exc)
-        {
+        } catch (Exception $exc) {
             $this->SendDebug('Error', $exc->getMessage(), 0);
             trigger_error($this->Translate($exc->getMessage()), $exc->getCode());
         }
@@ -207,30 +198,24 @@ class HomeMaticDisWM55 extends HMBase
         $OldHMEventDatas = $this->HMEventData;
         $OldEvents = $this->Events;
         $Events = array();
-        foreach (array_keys(self::$PropertysName) as $Name)
-        {
+        foreach (array_keys(self::$PropertysName) as $Name) {
             $Event = $this->ReadPropertyInteger($Name);
-            if ($Event <> $OldEvents[$Name])
-            {
+            if ($Event <> $OldEvents[$Name]) {
 
-                if ($OldEvents[$Name] > 0)
-                {
+                if ($OldEvents[$Name] > 0) {
                     $this->UnregisterMessage($OldEvents[$Name], VM_DELETE);
                     $OldEvents[$Name] = 0;
                 }
 
-                if ($Event > 0)
-                {
-                    if (in_array($Event, $Events)) //doppelt ?
-                    {
+                if ($Event > 0) {
+                    if (in_array($Event, $Events)) { //doppelt ?
                         $OldHMEventDatas[$Name] = self::$EmptyHMEventData;
                         $OldEvents[$Name] = 0;
                         $Result = false;
                         continue;
                     }
                     $HMEventData = $this->GetDisplayAddress($Event);
-                    if ($HMEventData === false)
-                    {
+                    if ($HMEventData === false) {
                         $OldHMEventDatas[$Name] = self::$EmptyHMEventData;
                         $OldEvents[$Name] = 0;
                         $Result = false;
@@ -248,32 +233,27 @@ class HomeMaticDisWM55 extends HMBase
         $this->HMEventData = $OldHMEventDatas;
         $this->Events = $OldEvents;
 
-        if ($Result === false)
-        {
+        if ($Result === false) {
             $this->SetStatus(IS_EBASE + 2);
             return false;
         }
 
-        if (count($Events) == 0)
-        {
+        if (count($Events) == 0) {
             $this->SetStatus(IS_INACTIVE);
             return false;
         }
 
-        if ($this->ReadPropertyInteger('ScriptID') == 0)
-        {
+        if ($this->ReadPropertyInteger('ScriptID') == 0) {
             $this->SetStatus(IS_EBASE + 3);
             return false;
         }
 
-        if ($this->ReadPropertyInteger('Timeout') < 0)
-        {
+        if ($this->ReadPropertyInteger('Timeout') < 0) {
             $this->SetStatus(IS_EBASE + 4);
             return false;
         }
 
-        if ($this->ReadPropertyInteger('MaxPage') < 0)
-        {
+        if ($this->ReadPropertyInteger('MaxPage') < 0) {
             $this->SetStatus(IS_EBASE + 5);
             return false;
         }
@@ -318,8 +298,7 @@ class HomeMaticDisWM55 extends HMBase
 
         $Page = $this->Page;
         $MaxPage = $this->ReadPropertyInteger('MaxPage');
-        switch ($Action)
-        {
+        switch ($Action) {
             case "PageUpID":
                 if ($Page == $MaxPage)
                     $Page = 1;
@@ -343,32 +322,27 @@ class HomeMaticDisWM55 extends HMBase
                 $ActionString = "ActionDOWN";
                 break;
         }
-            $this->SendDebug('Action', $ActionString, 0);
+        $this->SendDebug('Action', $ActionString, 0);
         $ScriptID = $this->ReadPropertyInteger('ScriptID');
-        if ($ScriptID <> 0)
-        {
+        if ($ScriptID <> 0) {
             $Result = IPS_RunScriptWaitEx($ScriptID, array('SENDER' => 'HMDisWM55', 'ACTION' => $ActionString, 'PAGE' => $Page, 'EVENT' => $this->InstanceID));
             $ResultData = json_decode($Result);
             if (is_null($ResultData))
                 throw new Exception("Error in display-script.", E_USER_NOTICE);
-            $this->SendDebug('DisplayScript', $ResultData, 0);            
+            $this->SendDebug('DisplayScript', $ResultData, 0);
             $Data = $this->ConvertDisplayData($ResultData);
             $url = 'GetDisplay.exe';
             $HMScript = 'string DisplayKeySubmit;' . PHP_EOL;
-            $HMScript.='DisplayKeySubmit=dom.GetObject("BidCos-RF.' . (string) $this->HMEventData[$Action]['HMDeviceAddress'] . '.SUBMIT").ID();' . PHP_EOL;
+            $HMScript .= 'DisplayKeySubmit=dom.GetObject("BidCos-RF.' . (string) $this->HMEventData[$Action]['HMDeviceAddress'] . '.SUBMIT").ID();' . PHP_EOL;
             $HMScript .= 'State=dom.GetObject(DisplayKeySubmit).State("' . $Data . '");' . PHP_EOL;
-            try
-            {
+            try {
                 $this->LoadHMScript($url, $HMScript);
-            }
-            catch (Exception $exc)
-            {
+            } catch (Exception $exc) {
                 throw new Exception('Error on send data to HM-Dis-WM55.', E_USER_NOTICE);
             }
         }
         $Timeout = $this->ReadPropertyInteger('Timeout');
-        if ($Timeout > 0)
-        {
+        if ($Timeout > 0) {
             $this->SetTimerInterval('DisplayTimeout', 0);
             $this->SetTimerInterval('DisplayTimeout', $Timeout * 1000);
         }
@@ -382,26 +356,22 @@ class HomeMaticDisWM55 extends HMBase
     private function ConvertDisplayData($Data)
     {
         $SendData = "0x02";
-        foreach ($Data as $Line)
-        {
-            if ((string) $Line->Text <> "")
-            {
-                $SendData.=",0x12";
-                for ($i = 0; $i < strlen((string) $Line->Text); $i++)
-                {
+        foreach ($Data as $Line) {
+            if ((string) $Line->Text <> "") {
+                $SendData .= ",0x12";
+                for ($i = 0; $i < strlen((string) $Line->Text); $i++) {
                     $SendData .= ",0x" . dechex(ord((string) $Line->Text[$i]));
                 }
-                $SendData.=",0x11";
+                $SendData .= ",0x11";
                 $SendData .= ",0x" . dechex((int) $Line->Color);
             }
-            if ((int) $Line->Icon <> 0)
-            {
-                $SendData.=",0x13";
+            if ((int) $Line->Icon <> 0) {
+                $SendData .= ",0x13";
                 $SendData .= ",0x" . dechex((int) $Line->Icon);
             }
-            $SendData.=",0x0A";
+            $SendData .= ",0x0A";
         }
-        $SendData.=",0x03";
+        $SendData .= ",0x03";
         return $SendData;
     }
 

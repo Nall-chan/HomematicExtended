@@ -1,4 +1,4 @@
-<?
+<?php
 
 /**
  * @addtogroup homematicextended
@@ -46,25 +46,20 @@ class HomeMaticRFInterfaceSplitter extends HMBase
         if (IPS_GetKernelRunlevel() <> KR_READY)
             return;
 
-        if ($this->CheckConfig())
-        {
+        if ($this->CheckConfig()) {
             if ($this->ReadPropertyInteger("Interval") >= 5)
                 $this->SetTimerInterval("ReadRFInterfaces", $this->ReadPropertyInteger("Interval") * 1000);
             else
                 $this->SetTimerInterval("ReadRFInterfaces", 0);
-        }
-        else
+        } else
             $this->SetTimerInterval("ReadRFInterfaces", 0);
 
 
         if (!$this->HasActiveParent())
             return;
-        try
-        {
+        try {
             $this->ReadRFInterfaces();
-        }
-        catch (Exception $exc)
-        {
+        } catch (Exception $exc) {
             echo $this->Translate($exc->getMessage());
         }
     }
@@ -115,20 +110,17 @@ class HomeMaticRFInterfaceSplitter extends HMBase
     private function CheckConfig()
     {
         $Interval = $this->ReadPropertyInteger("Interval");
-        if ($Interval < 0)
-        {
+        if ($Interval < 0) {
             $this->SetStatus(IS_EBASE + 2);
             return false;
         }
 
-        if ($Interval == 0)
-        {
+        if ($Interval == 0) {
             $this->SetStatus(IS_INACTIVE);
             return true;
         }
 
-        if ($Interval < 5)
-        {
+        if ($Interval < 5) {
             $this->SetStatus(IS_EBASE + 3);
             return false;
         }
@@ -145,8 +137,7 @@ class HomeMaticRFInterfaceSplitter extends HMBase
      */
     private function GetInterfaces()
     {
-        if (!$this->HasActiveParent())
-        {
+        if (!$this->HasActiveParent()) {
             trigger_error($this->Translate("Instance has no active parent instance!"), E_USER_NOTICE);
             return array();
         }
@@ -167,8 +158,7 @@ class HomeMaticRFInterfaceSplitter extends HMBase
             "Data" => $data
         );
         $ret = array();
-        foreach ($Protocol as $ProtocolId)
-        {
+        foreach ($Protocol as $ProtocolId) {
             $ParentData["Protocol"] = $ProtocolId;
             $JSON = json_encode($ParentData);
             $ResultJSON = @$this->SendDataToParent($JSON);
@@ -196,26 +186,21 @@ class HomeMaticRFInterfaceSplitter extends HMBase
         $DevicesIDs = IPS_GetInstanceListByModuleID("{36549B96-FA11-4651-8662-F310EEEC5C7D}");
         $CreatedDevices = array();
         $KnownDevices = array();
-        foreach ($DevicesIDs as $Device)
-        {
+        foreach ($DevicesIDs as $Device) {
             $KnownDevices[] = IPS_GetProperty($Device, 'Address');
         }
         $Result = $this->GetInterfaces();
-        foreach ($Result as $ProtocolID => $Protocol)
-        {
+        foreach ($Result as $ProtocolID => $Protocol) {
             if (!is_array($Protocol))
                 continue;
-            foreach ($Protocol as $InterfaceIndex => $Interface)
-            {
+            foreach ($Protocol as $InterfaceIndex => $Interface) {
                 if (in_array($Interface->ADDRESS, $KnownDevices))
                     continue;
                 $NewDevice = IPS_CreateInstance("{36549B96-FA11-4651-8662-F310EEEC5C7D}");
                 if (property_exists($Interface, 'TYPE'))
                     IPS_SetName($NewDevice, $Interface->TYPE);
-                else
-                {
-                    switch ($ProtocolID)
-                    {
+                else {
+                    switch ($ProtocolID) {
                         case 0:
                             $Name = 'Funk';
                         case 2:
@@ -225,8 +210,7 @@ class HomeMaticRFInterfaceSplitter extends HMBase
                     }
                     IPS_SetName($NewDevice, $Name . ' - Interface ' . $InterfaceIndex);
                 }
-                if (IPS_GetInstance($NewDevice)['ConnectionID'] <> $this->InstanceID)
-                {
+                if (IPS_GetInstance($NewDevice)['ConnectionID'] <> $this->InstanceID) {
                     @IPS_DisconnectInstance($NewDevice);
                     IPS_ConnectInstance($NewDevice, $this->InstanceID);
                 }
@@ -252,12 +236,10 @@ class HomeMaticRFInterfaceSplitter extends HMBase
     {
         $Result = $this->GetInterfaces();
         $ret = false;
-        foreach ($Result as $ProtocolID => $Protocol)
-        {
+        foreach ($Result as $ProtocolID => $Protocol) {
             if (!is_array($Protocol))
                 continue;
-            foreach ($Protocol as $InterfaceIndex => $Interface)
-            {
+            foreach ($Protocol as $InterfaceIndex => $Interface) {
                 $this->SendDebug("Proto" . $ProtocolID . " If" . $InterfaceIndex, $Interface, 0);
                 $Interface->DataID = "{E2966A08-BCE1-4E76-8C4B-7E0136244E1B}";
                 $Data = json_encode($Interface);
