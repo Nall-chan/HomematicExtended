@@ -381,7 +381,24 @@ abstract class HMBase extends IPSModule
             throw new Exception('CCU Address not set.', E_USER_NOTICE);
         }
     }
-
+    /**
+     * Setzte eine IPS-Variable auf den Wert von $value
+     *
+     * @access protected
+     * @param string $Ident Ident der Statusvariable.
+     * @param bool|int|float|string $value Neuer Wert der Statusvariable.
+     */
+    protected function SetValue($Ident, $value)
+    {
+        if (method_exists('IPSModule', 'SetValue')) {
+            parent::SetValue($Ident, $value);
+        } else {
+            $id = @$this->GetIDForIdent($Ident);
+            if ($id > 0) {
+                SetValue($id, $value);
+            }
+        }
+    }
 }
 
 /**
@@ -546,24 +563,6 @@ trait InstanceStatus
         return false;
     }
 
-    /**
-     * Setzte eine IPS-Variable auf den Wert von $value
-     *
-     * @access protected
-     * @param string $Ident Ident der Statusvariable.
-     * @param bool|int|float|string $value Neuer Wert der Statusvariable.
-     */
-    protected function SetValue($Ident, $value)
-    {
-        if (method_exists('IPSModule', 'SetValue')) {
-            parent::SetValue($Ident, $value);
-        } else {
-            $id = @$this->GetIDForIdent($Ident);
-            if ($id > 0) {
-                SetValue($id, $value);
-            }
-        }
-    }
 
 }
 
