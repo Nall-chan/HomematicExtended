@@ -195,7 +195,6 @@ abstract class HMBase extends IPSModule
         InstanceStatus {
         InstanceStatus::GetParentData as GetInstanceParent;
     }
-
     /**
      * Wert einer Eigenschaft aus den InstanceBuffer lesen.
      * 
@@ -242,8 +241,9 @@ abstract class HMBase extends IPSModule
         $this->RegisterMessage(0, IPS_KERNELSTARTED);
         $this->RegisterMessage($this->InstanceID, FM_CONNECT);
         $this->RegisterMessage($this->InstanceID, FM_DISCONNECT);
-        if (IPS_GetKernelRunlevel() <> KR_READY)
+        if (IPS_GetKernelRunlevel() <> KR_READY) {
             return;
+        }
         $this->GetParentData();
     }
 
@@ -268,37 +268,37 @@ abstract class HMBase extends IPSModule
                 break;
             case FM_CONNECT:
             case FM_DISCONNECT:
+            case IM_CHANGESETTINGS:
                 $this->ForceRefresh();
                 break;
             case IM_CHANGESTATUS:
-                if ($this->HMAddress == '')
+                if ($this->HMAddress == '') {
                     return;
-                if (($SenderID == @IPS_GetInstance($this->InstanceID)['ConnectionID']) and ( $Data[0] == IS_ACTIVE))
+                }
+                if (($SenderID == @IPS_GetInstance($this->InstanceID)['ConnectionID']) and ( $Data[0] == IS_ACTIVE)) {
                     try {
                         $this->ForceRefresh();
                     } catch (Exception $exc) {
                         return;
                     }
+                }
                 break;
         }
     }
 
 ################## protected
-
     /**
      * Wird ausgeführt wenn der Kernel hochgefahren wurde.
      * 
      * @access protected
      */
     abstract protected function KernelReady();
-
     /**
      * Wird ausgeführt wenn sich der Parent ändert.
      * 
      * @access protected
      */
     abstract protected function ForceRefresh();
-
     /**
      * Setzte alle Eigenschaften, welche Instanzen die mit einem Homematic-Socket verbunden sind, haben müssen.
      *
@@ -309,10 +309,11 @@ abstract class HMBase extends IPSModule
     {
         $this->RegisterPropertyInteger("Protocol", 0);
         $count = @IPS_GetInstanceListByModuleID(IPS_GetInstance($this->InstanceID)["ModuleInfo"]["ModuleID"]);
-        if (is_array($count))
+        if (is_array($count)) {
             $this->RegisterPropertyString("Address", $Address . ":" . count($count));
-        else
+        } else {
             $this->RegisterPropertyString("Address", $Address . ":0");
+        }
     }
 
     /**
@@ -327,10 +328,11 @@ abstract class HMBase extends IPSModule
         $ParentId = $this->GetInstanceParent();
         if ($ParentId <> $OldParentId) {
 
-            if ($ParentId > 0)
+            if ($ParentId > 0) {
                 $this->HMAddress = (string) IPS_GetProperty($ParentId, 'Host');
-            else
+            } else {
                 $this->HMAddress = '';
+            }
         }
         return $ParentId;
     }
@@ -367,14 +369,17 @@ abstract class HMBase extends IPSModule
             $result = curl_exec($ch);
             $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             curl_close($ch);
-            if ($http_code >= 400)
+            if ($http_code >= 400) {
                 throw new Exception($this->Translate('CCU unreachable:') . $http_code, E_USER_NOTICE);
-            if ($result === false)
+            }
+            if ($result === false) {
                 throw new Exception('CCU unreachable', E_USER_NOTICE);
+            }
             $this->SendDebug("Result", $result, 0);
             return $result;
-        } else
+        } else {
             throw new Exception('CCU Address not set.', E_USER_NOTICE);
+        }
     }
 
 }
@@ -384,7 +389,6 @@ abstract class HMBase extends IPSModule
  */
 trait Profile
 {
-
     /**
      * Erstell und konfiguriert ein VariablenProfil für den Typ integer mit Assoziationen
      *
@@ -431,8 +435,9 @@ trait Profile
             IPS_CreateVariableProfile($Name, 1);
         } else {
             $profile = IPS_GetVariableProfile($Name);
-            if ($profile['ProfileType'] != 1)
+            if ($profile['ProfileType'] != 1) {
                 throw new Exception("Variable profile type does not match for profile " . $Name, E_USER_NOTICE);
+            }
         }
 
         IPS_SetVariableProfileIcon($Name, $Icon);
@@ -446,13 +451,16 @@ trait Profile
      */
     protected function UnregisterProfil(string $Profil)
     {
-        if (!IPS_VariableProfileExists($Profil))
+        if (!IPS_VariableProfileExists($Profil)) {
             return;
+        }
         foreach (IPS_GetVariableList() as $VarID) {
-            if (IPS_GetParent($VarID) == $this->InstanceID)
+            if (IPS_GetParent($VarID) == $this->InstanceID) {
                 continue;
-            if (IPS_GetVariable($VarID)['VariableCustomProfile'] == $Profil)
+            }
+            if (IPS_GetVariable($VarID)['VariableCustomProfile'] == $Profil) {
                 return;
+            }
         }
         IPS_DeleteVariableProfile($Profil);
     }
@@ -465,7 +473,6 @@ trait Profile
  */
 trait DebugHelper
 {
-
     /**
      * Ergänzt SendDebug um Möglichkeit Objekte und Array auszugeben.
      *
@@ -497,7 +504,6 @@ trait DebugHelper
  */
 trait InstanceStatus
 {
-
     /**
      * Ermittelt den Parent und verwaltet die Einträge des Parent im MessageSink
      * Ermöglicht es das Statusänderungen des Parent empfangen werden können.
@@ -510,28 +516,19 @@ trait InstanceStatus
         $OldParentId = $this->ParentId;
         $ParentId = @IPS_GetInstance($this->InstanceID)['ConnectionID'];
         if ($ParentId <> $OldParentId) {
-            if ($OldParentId > 0)
+            if ($OldParentId > 0) {
+                $this->UnregisterMessage($OldParentId, IM_CHANGESETTINGS);
                 $this->UnregisterMessage($OldParentId, IM_CHANGESTATUS);
-            if ($ParentId > 0)
+            }
+            if ($ParentId > 0) {
+                $this->RegisterMessage($ParentId, IM_CHANGESETTINGS);
                 $this->RegisterMessage($ParentId, IM_CHANGESTATUS);
-            else
+            } else {
                 $ParentId = 0;
+            }
             $this->ParentId = $ParentId;
         }
         return $ParentId;
-    }
-
-    /**
-     * Setzt den Status dieser Instanz auf den übergebenen Status.
-     * Prüft vorher noch ob sich dieser vom aktuellen Status unterscheidet.
-     * 
-     * @access protected
-     * @param int $InstanceStatus
-     */
-    protected function SetStatus($InstanceStatus)
-    {
-        if ($InstanceStatus <> IPS_GetInstance($this->InstanceID)['InstanceStatus'])
-            parent::SetStatus($InstanceStatus);
     }
 
     /**
@@ -545,10 +542,28 @@ trait InstanceStatus
         $instance = IPS_GetInstance($this->InstanceID);
         if ($instance['ConnectionID'] > 0) {
             $parent = IPS_GetInstance($instance['ConnectionID']);
-            if ($parent['InstanceStatus'] == 102)
-                return true;
+            return ($parent['InstanceStatus'] == 102 ? true : false);
         }
         return false;
+    }
+
+    /**
+     * Setzte eine IPS-Variable auf den Wert von $value
+     *
+     * @access protected
+     * @param string $Ident Ident der Statusvariable.
+     * @param bool|int|float|string $value Neuer Wert der Statusvariable.
+     */
+    protected function SetValue($Ident, $value)
+    {
+        if (method_exists('IPSModule', 'SetValue')) {
+            parent::SetValue($Ident, $value);
+        } else {
+            $id = @$this->GetIDForIdent($Ident);
+            if ($id > 0) {
+                SetValue($id, $value);
+            }
+        }
     }
 
 }

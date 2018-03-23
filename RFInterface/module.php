@@ -21,7 +21,6 @@ class HomeMaticRFInterface extends IPSModule
 {
 
     use DebugHelper;
-
     /**
      * Interne Funktion des SDK.
      *
@@ -46,14 +45,14 @@ class HomeMaticRFInterface extends IPSModule
         $Address = $this->ReadPropertyString("Address");
         $this->SetSummary($Address);
 
-        if ($Address !== "")
+        if ($Address !== "") {
             $this->SetReceiveDataFilter('.*"ADDRESS":"' . $Address . '".*');
-        else
+        } else {
             $this->SetReceiveDataFilter(".*9999999999.*");
+        }
     }
 
 ################## Datenaustausch
-
     /**
      * Interne Funktion des SDK.
      *
@@ -66,11 +65,13 @@ class HomeMaticRFInterface extends IPSModule
         unset($Data->ADDRESS);
         $this->SendDebug('Receive', $Data, 0);
         foreach ($Data as $Ident => $Value) {
-            if ($Value === "")
+            if ($Value === "") {
                 continue;
+            }
             $Profil = "";
-            if ($Ident == "DUTY_CYCLE")
+            if ($Ident == "DUTY_CYCLE") {
                 $Profil = "~Intensity.100";
+            }
             switch (gettype($Value)) {
                 case "boolean":
                     $Typ = vtBoolean;
@@ -94,11 +95,12 @@ class HomeMaticRFInterface extends IPSModule
                 $vid = @$this->GetIDForIdent($Ident);
             }
             if ($Ident == 'CONNECTED') {
-                SetValue($vid, $Value);
+                $this->SetValue($vid, $Value);
                 continue;
             }
-            if (GetValue($vid) <> $Value)
-                SetValue($vid, $Value);
+            if (GetValue($vid) <> $Value) {
+                $this->SetValue($vid, $Value);
+            }
         }
     }
 

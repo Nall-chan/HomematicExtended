@@ -20,7 +20,6 @@ require_once(__DIR__ . "/../libs/HMBase.php");  // HMBase Klasse
  */
 class HomeMaticDisEPWM55 extends HMBase
 {
-
     /**
      * Interne Funktion des SDK.
      *
@@ -49,7 +48,6 @@ class HomeMaticDisEPWM55 extends HMBase
     }
 
 ################## protected
-
     /**
      * Wird ausgeführt wenn der Kernel hochgefahren wurde.
      * 
@@ -71,7 +69,6 @@ class HomeMaticDisEPWM55 extends HMBase
     }
 
 ################## PRIVATE                
-
     /**
      * Sendet die Daten an dden HM-Socket.
      * 
@@ -88,11 +85,11 @@ class HomeMaticDisEPWM55 extends HMBase
         }
         $ParentData = Array
             (
-            "DataID" => "{75B6B237-A7B0-46B9-BBCE-8DF0CFE6FA52}",
-            "Protocol" => 0,
+            "DataID"     => "{75B6B237-A7B0-46B9-BBCE-8DF0CFE6FA52}",
+            "Protocol"   => 0,
             "MethodName" => "setValue",
-            "WaitTime" => 5000,
-            "Data" => array($this->ReadPropertyString('Address'), 'SUBMIT', '0x02,' . implode(',', $Submit) . ',0x03')
+            "WaitTime"   => 5000,
+            "Data"       => array($this->ReadPropertyString('Address'), 'SUBMIT', '0x02,' . implode(',', $Submit) . ',0x03')
         );
         $this->SendDebug('Send', $ParentData, 0);
 
@@ -120,22 +117,30 @@ class HomeMaticDisEPWM55 extends HMBase
     private function GetSignal(int $Chime, int $Repeat, int $Wait, int $Color)
     {
         try {
-            if (!is_int($Chime))
+            if (!is_int($Chime)) {
                 throw new Exception(sprintf($this->Translate("Parameter %s must be type of integer."), "Chime"));
-            if (!is_int($Repeat))
+            }
+            if (!is_int($Repeat)) {
                 throw new Exception(sprintf($this->Translate("Parameter %s must be type of integer."), "Repeat"));
-            if (!is_int($Wait))
+            }
+            if (!is_int($Wait)) {
                 throw new Exception(sprintf($this->Translate("Parameter %s must be type of integer."), "Wait"));
-            if (!is_int($Color))
+            }
+            if (!is_int($Color)) {
                 throw new Exception(sprintf($this->Translate("Parameter %s must be type of integer."), "Color"));
-            if (($Chime < 0) or ( $Chime > 6))
+            }
+            if (($Chime < 0) or ( $Chime > 6)) {
                 throw new Exception(sprintf($this->Translate("Parameter %s out of range."), "Chime"));
-            if (($Repeat < 0) or ( $Repeat > 15))
+            }
+            if (($Repeat < 0) or ( $Repeat > 15)) {
                 throw new Exception(sprintf($this->Translate("Parameter %s out of range."), "Repeat"));
-            if (($Wait < 0) or ( $Wait > 15))
+            }
+            if (($Wait < 0) or ( $Wait > 15)) {
                 throw new Exception(sprintf($this->Translate("Parameter %s out of range."), "Wait"));
-            if (($Color < 0) or ( $Color > 3))
+            }
+            if (($Color < 0) or ( $Color > 3)) {
                 throw new Exception(sprintf($this->Translate("Parameter %s out of range."), "Color"));
+            }
         } catch (Exception $exc) {
             trigger_error($exc->getMessage(), E_USER_NOTICE);
             return false;
@@ -162,12 +167,15 @@ class HomeMaticDisEPWM55 extends HMBase
     private function GetLine(string $Text, int $Icon)
     {
         try {
-            if (!is_string($Text))
+            if (!is_string($Text)) {
                 throw new Exception(sprintf($this->Translate("Parameter %s must be type of string."), "Text"));
-            if (!is_int($Icon))
+            }
+            if (!is_int($Icon)) {
                 throw new Exception(sprintf($this->Translate("Parameter %s must be type of integer."), "Icon"));
-            if (($Icon < 0) or ( $Icon > 9))
+            }
+            if (($Icon < 0) or ( $Icon > 9)) {
                 throw new Exception(sprintf($this->Translate("Parameter %s out of range."), "Icon"));
+            }
         } catch (Exception $exc) {
             trigger_error($exc->getMessage(), E_USER_NOTICE);
             return false;
@@ -175,12 +183,12 @@ class HomeMaticDisEPWM55 extends HMBase
 
 
         $Data[] = '0x12';
-        if ($Text === "")
+        if ($Text === "") {
             $Data[] = '0x20';
-        else {
-            if (strpos($Text, '0x8') === 0)
+        } else {
+            if (strpos($Text, '0x8') === 0) {
                 $Data[] = substr($Text, 0, 4);
-            else {
+            } else {
                 $Text = $this->hex_encode($Text);
                 for ($i = 0; $i < ((strlen($Text) < 12) ? strlen($Text) : 12); $i++) {
                     $Data[] = "0x" . dechex(ord($Text[$i]));
@@ -211,7 +219,6 @@ class HomeMaticDisEPWM55 extends HMBase
     }
 
 ################## public    
-
     /**
      * IPS-Instanz-Funktion 'HM_WriteValueDisplayNotify'.
      * Steuert den Summer und die LED des Display.
@@ -227,8 +234,9 @@ class HomeMaticDisEPWM55 extends HMBase
     {
 
         $Data = $this->GetSignal($Chime, $Repeat, $Wait, $Color);
-        if ($Data === false)
+        if ($Data === false) {
             return false;
+        }
         return $this->SendData($Data);
     }
 
@@ -248,11 +256,13 @@ class HomeMaticDisEPWM55 extends HMBase
         for ($index = 1; $index <= 3; $index++) {
             if ($index == $Line) {
                 $Line = $this->GetLine($Text, $Icon);
-                if ($Line === false)
+                if ($Line === false) {
                     return false;
+                }
                 $Data = array_merge($Data, $Line);
-            } else
+            } else {
                 $Data[] = '0x0A';
+            }
         }
 
         return $this->SendData($Data);
@@ -278,15 +288,18 @@ class HomeMaticDisEPWM55 extends HMBase
         for ($index = 1; $index <= 3; $index++) {
             if ($index == $Line) {
                 $Line = $this->GetLine($Text, $Icon);
-                if ($Line === false)
+                if ($Line === false) {
                     return false;
+                }
                 $Data = array_merge($Data, $Line);
-            } else
+            } else {
                 $Data[] = '0x0A';
+            }
         }
         $Notify = $this->GetSignal($Chime, $Repeat, $Wait, $Color);
-        if ($Notify === false)
+        if ($Notify === false) {
             return false;
+        }
         $Data = array_merge($Data, $Notify);
         return $this->SendData($Data);
     }
@@ -308,17 +321,20 @@ class HomeMaticDisEPWM55 extends HMBase
     {
         $Data[] = '0x0A';
         $Line1 = $this->GetLine($Text1, $Icon1);
-        if ($Line1 === false)
+        if ($Line1 === false) {
             return false;
+        }
         $Data = array_merge($Data, $Line1);
 
         $Line2 = $this->GetLine($Text2, $Icon2);
-        if ($Line2 === false)
+        if ($Line2 === false) {
             return false;
+        }
         $Data = array_merge($Data, $Line2);
         $Line3 = $this->GetLine($Text3, $Icon3);
-        if ($Line3 === false)
+        if ($Line3 === false) {
             return false;
+        }
         $Data = array_merge($Data, $Line3);
 
         return $this->SendData($Data);
@@ -345,22 +361,26 @@ class HomeMaticDisEPWM55 extends HMBase
     {
         $Data[] = '0x0A';
         $Line1 = $this->GetLine($Text1, $Icon1);
-        if ($Line1 === false)
+        if ($Line1 === false) {
             return false;
+        }
         $Data = array_merge($Data, $Line1);
 
         $Line2 = $this->GetLine($Text2, $Icon2);
-        if ($Line2 === false)
+        if ($Line2 === false) {
             return false;
+        }
         $Data = array_merge($Data, $Line2);
         $Line3 = $this->GetLine($Text3, $Icon3);
-        if ($Line3 === false)
+        if ($Line3 === false) {
             return false;
+        }
         $Data = array_merge($Data, $Line3);
 
         $Notify = $this->GetSignal($Chime, $Repeat, $Wait, $Color);
-        if ($Notify === false)
+        if ($Notify === false) {
             return false;
+        }
         $Data = array_merge($Data, $Notify);
         return $this->SendData($Data);
     }

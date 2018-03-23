@@ -19,7 +19,6 @@ require_once(__DIR__ . "/../libs/HMBase.php");  // HMBase Klasse
  */
 class HomeMaticWRInterface extends HMBase
 {
-
     /**
      * Interne Funktion des SDK.
      *
@@ -46,27 +45,29 @@ class HomeMaticWRInterface extends HMBase
     {
         parent::ApplyChanges();
         $this->SetReceiveDataFilter(".*9999999999.*");
-        if (IPS_GetKernelRunlevel() <> KR_READY)
+        if (IPS_GetKernelRunlevel() <> KR_READY) {
             return;
-
+        }
 
         if ($this->CheckConfig()) {
-            if ($this->ReadPropertyInteger("Interval") >= 5)
+            if ($this->ReadPropertyInteger("Interval") >= 5) {
                 $this->SetTimerInterval("ReadWRInterface", $this->ReadPropertyInteger("Interval") * 1000);
-            else
+            } else {
                 $this->SetTimerInterval("ReadWRInterface", 0);
-        } else
+            }
+        } else {
             $this->SetTimerInterval("ReadWRInterface", 0);
+        }
 
 
-        if (!$this->HasActiveParent())
+        if (!$this->HasActiveParent()) {
             return;
+        }
 
         $this->ReadWRInterface();
     }
 
     ################## protected
-
     /**
      * Wird ausgeführt wenn der Kernel hochgefahren wurde.
      * 
@@ -101,7 +102,6 @@ class HomeMaticWRInterface extends HMBase
     }
 
 ################## PRIVATE                
-
     /**
      * Prüft die Konfiguration und setzt den Status der Instanz.
      * 
@@ -149,11 +149,11 @@ class HomeMaticWRInterface extends HMBase
 
         $ParentData = Array
             (
-            "DataID" => "{75B6B237-A7B0-46B9-BBCE-8DF0CFE6FA52}",
-            "Protocol" => 1,
+            "DataID"     => "{75B6B237-A7B0-46B9-BBCE-8DF0CFE6FA52}",
+            "Protocol"   => 1,
             "MethodName" => "getLGWStatus",
-            "WaitTime" => 5000,
-            "Data" => array()
+            "WaitTime"   => 5000,
+            "Data"       => array()
         );
         $this->SendDebug('Send', $ParentData, 0);
 
@@ -163,13 +163,13 @@ class HomeMaticWRInterface extends HMBase
         if (($Result === false) or is_null($Result)) {
             trigger_error($this->Translate('Error on read WR-Interface.'), E_USER_NOTICE);
             $this->SendDebug('Error', '', 0);
+            return false;
         }
         $this->SendDebug('Receive', $Result, 0);
         return $Result;
     }
 
 ################## PUBLIC
-
     /**
      * IPS-Instanz-Funktion 'HM_ReadWRInterface'.
      * Liest die Daten des WR-Interface.
@@ -180,11 +180,13 @@ class HomeMaticWRInterface extends HMBase
     public function ReadWRInterface()
     {
         $Result = $this->GetInterface();
-        if ($Result === false)
+        if ($Result === false) {
             return false;
+        }
         foreach ($Result as $Ident => $Value) {
-            if ($Value === "")
+            if ($Value === "") {
                 continue;
+            }
             switch (gettype($Value)) {
                 case "boolean":
                     $Typ = vtBoolean;
@@ -208,11 +210,12 @@ class HomeMaticWRInterface extends HMBase
                 $vid = @$this->GetIDForIdent($Ident);
             }
             if ($Ident == 'CONNECTED') {
-                SetValue($vid, $Value);
+                $this->SetValue($vid, $Value);
                 continue;
             }
-            if (GetValue($vid) <> $Value)
-                SetValue($vid, $Value);
+            if (GetValue($vid) <> $Value) {
+                $this->SetValue($vid, $Value);
+            }
         }
         return true;
     }

@@ -19,7 +19,6 @@ require_once(__DIR__ . "/../libs/HMBase.php");  // HMBase Klasse
  */
 class ParaInterface extends HMBase
 {
-
     /**
      * Interne Funktion des SDK.
      *
@@ -43,12 +42,12 @@ class ParaInterface extends HMBase
     {
         parent::ApplyChanges();
         $this->SetReceiveDataFilter(".*9999999999.*");
-        if (IPS_GetKernelRunlevel() <> KR_READY)
+        if (IPS_GetKernelRunlevel() <> KR_READY) {
             return;
+        }
     }
 
     ################## protected
-
     /**
      * Wird ausgeführt wenn der Kernel hochgefahren wurde.
      * 
@@ -83,7 +82,6 @@ class ParaInterface extends HMBase
     }
 
 ################## PRIVATE                
-
     /**
      * Liest alle Parameter des Devices aus.
      * 
@@ -98,11 +96,11 @@ class ParaInterface extends HMBase
         }
         $ParentData = Array
             (
-            "DataID" => "{75B6B237-A7B0-46B9-BBCE-8DF0CFE6FA52}",
-            "Protocol" => $this->ReadPropertyInteger('Protocol'),
+            "DataID"     => "{75B6B237-A7B0-46B9-BBCE-8DF0CFE6FA52}",
+            "Protocol"   => $this->ReadPropertyInteger('Protocol'),
             "MethodName" => "getParamset",
-            "WaitTime" => 5000,
-            "Data" => array($this->ReadPropertyString('Address'), 'MASTER')
+            "WaitTime"   => 5000,
+            "Data"       => array($this->ReadPropertyString('Address'), 'MASTER')
         );
         $this->SendDebug('Send', $ParentData, 0);
 
@@ -131,11 +129,11 @@ class ParaInterface extends HMBase
         }
         $ParentData = Array
             (
-            "DataID" => "{75B6B237-A7B0-46B9-BBCE-8DF0CFE6FA52}",
-            "Protocol" => $this->ReadPropertyInteger('Protocol'),
+            "DataID"     => "{75B6B237-A7B0-46B9-BBCE-8DF0CFE6FA52}",
+            "Protocol"   => $this->ReadPropertyInteger('Protocol'),
             "MethodName" => "putParamset",
-            "WaitTime" => 5000,
-            "Data" => $Parameter //array($this->ReadPropertyString('Address'),'MASTER','TEXT1','1234')
+            "WaitTime"   => 5000,
+            "Data"       => $Parameter //array($this->ReadPropertyString('Address'),'MASTER','TEXT1','1234')
         );
         $this->SendDebug('Send', $ParentData, 0);
 
@@ -151,7 +149,6 @@ class ParaInterface extends HMBase
     }
 
 ################## PUBLIC
-
     /**
      * IPS-Instanz-Funktion 'HM_ReadPara'.
      * Liest die Daten des WR-Interface.

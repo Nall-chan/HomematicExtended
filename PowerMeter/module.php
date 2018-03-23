@@ -26,7 +26,6 @@ require_once(__DIR__ . "/../libs/HMBase.php");  // HMBase Klasse
  */
 class HomeMaticPowermeter extends HMBase
 {
-
     /**
      * Interne Funktion des SDK.
      *
@@ -106,8 +105,9 @@ class HomeMaticPowermeter extends HMBase
 
             $this->RegisterVariableFloat($HMDeviceDatapoint . "_TOTAL", $HMDeviceDatapoint . "_TOTAL", $Profil);
             $this->SetSummary($this->HMDeviceAddress);
-            if (!$this->HasActiveParent())
+            if (!$this->HasActiveParent()) {
                 return;
+            }
             try {
                 $this->ReadPowerSysVar();
             } catch (Exception $exc) {
@@ -119,7 +119,6 @@ class HomeMaticPowermeter extends HMBase
     }
 
 ################## protected
-
     /**
      * Wird ausgeführt wenn der Kernel hochgefahren wurde.
      * 
@@ -141,7 +140,6 @@ class HomeMaticPowermeter extends HMBase
     }
 
 ################## Datenaustausch
-
     /**
      * Interne Funktion des SDK.
      *
@@ -157,7 +155,6 @@ class HomeMaticPowermeter extends HMBase
     }
 
 ################## PRIVATE                
-
     /**
      * Prüft die Konfiguration und setzt den Status der Instanz.
      * 
@@ -170,8 +167,9 @@ class HomeMaticPowermeter extends HMBase
         $Event = $this->ReadPropertyInteger("EventID");
 
         if ($Event == 0) {
-            if ($OldEvent > 0)
+            if ($OldEvent > 0) {
                 $this->UnregisterMessage($OldEvent, VM_DELETE);
+            }
             $this->SetStatus(IS_INACTIVE);
             return false;
         }
@@ -181,8 +179,9 @@ class HomeMaticPowermeter extends HMBase
             $this->SetStatus(IS_ACTIVE);
             return true;
         }
-        if ($OldEvent > 0)
+        if ($OldEvent > 0) {
             $this->UnregisterMessage($OldEvent, VM_DELETE);
+        }
 
         $this->SetStatus(IS_EBASE + 2);
         return false;
@@ -242,10 +241,12 @@ class HomeMaticPowermeter extends HMBase
      */
     private function ReadPowerSysVar()
     {
-        if (!$this->HasActiveParent())
+        if (!$this->HasActiveParent()) {
             throw new Exception("Instance has no active parent instance!", E_USER_NOTICE);
-        if ($this->HMAddress == '')
+        }
+        if ($this->HMAddress == '') {
             throw new Exception("Instance has no active parent instance!", E_USER_NOTICE);
+        }
 
         $url = 'GetPowerMeter.exe';
         $HMScript = 'object oitemID;' . PHP_EOL
@@ -261,9 +262,10 @@ class HomeMaticPowermeter extends HMBase
         $this->SendDebug($this->HMDeviceDatapoint, (string) $xml->Value, 0);
         $Value = ((float) $xml->Value) / $this->HMFactor;
         $VarID = @IPS_GetObjectIDByIdent($this->HMDeviceDatapoint . '_TOTAL', $this->InstanceID);
-        if ($VarID === false)
+        if ($VarID === false) {
             return;
-        SetValueFloat($VarID, $Value);
+        }
+        $this->SetValue($VarID, $Value);
     }
 
 }

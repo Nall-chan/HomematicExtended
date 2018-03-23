@@ -25,15 +25,14 @@ require_once(__DIR__ . "/../libs/HMBase.php");  // HMBase Klasse
  */
 class HomeMaticDisWM55 extends HMBase
 {
-
     private static $EmptyHMEventData = array(
-        "HMDeviceAddress" => "",
+        "HMDeviceAddress"   => "",
         "HMDeviceDatapoint" => ""
     );
     private static $PropertysName = array(
-        "PageUpID" => 0,
-        "PageDownID" => 0,
-        "ActionUpID" => 0,
+        "PageUpID"     => 0,
+        "PageDownID"   => 0,
+        "ActionUpID"   => 0,
         "ActionDownID" => 0
     );
 
@@ -59,8 +58,9 @@ class HomeMaticDisWM55 extends HMBase
         $ID_OLED = $this->RegisterScript('HM_OLED', 'HM_OLED.inc.php', $this->CreateHM_OLEDScript(), -2);
         IPS_SetHidden($ID_OLED, true);
         $ID = @$this->GetIDForIdent('DisplayScript');
-        if ($ID === false)
+        if ($ID === false) {
             $ID = $this->RegisterScript('DisplayScript', 'Display Script', $this->CreateDisplayScript($ID_OLED), -1);
+        }
         IPS_SetHidden($ID, true);
         $this->RegisterPropertyInteger("ScriptID", $ID);
 
@@ -68,9 +68,9 @@ class HomeMaticDisWM55 extends HMBase
         $this->Page = 0;
         $this->Events = self::$PropertysName;
         $this->HMEventData = array(
-            "PageUpID" => self::$EmptyHMEventData,
-            "PageDownID" => self::$EmptyHMEventData,
-            "ActionUpID" => self::$EmptyHMEventData,
+            "PageUpID"     => self::$EmptyHMEventData,
+            "PageDownID"   => self::$EmptyHMEventData,
+            "ActionUpID"   => self::$EmptyHMEventData,
             "ActionDownID" => self::$EmptyHMEventData
         );
 
@@ -115,8 +115,9 @@ class HomeMaticDisWM55 extends HMBase
                 $Lines = array();
                 $Events = $this->Events;
                 foreach ($this->HMEventData as $Event => $Trigger) {
-                    if ($Events[$Event] != 0)
+                    if ($Events[$Event] != 0) {
                         $Lines[] = '.*"DeviceID":"' . $Trigger['HMDeviceAddress'] . '","VariableName":"' . $Trigger['HMDeviceDatapoint'] . '".*';
+                    }
                 }
                 $Line = implode('|', $Lines);
 
@@ -126,9 +127,9 @@ class HomeMaticDisWM55 extends HMBase
             }
         }
         $this->HMEventData = array(
-            "PageUpID" => self::$EmptyHMEventData,
-            "PageDownID" => self::$EmptyHMEventData,
-            "ActionUpID" => self::$EmptyHMEventData,
+            "PageUpID"     => self::$EmptyHMEventData,
+            "PageDownID"   => self::$EmptyHMEventData,
+            "ActionUpID"   => self::$EmptyHMEventData,
             "ActionDownID" => self::$EmptyHMEventData
         );
         $this->Page = 0;
@@ -138,7 +139,6 @@ class HomeMaticDisWM55 extends HMBase
     }
 
 ################## protected
-
     /**
      * Wird ausgeführt wenn der Kernel hochgefahren wurde.
      * 
@@ -160,7 +160,6 @@ class HomeMaticDisWM55 extends HMBase
     }
 
 ################## Datenaustausch
-
     /**
      * Interne Funktion des SDK.
      *
@@ -174,8 +173,9 @@ class HomeMaticDisWM55 extends HMBase
         $this->SendDebug('Receive', $Data, 0);
         $ReceiveData = array("HMDeviceAddress" => (string) $Data->DeviceID, "HMDeviceDatapoint" => (string) $Data->VariableName);
         $Action = array_search($ReceiveData, $this->HMEventData);
-        if ($Action === false)
+        if ($Action === false) {
             return;
+        }
         try {
             $this->RunDisplayScript($Action);
         } catch (Exception $exc) {
@@ -185,7 +185,6 @@ class HomeMaticDisWM55 extends HMBase
     }
 
 ################## PRIVATE                
-
     /**
      * Prüft die Konfiguration und setzt den Status der Instanz.
      * 
@@ -226,8 +225,9 @@ class HomeMaticDisWM55 extends HMBase
                     $this->RegisterMessage($Event, VM_DELETE);
                 }
             }
-            if ($Event > 0)
+            if ($Event > 0) {
                 $Events[] = $Event;
+            }
         }
 
         $this->HMEventData = $OldHMEventDatas;
@@ -273,10 +273,11 @@ class HomeMaticDisWM55 extends HMBase
     private function GetDisplayAddress(int $EventID)
     {
         $parent = IPS_GetParent($EventID);
-        if (IPS_GetInstance($parent)['ModuleInfo']['ModuleID'] <> '{EE4A81C6-5C90-4DB7-AD2F-F6BBD521412E}')
+        if (IPS_GetInstance($parent)['ModuleInfo']['ModuleID'] <> '{EE4A81C6-5C90-4DB7-AD2F-F6BBD521412E}') {
             return false;
+        }
         return array(
-            "HMDeviceAddress" => IPS_GetProperty($parent, 'Address'),
+            "HMDeviceAddress"   => IPS_GetProperty($parent, 'Address'),
             "HMDeviceDatapoint" => IPS_GetObject($EventID)['ObjectIdent']
         );
     }
@@ -290,28 +291,24 @@ class HomeMaticDisWM55 extends HMBase
      */
     private function RunDisplayScript($Action)
     {
-        if (!$this->HasActiveParent())
+        if (!$this->HasActiveParent()) {
             throw new Exception("Instance has no active parent instance!", E_USER_NOTICE);
+        }
 
-        if ($this->HMAddress == '')
+        if ($this->HMAddress == '') {
             throw new Exception("Instance has no active parent instance!", E_USER_NOTICE);
+        }
 
         $Page = $this->Page;
         $MaxPage = $this->ReadPropertyInteger('MaxPage');
         switch ($Action) {
             case "PageUpID":
-                if ($Page == $MaxPage)
-                    $Page = 1;
-                else
-                    $Page++;
+                $Page = ($Page == $MaxPage ? 1 : $Page + 1);
                 $ActionString = "UP";
                 $this->Page = $Page;
                 break;
             case "PageDownID":
-                if ($Page <= 1)
-                    $Page = $MaxPage;
-                else
-                    $Page--;
+                $Page = ($Page <= 1 ? $MaxPage : $Page - 1);
                 $ActionString = "DOWN";
                 $this->Page = $Page;
                 break;
@@ -327,8 +324,9 @@ class HomeMaticDisWM55 extends HMBase
         if ($ScriptID <> 0) {
             $Result = IPS_RunScriptWaitEx($ScriptID, array('SENDER' => 'HMDisWM55', 'ACTION' => $ActionString, 'PAGE' => $Page, 'EVENT' => $this->InstanceID));
             $ResultData = json_decode($Result);
-            if (is_null($ResultData))
+            if (is_null($ResultData)) {
                 throw new Exception("Error in display-script.", E_USER_NOTICE);
+            }
             $this->SendDebug('DisplayScript', $ResultData, 0);
             $Data = $this->ConvertDisplayData($ResultData);
             $url = 'GetDisplay.exe';

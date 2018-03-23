@@ -22,7 +22,6 @@ class HomeMaticProgramme extends HMBase
 
     use DebugHelper,
         Profile;
-
     /**
      * Interne Funktion des SDK.
      *
@@ -42,7 +41,10 @@ class HomeMaticProgramme extends HMBase
      */
     public function Destroy()
     {
-        $this->UnregisterProfil('Execute.HM');
+        if (!IPS_InstanceExists($this->InstanceID)) {
+            $this->UnregisterProfil('Execute.HM');
+        }
+
         parent::Destroy();
     }
 
@@ -61,10 +63,12 @@ class HomeMaticProgramme extends HMBase
             IPS_SetVariableProfileAssociation('Execute.HM', 0, 'Start', '', -1);
         }
 
-        if (IPS_GetKernelRunlevel() <> KR_READY)
+        if (IPS_GetKernelRunlevel() <> KR_READY) {
             return;
-        if (!$this->HasActiveParent())
+        }
+        if (!$this->HasActiveParent()) {
             return;
+        }
         try {
             $this->ReadCCUPrograms();
         } catch (Exception $exc) {
@@ -73,7 +77,6 @@ class HomeMaticProgramme extends HMBase
     }
 
 ################## protected
-
     /**
      * Wird ausgeführt wenn der Kernel hochgefahren wurde.
      * 
@@ -106,7 +109,6 @@ class HomeMaticProgramme extends HMBase
     }
 
 ################## PRIVATE      
-
     /**
      * Liest alle vorhandenen Programme aus der CCU aus und stellt diese als Variablen mit Aktionen da.
      * 
@@ -176,9 +178,9 @@ class HomeMaticProgramme extends HMBase
             throw new Exception("Instance has no active parent instance!", E_USER_NOTICE);
         }
         $var = @IPS_GetObjectIDByIdent($Ident, $this->InstanceID);
-        if ($var === false)
+        if ($var === false) {
             throw new Exception(sprintf($this->Translate("CCU-Program %s not found!'"), $Ident), E_USER_NOTICE);
-
+        }
         $url = 'SysPrg.exe';
         $HMScript = 'State=dom.GetObject(' . $Ident . ').ProgramExecute();';
         try {
@@ -191,7 +193,7 @@ class HomeMaticProgramme extends HMBase
 
         $this->SendDebug('Result', (string) $xml->State, 0);
         if ((string) $xml->State == 'true') {
-            SetValueInteger($var, 0);
+            $this->SetValue($var, 0);
             return true;
         } else {
             throw new Exception("Error on start CCU-Program", E_USER_NOTICE);
@@ -199,7 +201,6 @@ class HomeMaticProgramme extends HMBase
     }
 
 ################## ActionHandler
-
     /**
      * Interne Funktion des SDK.
      *
@@ -215,7 +216,6 @@ class HomeMaticProgramme extends HMBase
     }
 
 ################## PUBLIC
-
     /**
      * IPS-Instanz-Funktion 'HM_ReadPrograms'.
      * Liest die Programme aus der CCU aus.

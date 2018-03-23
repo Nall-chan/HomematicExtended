@@ -19,7 +19,6 @@ require_once(__DIR__ . "/../libs/HMBase.php");  // HMBase Klasse
  */
 class HomeMaticRFInterfaceSplitter extends HMBase
 {
-
     /**
      * Interne Funktion des SDK.
      *
@@ -43,20 +42,24 @@ class HomeMaticRFInterfaceSplitter extends HMBase
     {
         parent::ApplyChanges();
         $this->SetReceiveDataFilter(".*9999999999.*");
-        if (IPS_GetKernelRunlevel() <> KR_READY)
+        if (IPS_GetKernelRunlevel() <> KR_READY) {
             return;
+        }
 
         if ($this->CheckConfig()) {
-            if ($this->ReadPropertyInteger("Interval") >= 5)
+            if ($this->ReadPropertyInteger("Interval") >= 5) {
                 $this->SetTimerInterval("ReadRFInterfaces", $this->ReadPropertyInteger("Interval") * 1000);
-            else
+            } else {
                 $this->SetTimerInterval("ReadRFInterfaces", 0);
-        } else
+            }
+        } else {
             $this->SetTimerInterval("ReadRFInterfaces", 0);
+        }
 
 
-        if (!$this->HasActiveParent())
+        if (!$this->HasActiveParent()) {
             return;
+        }
         try {
             $this->ReadRFInterfaces();
         } catch (Exception $exc) {
@@ -65,7 +68,6 @@ class HomeMaticRFInterfaceSplitter extends HMBase
     }
 
     ################## protected
-
     /**
      * Wird ausgeführt wenn der Kernel hochgefahren wurde.
      * 
@@ -100,7 +102,6 @@ class HomeMaticRFInterfaceSplitter extends HMBase
     }
 
 ################## PRIVATE                
-
     /**
      * Prüft die Konfiguration und setzt den Status der Instanz.
      * 
@@ -143,19 +144,21 @@ class HomeMaticRFInterfaceSplitter extends HMBase
         }
         $ParentId = $this->ParentId;
         $Protocol = array();
-        if (IPS_GetProperty($ParentId, "RFOpen") === true)
+        if (IPS_GetProperty($ParentId, "RFOpen") === true) {
             $Protocol[] = 0;
-        if (IPS_GetProperty($ParentId, "IPOpen") === true)
+        }
+        if (IPS_GetProperty($ParentId, "IPOpen") === true) {
             $Protocol[] = 2;
+        }
 
         $data = array();
         $ParentData = Array
             (
-            "DataID" => "{75B6B237-A7B0-46B9-BBCE-8DF0CFE6FA52}",
-            "Protocol" => 0,
+            "DataID"     => "{75B6B237-A7B0-46B9-BBCE-8DF0CFE6FA52}",
+            "Protocol"   => 0,
             "MethodName" => "listBidcosInterfaces",
-            "WaitTime" => 5000,
-            "Data" => $data
+            "WaitTime"   => 5000,
+            "Data"       => $data
         );
         $ret = array();
         foreach ($Protocol as $ProtocolId) {
@@ -163,16 +166,16 @@ class HomeMaticRFInterfaceSplitter extends HMBase
             $JSON = json_encode($ParentData);
             $ResultJSON = @$this->SendDataToParent($JSON);
             $Result = @json_decode($ResultJSON);
-            if ($Result === false)
+            if (($Result === false) or is_null($Result)) {
                 trigger_error($this->Translate('Error on read interfaces:') . $ProtocolId, E_USER_NOTICE);
-            else
+            } else {
                 $ret[$ProtocolId] = $Result;
+            }
         }
         return $ret;
     }
 
 ################## PUBLIC
-
     /**
      * IPS-Instanz-Funktion 'HM_CreateAllRFInstances'.
      * Erzeugt alle Instanzen vom Typ RF-Interface, wenn diese noch nicht angelegt sind.
@@ -191,15 +194,17 @@ class HomeMaticRFInterfaceSplitter extends HMBase
         }
         $Result = $this->GetInterfaces();
         foreach ($Result as $ProtocolID => $Protocol) {
-            if (!is_array($Protocol))
+            if (!is_array($Protocol)) {
                 continue;
+            }
             foreach ($Protocol as $InterfaceIndex => $Interface) {
-                if (in_array($Interface->ADDRESS, $KnownDevices))
+                if (in_array($Interface->ADDRESS, $KnownDevices)) {
                     continue;
+                }
                 $NewDevice = IPS_CreateInstance("{36549B96-FA11-4651-8662-F310EEEC5C7D}");
-                if (property_exists($Interface, 'TYPE'))
+                if (property_exists($Interface, 'TYPE')) {
                     IPS_SetName($NewDevice, $Interface->TYPE);
-                else {
+                } else {
                     switch ($ProtocolID) {
                         case 0:
                             $Name = 'Funk';
@@ -219,8 +224,9 @@ class HomeMaticRFInterfaceSplitter extends HMBase
                 $CreatedDevices[] = $NewDevice;
             }
         }
-        if (count($CreatedDevices) > 0)
+        if (count($CreatedDevices) > 0) {
             $this->ReadRFInterfaces();
+        }
 
         return $CreatedDevices;
     }
@@ -237,8 +243,9 @@ class HomeMaticRFInterfaceSplitter extends HMBase
         $Result = $this->GetInterfaces();
         $ret = false;
         foreach ($Result as $ProtocolID => $Protocol) {
-            if (!is_array($Protocol))
+            if (!is_array($Protocol)) {
                 continue;
+            }
             foreach ($Protocol as $InterfaceIndex => $Interface) {
                 $this->SendDebug("Proto" . $ProtocolID . " If" . $InterfaceIndex, $Interface, 0);
                 $Interface->DataID = "{E2966A08-BCE1-4E76-8C4B-7E0136244E1B}";
