@@ -177,10 +177,6 @@ class HomeMaticProgramme extends HMBase
         if ($this->HMAddress == '') {
             throw new Exception("Instance has no active parent instance!", E_USER_NOTICE);
         }
-        $var = @IPS_GetObjectIDByIdent($Ident, $this->InstanceID);
-        if ($var === false) {
-            throw new Exception(sprintf($this->Translate("CCU-Program %s not found!'"), $Ident), E_USER_NOTICE);
-        }
         $url = 'SysPrg.exe';
         $HMScript = 'State=dom.GetObject(' . $Ident . ').ProgramExecute();';
         try {
@@ -193,7 +189,7 @@ class HomeMaticProgramme extends HMBase
 
         $this->SendDebug('Result', (string) $xml->State, 0);
         if ((string) $xml->State == 'true') {
-            $this->SetValue($var, 0);
+            $this->SetValue($Ident, 0);
             return true;
         } else {
             throw new Exception("Error on start CCU-Program", E_USER_NOTICE);

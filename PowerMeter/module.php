@@ -261,11 +261,7 @@ class HomeMaticPowermeter extends HMBase
         }
         $this->SendDebug($this->HMDeviceDatapoint, (string) $xml->Value, 0);
         $Value = ((float) $xml->Value) / $this->HMFactor;
-        $VarID = @IPS_GetObjectIDByIdent($this->HMDeviceDatapoint . '_TOTAL', $this->InstanceID);
-        if ($VarID === false) {
-            return;
-        }
-        $this->SetValue($VarID, $Value);
+        $this->SetValue($this->HMDeviceDatapoint . '_TOTAL', $Value);
     }
 
 }

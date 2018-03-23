@@ -339,12 +339,13 @@ class HomeMaticSystemvariablen extends HMBase
             }
 
 
-            if ((int) $xmlVar->Type == 2113)
+            if ((int) $xmlVar->Type == 2113) {
                 if (!$this->ReadPropertyBoolean('EnableAlarmDP')) {
                     continue;
                 } else {
                     $VarIdent = 'AlDP' . $SysVar;
                 }
+            }
             $xmlVar->addChild('Value', $lines[0]);
             $xmlVar->addChild('Variable', $lines[1]);
             $xmlVar->addChild('LastValue', $lines[2]);
@@ -422,24 +423,25 @@ class HomeMaticSystemvariablen extends HMBase
             }
             $VarTime = new DateTime((string) $xmlVar->Timestamp . $CCUTimeZone);
 
-            if (!(IPS_GetVariable($VarID)['VariableUpdated'] < ($TimeDiff + $VarTime->getTimestamp())))
+            if (!(IPS_GetVariable($VarID)['VariableUpdated'] < ($TimeDiff + $VarTime->getTimestamp()))) {
                 continue;
+            }
             switch ($VarType) {
                 case vtBoolean:
                     if ((int) $xmlVar->Type == 2113) {
                         $this->ProcessAlarmVariable($VarID, $SysVar, $CCUTimeZone);
                     } else {
-                        $this->SetValue($VarID, (string) $xmlVar->Value == 'true');
+                        $this->SetValue($VarIdent, (string) $xmlVar->Value == 'true');
                     }
                     break;
                 case vtInteger:
-                    $this->SetValue($VarID, (int) $xmlVar->Variable);
+                    $this->SetValue($VarIdent, (int) $xmlVar->Variable);
                     break;
                 case vtFloat:
-                    $this->SetValue($VarID, (float) $xmlVar->Variable);
+                    $this->SetValue($VarIdent, (float) $xmlVar->Variable);
                     break;
                 case vtString:
-                    $this->SetValue($VarID, (string) $xmlVar->Variable);
+                    $this->SetValue($VarIdent, (string) $xmlVar->Variable);
                     break;
             }
         }
@@ -526,15 +528,15 @@ class HomeMaticSystemvariablen extends HMBase
             $ScriptData['DP'] = '';
         }
 
-        $this->SetValue($ParentID, $ScriptData['VALUE']);
+        SetValue($ParentID, $ScriptData['VALUE']);
         $LastTimeID = $this->RegisterSubVariable($ParentID, 'LastTime', 'Letzter Alarm', vtInteger, '~UnixTimestamp');
-        $this->SetValue($LastTimeID, $ScriptData['LastTime']);
+        SetValue($LastTimeID, $ScriptData['LastTime']);
         $FirstTimeID = $this->RegisterSubVariable($ParentID, 'FirstTime', 'Erster Alarm', vtInteger, '~UnixTimestamp');
-        $this->SetValue($FirstTimeID, $ScriptData['FirstTime']);
+        SetValue($FirstTimeID, $ScriptData['FirstTime']);
         $RoomID = $this->RegisterSubVariable($ParentID, 'Room', 'Raum', vtString);
-        $this->SetValue($RoomID, $ScriptData['Room']);
+        SetValue($RoomID, $ScriptData['Room']);
         $ChannelNameID = $this->RegisterSubVariable($ParentID, 'ChannelName', 'Name', vtString);
-        $this->SetValue($ChannelNameID, $ScriptData['ChannelName']);
+        SetValue($ChannelNameID, $ScriptData['ChannelName']);
 
         $ScriptID = $this->ReadPropertyString('AlarmScriptID');
         if ($ScriptID > 0) {
@@ -721,13 +723,13 @@ class HomeMaticSystemvariablen extends HMBase
         }
         if ((int) $xmlData->State == 1) {
             if ($this->ReadPropertyBoolean('EmulateStatus') === true) {
-                $this->SetValue($VarID, false);
+                $this->SetValue($Ident, false);
             }
             return true;
         }
 
         $this->SendDebug('AlarmVar.' . $Ident, 'error on receipt', 0);
-        trigger_error(sprintf($this->Translate('Error on receipt alarm of %s.'), (string) $VarID), E_USER_NOTICE);
+        trigger_error(sprintf($this->Translate('Error on receipt alarm of %s.'), (string) $Ident), E_USER_NOTICE);
         return false;
     }
 
@@ -821,12 +823,12 @@ class HomeMaticSystemvariablen extends HMBase
 
         if ($Result === true) {
             if ($this->ReadPropertyBoolean('EmulateStatus') === true) {
-                $this->SetValue($VarID, $Value);
+                $this->SetValue($Parameter, $Value);
             }
             return true;
         }
 
-        trigger_error($this->Translate('Error on write Data ') . $VarID, E_USER_NOTICE);
+        trigger_error($this->Translate('Error on write Data ') . $Parameter, E_USER_NOTICE);
         return false;
     }
 
@@ -875,11 +877,11 @@ class HomeMaticSystemvariablen extends HMBase
         }
         if ($Result === true) {
             if ($this->ReadPropertyBoolean('EmulateStatus') === true) {
-                $this->SetValue($VarID, $Value);
+                $this->SetValue($Parameter, $Value);
             }
             return true;
         }
-        trigger_error($this->Translate('Error on write Data ') . $VarID, E_USER_NOTICE);
+        trigger_error($this->Translate('Error on write Data ') . $Parameter, E_USER_NOTICE);
         return false;
     }
 
@@ -928,12 +930,12 @@ class HomeMaticSystemvariablen extends HMBase
 
         if ($Result === true) {
             if ($this->ReadPropertyBoolean('EmulateStatus') === true) {
-                $this->SetValue($VarID, $Value);
+                $this->SetValue($Parameter, $Value);
             }
             return true;
         }
 
-        trigger_error($this->Translate('Error on write Data ') . $VarID, E_USER_NOTICE);
+        trigger_error($this->Translate('Error on write Data ') . $Parameter, E_USER_NOTICE);
         return false;
     }
 
@@ -981,12 +983,12 @@ class HomeMaticSystemvariablen extends HMBase
 
         if ($Result === true) {
             if ($this->ReadPropertyBoolean('EmulateStatus') === true) {
-                $this->SetValue($VarID, $Value);
+                $this->SetValue($Parameter, $Value);
             }
             return true;
         }
 
-        trigger_error($this->Translate('Error on write Data ') . $VarID, E_USER_NOTICE);
+        trigger_error($this->Translate('Error on write Data ') . $Parameter, E_USER_NOTICE);
         return false;
     }
 

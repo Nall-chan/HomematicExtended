@@ -92,14 +92,14 @@ class HomeMaticRFInterface extends IPSModule
             $vid = @$this->GetIDForIdent($Ident);
             if ($vid === false) {
                 $this->MaintainVariable($Ident, $Ident, $Typ, $Profil, 0, true);
-                $vid = @$this->GetIDForIdent($Ident);
+                $vid = $this->GetIDForIdent($Ident);
             }
             if ($Ident == 'CONNECTED') {
-                $this->SetValue($vid, $Value);
+                $this->SetValue($Ident, $Value);
                 continue;
             }
             if (GetValue($vid) <> $Value) {
-                $this->SetValue($vid, $Value);
+                $this->SetValue($Ident, $Value);
             }
         }
     }
