@@ -146,7 +146,7 @@ class ParaInterface extends HMBase
         return $Result;
     }
 
-################## PUBLIC
+    ################## PUBLIC
     /**
      * IPS-Instanz-Funktion 'HM_ReadPara'.
      * Liest die Daten des WR-Interface.

@@ -215,7 +215,7 @@ class HomeMaticProgramme extends HMBase
     /**
      * IPS-Instanz-Funktion 'HM_ReadPrograms'.
      * Liest die Programme aus der CCU aus.
-     * 
+     *
      * @access public
      * @return boolean True bei erfolg, sonst false.
      */

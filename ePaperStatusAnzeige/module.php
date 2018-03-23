@@ -68,7 +68,7 @@ class HomeMaticDisEPWM55 extends HMBase
         $this->ApplyChanges();
     }
 
-    ################## PRIVATE                
+    ################## PRIVATE
     /**
      * Sendet die Daten an dden HM-Socket.
      *
@@ -217,7 +217,7 @@ class HomeMaticDisEPWM55 extends HMBase
         return $return;
     }
 
-    ################## public    
+    ################## public
     /**
      * IPS-Instanz-Funktion 'HM_WriteValueDisplayNotify'.
      * Steuert den Summer und die LED des Display.

@@ -183,7 +183,7 @@ if (!defined("vtBoolean")) { //Nur wenn Konstanten noch nicht bekannt sind.
 
 /**
  * HMBase ist die Basis-Klasse für alle Module welche HMScript verwenden.
- * Erweitert ipsmodule 
+ * Erweitert ipsmodule
  *
  * @property string $HMAddress Die Adresse der CCU.
  * @property int $ParentId Aktueller IO-Parent.
