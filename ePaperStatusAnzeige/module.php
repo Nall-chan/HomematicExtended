@@ -161,7 +161,7 @@ class HomeMaticDisEPWM55 extends HMBase
      * @access private
      * @param string $Text Der darzustellenden Text (0-12 Zeichen)
      * @param int $Icon Das anzuzeigende Icon (0-9)
-     * @return array Das Daten-Array für eine Zeile. 
+     * @return array Das Daten-Array für eine Zeile.
      */
     private function GetLine(string $Text, int $Icon)
     {
@@ -217,7 +217,7 @@ class HomeMaticDisEPWM55 extends HMBase
         return $return;
     }
 
-################## public    
+    ################## public    
     /**
      * IPS-Instanz-Funktion 'HM_WriteValueDisplayNotify'.
      * Steuert den Summer und die LED des Display.

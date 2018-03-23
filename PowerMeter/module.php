@@ -19,7 +19,7 @@ require_once(__DIR__ . "/../libs/HMBase.php");  // HMBase Klasse
  *
  * @property int $Event Die IPS-ID der Variable welche als Trigger dient.
  * @property string $HMDeviceAddress Die Geräte-Adresse des Zählers.
- * @property string $HMDeviceDatapoint Der zu überwachende Datenpunkt. 
+ * @property string $HMDeviceDatapoint Der zu überwachende Datenpunkt.
  * @property string $HMProtocol HmIP-RF oder BidCos-RF BidCos-WR
  * @property string $HMSufix Anhang für die HMSystemvariable
  * @property int $HMFactor Faktor für die Berechnung.
@@ -154,7 +154,7 @@ class HomeMaticPowermeter extends HMBase
         }
     }
 
-    ################## PRIVATE                
+    ################## PRIVATE
     /**
      * Prüft die Konfiguration und setzt den Status der Instanz.
      *

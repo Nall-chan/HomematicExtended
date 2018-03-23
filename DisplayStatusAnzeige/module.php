@@ -184,7 +184,7 @@ class HomeMaticDisWM55 extends HMBase
         }
     }
 
-    ################## PRIVATE                
+    ################## PRIVATE
     /**
      * Prüft die Konfiguration und setzt den Status der Instanz.
      *

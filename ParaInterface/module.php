@@ -81,7 +81,7 @@ class ParaInterface extends HMBase
         return $ParentId;
     }
 
-    ################## PRIVATE                
+    ################## PRIVATE
     /**
      * Liest alle Parameter des Devices aus.
      *
@@ -94,7 +94,7 @@ class ParaInterface extends HMBase
             trigger_error("Instance has no active Parent Instance!", E_USER_NOTICE);
             return false;
         }
-        $ParentData = Array(
+        $ParentData = array(
             "DataID"     => "{75B6B237-A7B0-46B9-BBCE-8DF0CFE6FA52}",
             "Protocol"   => $this->ReadPropertyInteger('Protocol'),
             "MethodName" => "getParamset",
@@ -126,7 +126,7 @@ class ParaInterface extends HMBase
             trigger_error("Instance has no active Parent Instance!", E_USER_NOTICE);
             return false;
         }
-        $ParentData = Array(
+        $ParentData = array(
             "DataID"     => "{75B6B237-A7B0-46B9-BBCE-8DF0CFE6FA52}",
             "Protocol"   => $this->ReadPropertyInteger('Protocol'),
             "MethodName" => "putParamset",

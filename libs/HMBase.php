@@ -286,7 +286,7 @@ abstract class HMBase extends IPSModule
         }
     }
 
-################## protected
+    ################## protected
     /**
      * Wird ausgeführt wenn der Kernel hochgefahren wurde.
      *
@@ -430,7 +430,6 @@ trait Profile
      */
     protected function RegisterProfileInteger($Name, $Icon, $Prefix, $Suffix, $MinValue, $MaxValue, $StepSize)
     {
-
         if (!IPS_VariableProfileExists($Name)) {
             IPS_CreateVariableProfile($Name, 1);
         } else {

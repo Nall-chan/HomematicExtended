@@ -206,7 +206,7 @@ class HomeMaticSystemvariablen extends HMBase
         $this->SetSummary($this->HMAddress);
     }
 
-    ################## PRIVATE                
+    ################## PRIVATE
     /**
      * Prüft die Konfiguration und setzt den Status der Instanz.
      *
@@ -686,7 +686,7 @@ class HomeMaticSystemvariablen extends HMBase
         }
     }
 
-    ################## PUBLIC    
+    ################## PUBLIC
     /**
      * IPS-Instanz-Funktion 'HM_AlarmReceipt'.
      * Bestätigt einen Alarm auf der CCU

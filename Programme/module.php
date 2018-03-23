@@ -108,7 +108,7 @@ class HomeMaticProgramme extends HMBase
         $this->SetSummary($this->HMAddress);
     }
 
-    ################## PRIVATE      
+    ################## PRIVATE
     /**
      * Liest alle vorhandenen Programme aus der CCU aus und stellt diese als Variablen mit Aktionen da.
      *
@@ -211,7 +211,7 @@ class HomeMaticProgramme extends HMBase
         }
     }
 
-################## PUBLIC
+    ################## PUBLIC
     /**
      * IPS-Instanz-Funktion 'HM_ReadPrograms'.
      * Liest die Programme aus der CCU aus.

@@ -101,7 +101,7 @@ class HomeMaticWRInterface extends HMBase
         return $ParentId;
     }
 
-    ################## PRIVATE                
+    ################## PRIVATE
     /**
      * Prüft die Konfiguration und setzt den Status der Instanz.
      *
@@ -147,7 +147,7 @@ class HomeMaticWRInterface extends HMBase
             return false;
         }
 
-        $ParentData = Array(
+        $ParentData = array(
             "DataID"     => "{75B6B237-A7B0-46B9-BBCE-8DF0CFE6FA52}",
             "Protocol"   => 1,
             "MethodName" => "getLGWStatus",
