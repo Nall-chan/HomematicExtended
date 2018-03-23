@@ -15,7 +15,7 @@ require_once(__DIR__ . "/../libs/HMBase.php");  // HMBase Klasse
 
 /**
  * HomeMaticWRInterface ist die Klasse für das IPS-Modul 'HomeMatic WR-Interface'.
- * Erweitert HMBase 
+ * Erweitert HMBase
  */
 class HomeMaticWRInterface extends HMBase
 {
@@ -70,7 +70,7 @@ class HomeMaticWRInterface extends HMBase
     ################## protected
     /**
      * Wird ausgeführt wenn der Kernel hochgefahren wurde.
-     * 
+     *
      * @access protected
      */
     protected function KernelReady()
@@ -80,7 +80,7 @@ class HomeMaticWRInterface extends HMBase
 
     /**
      * Wird ausgeführt wenn sich der Parent ändert.
-     * 
+     *
      * @access protected
      */
     protected function ForceRefresh()
@@ -90,7 +90,7 @@ class HomeMaticWRInterface extends HMBase
 
     /**
      * Registriert Nachrichten des aktuellen Parent und ließt die Adresse der CCU aus dem Parent.
-     * 
+     *
      * @access protected
      * @return int ID des Parent.
      */
@@ -101,10 +101,10 @@ class HomeMaticWRInterface extends HMBase
         return $ParentId;
     }
 
-################## PRIVATE                
+    ################## PRIVATE                
     /**
      * Prüft die Konfiguration und setzt den Status der Instanz.
-     * 
+     *
      * @access privat
      * @return boolean True wenn Konfig ok, sonst false.
      */
@@ -132,7 +132,7 @@ class HomeMaticWRInterface extends HMBase
 
     /**
      * Liest alle Daten des WR-Interfaces aus der CCU aus.
-     * 
+     *
      * @access privat
      * @return array Ein Array mit den Daten des Interface.
      */
@@ -147,8 +147,7 @@ class HomeMaticWRInterface extends HMBase
             return false;
         }
 
-        $ParentData = Array
-            (
+        $ParentData = Array(
             "DataID"     => "{75B6B237-A7B0-46B9-BBCE-8DF0CFE6FA52}",
             "Protocol"   => 1,
             "MethodName" => "getLGWStatus",
@@ -169,11 +168,11 @@ class HomeMaticWRInterface extends HMBase
         return $Result;
     }
 
-################## PUBLIC
+    ################## PUBLIC
     /**
      * IPS-Instanz-Funktion 'HM_ReadWRInterface'.
      * Liest die Daten des WR-Interface.
-     * 
+     *
      * @access public
      * @return bool True bei Erfolg, sonst false.
      */

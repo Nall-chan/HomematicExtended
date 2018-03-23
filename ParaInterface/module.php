@@ -15,7 +15,7 @@ require_once(__DIR__ . "/../libs/HMBase.php");  // HMBase Klasse
 
 /**
  * ParaInterface ist die Klasse für das IPS-Modul 'HomeMatic Paraset Interface'.
- * Erweitert HMBase 
+ * Erweitert HMBase
  */
 class ParaInterface extends HMBase
 {
@@ -50,7 +50,7 @@ class ParaInterface extends HMBase
     ################## protected
     /**
      * Wird ausgeführt wenn der Kernel hochgefahren wurde.
-     * 
+     *
      * @access protected
      */
     protected function KernelReady()
@@ -60,7 +60,7 @@ class ParaInterface extends HMBase
 
     /**
      * Wird ausgeführt wenn sich der Parent ändert.
-     * 
+     *
      * @access protected
      */
     protected function ForceRefresh()
@@ -70,7 +70,7 @@ class ParaInterface extends HMBase
 
     /**
      * Registriert Nachrichten des aktuellen Parent und ließt die Adresse der CCU aus dem Parent.
-     * 
+     *
      * @access protected
      * @return int ID des Parent.
      */
@@ -81,10 +81,10 @@ class ParaInterface extends HMBase
         return $ParentId;
     }
 
-################## PRIVATE                
+    ################## PRIVATE                
     /**
      * Liest alle Parameter des Devices aus.
-     * 
+     *
      * @access privat
      * @return array Ein Array mit den Daten des Interface.
      */
@@ -94,8 +94,7 @@ class ParaInterface extends HMBase
             trigger_error("Instance has no active Parent Instance!", E_USER_NOTICE);
             return false;
         }
-        $ParentData = Array
-            (
+        $ParentData = Array(
             "DataID"     => "{75B6B237-A7B0-46B9-BBCE-8DF0CFE6FA52}",
             "Protocol"   => $this->ReadPropertyInteger('Protocol'),
             "MethodName" => "getParamset",
@@ -117,7 +116,7 @@ class ParaInterface extends HMBase
 
     /**
      * Liest alle Parameter des Devices aus.
-     * 
+     *
      * @access privat
      * @return array Ein Array mit den Daten des Interface.
      */
@@ -127,8 +126,7 @@ class ParaInterface extends HMBase
             trigger_error("Instance has no active Parent Instance!", E_USER_NOTICE);
             return false;
         }
-        $ParentData = Array
-            (
+        $ParentData = Array(
             "DataID"     => "{75B6B237-A7B0-46B9-BBCE-8DF0CFE6FA52}",
             "Protocol"   => $this->ReadPropertyInteger('Protocol'),
             "MethodName" => "putParamset",
@@ -152,7 +150,7 @@ class ParaInterface extends HMBase
     /**
      * IPS-Instanz-Funktion 'HM_ReadPara'.
      * Liest die Daten des WR-Interface.
-     * 
+     *
      * @access public
      * @return bool True bei Erfolg, sonst false.
      */
@@ -165,7 +163,7 @@ class ParaInterface extends HMBase
     /**
      * IPS-Instanz-Funktion 'HM_WritePara'.
      * Liest die Daten des WR-Interface.
-     * 
+     *
      * @access public
      * @return bool True bei Erfolg, sonst false.
      */

@@ -12,13 +12,13 @@
  * @version       2.43
  */
 if (!defined("IPS_BASE")) {
-// --- BASE MESSAGE
+    // --- BASE MESSAGE
     define('IPS_BASE', 10000);                             //Base Message
     define('IPS_KERNELSTARTED', IPS_BASE + 1);             //Post Ready Message
     define('IPS_KERNELSHUTDOWN', IPS_BASE + 2);            //Pre Shutdown Message, Runlevel UNINIT Follows
 }
 if (!defined("IPS_KERNELMESSAGE")) {
-// --- KERNEL
+    // --- KERNEL
     define('IPS_KERNELMESSAGE', IPS_BASE + 100);           //Kernel Message
     define('KR_CREATE', IPS_KERNELMESSAGE + 1);            //Kernel is beeing created
     define('KR_INIT', IPS_KERNELMESSAGE + 2);              //Kernel Components are beeing initialised, Modules loaded, Settings read
@@ -27,7 +27,7 @@ if (!defined("IPS_KERNELMESSAGE")) {
     define('KR_SHUTDOWN', IPS_KERNELMESSAGE + 5);          //Uninit Complete, Destroying Kernel Inteface
 }
 if (!defined("IPS_LOGMESSAGE")) {
-// --- KERNEL LOGMESSAGE
+    // --- KERNEL LOGMESSAGE
     define('IPS_LOGMESSAGE', IPS_BASE + 200);              //Logmessage Message
     define('KL_MESSAGE', IPS_LOGMESSAGE + 1);              //Normal Message                      | FG: Black | BG: White  | STLYE : NONE
     define('KL_SUCCESS', IPS_LOGMESSAGE + 2);              //Success Message                     | FG: Black | BG: Green  | STYLE : NONE
@@ -38,13 +38,13 @@ if (!defined("IPS_LOGMESSAGE")) {
     define('KL_CUSTOM', IPS_LOGMESSAGE + 7);               //User Message                        | FG: Black | BG: White  | STLYE : NONE
 }
 if (!defined("IPS_MODULEMESSAGE")) {
-// --- MODULE LOADER
+    // --- MODULE LOADER
     define('IPS_MODULEMESSAGE', IPS_BASE + 300);           //ModuleLoader Message
     define('ML_LOAD', IPS_MODULEMESSAGE + 1);              //Module loaded
     define('ML_UNLOAD', IPS_MODULEMESSAGE + 2);            //Module unloaded
 }
 if (!defined("IPS_OBJECTMESSAGE")) {
-// --- OBJECT MANAGER
+    // --- OBJECT MANAGER
     define('IPS_OBJECTMESSAGE', IPS_BASE + 400);
     define('OM_REGISTER', IPS_OBJECTMESSAGE + 1);          //Object was registered
     define('OM_UNREGISTER', IPS_OBJECTMESSAGE + 2);        //Object was unregistered
@@ -62,7 +62,7 @@ if (!defined("IPS_OBJECTMESSAGE")) {
     define('OM_CHANGEIDENT', IPS_OBJECTMESSAGE + 14);      //Ident was Changed
 }
 if (!defined("IPS_INSTANCEMESSAGE")) {
-// --- INSTANCE MANAGER
+    // --- INSTANCE MANAGER
     define('IPS_INSTANCEMESSAGE', IPS_BASE + 500);         //Instance Manager Message
     define('IM_CREATE', IPS_INSTANCEMESSAGE + 1);          //Instance created
     define('IM_DELETE', IPS_INSTANCEMESSAGE + 2);          //Instance deleted
@@ -76,7 +76,7 @@ if (!defined("IPS_INSTANCEMESSAGE")) {
     define('IM_SEARCHCOMPLETE', IPS_INSTANCEMESSAGE + 10); //Searching is complete
 }
 if (!defined("IPS_VARIABLEMESSAGE")) {
-// --- VARIABLE MANAGER
+    // --- VARIABLE MANAGER
     define('IPS_VARIABLEMESSAGE', IPS_BASE + 600);              //Variable Manager Message
     define('VM_CREATE', IPS_VARIABLEMESSAGE + 1);               //Variable Created
     define('VM_DELETE', IPS_VARIABLEMESSAGE + 2);               //Variable Deleted
@@ -85,7 +85,7 @@ if (!defined("IPS_VARIABLEMESSAGE")) {
     define('VM_CHANGEPROFILEACTION', IPS_VARIABLEMESSAGE + 5);  //On Profile Action Change
 }
 if (!defined("IPS_SCRIPTMESSAGE")) {
-// --- SCRIPT MANAGER
+    // --- SCRIPT MANAGER
     define('IPS_SCRIPTMESSAGE', IPS_BASE + 700);           //Script Manager Message
     define('SM_CREATE', IPS_SCRIPTMESSAGE + 1);            //On Script Create
     define('SM_DELETE', IPS_SCRIPTMESSAGE + 2);            //On Script Delete
@@ -93,7 +93,7 @@ if (!defined("IPS_SCRIPTMESSAGE")) {
     define('SM_BROKEN', IPS_SCRIPTMESSAGE + 4);            //Script Broken Status changed
 }
 if (!defined("IPS_EVENTMESSAGE")) {
-// --- EVENT MANAGER
+    // --- EVENT MANAGER
     define('IPS_EVENTMESSAGE', IPS_BASE + 800);             //Event Scripter Message
     define('EM_CREATE', IPS_EVENTMESSAGE + 1);             //On Event Create
     define('EM_DELETE', IPS_EVENTMESSAGE + 2);             //On Event Delete
@@ -111,7 +111,7 @@ if (!defined("IPS_EVENTMESSAGE")) {
     define('EM_CHANGECYCLICTIMETO', IPS_EVENTMESSAGE + 14);
 }
 if (!defined("IPS_MEDIAMESSAGE")) {
-// --- MEDIA MANAGER
+    // --- MEDIA MANAGER
     define('IPS_MEDIAMESSAGE', IPS_BASE + 900);           //Media Manager Message
     define('MM_CREATE', IPS_MEDIAMESSAGE + 1);             //On Media Create
     define('MM_DELETE', IPS_MEDIAMESSAGE + 2);             //On Media Delete
@@ -120,27 +120,27 @@ if (!defined("IPS_MEDIAMESSAGE")) {
     define('MM_UPDATE', IPS_MEDIAMESSAGE + 5);
 }
 if (!defined("IPS_LINKMESSAGE")) {
-// --- LINK MANAGER
+    // --- LINK MANAGER
     define('IPS_LINKMESSAGE', IPS_BASE + 1000);           //Link Manager Message
     define('LM_CREATE', IPS_LINKMESSAGE + 1);             //On Link Create
     define('LM_DELETE', IPS_LINKMESSAGE + 2);             //On Link Delete
     define('LM_CHANGETARGET', IPS_LINKMESSAGE + 3);       //On Link TargetID change
 }
 if (!defined("IPS_FLOWMESSAGE")) {
-// --- DATA HANDLER
+    // --- DATA HANDLER
     define('IPS_FLOWMESSAGE', IPS_BASE + 1100);             //Data Handler Message
     define('FM_CONNECT', IPS_FLOWMESSAGE + 1);             //On Instance Connect
     define('FM_DISCONNECT', IPS_FLOWMESSAGE + 2);          //On Instance Disconnect
 }
 if (!defined("IPS_ENGINEMESSAGE")) {
-// --- SCRIPT ENGINE
+    // --- SCRIPT ENGINE
     define('IPS_ENGINEMESSAGE', IPS_BASE + 1200);           //Script Engine Message
     define('SE_UPDATE', IPS_ENGINEMESSAGE + 1);             //On Library Refresh
     define('SE_EXECUTE', IPS_ENGINEMESSAGE + 2);            //On Script Finished execution
     define('SE_RUNNING', IPS_ENGINEMESSAGE + 3);            //On Script Started execution
 }
 if (!defined("IPS_PROFILEMESSAGE")) {
-// --- PROFILE POOL
+    // --- PROFILE POOL
     define('IPS_PROFILEMESSAGE', IPS_BASE + 1300);
     define('PM_CREATE', IPS_PROFILEMESSAGE + 1);
     define('PM_DELETE', IPS_PROFILEMESSAGE + 2);
@@ -153,7 +153,7 @@ if (!defined("IPS_PROFILEMESSAGE")) {
     define('PM_ASSOCIATIONCHANGED', IPS_PROFILEMESSAGE + 9);
 }
 if (!defined("IPS_TIMERMESSAGE")) {
-// --- TIMER POOL
+    // --- TIMER POOL
     define('IPS_TIMERMESSAGE', IPS_BASE + 1400);            //Timer Pool Message
     define('TM_REGISTER', IPS_TIMERMESSAGE + 1);
     define('TM_UNREGISTER', IPS_TIMERMESSAGE + 2);
@@ -163,13 +163,13 @@ if (!defined("IPS_TIMERMESSAGE")) {
 }
 
 if (!defined("IS_ACTIVE")) { //Nur wenn Konstanten noch nicht bekannt sind.
-// --- STATUS CODES
+    // --- STATUS CODES
     define('IS_SBASE', 100);
     define('IS_CREATING', IS_SBASE + 1); //module is being created
     define('IS_ACTIVE', IS_SBASE + 2); //module created and running
     define('IS_DELETING', IS_SBASE + 3); //module us being deleted
     define('IS_INACTIVE', IS_SBASE + 4); //module is not beeing used
-// --- ERROR CODES
+    // --- ERROR CODES
     define('IS_EBASE', 200);          //default errorcode
     define('IS_NOTCREATED', IS_EBASE + 1); //instance could not be created
 }
@@ -186,7 +186,7 @@ if (!defined("vtBoolean")) { //Nur wenn Konstanten noch nicht bekannt sind.
  * Erweitert ipsmodule 
  *
  * @property string $HMAddress Die Adresse der CCU.
- * @property int $ParentId Aktueller IO-Parent. 
+ * @property int $ParentId Aktueller IO-Parent.
  */
 abstract class HMBase extends IPSModule
 {
@@ -197,7 +197,7 @@ abstract class HMBase extends IPSModule
     }
     /**
      * Wert einer Eigenschaft aus den InstanceBuffer lesen.
-     * 
+     *
      * @access public
      * @param string $name Propertyname
      * @return mixed Value of Name
@@ -209,7 +209,7 @@ abstract class HMBase extends IPSModule
 
     /**
      * Wert einer Eigenschaft in den InstanceBuffer schreiben.
-     * 
+     *
      * @access public
      * @param string $name Propertyname
      * @param mixed Value of Name
@@ -289,13 +289,13 @@ abstract class HMBase extends IPSModule
 ################## protected
     /**
      * Wird ausgeführt wenn der Kernel hochgefahren wurde.
-     * 
+     *
      * @access protected
      */
     abstract protected function KernelReady();
     /**
      * Wird ausgeführt wenn sich der Parent ändert.
-     * 
+     *
      * @access protected
      */
     abstract protected function ForceRefresh();
@@ -318,7 +318,7 @@ abstract class HMBase extends IPSModule
 
     /**
      * Registriert Nachrichten des aktuellen Parent und ließt die Adresse der CCU aus dem Parent.
-     * 
+     *
      * @access protected
      * @return int ID des Parent.
      */
@@ -339,7 +339,7 @@ abstract class HMBase extends IPSModule
 
     /**
      * Überträgt das übergeben HM-Script an die CCU und liefert das Ergebnis.
-     * 
+     *
      * @access protected
      * @param string $url Die URL auf der CCU.
      * @param string $HMScript Das zu übertragende HM-Script.
@@ -469,7 +469,7 @@ trait Profile
 
 /**
  * DebugHelper ergänzt SendDebug um die Möglichkeit Array und Objekte auszugeben.
- * 
+ *
  */
 trait DebugHelper
 {
@@ -488,7 +488,7 @@ trait DebugHelper
 
                 $this->SendDebug($Message . ":" . $Key, $DebugData, 0);
             }
-        } else if (is_array($Data)) {
+        } elseif (is_array($Data)) {
             foreach ($Data as $Key => $DebugData) {
                 $this->SendDebug($Message . ":" . $Key, $DebugData, 0);
             }
@@ -507,7 +507,7 @@ trait InstanceStatus
     /**
      * Ermittelt den Parent und verwaltet die Einträge des Parent im MessageSink
      * Ermöglicht es das Statusänderungen des Parent empfangen werden können.
-     * 
+     *
      * @access protected
      * @return int ID des Parent.
      */
@@ -533,7 +533,7 @@ trait InstanceStatus
 
     /**
      * Prüft den Parent auf vorhandensein und Status.
-     * 
+     *
      * @access protected
      * @return bool True wenn Parent vorhanden und in Status 102, sonst false.
      */

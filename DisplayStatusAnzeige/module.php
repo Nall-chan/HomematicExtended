@@ -15,10 +15,10 @@ require_once(__DIR__ . "/../libs/HMBase.php");  // HMBase Klasse
 
 /**
  * HomeMaticDisWM55 ist die Klasse für das IPS-Modul 'HomeMatic Dis-WM55'.
- * Erweitert HMBase 
+ * Erweitert HMBase
  *
  * @property int $Page Die aktuelle Seite.
- * @property array $HMEventData [self::$PropertysName]  
+ * @property array $HMEventData [self::$PropertysName]
   ["HMDeviceAddress"] => string $HMDeviceAddress Die Geräte-Adresse des Trigger.
   ["HMDeviceDatapoint"] => string $HMDeviceDatapoint  Der zu überwachende Datenpunkt vom $HMDeviceAddress
  * @property array $Events [self::$PropertysName]  Die IPS-ID der Variable des Datenpunkt welcher eine Aktualisierung auslöst.
@@ -138,10 +138,10 @@ class HomeMaticDisWM55 extends HMBase
         return;
     }
 
-################## protected
+    ################## protected
     /**
      * Wird ausgeführt wenn der Kernel hochgefahren wurde.
-     * 
+     *
      * @access protected
      */
     protected function KernelReady()
@@ -151,7 +151,7 @@ class HomeMaticDisWM55 extends HMBase
 
     /**
      * Wird ausgeführt wenn sich der Parent ändert.
-     * 
+     *
      * @access protected
      */
     protected function ForceRefresh()
@@ -159,7 +159,7 @@ class HomeMaticDisWM55 extends HMBase
         $this->ApplyChanges();
     }
 
-################## Datenaustausch
+    ################## Datenaustausch
     /**
      * Interne Funktion des SDK.
      *
@@ -184,10 +184,10 @@ class HomeMaticDisWM55 extends HMBase
         }
     }
 
-################## PRIVATE                
+    ################## PRIVATE                
     /**
      * Prüft die Konfiguration und setzt den Status der Instanz.
-     * 
+     *
      * @access privat
      * @return boolean True wenn Konfig ok, sonst false.
      */
@@ -265,7 +265,7 @@ class HomeMaticDisWM55 extends HMBase
 
     /**
      * Prüft und holt alle Daten zu den Quell-Variablen und Instanzen.
-     * 
+     *
      * @access private
      * @param int $EventID IPD-VarID des Datenpunktes, welcher als Event dient.
      * @return array|boolean Array mit den Daten zum Datenpunkt. False im Fehlerfall.
@@ -284,7 +284,7 @@ class HomeMaticDisWM55 extends HMBase
 
     /**
      * Führt das User-Script aus und überträgt das Ergebnis an die CCU.
-     * 
+     *
      * @access private
      * @param string $Action Die auszuführende Aktion.
      * @throws Exception Wenn CCU nicht erreicht wurde.
@@ -375,7 +375,7 @@ class HomeMaticDisWM55 extends HMBase
 
     /**
      * Liefert das Script welches im Objektbaum als HM_OLED-Script mit den Kostanten für das DisplayScript angelegt wird.
-     * 
+     *
      * @access private
      * @return string
      */
@@ -442,7 +442,7 @@ function text_encode ($string)
 
     /**
      * Liefert das Script welches im Objektbaum als Vorlage für das DisplayScript angelegt wird.
-     * 
+     *
      * @access private
      * @param type $ID Die IPS-ID des HM_OLED Scriptes mit den Konstanten für das Display-Script.
      * @return string
@@ -526,7 +526,7 @@ if ($_IPS["SENDER"] <> "HMDisWM55")
 }
 include IPS_GetScriptFile(' . $ID . '); // Konstanten für die Icons und Farben
 
-if (($_IPS["ACTION"] == "UP") or ( $_IPS["ACTION"] == "DOWN"))
+if (($_IPS["ACTION"] == "UP") or ($_IPS["ACTION"] == "DOWN"))
 {
     switch ($_IPS["PAGE"])
     {
@@ -666,7 +666,7 @@ echo $data; //Daten zurückgeben an Dis-WM55-Instanz
 
     /**
      *  Wird bei einem timeout ausgeführt und setzt die aktuelle Seite wieder auf Null.
-     * 
+     *
      * @access public
      */
     public function ResetTimer()

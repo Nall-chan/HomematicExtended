@@ -15,7 +15,7 @@ require_once(__DIR__ . "/../libs/HMBase.php");  // HMBase Klasse
 
 /**
  * HomeMaticSystemvariablen ist die Klasse für das IPS-Modul 'HomeMatic Systemvariablen'.
- * Erweitert HMBase 
+ * Erweitert HMBase
  *
  * @property string $HMDeviceAddress Die Geräte-Adresse welche eine Aktualisierung auslöst.
  * @property string $HMDeviceDatapoint Der zu überwachende Datenpunkt welcher eine Aktualisierung auslöst.
@@ -26,7 +26,7 @@ class HomeMaticSystemvariablen extends HMBase
 {
 
     use Profile;
-    static private $CcuVarType = array(2 => vtBoolean, 4 => vtFloat, 16 => vtInteger, 20 => vtString);
+    private static $CcuVarType = array(2 => vtBoolean, 4 => vtFloat, 16 => vtInteger, 20 => vtString);
 
     /**
      * Interne Funktion des SDK.
@@ -117,8 +117,8 @@ class HomeMaticSystemvariablen extends HMBase
     {
         parent::ApplyChanges();
 
-        $this->RegisterProfileIntegerEx('HM.AlReceipt', "", "", "", Array(
-            Array(0, "Quittieren", "", 0x00FF00)
+        $this->RegisterProfileIntegerEx('HM.AlReceipt', "", "", "", array(
+            array(0, "Quittieren", "", 0x00FF00)
         ));
 
         if (IPS_GetKernelRunlevel() <> KR_READY) {
@@ -196,7 +196,7 @@ class HomeMaticSystemvariablen extends HMBase
 
     /**
      * Registriert Nachrichten des aktuellen Parent und ließt die Adresse der CCU aus dem Parent.
-     * 
+     *
      * @access protected
      * @return int ID des Parent.
      */
@@ -206,10 +206,10 @@ class HomeMaticSystemvariablen extends HMBase
         $this->SetSummary($this->HMAddress);
     }
 
-################## PRIVATE                
+    ################## PRIVATE                
     /**
      * Prüft die Konfiguration und setzt den Status der Instanz.
-     * 
+     *
      * @access privat
      * @return boolean True wenn Konfig ok, sonst false.
      */
@@ -246,7 +246,7 @@ class HomeMaticSystemvariablen extends HMBase
         }
 
         if ($Interval < 5) {
-            $this->SetStatus(IS_EBASE + 3);  //Warnung Trigger zu klein                  
+            $this->SetStatus(IS_EBASE + 3);  //Warnung Trigger zu klein
             return false;
         }
 
@@ -257,7 +257,7 @@ class HomeMaticSystemvariablen extends HMBase
 
     /**
      * Prüft und holt alle Daten zu der Event-Variable und Instanz.
-     * 
+     *
      * @access private
      * @return boolean True wenn Quelle gültig ist, sonst false.
      */
@@ -354,7 +354,7 @@ class HomeMaticSystemvariablen extends HMBase
             $VarProfil = 'HM.SysVar' . (string) $this->InstanceID . '.' . (string) $SysVar;
             $VarName = (string) $xmlVar->Name;
 
-            if (((int) $xmlVar->ValueType != vtString) and ( !IPS_VariableProfileExists($VarProfil))) {                 // neu anlegen wenn VAR neu ist oder Profil nicht vorhanden
+            if (((int) $xmlVar->ValueType != vtString) and (!IPS_VariableProfileExists($VarProfil))) { // neu anlegen wenn VAR neu ist oder Profil nicht vorhanden
                 $HMScript = 'Name=dom.GetObject(' . $SysVar . ').Name();' . PHP_EOL
                         . 'ValueSubType=dom.GetObject(' . $SysVar . ').ValueSubType();' . PHP_EOL
                         . 'ValueList=dom.GetObject(' . $SysVar . ').ValueList();' . PHP_EOL
@@ -453,7 +453,7 @@ class HomeMaticSystemvariablen extends HMBase
 
     /**
      * Liest die Daten einer Systemvariable vom Typ 'Alarm' aus. Visualisiert den Status und startet bei Bedarf ein Script in IPS.
-     * 
+     *
      * @param int $ParentID IPS-ID der Alarmvariable.
      * @param string $SysVar ID der Alarmvariable in der CCU.
      * @param string $CCUTimeZone Die Zeitzone der CCU.
@@ -547,7 +547,7 @@ class HomeMaticSystemvariablen extends HMBase
 
     /**
      * Schreibt einen Wert in eine Systemvariable auf der CCU.
-     * 
+     *
      * @param string $Parameter Der IDENT der IPS-Statusvariable = Die ID der Systemvariable in der CCU.
      * @param string $ValueStr Der neue Wert der Systemvariable.
      * @return boolean True bei Erfolg, sonst false.
@@ -579,7 +579,7 @@ class HomeMaticSystemvariablen extends HMBase
 
     /**
      * Erstellt eine Untervariable in IPS.
-     * 
+     *
      * @param int $ParentID IPS-ID der übergeordneten Variable.
      * @param string $Ident IDENT der neuen Statusvariable.
      * @param string $Name Name der neuen Statusvariable.
@@ -632,7 +632,7 @@ class HomeMaticSystemvariablen extends HMBase
         return $vid;
     }
 
-################## ActionHandler
+    ################## ActionHandler
     /**
      * Interne Funktion des SDK.
      *
@@ -671,7 +671,7 @@ class HomeMaticSystemvariablen extends HMBase
         }
     }
 
-################## Datenaustausch
+    ################## Datenaustausch
     /**
      * Interne Funktion des SDK.
      *
@@ -686,11 +686,11 @@ class HomeMaticSystemvariablen extends HMBase
         }
     }
 
-################## PUBLIC    
+    ################## PUBLIC    
     /**
      * IPS-Instanz-Funktion 'HM_AlarmReceipt'.
      * Bestätigt einen Alarm auf der CCU
-     * 
+     *
      * @param string $Ident Der IDENT der IPS-Statusvariable = Die ID der Alarmvariable in der CCU.
      * @return boolean True bei erfolg, sonst false.
      */
@@ -736,7 +736,7 @@ class HomeMaticSystemvariablen extends HMBase
     /**
      * IPS-Instanz-Funktion 'HM_SystemVariablesTimer'.
      * Wird durch den Timer ausgeführt und liest alle Systemvariablen von der CCU.
-     * 
+     *
      * @access public
      */
     public function SystemVariablesTimer()
@@ -754,7 +754,7 @@ class HomeMaticSystemvariablen extends HMBase
     /**
      * IPS-Instanz-Funktion 'HM_ReadSystemVariables'.
      * Liest alle Systemvariablen von der CCU.
-     * 
+     *
      * @access public
      * @return boolean True bei Erfolg, sonst false.
      */
@@ -775,7 +775,7 @@ class HomeMaticSystemvariablen extends HMBase
     /**
      * IPS-Instanz-Funktion 'HM_WriteValueBoolean'.
      * Schreibt einen bool-Wert in eine Systemvariable der CCU.
-     * 
+     *
      * @access public
      * @param string $Parameter Der IDENT der IPS-Statusvariable = Die ID der Alarmvariable in der CCU.
      * @param bool $Value Der zu schreibende Wert.
@@ -789,7 +789,7 @@ class HomeMaticSystemvariablen extends HMBase
     /**
      * IPS-Instanz-Funktion 'HM_WriteValueBoolean2'.
      * Schreibt einen bool-Wert in eine Systemvariable der CCU.
-     * 
+     *
      * @access public
      * @param string $Parameter Der IDENT der IPS-Statusvariable = Die ID der Alarmvariable in der CCU.
      * @param bool $Value Der zu schreibende Wert.
@@ -835,7 +835,7 @@ class HomeMaticSystemvariablen extends HMBase
     /**
      * IPS-Instanz-Funktion 'HM_WriteValueInteger'.
      * Schreibt einen integer-Wert in eine Systemvariable der CCU.
-     * 
+     *
      * @access public
      * @param string $Parameter Der IDENT der IPS-Statusvariable = Die ID der Alarmvariable in der CCU.
      * @param int $Value Der zu schreibende Wert.
@@ -849,7 +849,7 @@ class HomeMaticSystemvariablen extends HMBase
     /**
      * IPS-Instanz-Funktion 'HM_WriteValueInteger2'.
      * Schreibt einen integer-Wert in eine Systemvariable der CCU.
-     * 
+     *
      * @access public
      * @param string $Parameter Der IDENT der IPS-Statusvariable = Die ID der Alarmvariable in der CCU.
      * @param int $Value Der zu schreibende Wert.
@@ -888,7 +888,7 @@ class HomeMaticSystemvariablen extends HMBase
     /**
      * IPS-Instanz-Funktion 'HM_WriteValueFloat'.
      * Schreibt einen float-Wert in eine Systemvariable der CCU.
-     * 
+     *
      * @access public
      * @param string $Parameter Der IDENT der IPS-Statusvariable = Die ID der Alarmvariable in der CCU.
      * @param float $Value Der zu schreibende Wert.
@@ -902,7 +902,7 @@ class HomeMaticSystemvariablen extends HMBase
     /**
      * IPS-Instanz-Funktion 'HM_WriteValueFloat2'.
      * Schreibt einen float-Wert in eine Systemvariable der CCU.
-     * 
+     *
      * @access public
      * @param string $Parameter Der IDENT der IPS-Statusvariable = Die ID der Alarmvariable in der CCU.
      * @param float $Value Der zu schreibende Wert.
@@ -942,7 +942,7 @@ class HomeMaticSystemvariablen extends HMBase
     /**
      * IPS-Instanz-Funktion 'HM_WriteValueString'.
      * Schreibt einen string-Wert in eine Systemvariable der CCU.
-     * 
+     *
      * @access public
      * @param string $Parameter Der IDENT der IPS-Statusvariable = Die ID der Alarmvariable in der CCU.
      * @param string $Value Der zu schreibende Wert.
@@ -956,7 +956,7 @@ class HomeMaticSystemvariablen extends HMBase
     /**
      * IPS-Instanz-Funktion 'HM_WriteValueString2'.
      * Schreibt einen string-Wert in eine Systemvariable der CCU.
-     * 
+     *
      * @access public
      * @param string $Parameter Der IDENT der IPS-Statusvariable = Die ID der Alarmvariable in der CCU.
      * @param string $Value Der zu schreibende Wert.

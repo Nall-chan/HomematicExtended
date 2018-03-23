@@ -113,7 +113,7 @@ if ($_IPS['SENDER'] <> 'HMDisWM55') {
     return;
 }
 
-if (($_IPS['ACTION'] == 'UP') or ( $_IPS['ACTION'] == 'DOWN')) {
+if (($_IPS['ACTION'] == 'UP') or ($_IPS['ACTION'] == 'DOWN')) {
     switch ($_IPS['PAGE']) {                                  // Anzeige pro Seite
         case 1:  // Seite 1
 
@@ -251,5 +251,3 @@ function hex_encode($string)
     $return = str_replace($umlaut, $hex_neu, $string);
     return $return;
 }
-
-?>
