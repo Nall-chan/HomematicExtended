@@ -190,7 +190,6 @@ if (!defined("vtBoolean")) { //Nur wenn Konstanten noch nicht bekannt sind.
  */
 abstract class HMBase extends IPSModule
 {
-
     use DebugHelper,
         InstanceStatus {
         InstanceStatus::GetParentData as GetInstanceParent;
@@ -275,7 +274,7 @@ abstract class HMBase extends IPSModule
                 if ($this->HMAddress == '') {
                     return;
                 }
-                if (($SenderID == @IPS_GetInstance($this->InstanceID)['ConnectionID']) and ( $Data[0] == IS_ACTIVE)) {
+                if (($SenderID == @IPS_GetInstance($this->InstanceID)['ConnectionID']) and ($Data[0] == IS_ACTIVE)) {
                     try {
                         $this->ForceRefresh();
                     } catch (Exception $exc) {
@@ -327,7 +326,6 @@ abstract class HMBase extends IPSModule
         $OldParentId = $this->ParentId;
         $ParentId = $this->GetInstanceParent();
         if ($ParentId <> $OldParentId) {
-
             if ($ParentId > 0) {
                 $this->HMAddress = (string) IPS_GetProperty($ParentId, 'Host');
             } else {
@@ -480,7 +478,6 @@ trait Profile
         }
         IPS_DeleteVariableProfile($Profil);
     }
-
 }
 
 /**
@@ -501,7 +498,6 @@ trait DebugHelper
     {
         if (is_object($Data)) {
             foreach ($Data as $Key => $DebugData) {
-
                 $this->SendDebug($Message . ":" . $Key, $DebugData, 0);
             }
         } elseif (is_array($Data)) {
@@ -512,7 +508,6 @@ trait DebugHelper
             parent::SendDebug($Message, (string) $Data, $Format);
         }
     }
-
 }
 
 /**
@@ -562,8 +557,6 @@ trait InstanceStatus
         }
         return false;
     }
-
-
 }
 
 /** @} */
