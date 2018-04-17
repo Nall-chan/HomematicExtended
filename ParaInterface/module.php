@@ -177,7 +177,6 @@ class ParaInterface extends HMBase
         $Result = $this->PutParamset($Data);
         return $Result;
     }
-
 }
 
 /** @} */

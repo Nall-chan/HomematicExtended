@@ -24,7 +24,6 @@ require_once(__DIR__ . "/../libs/HMBase.php");  // HMBase Klasse
  */
 class HomeMaticSystemvariablen extends HMBase
 {
-
     use Profile;
     private static $CcuVarType = array(2 => vtBoolean, 4 => vtFloat, 16 => vtInteger, 20 => vtString);
 
@@ -396,7 +395,7 @@ class HomeMaticSystemvariablen extends HMBase
                 if (isset($xmlVar2->ValueUnit)) {
                     @IPS_SetVariableProfileText($VarProfil, '', ' ' . (string) $xmlVar2->ValueUnit);
                 }
-                if ((isset($xmlVar2->ValueSubType)) and ( (int) $xmlVar2->ValueSubType == 29)) {
+                if ((isset($xmlVar2->ValueSubType)) and ((int) $xmlVar2->ValueSubType == 29)) {
                     foreach (explode(';', (string) $xmlVar2->ValueList) as $Index => $ValueList) {
                         @IPS_SetVariableProfileAssociation($VarProfil, $Index, trim($ValueList), '', -1);
                     }
@@ -591,7 +590,6 @@ class HomeMaticSystemvariablen extends HMBase
      */
     private function RegisterSubVariable($ParentID, $Ident, $Name, $Type, $Profile = "", $Position = 0)
     {
-
         if ($Profile != "") {
             if (IPS_VariableProfileExists("~" . $Profile)) {
                 $Profile = "~" . $Profile;
@@ -991,7 +989,6 @@ class HomeMaticSystemvariablen extends HMBase
         trigger_error($this->Translate('Error on write Data ') . $Parameter, E_USER_NOTICE);
         return false;
     }
-
 }
 
 /** @} */

@@ -123,7 +123,6 @@ class HomeMaticRemoteScript extends HMBase
             return false;
         }
     }
-
 }
 
 /** @} */

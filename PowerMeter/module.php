@@ -263,7 +263,6 @@ class HomeMaticPowermeter extends HMBase
         $Value = ((float) $xml->Value) / $this->HMFactor;
         $this->SetValue($this->HMDeviceDatapoint . '_TOTAL', $Value);
     }
-
 }
 
 /** @} */

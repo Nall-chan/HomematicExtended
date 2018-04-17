@@ -254,7 +254,6 @@ class HomeMaticRFInterfaceSplitter extends HMBase
         }
         return $ret;
     }
-
 }
 
 /** @} */

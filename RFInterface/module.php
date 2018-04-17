@@ -19,7 +19,6 @@ require_once(__DIR__ . "/../libs/HMBase.php");  // HMBase Klasse
  */
 class HomeMaticRFInterface extends IPSModule
 {
-
     use DebugHelper;
     /**
      * Interne Funktion des SDK.
@@ -122,7 +121,6 @@ class HomeMaticRFInterface extends IPSModule
             }
         }
     }
-
 }
 
 /** @} */
