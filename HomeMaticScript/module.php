@@ -15,11 +15,10 @@ require_once(__DIR__ . "/../libs/HMBase.php");
 
 /**
  * HomeMaticRemoteScript ist die Klasse für das IPS-Modul 'HomeMatic RemoteScript Interface'.
- * Erweitert HMBase 
+ * Erweitert HMBase
  */
 class HomeMaticRemoteScript extends HMBase
 {
-
     /**
      * Interne Funktion des SDK.
      *
@@ -43,11 +42,10 @@ class HomeMaticRemoteScript extends HMBase
         parent::ApplyChanges();
     }
 
-################## protected
-
+    ################## protected
     /**
      * Wird ausgeführt wenn der Kernel hochgefahren wurde.
-     * 
+     *
      * @access protected
      */
     protected function KernelReady()
@@ -57,7 +55,7 @@ class HomeMaticRemoteScript extends HMBase
 
     /**
      * Wird ausgeführt wenn sich der Parent ändert.
-     * 
+     *
      * @access protected
      */
     protected function ForceRefresh()
@@ -67,7 +65,7 @@ class HomeMaticRemoteScript extends HMBase
 
     /**
      * Registriert Nachrichten des aktuellen Parent und ließt die Adresse der CCU aus dem Parent.
-     * 
+     *
      * @access protected
      */
     protected function GetParentData()
@@ -76,11 +74,10 @@ class HomeMaticRemoteScript extends HMBase
         $this->SetSummary($this->HMAddress);
     }
 
-################## private
-
+    ################## private
     /**
      * Sendet ein HM-Script an die CCU und liefert das Ergebnis.
-     * 
+     *
      * @access private
      * @param string $Script Das HM-Script.
      * @return string das Ergebnis von der CCU als JSON-String.
@@ -108,12 +105,11 @@ class HomeMaticRemoteScript extends HMBase
         return json_encode($xml);
     }
 
-################## PUBLIC
-
+    ################## PUBLIC
     /**
      * IPS-Instanzfunktion HM_RunScript.
      * Startet das übergebene Script auf der CCU und liefert das Ergbnis als JSON-String.
-     * 
+     *
      * @access public
      * @param string $Script
      * @return string|boolean Das Ergebnis als JSON-String oder FALSE im Fehlerfall.

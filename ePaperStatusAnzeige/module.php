@@ -15,7 +15,7 @@ require_once(__DIR__ . "/../libs/HMBase.php");  // HMBase Klasse
 
 /**
  * HomeMaticDisEPWM55 ist die Klasse für das IPS-Modul 'HomeMatic Dis-EP-WM55'.
- * Erweitert HMBase 
+ * Erweitert HMBase
  *
  */
 class HomeMaticDisEPWM55 extends HMBase
@@ -47,10 +47,10 @@ class HomeMaticDisEPWM55 extends HMBase
         $this->SetReceiveDataFilter(".*9999999999.*");
     }
 
-################## protected
+    ################## protected
     /**
      * Wird ausgeführt wenn der Kernel hochgefahren wurde.
-     * 
+     *
      * @access protected
      */
     protected function KernelReady()
@@ -60,7 +60,7 @@ class HomeMaticDisEPWM55 extends HMBase
 
     /**
      * Wird ausgeführt wenn sich der Parent ändert.
-     * 
+     *
      * @access protected
      */
     protected function ForceRefresh()
@@ -68,10 +68,10 @@ class HomeMaticDisEPWM55 extends HMBase
         $this->ApplyChanges();
     }
 
-################## PRIVATE                
+    ################## PRIVATE
     /**
      * Sendet die Daten an dden HM-Socket.
-     * 
+     *
      * @access private
      * @param array $Submit Das Array mit allen Werten, welche an das Display gesendet werden sollen.
      * @return boolean True bei Erfolg, sonst false.
@@ -83,8 +83,7 @@ class HomeMaticDisEPWM55 extends HMBase
             trigger_error($this->Translate("Instance has no active parent instance!"), E_USER_NOTICE);
             return false;
         }
-        $ParentData = Array
-            (
+        $ParentData = array(
             "DataID"     => "{75B6B237-A7B0-46B9-BBCE-8DF0CFE6FA52}",
             "Protocol"   => 0,
             "MethodName" => "setValue",
@@ -106,7 +105,7 @@ class HomeMaticDisEPWM55 extends HMBase
 
     /**
      * Erzeugt das Daten-Array aus den übergebenden Parametern.
-     * 
+     *
      * @access public
      * @param int $Chime Tonfolge 0-6
      * @param int $Repeat Anzahl der Wiederholgungen 0-15
@@ -158,11 +157,11 @@ class HomeMaticDisEPWM55 extends HMBase
 
     /**
      * Erzeugt aus dem übergebenen Parametern eine Daten-Array für den Text und das Icon.
-     * 
+     *
      * @access private
      * @param string $Text Der darzustellenden Text (0-12 Zeichen)
      * @param int $Icon Das anzuzeigende Icon (0-9)
-     * @return array Das Daten-Array für eine Zeile. 
+     * @return array Das Daten-Array für eine Zeile.
      */
     private function GetLine(string $Text, int $Icon)
     {
@@ -205,7 +204,7 @@ class HomeMaticDisEPWM55 extends HMBase
 
     /**
      * Konvertiert die deutschen Sonderzeichen.
-     * 
+     *
      * @access private
      * @param string $string Der Original-String.
      * @return string Der veränderte String.
@@ -218,11 +217,11 @@ class HomeMaticDisEPWM55 extends HMBase
         return $return;
     }
 
-################## public    
+    ################## public
     /**
      * IPS-Instanz-Funktion 'HM_WriteValueDisplayNotify'.
      * Steuert den Summer und die LED des Display.
-     * 
+     *
      * @access public
      * @param int $Chime Tonfolge 0-6
      * @param int $Repeat Anzahl der Wiederholgungen 0-15
@@ -243,7 +242,7 @@ class HomeMaticDisEPWM55 extends HMBase
     /**
      * IPS-Instanz-Funktion 'HM_WriteValueDisplayLine'.
      * Beschreibt eine Zeile vom Display.
-     * 
+     *
      * @access public
      * @param int $Line Die zu beschreibende Zeile 1-3
      * @param string $Text Der darzustellende Text (bis 12 Zeichen)
@@ -271,7 +270,7 @@ class HomeMaticDisEPWM55 extends HMBase
     /**
      * IPS-Instanz-Funktion 'HM_WriteValueDisplayLineEx'.
      * Beschreibt eine Zeile vom Display und steuert den Summer sowie die LED des Display an.
-     * 
+     *
      * @access public
      * @param int $Line Die zu beschreibende Zeile 1-3
      * @param string $Text Der darzustellende Text (bis 12 Zeichen)
@@ -307,7 +306,7 @@ class HomeMaticDisEPWM55 extends HMBase
     /**
      * IPS-Instanz-Funktion 'HM_WriteValueDisplay'.
      * Beschreibt alle Zeilen vom Display.
-     * 
+     *
      * @access public
      * @param string $Text1 Der darzustellende Text in Zeile 1(bis 12 Zeichen)
      * @param int $Icon1 Das anzuzeigende Icon in Zeile 1(0-9)
@@ -343,7 +342,7 @@ class HomeMaticDisEPWM55 extends HMBase
     /**
      * IPS-Instanz-Funktion 'HM_WriteValueDisplayEx'.
      * Beschreibt alle Zeilen vom Display  und steuert den Summer sowie die LED des Display an.
-     * 
+     *
      * @access public
      * @param string $Text1 Der darzustellende Text in Zeile 1(bis 12 Zeichen)
      * @param int $Icon1 Das anzuzeigende Icon in Zeile 1(0-9)

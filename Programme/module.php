@@ -15,7 +15,7 @@ require_once(__DIR__ . "/../libs/HMBase.php");  // HMBase Klasse
 
 /**
  * HomeMaticProgramme ist die Klasse für das IPS-Modul 'HomeMatic Programme'.
- * Erweitert HMBase 
+ * Erweitert HMBase
  */
 class HomeMaticProgramme extends HMBase
 {
@@ -76,10 +76,10 @@ class HomeMaticProgramme extends HMBase
         }
     }
 
-################## protected
+    ################## protected
     /**
      * Wird ausgeführt wenn der Kernel hochgefahren wurde.
-     * 
+     *
      * @access protected
      */
     protected function KernelReady()
@@ -89,7 +89,7 @@ class HomeMaticProgramme extends HMBase
 
     /**
      * Wird ausgeführt wenn sich der Parent ändert.
-     * 
+     *
      * @access protected
      */
     protected function ForceRefresh()
@@ -99,7 +99,7 @@ class HomeMaticProgramme extends HMBase
 
     /**
      * Registriert Nachrichten des aktuellen Parent und ließt die Adresse der CCU aus dem Parent.
-     * 
+     *
      * @access protected
      */
     protected function GetParentData()
@@ -108,10 +108,10 @@ class HomeMaticProgramme extends HMBase
         $this->SetSummary($this->HMAddress);
     }
 
-################## PRIVATE      
+    ################## PRIVATE
     /**
      * Liest alle vorhandenen Programme aus der CCU aus und stellt diese als Variablen mit Aktionen da.
-     * 
+     *
      * @access private
      * @return boolean True bei Erfolg, sonst false.
      * @throws Exception Wenn CCU nicht erreicht wurde.
@@ -163,7 +163,7 @@ class HomeMaticProgramme extends HMBase
 
     /**
      * Startet ein auf der CCU hinterlegtes Programm.
-     * 
+     *
      * @access private
      * @param string $Ident Der Ident des Programmes.
      * @return boolean True bei erfolg sonst Exception.
@@ -196,7 +196,7 @@ class HomeMaticProgramme extends HMBase
         }
     }
 
-################## ActionHandler
+    ################## ActionHandler
     /**
      * Interne Funktion des SDK.
      *
@@ -211,11 +211,11 @@ class HomeMaticProgramme extends HMBase
         }
     }
 
-################## PUBLIC
+    ################## PUBLIC
     /**
      * IPS-Instanz-Funktion 'HM_ReadPrograms'.
      * Liest die Programme aus der CCU aus.
-     * 
+     *
      * @access public
      * @return boolean True bei erfolg, sonst false.
      */
@@ -232,7 +232,7 @@ class HomeMaticProgramme extends HMBase
     /**
      * IPS-Instanz-Funktion 'HM_StartProgram'.
      * Startet ein auf der CCU hinterlegtes Programme.
-     * 
+     *
      * @access public
      * @return boolean True bei erfolg, sonst false.
      */

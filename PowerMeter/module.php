@@ -15,11 +15,11 @@ require_once(__DIR__ . "/../libs/HMBase.php");  // HMBase Klasse
 
 /**
  * HomeMaticPowermeter ist die Klasse für das IPS-Modul 'HomeMatic PowerMeter'.
- * Erweitert HMBase 
+ * Erweitert HMBase
  *
  * @property int $Event Die IPS-ID der Variable welche als Trigger dient.
  * @property string $HMDeviceAddress Die Geräte-Adresse des Zählers.
- * @property string $HMDeviceDatapoint Der zu überwachende Datenpunkt. 
+ * @property string $HMDeviceDatapoint Der zu überwachende Datenpunkt.
  * @property string $HMProtocol HmIP-RF oder BidCos-RF BidCos-WR
  * @property string $HMSufix Anhang für die HMSystemvariable
  * @property int $HMFactor Faktor für die Berechnung.
@@ -118,10 +118,10 @@ class HomeMaticPowermeter extends HMBase
         $this->SetReceiveDataFilter(".*9999999999.*");
     }
 
-################## protected
+    ################## protected
     /**
      * Wird ausgeführt wenn der Kernel hochgefahren wurde.
-     * 
+     *
      * @access protected
      */
     protected function KernelReady()
@@ -131,7 +131,7 @@ class HomeMaticPowermeter extends HMBase
 
     /**
      * Wird ausgeführt wenn sich der Parent ändert.
-     * 
+     *
      * @access protected
      */
     protected function ForceRefresh()
@@ -139,7 +139,7 @@ class HomeMaticPowermeter extends HMBase
         $this->ApplyChanges();
     }
 
-################## Datenaustausch
+    ################## Datenaustausch
     /**
      * Interne Funktion des SDK.
      *
@@ -154,10 +154,10 @@ class HomeMaticPowermeter extends HMBase
         }
     }
 
-################## PRIVATE                
+    ################## PRIVATE
     /**
      * Prüft die Konfiguration und setzt den Status der Instanz.
-     * 
+     *
      * @access privat
      * @return boolean True wenn Konfig ok, sonst false.
      */
@@ -189,7 +189,7 @@ class HomeMaticPowermeter extends HMBase
 
     /**
      * Prüft und holt alle Daten zu der Quell-Variable und Instanz.
-     * 
+     *
      * @access private
      * @param int $EventID IPD-VarID des Datenpunktes, welcher als Event dient.
      * @return boolean True wenn Quelle gültig ist, sonst false.
@@ -235,7 +235,7 @@ class HomeMaticPowermeter extends HMBase
 
     /**
      * Holt den Wert des Summenzähler per HM-Script aus der CCU.
-     * 
+     *
      * @access private
      * @throws Exception Wenn CCU nicht erreicht wurde.
      */
