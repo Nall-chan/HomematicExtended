@@ -82,6 +82,33 @@ class ParaInterface extends HMBase
     }
 
 ################## PRIVATE                
+    private function GetRssiInfo()
+    {
+        
+        if (!$this->HasActiveParent()) {
+            trigger_error("Instance has no active Parent Instance!", E_USER_NOTICE);
+            return false;
+        }
+        $ParentData = Array
+            (
+            "DataID"     => "{75B6B237-A7B0-46B9-BBCE-8DF0CFE6FA52}",
+            "Protocol"   => $this->ReadPropertyInteger('Protocol'),
+            "MethodName" => "rssiInfo",
+            "WaitTime"   => 5000,
+            "Data"       => array($this->ReadPropertyString('Address'), 'VALUES')
+        );
+        $this->SendDebug('Send', $ParentData, 0);
+
+        $JSON = json_encode($ParentData);
+        $ResultJSON = @$this->SendDataToParent($JSON);
+        $Result = @json_decode($ResultJSON, true);
+        if ($Result === false) {
+            trigger_error('Error on Read Paramset', E_USER_NOTICE);
+            $this->SendDebug('Error', '', 0);
+        }
+        $this->SendDebug('Receive', $Result, 0);
+        return $Result;
+    }
     /**
      * Liest alle Parameter des Devices aus.
      * 
@@ -160,6 +187,13 @@ class ParaInterface extends HMBase
     {
         $Result = $this->GetParamset();
         return $Result;
+    }
+
+    public function ReadRSSI()
+    {
+        $Result = $this->GetRssiInfo();
+        return $Result;
+    
     }
 
     /**

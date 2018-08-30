@@ -208,10 +208,13 @@ class HomeMaticRFInterfaceSplitter extends HMBase
                     switch ($ProtocolID) {
                         case 0:
                             $Name = 'Funk';
+                            break;
                         case 2:
                             $Name = 'HmIP';
+                            break;
                         default:
                             $Name = 'unknow';
+                            break;
                     }
                     IPS_SetName($NewDevice, $Name . ' - Interface ' . $InterfaceIndex);
                 }
