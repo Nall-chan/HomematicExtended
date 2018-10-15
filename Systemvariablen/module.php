@@ -203,7 +203,8 @@ class HomeMaticSystemvariablen extends HMBase
     protected function GetParentData()
     {
         parent::GetParentData();
-        $this->SetSummary($this->HMAddress);
+        //$this->SetSummary($this->HMAddress);
+        $this->SetSummary($this->ParentId.':'.$this->HMAddress);
     }
 
     ################## PRIVATE

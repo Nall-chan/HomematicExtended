@@ -363,7 +363,7 @@ abstract class HMBase extends IPSModule
             curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
             curl_setopt($ch, CURLOPT_HTTPHEADER, array('Expect:'));
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT_MS, 1000);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT_MS, 2000);
             curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
             curl_setopt($ch, CURLOPT_TIMEOUT_MS, 5000);
             $result = curl_exec($ch);
@@ -373,12 +373,12 @@ abstract class HMBase extends IPSModule
                 throw new Exception($this->Translate('CCU unreachable:') . $http_code, E_USER_NOTICE);
             }
             if ($result === false) {
-                throw new Exception('CCU unreachable', E_USER_NOTICE);
+                throw new Exception($this->Translate('CCU unreachable'), E_USER_NOTICE);
             }
             $this->SendDebug("Result", $result, 0);
             return $result;
         } else {
-            throw new Exception('CCU Address not set.', E_USER_NOTICE);
+            throw new Exception($this->Translate('CCU Address not set.'), E_USER_NOTICE);
         }
     }
     /**
