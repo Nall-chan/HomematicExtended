@@ -5,7 +5,7 @@
             [
                 {
                     "type": "Button",
-                    "label": "read CCU",
+                    "caption": "read CCU",
                     "onClick": "HM_ReadPrograms($id);"
                 }
             ]

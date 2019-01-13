@@ -32,12 +32,12 @@
             [
                 {
                     "type": "Button",
-                    "label": "read RF-Interfaces",
+                    "caption": "read RF-Interfaces",
                     "onClick": "HM_ReadRFInterfaces($id);"
                 },
                                 {
                     "type": "Button",
-                    "label": "Create all RF-Interfaces in IPS",
+                    "caption": "Create all RF-Interfaces in IPS",
                     "onClick": "HM_CreateAllRFInstances($id);"
                 }
             ]

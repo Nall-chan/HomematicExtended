@@ -1,5 +1,6 @@
 <?php
 
+declare(strict_types = 1);
 /**
  * @addtogroup homematicextended
  * @{
@@ -7,9 +8,9 @@
  * @package       HomematicExtended
  * @file          module.php
  * @author        Michael Tröger <micha@nall-chan.net>
- * @copyright     2017 Michael Tröger
+ * @copyright     2019 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
- * @version       2.10
+ * @version       2.60
  */
 require_once(__DIR__ . "/../libs/HMBase.php");  // HMBase Klasse
 
@@ -59,11 +60,10 @@ class ParaInterface extends HMBase
     }
 
     /**
-     * Wird ausgeführt wenn sich der Parent ändert.
-     * 
+     * Wird ausgeführt wenn sich der Status vom Parent ändert.
      * @access protected
      */
-    protected function ForceRefresh()
+    protected function IOChangeState($State)
     {
         $this->ApplyChanges();
     }
@@ -74,9 +74,9 @@ class ParaInterface extends HMBase
      * @access protected
      * @return int ID des Parent.
      */
-    protected function GetParentData()
+    protected function RegisterParent()
     {
-        $ParentId = parent::GetParentData();
+        $ParentId = parent::RegisterParent();
         $this->SetSummary($this->ReadPropertyString("Address"));
         return $ParentId;
     }
@@ -84,7 +84,7 @@ class ParaInterface extends HMBase
 ################## PRIVATE                
     private function GetRssiInfo()
     {
-        
+
         if (!$this->HasActiveParent()) {
             trigger_error("Instance has no active Parent Instance!", E_USER_NOTICE);
             return false;
@@ -109,6 +109,7 @@ class ParaInterface extends HMBase
         $this->SendDebug('Receive', $Result, 0);
         return $Result;
     }
+
     /**
      * Liest alle Parameter des Devices aus.
      * 
@@ -193,7 +194,6 @@ class ParaInterface extends HMBase
     {
         $Result = $this->GetRssiInfo();
         return $Result;
-    
     }
 
     /**

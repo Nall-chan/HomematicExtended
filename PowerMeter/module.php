@@ -1,5 +1,6 @@
 <?php
 
+declare(strict_types = 1);
 /**
  * @addtogroup homematicextended
  * @{
@@ -7,9 +8,9 @@
  * @package       HomematicExtended
  * @file          module.php
  * @author        Michael Tröger <micha@nall-chan.net>
- * @copyright     2017 Michael Tröger
+ * @copyright     2019 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
- * @version       2.40
+ * @version       2.60
  */
 require_once(__DIR__ . "/../libs/HMBase.php");  // HMBase Klasse
 
@@ -130,11 +131,10 @@ class HomeMaticPowermeter extends HMBase
     }
 
     /**
-     * Wird ausgeführt wenn sich der Parent ändert.
-     *
+     * Wird ausgeführt wenn sich der Status vom Parent ändert.
      * @access protected
      */
-    protected function ForceRefresh()
+    protected function IOChangeState($State)
     {
         $this->ApplyChanges();
     }
@@ -250,7 +250,7 @@ class HomeMaticPowermeter extends HMBase
 
         $url = 'GetPowerMeter.exe';
         $HMScript = 'object oitemID;' . PHP_EOL
-                . 'oitemID = dom.GetObject("svEnergyCounter' . $this->HMSufix . '_" # dom.GetObject("' . $this->HMProtocol . '.' . $this->HMDeviceAddress . '.' . $this->HMDeviceDatapoint . '").Device() # "_' . $this->HMDeviceAddress . '");' . PHP_EOL
+                . 'oitemID = dom.GetObject("svEnergyCounter' . $this->HMSufix . '_" # dom.GetObject("' . $this->HMProtocol . '.' . $this->HMDeviceAddress . '.' . $this->HMDeviceDatapoint . '").Channel() # "_' . $this->HMDeviceAddress . '");' . PHP_EOL
                 . 'Value=oitemID.Value();' . PHP_EOL;
         try {
             $HMScriptResult = $this->LoadHMScript($url, $HMScript);

@@ -54,7 +54,7 @@
             [
                 {
                     "type": "Button",
-                    "label": "read CCU",
+                    "caption": "read CCU",
                     "onClick": "HM_ReadSystemVariables($id);"
                 }
             ]

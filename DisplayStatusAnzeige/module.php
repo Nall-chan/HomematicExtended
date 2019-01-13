@@ -1,5 +1,6 @@
 <?php
 
+declare(strict_types = 1);
 /**
  * @addtogroup homematicextended
  * @{
@@ -7,9 +8,9 @@
  * @package       HomematicExtended
  * @file          module.php
  * @author        Michael Tröger <micha@nall-chan.net>
- * @copyright     2017 Michael Tröger
+ * @copyright     2019 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
- * @version       2.40
+ * @version       2.60
  */
 require_once(__DIR__ . "/../libs/HMBase.php");  // HMBase Klasse
 
@@ -150,11 +151,10 @@ class HomeMaticDisWM55 extends HMBase
     }
 
     /**
-     * Wird ausgeführt wenn sich der Parent ändert.
-     *
+     * Wird ausgeführt wenn sich der Status vom Parent ändert.
      * @access protected
      */
-    protected function ForceRefresh()
+    protected function IOChangeState($State)
     {
         $this->ApplyChanges();
     }

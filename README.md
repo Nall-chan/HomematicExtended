@@ -1,7 +1,7 @@
 [![Version](https://img.shields.io/badge/Symcon-PHPModul-red.svg)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
-[![Version](https://img.shields.io/badge/Modul%20Version-2.50-blue.svg)]()
+[![Version](https://img.shields.io/badge/Modul%20Version-2.60-blue.svg)]()
 [![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)  
-[![Version](https://img.shields.io/badge/Symcon%20Version-4.3%20%3E-green.svg)](https://www.symcon.de/forum/threads/30857-IP-Symcon-4-3-%28Stable%29-Changelog)
+[![Version](https://img.shields.io/badge/Symcon%20Version-5.0%20%3E-green.svg)](https://www.symcon.de/forum/threads/30857-IP-Symcon-5-0-%28Stable%29-Changelog)
 [![StyleCI](https://styleci.io/repos/34275278/shield?style=flat)](https://styleci.io/repos/34275278)  
 
 # IPSHomeMaticExtended
@@ -98,8 +98,15 @@ Erweitert IPS um die native Unterstützung:
         Der Ordner 'modules' muss u.U. manuell angelegt werden.
         Beispiel: 'C:\\IP-Symcon\\modules'  
         IPS-Dienst Neustarten.  
+        Die Version für IPS 3.x wird nicht mehr aktiv gepflegt.  
 
-### IPS 4.3  oder neuer
+### IPS 4.x
+        Die Version für IPS 4.x wird nicht mehr aktiv gepflegt.  
+        Über das 'Module-Control' folgende URL hinzufügen:  
+        `git://github.com/Nall-chan/IPSHomematicExtended.git`  
+        Zweig 'IPS4' auswählen.  
+
+### IPS 5.0  oder neuer
         Über das 'Module-Control' folgende URL hinzufügen:  
         `git://github.com/Nall-chan/IPSHomematicExtended.git`  
 
@@ -131,6 +138,11 @@ Erweitert IPS um die native Unterstützung:
 
 ### 2. Changlog
 
+Version 2.60:
+ Neu: Modul intern überabreitet.  
+ Neu: Diverse Anpassungen für IPS 5.0 und neuer.  
+ Fix: HmScript Fehler im Log der CCU bei Verwendung der PowerMeter-Instanz.  
+ 
 Version 2.50:  
  Fix: PHP 7.3
 

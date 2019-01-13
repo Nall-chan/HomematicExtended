@@ -3,7 +3,7 @@
             [
                 {
                     "type": "Label",
-                    "label": "Select GAS_ENERGY_COUNTER, IEC_ENERGY_COUNTER or ENERGY_COUNTER as source"
+                    "caption": "Select GAS_ENERGY_COUNTER, IEC_ENERGY_COUNTER or ENERGY_COUNTER as source"
                 },
                 {
                     "name": "EventID",

@@ -32,7 +32,7 @@
             [
                 {
                     "type": "Button",
-                    "label": "read WR-Interfaces",
+                    "caption": "read WR-Interfaces",
                     "onClick": "HM_ReadWRInterface($id);"
                 }
             ]

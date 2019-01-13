@@ -1,5 +1,6 @@
 <?php
 
+declare(strict_types = 1);
 /**
  * @addtogroup homematicextended
  * @{
@@ -7,10 +8,11 @@
  * @package       HomematicExtended
  * @file          module.php
  * @author        Michael Tröger <micha@nall-chan.net>
- * @copyright     2018 Michael Tröger
+ * @copyright     2019 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
- * @version       2.44
+ * @version       2.60
  */
+require_once __DIR__ . '/../libs/VariableProfileHelper.php';
 require_once(__DIR__ . "/../libs/HMBase.php");  // HMBase Klasse
 
 /**
@@ -25,7 +27,7 @@ require_once(__DIR__ . "/../libs/HMBase.php");  // HMBase Klasse
 class HomeMaticSystemvariablen extends HMBase
 {
 
-    use Profile;
+    use VariableProfileHelper;
     private static $CcuVarType = array(2 => vtBoolean, 4 => vtFloat, 16 => vtInteger, 20 => vtString);
 
     /**
@@ -60,7 +62,7 @@ class HomeMaticSystemvariablen extends HMBase
     public function Destroy()
     {
         if (!IPS_InstanceExists($this->InstanceID)) {
-            $this->UnregisterProfil("HM.AlReceipt");
+            $this->UnregisterProfile("HM.AlReceipt");
 
             foreach ($this->SystemVars as $Ident) {
                 $VarProfil = 'HM.SysVar' . (string) $this->InstanceID . '.' . (string) $Ident;
@@ -85,9 +87,9 @@ class HomeMaticSystemvariablen extends HMBase
     public function MessageSink($TimeStamp, $SenderID, $Message, $Data)
     {
         $OldVars = $this->SystemVars;
-        if (!IPS_InstanceExists($this->InstanceID)) {
-            return;
-        }
+        /* if (!IPS_InstanceExists($this->InstanceID)) {
+          return;
+          } */
         parent::MessageSink($TimeStamp, $SenderID, $Message, $Data);
         switch ($Message) {
             case VM_DELETE:
@@ -95,6 +97,7 @@ class HomeMaticSystemvariablen extends HMBase
                 if ($SenderID == $this->ReadPropertyInteger("EventID")) {
                     IPS_SetProperty($this->InstanceID, "EventID", 0);
                     IPS_ApplyChanges($this->InstanceID);
+                    return;
                 }
                 if (array_key_exists($SenderID, $OldVars)) {
                     $VarProfil = 'HM.SysVar' . (string) $this->InstanceID . '.' . (string) $OldVars[$SenderID];
@@ -185,11 +188,10 @@ class HomeMaticSystemvariablen extends HMBase
     }
 
     /**
-     * Interne Funktion des SDK.
-     *
-     * @access public
+     * Wird ausgeführt wenn sich der Status vom Parent ändert.
+     * @access protected
      */
-    protected function ForceRefresh()
+    protected function IOChangeState($State)
     {
         $this->ApplyChanges();
     }
@@ -200,11 +202,10 @@ class HomeMaticSystemvariablen extends HMBase
      * @access protected
      * @return int ID des Parent.
      */
-    protected function GetParentData()
+    protected function RegisterParent()
     {
-        parent::GetParentData();
-        //$this->SetSummary($this->HMAddress);
-        $this->SetSummary($this->ParentId.':'.$this->HMAddress);
+        parent::RegisterParent();
+        $this->SetSummary($this->HMAddress);
     }
 
     ################## PRIVATE
@@ -355,7 +356,7 @@ class HomeMaticSystemvariablen extends HMBase
             $VarProfil = 'HM.SysVar' . (string) $this->InstanceID . '.' . (string) $SysVar;
             $VarName = (string) $xmlVar->Name;
 
-            if (((int) $xmlVar->ValueType != vtString) and (!IPS_VariableProfileExists($VarProfil))) { // neu anlegen wenn VAR neu ist oder Profil nicht vorhanden
+            if (((int) $xmlVar->ValueType != vtString) and ( !IPS_VariableProfileExists($VarProfil))) { // neu anlegen wenn VAR neu ist oder Profil nicht vorhanden
                 $HMScript = 'Name=dom.GetObject(' . $SysVar . ').Name();' . PHP_EOL
                         . 'ValueSubType=dom.GetObject(' . $SysVar . ').ValueSubType();' . PHP_EOL
                         . 'ValueList=dom.GetObject(' . $SysVar . ').ValueList();' . PHP_EOL

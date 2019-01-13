@@ -6,15 +6,15 @@
                     "caption": "System",
                     "options": [
                         {
-                            "label": "Radio",
+                            "caption": "Radio",
                             "value": 0
                         },
                         {
-                            "label": "Wired",
+                            "caption": "Wired",
                             "value": 1
                         },
                         {
-                            "label": "IP",
+                            "caption": "IP",
                             "value": 2
                         }
                     ]

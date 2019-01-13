@@ -4,10 +4,9 @@
     "name": "Homematic Erweiterung",
     "url": "https://github.com/Nall-chan/IPSHomematicExtended",
     "compatibility": {
-        "version": "4.3",
-        "date": 1498241677
+        "version": "5.0"
     },
-    "version": "2.50",
-    "build": 230,
-    "date": 1535655453
+    "version": "2.60",
+    "build": 100,
+    "date": 1547404796 
 }

@@ -1,5 +1,6 @@
 <?php
 
+declare(strict_types = 1);
 /**
  * @addtogroup homematicextended
  * @{
@@ -7,10 +8,11 @@
  * @package       HomematicExtended
  * @file          module.php
  * @author        Michael Tröger <micha@nall-chan.net>
- * @copyright     2017 Michael Tröger
+ * @copyright     2019 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
- * @version       2.40
+ * @version       2.60
  */
+require_once __DIR__ . '/../libs/VariableProfileHelper.php';
 require_once(__DIR__ . "/../libs/HMBase.php");  // HMBase Klasse
 
 /**
@@ -21,7 +23,7 @@ class HomeMaticProgramme extends HMBase
 {
 
     use DebugHelper,
-        Profile;
+        VariableProfileHelper;
     /**
      * Interne Funktion des SDK.
      *
@@ -42,7 +44,7 @@ class HomeMaticProgramme extends HMBase
     public function Destroy()
     {
         if (!IPS_InstanceExists($this->InstanceID)) {
-            $this->UnregisterProfil('Execute.HM');
+            $this->UnregisterProfile('Execute.HM');
         }
 
         parent::Destroy();
@@ -88,13 +90,19 @@ class HomeMaticProgramme extends HMBase
     }
 
     /**
-     * Wird ausgeführt wenn sich der Parent ändert.
-     *
+     * Wird ausgeführt wenn sich der Status vom Parent ändert.
      * @access protected
      */
-    protected function ForceRefresh()
+    protected function IOChangeState($State)
     {
-        $this->ApplyChanges();
+        if ($State != IS_ACTIVE) {
+            return;
+        }
+        try {
+            $this->ReadCCUPrograms();
+        } catch (Exception $exc) {
+            echo $this->Translate($exc->getMessage());
+        }
     }
 
     /**
@@ -102,9 +110,9 @@ class HomeMaticProgramme extends HMBase
      *
      * @access protected
      */
-    protected function GetParentData()
+    protected function RegisterParent()
     {
-        parent::GetParentData();
+        parent::RegisterParent();
         $this->SetSummary($this->HMAddress);
     }
 
