@@ -218,7 +218,6 @@ class HomeMaticWRInterface extends HMBase
         }
         return true;
     }
-
 }
 
 /** @} */

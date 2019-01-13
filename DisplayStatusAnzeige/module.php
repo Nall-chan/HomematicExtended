@@ -200,7 +200,6 @@ class HomeMaticDisWM55 extends HMBase
         foreach (array_keys(self::$PropertysName) as $Name) {
             $Event = $this->ReadPropertyInteger($Name);
             if ($Event <> $OldEvents[$Name]) {
-
                 if ($OldEvents[$Name] > 0) {
                     $this->UnregisterMessage($OldEvents[$Name], VM_DELETE);
                     $OldEvents[$Name] = 0;
@@ -674,7 +673,6 @@ echo $data; //Daten zurückgeben an Dis-WM55-Instanz
         $this->Page = 0;
         $this->SetTimerInterval('DisplayTimeout', 0);
     }
-
 }
 
 /** @} */
