@@ -142,6 +142,7 @@ Version 2.60:
  Neu: Modul intern überabreitet.  
  Neu: Diverse Anpassungen für IPS 5.0 und neuer.  
  Fix: HmScript Fehler im Log der CCU bei Verwendung der PowerMeter-Instanz.  
+ Fix: Fehlermeldung bei AlarmScriptID in der Instanz Systemvariablen.  
  
 Version 2.50:  
  Fix: PHP 7.3

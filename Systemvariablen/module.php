@@ -540,7 +540,7 @@ class HomeMaticSystemvariablen extends HMBase
         $ChannelNameID = $this->RegisterSubVariable($ParentID, 'ChannelName', 'Name', vtString);
         SetValue($ChannelNameID, $ScriptData['ChannelName']);
 
-        $ScriptID = $this->ReadPropertyString('AlarmScriptID');
+        $ScriptID = $this->ReadPropertyInteger('AlarmScriptID');
         if ($ScriptID > 0) {
             IPS_RunScriptEx($ScriptID, $ScriptData);
         }
