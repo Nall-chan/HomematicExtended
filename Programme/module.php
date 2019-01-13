@@ -21,7 +21,6 @@ require_once(__DIR__ . "/../libs/HMBase.php");  // HMBase Klasse
  */
 class HomeMaticProgramme extends HMBase
 {
-
     use DebugHelper,
         VariableProfileHelper;
     /**
@@ -253,7 +252,6 @@ class HomeMaticProgramme extends HMBase
             return false;
         }
     }
-
 }
 
 /** @} */

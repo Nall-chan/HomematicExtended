@@ -32,7 +32,6 @@ trait VariableHelper
             SetValue($id, $value);
         }
     }
-
 }
 
 /** @} */
