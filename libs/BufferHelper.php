@@ -12,6 +12,7 @@ declare(strict_types = 1);
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  * @version       5.0
  */
+
 /**
  * Trait welcher Objekt-Eigenschaften in den Instance-Buffer schreiben und lesen kann.
  */
@@ -33,6 +34,7 @@ trait BufferHelper
             }
             return unserialize($Lines);
         }
+        //$this->LogMessage('Buffer:' . $name, KL_DEBUG);
         return unserialize($this->GetBuffer($name));
     }
 
@@ -65,4 +67,5 @@ trait BufferHelper
         }
         $this->SetBuffer($name, $Data);
     }
+
 }

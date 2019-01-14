@@ -85,7 +85,11 @@ class HomeMaticWRInterface extends HMBase
      */
     protected function IOChangeState($State)
     {
-        $this->ApplyChanges();
+        if ($State == IS_ACTIVE) {
+            $this->ApplyChanges();
+        } else {
+            $this->SetTimerInterval("ReadWRInterface", 0);
+        }
     }
 
     /**
@@ -218,6 +222,7 @@ class HomeMaticWRInterface extends HMBase
         }
         return true;
     }
+
 }
 
 /** @} */

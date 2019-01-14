@@ -10,7 +10,7 @@ declare(strict_types = 1);
  * @author        Michael Tröger <micha@nall-chan.net>
  * @copyright     2019 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
- * @version       2.60
+ * @version       2.61
  */
 require_once __DIR__ . '/../libs/VariableProfileHelper.php';
 require_once(__DIR__ . "/../libs/HMBase.php");  // HMBase Klasse
@@ -26,6 +26,7 @@ require_once(__DIR__ . "/../libs/HMBase.php");  // HMBase Klasse
  */
 class HomeMaticSystemvariablen extends HMBase
 {
+
     use VariableProfileHelper;
     private static $CcuVarType = array(2 => vtBoolean, 4 => vtFloat, 16 => vtInteger, 20 => vtString);
 
@@ -323,9 +324,9 @@ class HomeMaticSystemvariablen extends HMBase
             $HMScript = 'Name=dom.GetObject(' . $SysVar . ').Name();' . PHP_EOL
                     . 'ValueType=dom.GetObject(' . $SysVar . ').ValueType();' . PHP_EOL
                     . 'integer Type=dom.GetObject(' . $SysVar . ').Type();' . PHP_EOL
-                    . 'WriteLine(dom.GetObject(' . $SysVar . ').Value());' . PHP_EOL
+                    //. 'WriteLine(dom.GetObject(' . $SysVar . ').Value());' . PHP_EOL
                     . 'WriteLine(dom.GetObject(' . $SysVar . ').Variable());' . PHP_EOL
-                    . 'WriteLine(dom.GetObject(' . $SysVar . ').LastValue());' . PHP_EOL
+                    //. 'WriteLine(dom.GetObject(' . $SysVar . ').LastValue());' . PHP_EOL
                     . 'Timestamp=dom.GetObject(' . $SysVar . ').Timestamp();' . PHP_EOL;
 
             try {
@@ -347,15 +348,13 @@ class HomeMaticSystemvariablen extends HMBase
                     $VarIdent = 'AlDP' . $SysVar;
                 }
             }
-            $xmlVar->addChild('Value', $lines[0]);
-            $xmlVar->addChild('Variable', $lines[1]);
-            $xmlVar->addChild('LastValue', $lines[2]);
+            $xmlVar->addChild('Variable', $lines[0]);
             $VarID = @$this->GetIDForIdent($VarIdent);
             $VarType = self::$CcuVarType[(int) $xmlVar->ValueType];
             $VarProfil = 'HM.SysVar' . (string) $this->InstanceID . '.' . (string) $SysVar;
             $VarName = (string) $xmlVar->Name;
 
-            if (((int) $xmlVar->ValueType != vtString) and (!IPS_VariableProfileExists($VarProfil))) { // neu anlegen wenn VAR neu ist oder Profil nicht vorhanden
+            if (((int) $xmlVar->ValueType != vtString) and ( !IPS_VariableProfileExists($VarProfil))) { // neu anlegen wenn VAR neu ist oder Profil nicht vorhanden
                 $HMScript = 'Name=dom.GetObject(' . $SysVar . ').Name();' . PHP_EOL
                         . 'ValueSubType=dom.GetObject(' . $SysVar . ').ValueSubType();' . PHP_EOL
                         . 'ValueList=dom.GetObject(' . $SysVar . ').ValueList();' . PHP_EOL
@@ -397,7 +396,7 @@ class HomeMaticSystemvariablen extends HMBase
                 if (isset($xmlVar2->ValueUnit)) {
                     @IPS_SetVariableProfileText($VarProfil, '', ' ' . (string) $xmlVar2->ValueUnit);
                 }
-                if ((isset($xmlVar2->ValueSubType)) and ((int) $xmlVar2->ValueSubType == 29)) {
+                if ((isset($xmlVar2->ValueSubType)) and ( (int) $xmlVar2->ValueSubType == 29)) {
                     foreach (explode(';', (string) $xmlVar2->ValueList) as $Index => $ValueList) {
                         @IPS_SetVariableProfileAssociation($VarProfil, $Index, trim($ValueList), '', -1);
                     }
@@ -432,7 +431,7 @@ class HomeMaticSystemvariablen extends HMBase
                     if ((int) $xmlVar->Type == 2113) {
                         $this->ProcessAlarmVariable($VarID, $SysVar, $CCUTimeZone);
                     } else {
-                        $this->SetValue($VarIdent, (string) $xmlVar->Value == 'true');
+                        $this->SetValue($VarIdent, (int) $xmlVar->Variable);
                     }
                     break;
                 case vtInteger:
@@ -991,6 +990,7 @@ class HomeMaticSystemvariablen extends HMBase
         trigger_error($this->Translate('Error on write Data ') . $Parameter, E_USER_NOTICE);
         return false;
     }
+
 }
 
 /** @} */

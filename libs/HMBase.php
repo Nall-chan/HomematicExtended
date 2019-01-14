@@ -10,7 +10,7 @@ declare(strict_types = 1);
  * @author        Michael Tröger <micha@nall-chan.net>
  * @copyright     2018 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
- * @version       2.43
+ * @version       2.61
  */
 require_once __DIR__ . '/../libs/ConstHelper.php';  // diverse Klassen
 require_once __DIR__ . '/../libs/DebugHelper.php';  // diverse Klassen
@@ -27,6 +27,7 @@ require_once __DIR__ . '/../libs/ParentIOHelper.php';  // diverse Klassen
  */
 abstract class HMBase extends IPSModule
 {
+
     use DebugHelper,
         VariableHelper,
         BufferHelper,
@@ -42,6 +43,7 @@ abstract class HMBase extends IPSModule
     public function Create()
     {
         parent::Create();
+        $this->ParentId = 0;
         $this->ConnectParent("{A151ECE9-D733-4FB9-AA15-7F7DD10C58AF}");
     }
 
@@ -62,12 +64,6 @@ abstract class HMBase extends IPSModule
 
         // Config prüfen
         $this->RegisterParent();
-
-
-        // Wenn Parent aktiv, dann Anmeldung an der Hardware bzw. Datenabgleich starten
-        if ($this->HasActiveParent()) {
-            $this->IOChangeState(IS_ACTIVE);
-        }
     }
 
     /**
@@ -156,29 +152,28 @@ abstract class HMBase extends IPSModule
             $header[] = "Connection: close";
             $header[] = "Accept-Charset: UTF-8";
             $header[] = "Content-type: text/plain;charset=\"UTF-8\"";
-            /*
-              $HSPort = IPS_GetProperty($this->ParentID, 'HSPort');
-              if ($HSPort > 40000) {
-              $ch = curl_init('https://' . (string) $this->HMAddress . ':48181/' . $url);
-              } else {
-              $ch = curl_init('http://' . (string) $this->HMAddress . ':8181/' . $url);
-              }
-             */
-            $ch = curl_init('http://' . (string) $this->HMAddress . ':8181/' . $url);
+            $ParentConfig = json_decode(IPS_GetConfiguration($this->ParentId), true);
+            if (array_key_exists('UseSSL', $ParentConfig)) {
+                $ch = curl_init('https://' . (string) $this->HMAddress . ':' . $ParentConfig['HSSSLPort'] . '/' . $url);
+            } else {
+                if (array_key_exists('HSPort', $ParentConfig)) {
+                    $ch = curl_init('http://' . (string) $this->HMAddress . ':' . $ParentConfig['HSPort'] . '/' . $url);
+                } else {
+                    $ch = curl_init('http://' . (string) $this->HMAddress . ':8181/' . $url);
+                }
+            }
+            if (array_key_exists('Username', $ParentConfig)) {
+                if ($ParentConfig['Password'] != '') {
+                    curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+                    curl_setopt($ch, CURLOPT_USERPWD, $ParentConfig['Username'] . ':' . $ParentConfig['Password']);
+                }
+            }
             curl_setopt($ch, CURLOPT_HEADER, false);
             curl_setopt($ch, CURLOPT_FAILONERROR, true);
             curl_setopt($ch, CURLOPT_POST, true);
             curl_setopt($ch, CURLOPT_POSTFIELDS, $HMScript);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
             curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-            /*
-              $User = IPS_GetProperty($this->ParentID, 'Username');
-              $Pass = IPS_GetProperty($this->ParentID, 'Password');
-              if ($User != '') {
-              curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-              curl_setopt($ch, CURLOPT_USERPWD, $User.':'.$Pass);
-              }
-             */
             curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
             curl_setopt($ch, CURLOPT_HTTPHEADER, array('Expect:'));
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -200,6 +195,7 @@ abstract class HMBase extends IPSModule
             throw new Exception($this->Translate('CCU Address not set.'), E_USER_NOTICE);
         }
     }
+
 }
 
 /** @} */

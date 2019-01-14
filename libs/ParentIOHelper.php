@@ -15,7 +15,7 @@ declare(strict_types = 1);
 
 /**
  * Trait mit Hilfsfunktionen für den Datenaustausch.
- * @property integer $ParentID
+ * @property integer $ParentId
  */
 trait InstanceStatus
 {
@@ -41,9 +41,7 @@ trait InstanceStatus
                 $this->IOChangeState(IS_INACTIVE);
                 break;
             case IM_CHANGESTATUS:
-                if ($SenderID == $this->ParentID) {
                     $this->IOChangeState($Data[0]);
-                }
                 break;
         }
     }
@@ -57,7 +55,7 @@ trait InstanceStatus
      */
     protected function RegisterParent()
     {
-        $OldParentId = $this->ParentID;
+        $OldParentId = $this->ParentId;
         $ParentId = @IPS_GetInstance($this->InstanceID)['ConnectionID'];
         if ($ParentId <> $OldParentId) {
             if ($OldParentId > 0) {
@@ -70,7 +68,7 @@ trait InstanceStatus
             } else {
                 $ParentId = 0;
             }
-            $this->ParentID = $ParentId;
+            $this->ParentId = $ParentId;
         }
         return $ParentId;
     }
@@ -83,9 +81,8 @@ trait InstanceStatus
      */
     protected function HasActiveParent()
     {
-        $instance = IPS_GetInstance($this->InstanceID);
-        if ($instance['ConnectionID'] > 0) {
-            $parent = IPS_GetInstance($instance['ConnectionID']);
+        if ($this->ParentId > 0) {
+            $parent = IPS_GetInstance($this->ParentId);
             if ($parent['ModuleInfo']['ModuleType'] == 2) {
                 if ($parent['ConnectionID'] > 0) {
                     $parent = IPS_GetInstance($parent['ConnectionID']);
