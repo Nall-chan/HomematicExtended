@@ -67,5 +67,4 @@ trait BufferHelper
         }
         $this->SetBuffer($name, $Data);
     }
-
 }
