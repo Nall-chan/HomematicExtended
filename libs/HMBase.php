@@ -27,7 +27,6 @@ require_once __DIR__ . '/../libs/ParentIOHelper.php';  // diverse Klassen
  */
 abstract class HMBase extends IPSModule
 {
-
     use DebugHelper,
         VariableHelper,
         BufferHelper,
@@ -205,7 +204,6 @@ abstract class HMBase extends IPSModule
             throw new Exception($this->Translate('CCU Address not set.'), E_USER_NOTICE);
         }
     }
-
 }
 
 /** @} */
