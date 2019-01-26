@@ -10,7 +10,7 @@ declare(strict_types = 1);
  * @author        Michael Tröger <micha@nall-chan.net>
  * @copyright     2018 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
- * @version       2.61
+ * @version       2.65
  */
 require_once __DIR__ . '/../libs/ConstHelper.php';  // diverse Klassen
 require_once __DIR__ . '/../libs/DebugHelper.php';  // diverse Klassen
@@ -27,6 +27,7 @@ require_once __DIR__ . '/../libs/ParentIOHelper.php';  // diverse Klassen
  */
 abstract class HMBase extends IPSModule
 {
+
     use DebugHelper,
         VariableHelper,
         BufferHelper,
@@ -153,16 +154,25 @@ abstract class HMBase extends IPSModule
             $header[] = "Content-type: text/plain;charset=\"UTF-8\"";
             $ParentConfig = json_decode(IPS_GetConfiguration($this->ParentId), true);
             if (array_key_exists('UseSSL', $ParentConfig)) {
-                $ch = curl_init('https://' . (string) $this->HMAddress . ':' . $ParentConfig['HSSSLPort'] . '/' . $url);
+                if ($ParentConfig['UseSSL']) {
+                    $this->SendDebug('useSSL', (string) $ParentConfig['HSSSLPort'], 0);
+                    $ch = curl_init('https://' . (string) $this->HMAddress . ':' . (string)$ParentConfig['HSSSLPort'] . '/' . $url);
+                } else {
+                    $this->SendDebug('useNoSSL', (string) $ParentConfig['HSPort'], 0);
+                    $ch = curl_init('http://' . (string) $this->HMAddress . ':' . (string)$ParentConfig['HSPort'] . '/' . $url);
+                }
             } else {
                 if (array_key_exists('HSPort', $ParentConfig)) {
-                    $ch = curl_init('http://' . (string) $this->HMAddress . ':' . $ParentConfig['HSPort'] . '/' . $url);
+                    $this->SendDebug('useNoSSL', (string) $ParentConfig['HSPort'], 0);
+                    $ch = curl_init('http://' . (string) $this->HMAddress . ':' . (string)$ParentConfig['HSPort'] . '/' . $url);
                 } else {
+                    $this->SendDebug('useNoSSL', '8181', 0);
                     $ch = curl_init('http://' . (string) $this->HMAddress . ':8181/' . $url);
                 }
             }
             if (array_key_exists('Username', $ParentConfig)) {
                 if ($ParentConfig['Password'] != '') {
+                    $this->SendDebug('useAuth', '', 0);
                     curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
                     curl_setopt($ch, CURLOPT_USERPWD, $ParentConfig['Username'] . ':' . $ParentConfig['Password']);
                 }
@@ -191,9 +201,11 @@ abstract class HMBase extends IPSModule
             $this->SendDebug("Result", $result, 0);
             return $result;
         } else {
+            $this->SendDebug('Error', $this->Translate('CCU Address not set.'), 0);
             throw new Exception($this->Translate('CCU Address not set.'), E_USER_NOTICE);
         }
     }
+
 }
 
 /** @} */
