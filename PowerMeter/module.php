@@ -10,7 +10,7 @@ declare(strict_types = 1);
  * @author        Michael Tröger <micha@nall-chan.net>
  * @copyright     2019 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
- * @version       2.60
+ * @version       2.80
  */
 require_once(__DIR__ . "/../libs/HMBase.php");  // HMBase Klasse
 
@@ -55,9 +55,9 @@ class HomeMaticPowermeter extends HMBase
         switch ($Message) {
             case VM_DELETE:
                 $this->UnregisterMessage($SenderID, VM_DELETE);
+                $this->UnregisterReference($SenderID);
                 if ($SenderID == $this->ReadPropertyInteger("EventID")) {
-                    IPS_SetProperty($this->InstanceID, "EventID", 0);
-                    IPS_ApplyChanges($this->InstanceID);
+                    $this->SetNewConfig();
                 }
                 break;
         }
@@ -71,6 +71,52 @@ class HomeMaticPowermeter extends HMBase
     public function ApplyChanges()
     {
         parent::ApplyChanges();
+        $this->SetNewConfig();
+    }
+
+    ################## protected
+    /**
+     * Wird ausgeführt wenn der Kernel hochgefahren wurde.
+     *
+     * @access protected
+     */
+    protected function KernelReady()
+    {
+        $this->ApplyChanges();
+    }
+
+    /**
+     * Wird ausgeführt wenn sich der Status vom Parent ändert.
+     * @access protected
+     */
+    protected function IOChangeState($State)
+    {
+        $this->ApplyChanges();
+    }
+
+    ################## Datenaustausch
+    /**
+     * Interne Funktion des SDK.
+     *
+     * @access public
+     */
+    public function ReceiveData($JSONString)
+    {
+        try {
+            $this->ReadPowerSysVar();
+        } catch (Exception $exc) {
+            trigger_error($this->Translate($exc->getMessage()), $exc->getCode());
+        }
+    }
+
+    ################## PRIVATE
+    /**
+     * Übernimmt die neue Konfiguration.
+     *
+     * @access privat
+     */
+    private function SetNewConfig()
+    {
         if (IPS_GetKernelRunlevel() <> KR_READY) {
             $this->HMDeviceAddress = '';
             $this->HMDeviceDatapoint = '';
@@ -119,42 +165,6 @@ class HomeMaticPowermeter extends HMBase
         $this->SetReceiveDataFilter(".*9999999999.*");
     }
 
-    ################## protected
-    /**
-     * Wird ausgeführt wenn der Kernel hochgefahren wurde.
-     *
-     * @access protected
-     */
-    protected function KernelReady()
-    {
-        $this->ApplyChanges();
-    }
-
-    /**
-     * Wird ausgeführt wenn sich der Status vom Parent ändert.
-     * @access protected
-     */
-    protected function IOChangeState($State)
-    {
-        $this->ApplyChanges();
-    }
-
-    ################## Datenaustausch
-    /**
-     * Interne Funktion des SDK.
-     *
-     * @access public
-     */
-    public function ReceiveData($JSONString)
-    {
-        try {
-            $this->ReadPowerSysVar();
-        } catch (Exception $exc) {
-            trigger_error($this->Translate($exc->getMessage()), $exc->getCode());
-        }
-    }
-
-    ################## PRIVATE
     /**
      * Prüft die Konfiguration und setzt den Status der Instanz.
      *
@@ -164,25 +174,23 @@ class HomeMaticPowermeter extends HMBase
     private function CheckConfig()
     {
         $OldEvent = $this->Event;
+        if ($OldEvent > 0) {
+            $this->UnregisterMessage($OldEvent, VM_DELETE);
+            $this->UnregisterReference($OldEvent);
+            $this->Event = 0;
+        }
         $Event = $this->ReadPropertyInteger("EventID");
-
         if ($Event == 0) {
-            if ($OldEvent > 0) {
-                $this->UnregisterMessage($OldEvent, VM_DELETE);
-            }
             $this->SetStatus(IS_INACTIVE);
             return false;
         }
         if ($this->GetPowerAddress($Event)) {
             $this->RegisterMessage($Event, VM_DELETE);
+            $this->RegisterReference($Event);
             $this->Event = $Event;
             $this->SetStatus(IS_ACTIVE);
             return true;
         }
-        if ($OldEvent > 0) {
-            $this->UnregisterMessage($OldEvent, VM_DELETE);
-        }
-
         $this->SetStatus(IS_EBASE + 2);
         return false;
     }
@@ -196,7 +204,7 @@ class HomeMaticPowermeter extends HMBase
      */
     private function GetPowerAddress(int $EventID)
     {
-        if ($EventID == 0) {
+        if (($EventID == 0) or ( !IPS_VariableExists($EventID))) {
             $this->HMDeviceAddress = "";
             $this->HMDeviceDatapoint = "";
             $this->HMProtocol = 'BidCos-RF';
@@ -263,6 +271,7 @@ class HomeMaticPowermeter extends HMBase
         $Value = ((float) $xml->Value) / $this->HMFactor;
         $this->SetValue($this->HMDeviceDatapoint . '_TOTAL', $Value);
     }
+
 }
 
 /** @} */

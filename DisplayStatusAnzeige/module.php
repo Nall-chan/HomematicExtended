@@ -10,7 +10,7 @@ declare(strict_types = 1);
  * @author        Michael Tröger <micha@nall-chan.net>
  * @copyright     2019 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
- * @version       2.60
+ * @version       2.80
  */
 require_once(__DIR__ . "/../libs/HMBase.php");  // HMBase Klasse
 
@@ -93,10 +93,16 @@ class HomeMaticDisWM55 extends HMBase
         switch ($Message) {
             case VM_DELETE:
                 $this->UnregisterMessage($SenderID, VM_DELETE);
+                $this->UnregisterReference($SenderID);
                 foreach (array_keys(self::$PropertysName) as $Name) {
                     if ($SenderID == $this->ReadPropertyInteger($Name)) {
-                        IPS_SetProperty($this->InstanceID, $Name, 0);
-                        IPS_ApplyChanges($this->InstanceID);
+                        $Events = $this->Events;
+                        $Events[$Name] = 0;
+                        $this->Events = $Events;
+                        $HMEventData = $this->HMEventData;
+                        $HMEventData[$Name] = self::$EmptyHMEventData;
+                        $this->HMEventData = $HMEventData;
+                        $this->SetNewConfig();
                     }
                 }
                 break;
@@ -111,32 +117,7 @@ class HomeMaticDisWM55 extends HMBase
     public function ApplyChanges()
     {
         parent::ApplyChanges();
-        if (IPS_GetKernelRunlevel() == KR_READY) {
-            if ($this->CheckConfig()) {
-                $Lines = array();
-                $Events = $this->Events;
-                foreach ($this->HMEventData as $Event => $Trigger) {
-                    if ($Events[$Event] != 0) {
-                        $Lines[] = '.*"DeviceID":"' . $Trigger['HMDeviceAddress'] . '","VariableName":"' . $Trigger['HMDeviceDatapoint'] . '".*';
-                    }
-                }
-                $Line = implode('|', $Lines);
-
-                $this->SetReceiveDataFilter("(" . $Line . ")");
-                $this->SetSummary($Trigger['HMDeviceAddress']);
-                return;
-            }
-        }
-        $this->HMEventData = array(
-            "PageUpID"     => self::$EmptyHMEventData,
-            "PageDownID"   => self::$EmptyHMEventData,
-            "ActionUpID"   => self::$EmptyHMEventData,
-            "ActionDownID" => self::$EmptyHMEventData
-        );
-        $this->Page = 0;
-        $this->SetReceiveDataFilter(".*9999999999.*");
-        $this->SetSummary('');
-        return;
+        $this->SetNewConfig();
     }
 
     ################## protected
@@ -186,6 +167,39 @@ class HomeMaticDisWM55 extends HMBase
 
     ################## PRIVATE
     /**
+     * Überführt die Config in die Filter.
+     *
+     * @access privat
+     */
+    private function SetNewConfig()
+    {
+        if (IPS_GetKernelRunlevel() == KR_READY) {
+            if ($this->CheckConfig()) {
+                $Lines = array();
+                $Events = $this->Events;
+                foreach ($this->HMEventData as $Event => $Trigger) {
+                    if ($Events[$Event] != 0) {
+                        $Lines[] = '.*"DeviceID":"' . $Trigger['HMDeviceAddress'] . '","VariableName":"' . $Trigger['HMDeviceDatapoint'] . '".*';
+                    }
+                }
+                $Line = implode('|', $Lines);
+                $this->SetReceiveDataFilter("(" . $Line . ")");
+                $this->SetSummary($Trigger['HMDeviceAddress']);
+                return;
+            }
+        }
+        $this->HMEventData = array(
+            "PageUpID"     => self::$EmptyHMEventData,
+            "PageDownID"   => self::$EmptyHMEventData,
+            "ActionUpID"   => self::$EmptyHMEventData,
+            "ActionDownID" => self::$EmptyHMEventData
+        );
+        $this->Page = 0;
+        $this->SetReceiveDataFilter(".*9999999999.*");
+        $this->SetSummary('');
+    }
+
+    /**
      * Prüft die Konfiguration und setzt den Status der Instanz.
      *
      * @access privat
@@ -202,6 +216,7 @@ class HomeMaticDisWM55 extends HMBase
             if ($Event <> $OldEvents[$Name]) {
                 if ($OldEvents[$Name] > 0) {
                     $this->UnregisterMessage($OldEvents[$Name], VM_DELETE);
+                    $this->UnregisterReference($OldEvents[$Name]);
                     $OldEvents[$Name] = 0;
                 }
 
@@ -222,6 +237,7 @@ class HomeMaticDisWM55 extends HMBase
                     $OldHMEventDatas[$Name] = $HMEventData;
                     $OldEvents[$Name] = $Event;
                     $this->RegisterMessage($Event, VM_DELETE);
+                    $this->RegisterReference($Event);
                 }
             }
             if ($Event > 0) {
@@ -258,6 +274,9 @@ class HomeMaticDisWM55 extends HMBase
         }
 
         $this->SetStatus(IS_ACTIVE);
+        if (!IPS_VariableExists($EventID)) {
+            return false;
+        }
 
         return true;
     }
@@ -271,6 +290,9 @@ class HomeMaticDisWM55 extends HMBase
      */
     private function GetDisplayAddress(int $EventID)
     {
+        if (!IPS_VariableExists($EventID)) {
+            return false;
+        }
         $parent = IPS_GetParent($EventID);
         if (IPS_GetInstance($parent)['ModuleInfo']['ModuleID'] <> '{EE4A81C6-5C90-4DB7-AD2F-F6BBD521412E}') {
             return false;
@@ -673,6 +695,7 @@ echo $data; //Daten zurückgeben an Dis-WM55-Instanz
         $this->Page = 0;
         $this->SetTimerInterval('DisplayTimeout', 0);
     }
+
 }
 
 /** @} */

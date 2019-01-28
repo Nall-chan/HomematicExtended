@@ -10,7 +10,7 @@ declare(strict_types = 1);
  * @author        Michael Tröger <micha@nall-chan.net>
  * @copyright     2019 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
- * @version       2.61
+ * @version       2.80
  */
 require_once __DIR__ . '/../libs/VariableProfileHelper.php';
 require_once(__DIR__ . "/../libs/HMBase.php");  // HMBase Klasse
@@ -26,6 +26,7 @@ require_once(__DIR__ . "/../libs/HMBase.php");  // HMBase Klasse
  */
 class HomeMaticSystemvariablen extends HMBase
 {
+
     use VariableProfileHelper;
     private static $CcuVarType = array(2 => vtBoolean, 4 => vtFloat, 16 => vtInteger, 20 => vtString);
 
@@ -93,9 +94,9 @@ class HomeMaticSystemvariablen extends HMBase
         switch ($Message) {
             case VM_DELETE:
                 $this->UnregisterMessage($SenderID, VM_DELETE);
+                $this->UnregisterReference($SenderID);
                 if ($SenderID == $this->ReadPropertyInteger("EventID")) {
-                    IPS_SetProperty($this->InstanceID, "EventID", 0);
-                    IPS_ApplyChanges($this->InstanceID);
+                    $this->SetNewConfig();
                     return;
                 }
                 if (array_key_exists($SenderID, $OldVars)) {
@@ -147,21 +148,8 @@ class HomeMaticSystemvariablen extends HMBase
         }
         $this->SystemVars = $OldVars;
 
-        if ($this->CheckConfig()) {
-            if ($this->ReadPropertyInteger("Interval") >= 5) {
-                $this->SetTimerInterval("ReadHMSysVar", $this->ReadPropertyInteger("Interval") * 1000);
-            } else {
-                $this->SetTimerInterval("ReadHMSysVar", 0);
-            }
-        } else {
-            $this->SetTimerInterval("ReadHMSysVar", 0);
-        }
 
-        if ($this->GetTriggerVar()) {
-            $this->SetReceiveDataFilter('.*"DeviceID":"' . $this->HMDeviceAddress . '","VariableName":"' . $this->HMDeviceDatapoint . '".*');
-        } else {
-            $this->SetReceiveDataFilter(".*9999999999.*");
-        }
+        $this->SetNewConfig();
 
         if (!$this->HasActiveParent()) {
             return;
@@ -207,51 +195,59 @@ class HomeMaticSystemvariablen extends HMBase
         $this->SetSummary($this->HMAddress);
     }
 
-    ################## PRIVATE
     /**
      * Prüft die Konfiguration und setzt den Status der Instanz.
      *
      * @access privat
      * @return boolean True wenn Konfig ok, sonst false.
      */
-    private function CheckConfig()
+    private function SetNewConfig()
     {
         $OldEvent = $this->Event;
-        $Event = $this->ReadPropertyInteger("EventID");
-
-        if ($Event <> $OldEvent) {
-            if ($OldEvent > 0) {
-                $this->UnregisterMessage($OldEvent, VM_DELETE);
-            }
-            if ($Event > 0) {
-                $this->RegisterMessage($Event, VM_DELETE);
-            }
-            $this->Event = $Event;
+        if ($OldEvent > 0) {
+            $this->UnregisterMessage($OldEvent, VM_DELETE);
+            $this->UnregisterReference($OldEvent);
+            $this->Event = 0;
         }
-
+        $Event = $this->ReadPropertyInteger("EventID");
         $Interval = $this->ReadPropertyInteger("Interval");
 
         if ($Interval < 0) {
+            $this->SetTimerInterval("ReadHMSysVar", 0);
             $this->SetStatus(IS_EBASE + 2); //Error Timer is negativ
             return false;
         }
 
         if ($Interval == 0) {
+            $this->SetTimerInterval("ReadHMSysVar", 0);
+
             if ($Event == 0) {
                 $this->SetStatus(IS_INACTIVE); // kein Trigger und kein Timer aktiv
-                return true;
+                return false;
             } else {
-                $this->SetStatus(IS_ACTIVE); // OK
-                return true;
+                if ($this->GetTriggerVar()) {
+                    $this->SetReceiveDataFilter('.*"DeviceID":"' . $this->HMDeviceAddress . '","VariableName":"' . $this->HMDeviceDatapoint . '".*');
+                    $this->RegisterMessage($Event, VM_DELETE);
+                    $this->RegisterReference($Event);
+                    $this->Event = $Event;
+                    $this->SetStatus(IS_ACTIVE); // OK
+                    return true;
+                }
+                $this->SetReceiveDataFilter(".*9999999999.*");
+                $this->Event = 0;
+                $this->SetTimerInterval("ReadHMSysVar", 0);
+                $this->SetStatus(IS_INACTIVE); // kein Trigger und kein Timer aktiv
+                return false;
             }
         }
 
         if ($Interval < 5) {
             $this->SetStatus(IS_EBASE + 3);  //Warnung Trigger zu klein
+            $this->SetTimerInterval("ReadHMSysVar", 0);
             return false;
         }
 
-
+        $this->SetTimerInterval("ReadHMSysVar", $Interval * 1000);
         $this->SetStatus(IS_ACTIVE); //OK
         return true;
     }
@@ -265,7 +261,7 @@ class HomeMaticSystemvariablen extends HMBase
     private function GetTriggerVar()
     {
         $EventID = $this->ReadPropertyInteger("EventID");
-        if ($EventID == 0) {
+        if (($EventID == 0) or ( !IPS_VariableExists($EventID))) {
             $this->HMDeviceAddress = "";
             $this->HMDeviceDatapoint = "";
             return false;
@@ -323,11 +319,8 @@ class HomeMaticSystemvariablen extends HMBase
             $HMScript = 'Name=dom.GetObject(' . $SysVar . ').Name();' . PHP_EOL
                     . 'ValueType=dom.GetObject(' . $SysVar . ').ValueType();' . PHP_EOL
                     . 'integer Type=dom.GetObject(' . $SysVar . ').Type();' . PHP_EOL
-                    //. 'WriteLine(dom.GetObject(' . $SysVar . ').Value());' . PHP_EOL
                     . 'WriteLine(dom.GetObject(' . $SysVar . ').Variable());' . PHP_EOL
-                    //. 'WriteLine(dom.GetObject(' . $SysVar . ').LastValue());' . PHP_EOL
                     . 'Timestamp=dom.GetObject(' . $SysVar . ').Timestamp();' . PHP_EOL;
-
             try {
                 $HMScriptResult = $this->LoadHMScript('SysVar.exe', $HMScript);
                 $lines = explode("\r\n", $HMScriptResult);
@@ -338,8 +331,6 @@ class HomeMaticSystemvariablen extends HMBase
                 $Result = false;
                 continue;
             }
-
-
             if ((int) $xmlVar->Type == 2113) {
                 if (!$this->ReadPropertyBoolean('EnableAlarmDP')) {
                     continue;
@@ -353,7 +344,7 @@ class HomeMaticSystemvariablen extends HMBase
             $VarProfil = 'HM.SysVar' . (string) $this->InstanceID . '.' . (string) $SysVar;
             $VarName = (string) $xmlVar->Name;
 
-            if (((int) $xmlVar->ValueType != vtString) and (!IPS_VariableProfileExists($VarProfil))) { // neu anlegen wenn VAR neu ist oder Profil nicht vorhanden
+            if (((int) $xmlVar->ValueType != vtString) and ( !IPS_VariableProfileExists($VarProfil))) { // neu anlegen wenn VAR neu ist oder Profil nicht vorhanden
                 $HMScript = 'Name=dom.GetObject(' . $SysVar . ').Name();' . PHP_EOL
                         . 'ValueSubType=dom.GetObject(' . $SysVar . ').ValueSubType();' . PHP_EOL
                         . 'ValueList=dom.GetObject(' . $SysVar . ').ValueList();' . PHP_EOL
@@ -395,7 +386,7 @@ class HomeMaticSystemvariablen extends HMBase
                 if (isset($xmlVar2->ValueUnit)) {
                     @IPS_SetVariableProfileText($VarProfil, '', ' ' . (string) $xmlVar2->ValueUnit);
                 }
-                if ((isset($xmlVar2->ValueSubType)) and ((int) $xmlVar2->ValueSubType == 29)) {
+                if ((isset($xmlVar2->ValueSubType)) and ( (int) $xmlVar2->ValueSubType == 29)) {
                     foreach (explode(';', (string) $xmlVar2->ValueList) as $Index => $ValueList) {
                         @IPS_SetVariableProfileAssociation($VarProfil, $Index, trim($ValueList), '', -1);
                     }
@@ -626,7 +617,9 @@ class HomeMaticSystemvariablen extends HMBase
         }
 
         IPS_SetVariableCustomProfile($vid, $Profile);
-
+        if (!in_array($vid, $this->GetReferenceList())) {
+            $this->RegisterReference($vid);
+        }
         return $vid;
     }
 
@@ -989,6 +982,7 @@ class HomeMaticSystemvariablen extends HMBase
         trigger_error($this->Translate('Error on write Data ') . $Parameter, E_USER_NOTICE);
         return false;
     }
+
 }
 
 /** @} */

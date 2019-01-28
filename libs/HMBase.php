@@ -61,7 +61,6 @@ abstract class HMBase extends IPSModule
             return;
         }
 
-        // Config prüfen
         $this->RegisterParent();
     }
 
