@@ -26,7 +26,6 @@ require_once(__DIR__ . "/../libs/HMBase.php");  // HMBase Klasse
  */
 class HomeMaticSystemvariablen extends HMBase
 {
-
     use VariableProfileHelper;
     private static $CcuVarType = array(2 => vtBoolean, 4 => vtFloat, 16 => vtInteger, 20 => vtString);
 
@@ -261,7 +260,7 @@ class HomeMaticSystemvariablen extends HMBase
     private function GetTriggerVar()
     {
         $EventID = $this->ReadPropertyInteger("EventID");
-        if (($EventID == 0) or ( !IPS_VariableExists($EventID))) {
+        if (($EventID == 0) or (!IPS_VariableExists($EventID))) {
             $this->HMDeviceAddress = "";
             $this->HMDeviceDatapoint = "";
             return false;
@@ -344,7 +343,7 @@ class HomeMaticSystemvariablen extends HMBase
             $VarProfil = 'HM.SysVar' . (string) $this->InstanceID . '.' . (string) $SysVar;
             $VarName = (string) $xmlVar->Name;
 
-            if (((int) $xmlVar->ValueType != vtString) and ( !IPS_VariableProfileExists($VarProfil))) { // neu anlegen wenn VAR neu ist oder Profil nicht vorhanden
+            if (((int) $xmlVar->ValueType != vtString) and (!IPS_VariableProfileExists($VarProfil))) { // neu anlegen wenn VAR neu ist oder Profil nicht vorhanden
                 $HMScript = 'Name=dom.GetObject(' . $SysVar . ').Name();' . PHP_EOL
                         . 'ValueSubType=dom.GetObject(' . $SysVar . ').ValueSubType();' . PHP_EOL
                         . 'ValueList=dom.GetObject(' . $SysVar . ').ValueList();' . PHP_EOL
@@ -386,7 +385,7 @@ class HomeMaticSystemvariablen extends HMBase
                 if (isset($xmlVar2->ValueUnit)) {
                     @IPS_SetVariableProfileText($VarProfil, '', ' ' . (string) $xmlVar2->ValueUnit);
                 }
-                if ((isset($xmlVar2->ValueSubType)) and ( (int) $xmlVar2->ValueSubType == 29)) {
+                if ((isset($xmlVar2->ValueSubType)) and ((int) $xmlVar2->ValueSubType == 29)) {
                     foreach (explode(';', (string) $xmlVar2->ValueList) as $Index => $ValueList) {
                         @IPS_SetVariableProfileAssociation($VarProfil, $Index, trim($ValueList), '', -1);
                     }
@@ -982,7 +981,6 @@ class HomeMaticSystemvariablen extends HMBase
         trigger_error($this->Translate('Error on write Data ') . $Parameter, E_USER_NOTICE);
         return false;
     }
-
 }
 
 /** @} */

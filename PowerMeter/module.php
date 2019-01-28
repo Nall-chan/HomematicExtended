@@ -204,7 +204,7 @@ class HomeMaticPowermeter extends HMBase
      */
     private function GetPowerAddress(int $EventID)
     {
-        if (($EventID == 0) or ( !IPS_VariableExists($EventID))) {
+        if (($EventID == 0) or (!IPS_VariableExists($EventID))) {
             $this->HMDeviceAddress = "";
             $this->HMDeviceDatapoint = "";
             $this->HMProtocol = 'BidCos-RF';
@@ -271,7 +271,6 @@ class HomeMaticPowermeter extends HMBase
         $Value = ((float) $xml->Value) / $this->HMFactor;
         $this->SetValue($this->HMDeviceDatapoint . '_TOTAL', $Value);
     }
-
 }
 
 /** @} */
