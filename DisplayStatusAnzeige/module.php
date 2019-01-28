@@ -695,7 +695,6 @@ echo $data; //Daten zurückgeben an Dis-WM55-Instanz
         $this->Page = 0;
         $this->SetTimerInterval('DisplayTimeout', 0);
     }
-
 }
 
 /** @} */
