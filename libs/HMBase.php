@@ -27,7 +27,6 @@ eval('declare(strict_types=1);namespace HMExtended {?>' . file_get_contents(__DI
  */
 abstract class HMBase extends IPSModule
 {
-
     use HMExtended\DebugHelper,
         HMExtended\VariableHelper,
         HMExtended\VariableProfileHelper,
@@ -212,7 +211,6 @@ abstract class HMBase extends IPSModule
             throw new Exception($this->Translate('CCU Address not set.'), E_USER_NOTICE);
         }
     }
-
 }
 
 /** @} */
