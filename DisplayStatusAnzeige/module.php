@@ -414,7 +414,6 @@ class HomeMaticDisWM55 extends HMBase
         $this->Page = 0;
         $this->SetTimerInterval('DisplayTimeout', 0);
     }
-
 }
 
 /** @} */

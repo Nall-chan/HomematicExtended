@@ -252,7 +252,6 @@ class HomeMaticProgramme extends HMBase
             return false;
         }
     }
-
 }
 
 /** @} */
