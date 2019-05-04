@@ -10,9 +10,9 @@ declare(strict_types = 1);
  * @author        Michael Tröger <micha@nall-chan.net>
  * @copyright     2019 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
- * @version       2.80
+ * @version       3.00
  */
-require_once(__DIR__ . "/../libs/HMBase.php");  // HMBase Klasse
+require_once(__DIR__ . '/../libs/HMBase.php');  // HMBase Klasse
 
 /**
  * ParaInterface ist die Klasse für das IPS-Modul 'HomeMatic Paraset Interface'.
@@ -29,9 +29,9 @@ class ParaInterface extends HMBase
     {
         parent::Create();
 
-        $this->RegisterPropertyBoolean("EmulateStatus", false);
-        $this->RegisterPropertyString("Address", "");
-        $this->RegisterPropertyInteger("Protocol", 0);
+        $this->RegisterPropertyBoolean('EmulateStatus', false);
+        $this->RegisterPropertyString('Address', '');
+        $this->RegisterPropertyInteger('Protocol', 0);
     }
 
     /**
@@ -42,7 +42,7 @@ class ParaInterface extends HMBase
     public function ApplyChanges()
     {
         parent::ApplyChanges();
-        $this->SetReceiveDataFilter(".*9999999999.*");
+        $this->SetReceiveDataFilter('.*9999999999.*');
         if (IPS_GetKernelRunlevel() <> KR_READY) {
             return;
         }
@@ -77,7 +77,7 @@ class ParaInterface extends HMBase
     protected function RegisterParent()
     {
         $ParentId = parent::RegisterParent();
-        $this->SetSummary($this->ReadPropertyString("Address"));
+        $this->SetSummary($this->ReadPropertyString('Address'));
         return $ParentId;
     }
 
@@ -85,16 +85,16 @@ class ParaInterface extends HMBase
     private function GetRssiInfo()
     {
         if (!$this->HasActiveParent()) {
-            trigger_error("Instance has no active Parent Instance!", E_USER_NOTICE);
+            trigger_error('Instance has no active Parent Instance!', E_USER_NOTICE);
             return false;
         }
-        $ParentData = array(
-            "DataID"     => "{75B6B237-A7B0-46B9-BBCE-8DF0CFE6FA52}",
-            "Protocol"   => $this->ReadPropertyInteger('Protocol'),
-            "MethodName" => "rssiInfo",
-            "WaitTime"   => 5000,
-            "Data"       => array($this->ReadPropertyString('Address'), 'VALUES')
-        );
+        $ParentData = [
+            'DataID'     => '{75B6B237-A7B0-46B9-BBCE-8DF0CFE6FA52}',
+            'Protocol'   => $this->ReadPropertyInteger('Protocol'),
+            'MethodName' => 'rssiInfo',
+            'WaitTime'   => 5000,
+            'Data'       => [$this->ReadPropertyString('Address'), 'VALUES']
+        ];
         $this->SendDebug('Send', $ParentData, 0);
 
         $JSON = json_encode($ParentData);
@@ -117,16 +117,16 @@ class ParaInterface extends HMBase
     private function GetParamset()
     {
         if (!$this->HasActiveParent()) {
-            trigger_error("Instance has no active Parent Instance!", E_USER_NOTICE);
+            trigger_error('Instance has no active Parent Instance!', E_USER_NOTICE);
             return false;
         }
-        $ParentData = array(
-            "DataID"     => "{75B6B237-A7B0-46B9-BBCE-8DF0CFE6FA52}",
-            "Protocol"   => $this->ReadPropertyInteger('Protocol'),
-            "MethodName" => "getParamset",
-            "WaitTime"   => 5000,
-            "Data"       => array($this->ReadPropertyString('Address'), 'MASTER')
-        );
+        $ParentData = [
+            'DataID'     => '{75B6B237-A7B0-46B9-BBCE-8DF0CFE6FA52}',
+            'Protocol'   => $this->ReadPropertyInteger('Protocol'),
+            'MethodName' => 'getParamset',
+            'WaitTime'   => 5000,
+            'Data'       => [$this->ReadPropertyString('Address'), 'MASTER']
+        ];
         $this->SendDebug('Send', $ParentData, 0);
 
         $JSON = json_encode($ParentData);
@@ -149,16 +149,16 @@ class ParaInterface extends HMBase
     private function PutParamset($Parameter)
     {
         if (!$this->HasActiveParent()) {
-            trigger_error("Instance has no active Parent Instance!", E_USER_NOTICE);
+            trigger_error('Instance has no active Parent Instance!', E_USER_NOTICE);
             return false;
         }
-        $ParentData = array(
-            "DataID"     => "{75B6B237-A7B0-46B9-BBCE-8DF0CFE6FA52}",
-            "Protocol"   => $this->ReadPropertyInteger('Protocol'),
-            "MethodName" => "putParamset",
-            "WaitTime"   => 5000,
-            "Data"       => $Parameter //array($this->ReadPropertyString('Address'),'MASTER','TEXT1','1234')
-        );
+        $ParentData = [
+            'DataID'     => '{75B6B237-A7B0-46B9-BBCE-8DF0CFE6FA52}',
+            'Protocol'   => $this->ReadPropertyInteger('Protocol'),
+            'MethodName' => 'putParamset',
+            'WaitTime'   => 5000,
+            'Data'       => $Parameter //array($this->ReadPropertyString('Address'),'MASTER','TEXT1','1234')
+            ];
         $this->SendDebug('Send', $ParentData, 0);
 
         $JSON = json_encode($ParentData);

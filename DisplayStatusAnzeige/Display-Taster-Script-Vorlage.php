@@ -29,6 +29,15 @@
   Konstanten definiert.
   Des weiteresn müssen Textzeilen mit der Funktion text_encode("Zeile mit Umlaut")
   übergeben werden, wenn Umlaute in der Zeile verwendet werden.
+
+  Folgende Zeichen werden von der Anzeige zur Darstellung umgewandelt:
+  \' => "="
+  ] => "&"
+  ; => Sanduhr
+  < => Pfeil nach links oben
+  = => Pfeil nach links unten
+  @ => Pfeil nach unten (großes "V")
+  > => Pfeil nach oben ("V" im Kopfstand)
  */
 
 ### Konstanten
@@ -113,52 +122,52 @@ if ($_IPS['SENDER'] <> 'HMDisWM55') {
     return;
 }
 
-if (($_IPS['ACTION'] == 'UP') or ($_IPS['ACTION'] == 'DOWN')) {
+if (($_IPS['ACTION'] == 'UP') or ( $_IPS['ACTION'] == 'DOWN')) {
     switch ($_IPS['PAGE']) {                                  // Anzeige pro Seite
         case 1:  // Seite 1
 
-            $display_line[1] = array('Text' => "SEITE 1", // Text  Seite 1 Zeile 1
-                'Icon' => Icon_open, // Icon  Seite 1 Zeile 1
+            $display_line[1] = array('Text'  => "SEITE 1", // Text  Seite 1 Zeile 1
+                'Icon'  => Icon_open, // Icon  Seite 1 Zeile 1
                 'Color' => Color_red);                      // Farbe Seite 1 Zeile 1
 
-            $display_line[2] = array('Text' => "Zeile2",
-                'Icon' => Icon_no,
+            $display_line[2] = array('Text'  => "Zeile2",
+                'Icon'  => Icon_no,
                 'Color' => Color_red);
 
-            $display_line[3] = array('Text' => "Zeile3",
-                'Icon' => Icon_open,
+            $display_line[3] = array('Text'  => "Zeile3",
+                'Icon'  => Icon_open,
                 'Color' => Color_orange);
 
-            $display_line[4] = array('Text' => "Zeile4",
-                'Icon' => Icon_no,
+            $display_line[4] = array('Text'  => "Zeile4",
+                'Icon'  => Icon_no,
                 'Color' => Color_orange);
 
-            $display_line[5] = array('Text' => "Zeile5",
-                'Icon' => Icon_closed,
+            $display_line[5] = array('Text'  => "Zeile5",
+                'Icon'  => Icon_closed,
                 'Color' => Color_green);
 
-            $display_line[6] = array('Text' => "Zeile6",
-                'Icon' => Icon_no,
+            $display_line[6] = array('Text'  => "Zeile6",
+                'Icon'  => Icon_no,
                 'Color' => Color_green);
             break;
         case 2:  // Seite 2
             $display_line[1] = array('Text' => ":",
                 'Icon' => Icon_no);
 
-            $display_line[2] = array('Text' => "SEITE 2",
-                'Icon' => Icon_open,
+            $display_line[2] = array('Text'  => "SEITE 2",
+                'Icon'  => Icon_open,
                 'Color' => Color_orange);
 
             $display_line[3] = array('Text' => "",
                 'Icon' => Icon_no);
 
-            $display_line[4] = array('Text' => "Uhrzeit",
-                'Icon' => Icon_no,
+            $display_line[4] = array('Text'  => "Uhrzeit",
+                'Icon'  => Icon_no,
                 'Color' => Color_white);
 
 
-            $display_line[5] = array('Text' => date("H:i:s", time()), // Uhrzeit
-                'Icon' => Icon_no,
+            $display_line[5] = array('Text'  => date("H:i:s", time()), // Uhrzeit
+                'Icon'  => Icon_no,
                 'Color' => Color_white);
 
             $display_line[6] = array('Text' => "",
@@ -169,8 +178,8 @@ if (($_IPS['ACTION'] == 'UP') or ($_IPS['ACTION'] == 'DOWN')) {
             $display_line[1] = array('Text' => "",
                 'Icon' => Icon_no);
 
-            $display_line[4] = array('Text' => "SEITE 3",
-                'Icon' => Icon_open,
+            $display_line[4] = array('Text'  => "SEITE 3",
+                'Icon'  => Icon_open,
                 'Color' => Color_orange);
 
             $display_line[2] = array('Text' => "", // GetValueFormatted(12345 /*[Objekt #12345 existiert nicht]*/);
@@ -191,24 +200,24 @@ if (($_IPS['ACTION'] == 'UP') or ($_IPS['ACTION'] == 'DOWN')) {
 
 if ($_IPS['ACTION'] == 'ActionUP') {                              // Aktion & Anzeige bei ActionUP
     // Hier kann auch wie oben bei 'PAGE' noch je nach Seite unterschieden werden !
-    $display_line[1] = array('Text' => hex_encode("Führe"),
-        'Icon' => Icon_no,
+    $display_line[1] = array('Text'  => hex_encode("Führe"),
+        'Icon'  => Icon_no,
         'Color' => Color_orange);
 
-    $display_line[2] = array('Text' => "Aktion",
-        'Icon' => Icon_no,
+    $display_line[2] = array('Text'  => "Aktion",
+        'Icon'  => Icon_no,
         'Color' => Color_orange);
 
-    $display_line[3] = array('Text' => "OBEN ",
-        'Icon' => Icon_no,
+    $display_line[3] = array('Text'  => "OBEN ",
+        'Icon'  => Icon_no,
         'Color' => Color_orange);
 
-    $display_line[4] = array('Text' => "Seite " . $_IPS['PAGE'],
-        'Icon' => Icon_no,
+    $display_line[4] = array('Text'  => "Seite " . $_IPS['PAGE'],
+        'Icon'  => Icon_no,
         'Color' => Color_orange);
 
-    $display_line[5] = array('Text' => "aus",
-        'Icon' => Icon_no,
+    $display_line[5] = array('Text'  => "aus",
+        'Icon'  => Icon_no,
         'Color' => Color_orange);
 
     $display_line[6] = array('Text' => "",
@@ -217,24 +226,24 @@ if ($_IPS['ACTION'] == 'ActionUP') {                              // Aktion & An
 
 if ($_IPS['ACTION'] == 'ActionDOWN') {                             // Aktion & Anzeige bei ActionDOWN
     // Hier kann auch wie oben bei 'PAGE' noch je nach Seite unterschieden werden !
-    $display_line[1] = array('Text' => hex_encode("Führe"),
-        'Icon' => Icon_no,
+    $display_line[1] = array('Text'  => hex_encode("Führe"),
+        'Icon'  => Icon_no,
         'Color' => Color_orange);
 
-    $display_line[2] = array('Text' => "Aktion",
-        'Icon' => Icon_no,
+    $display_line[2] = array('Text'  => "Aktion",
+        'Icon'  => Icon_no,
         'Color' => Color_orange);
 
-    $display_line[3] = array('Text' => "UNTEN",
-        'Icon' => Icon_no,
+    $display_line[3] = array('Text'  => "UNTEN",
+        'Icon'  => Icon_no,
         'Color' => Color_orange);
 
-    $display_line[4] = array('Text' => "Seite " . $_IPS['PAGE'],
-        'Icon' => Icon_no,
+    $display_line[4] = array('Text'  => "Seite " . $_IPS['PAGE'],
+        'Icon'  => Icon_no,
         'Color' => Color_orange);
 
-    $display_line[5] = array('Text' => "aus",
-        'Icon' => Icon_no,
+    $display_line[5] = array('Text'  => "aus",
+        'Icon'  => Icon_no,
         'Color' => Color_orange);
 
     $display_line[6] = array('Text' => "",
@@ -243,7 +252,6 @@ if ($_IPS['ACTION'] == 'ActionDOWN') {                             // Aktion & A
 
 $data = json_encode($display_line);
 echo $data; //Daten zurückgeben an Dis-WM55-Instanz
-
 function hex_encode($string)
 {
     $umlaut = array("Ä", "Ö", "Ü", "ä", "ö", "ü", "ß", ":");

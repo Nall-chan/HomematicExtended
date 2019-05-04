@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 /**
  * @addtogroup homematicextended
  * @{
@@ -10,9 +10,9 @@ declare(strict_types = 1);
  * @author        Michael Tröger <micha@nall-chan.net>
  * @copyright     2019 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
- * @version       2.60
+ * @version       3.00
  */
-require_once(__DIR__ . "/../libs/HMBase.php");  // HMBase Klasse
+require_once(__DIR__ . '/../libs/HMBase.php');  // HMBase Klasse
 
 /**
  * HomeMaticWRInterface ist die Klasse für das IPS-Modul 'HomeMatic WR-Interface'.
@@ -30,11 +30,11 @@ class HomeMaticWRInterface extends HMBase
         parent::Create();
 
         $this->RegisterHMPropertys('XXX9999993');
-        $this->RegisterPropertyBoolean("EmulateStatus", false);
+        $this->RegisterPropertyBoolean('EmulateStatus', false);
 
-        $this->RegisterPropertyInteger("Interval", 0);
+        $this->RegisterPropertyInteger('Interval', 0);
 
-        $this->RegisterTimer("ReadWRInterface", 0, 'HM_ReadWRInterface($_IPS[\'TARGET\']);');
+        $this->RegisterTimer('ReadWRInterface', 0, 'HM_ReadWRInterface($_IPS[\'TARGET\']);');
     }
 
     /**
@@ -45,19 +45,19 @@ class HomeMaticWRInterface extends HMBase
     public function ApplyChanges()
     {
         parent::ApplyChanges();
-        $this->SetReceiveDataFilter(".*9999999999.*");
+        $this->SetReceiveDataFilter('.*9999999999.*');
         if (IPS_GetKernelRunlevel() <> KR_READY) {
             return;
         }
 
         if ($this->CheckConfig()) {
-            if ($this->ReadPropertyInteger("Interval") >= 5) {
-                $this->SetTimerInterval("ReadWRInterface", $this->ReadPropertyInteger("Interval") * 1000);
+            if ($this->ReadPropertyInteger('Interval') >= 5) {
+                $this->SetTimerInterval('ReadWRInterface', $this->ReadPropertyInteger('Interval') * 1000);
             } else {
-                $this->SetTimerInterval("ReadWRInterface", 0);
+                $this->SetTimerInterval('ReadWRInterface', 0);
             }
         } else {
-            $this->SetTimerInterval("ReadWRInterface", 0);
+            $this->SetTimerInterval('ReadWRInterface', 0);
         }
 
 
@@ -88,7 +88,7 @@ class HomeMaticWRInterface extends HMBase
         if ($State == IS_ACTIVE) {
             $this->ApplyChanges();
         } else {
-            $this->SetTimerInterval("ReadWRInterface", 0);
+            $this->SetTimerInterval('ReadWRInterface', 0);
         }
     }
 
@@ -114,7 +114,7 @@ class HomeMaticWRInterface extends HMBase
      */
     private function CheckConfig()
     {
-        $Interval = $this->ReadPropertyInteger("Interval");
+        $Interval = $this->ReadPropertyInteger('Interval');
         if ($Interval < 0) {
             $this->SetStatus(IS_EBASE + 2);
             return false;
@@ -143,25 +143,30 @@ class HomeMaticWRInterface extends HMBase
     private function GetInterface()
     {
         if (!$this->HasActiveParent()) {
-            trigger_error($this->Translate("Instance has no active parent instance!"), E_USER_NOTICE);
+            trigger_error($this->Translate('Instance has no active parent instance!'), E_USER_NOTICE);
             return false;
         }
-        if (IPS_GetProperty($this->ParentId, "WROpen") !== true) {
-            trigger_error($this->Translate("Instance has no active parent instance!"), E_USER_NOTICE);
+        if (IPS_GetProperty($this->ParentID, 'WROpen') !== true) {
+            trigger_error($this->Translate('Instance has no active parent instance!'), E_USER_NOTICE);
             return false;
         }
 
-        $ParentData = array(
-            "DataID"     => "{75B6B237-A7B0-46B9-BBCE-8DF0CFE6FA52}",
-            "Protocol"   => 1,
-            "MethodName" => "getLGWStatus",
-            "WaitTime"   => 5000,
-            "Data"       => array()
-        );
+        $ParentData = [
+            'DataID'     => '{75B6B237-A7B0-46B9-BBCE-8DF0CFE6FA52}',
+            'Protocol'   => 1,
+            'MethodName' => 'getLGWStatus',
+            'WaitTime'   => 5000,
+            'Data'       => []
+        ];
         $this->SendDebug('Send', $ParentData, 0);
 
         $JSON = json_encode($ParentData);
         $ResultJSON = @$this->SendDataToParent($JSON);
+        if ($ResultJSON == false) {
+            trigger_error($this->Translate('Error on read WR-Interface.'), E_USER_NOTICE);
+            $this->SendDebug('Error', '', 0);
+            return false;
+        }
         $Result = @json_decode($ResultJSON);
         if (($Result === false) or is_null($Result)) {
             trigger_error($this->Translate('Error on read WR-Interface.'), E_USER_NOTICE);
@@ -187,22 +192,22 @@ class HomeMaticWRInterface extends HMBase
             return false;
         }
         foreach ($Result as $Ident => $Value) {
-            if ($Value === "") {
+            if ($Value === '') {
                 continue;
             }
             switch (gettype($Value)) {
-                case "boolean":
-                    $Typ = vtBoolean;
+                case 'boolean':
+                    $Typ = VARIABLETYPE_BOOLEAN;
                     break;
-                case "integer":
-                    $Typ = vtInteger;
+                case 'integer':
+                    $Typ = VARIABLETYPE_INTEGER;
                     break;
-                case "double":
-                case "float":
-                    $Typ = vtFloat;
+                case 'double':
+                case 'float':
+                    $Typ = VARIABLETYPE_FLOAT;
                     break;
-                case "string":
-                    $Typ = vtString;
+                case 'string':
+                    $Typ = VARIABLETYPE_STRING;
                     break;
                 default:
                     continue 2;
@@ -222,6 +227,7 @@ class HomeMaticWRInterface extends HMBase
         }
         return true;
     }
+
 }
 
 /** @} */

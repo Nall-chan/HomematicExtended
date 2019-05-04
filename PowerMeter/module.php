@@ -10,9 +10,9 @@ declare(strict_types = 1);
  * @author        Michael Tröger <micha@nall-chan.net>
  * @copyright     2019 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
- * @version       2.80
+ * @version       3.00
  */
-require_once(__DIR__ . "/../libs/HMBase.php");  // HMBase Klasse
+require_once(__DIR__ . '/../libs/HMBase.php');  // HMBase Klasse
 
 /**
  * HomeMaticPowermeter ist die Klasse für das IPS-Modul 'HomeMatic PowerMeter'.
@@ -36,8 +36,8 @@ class HomeMaticPowermeter extends HMBase
     {
         parent::Create();
         $this->RegisterHMPropertys('XXX9999997');
-        $this->RegisterPropertyBoolean("EmulateStatus", false);
-        $this->RegisterPropertyInteger("EventID", 0);
+        $this->RegisterPropertyBoolean('EmulateStatus', false);
+        $this->RegisterPropertyInteger('EventID', 0);
     }
 
     /**
@@ -56,7 +56,7 @@ class HomeMaticPowermeter extends HMBase
             case VM_DELETE:
                 $this->UnregisterMessage($SenderID, VM_DELETE);
                 $this->UnregisterReference($SenderID);
-                if ($SenderID == $this->ReadPropertyInteger("EventID")) {
+                if ($SenderID == $this->ReadPropertyInteger('EventID')) {
                     $this->SetNewConfig();
                 }
                 break;
@@ -124,7 +124,7 @@ class HomeMaticPowermeter extends HMBase
             $this->HMProtocol = 'BidCos-RF';
             $this->Event = 0;
             $this->HMFactor = 1;
-            $this->SetReceiveDataFilter(".*9999999999.*");
+            $this->SetReceiveDataFilter('.*9999999999.*');
             $this->SetSummary('');
             return;
         }
@@ -133,24 +133,24 @@ class HomeMaticPowermeter extends HMBase
             $this->SetReceiveDataFilter('.*"DeviceID":"' . $this->HMDeviceAddress . '","VariableName":"' . $HMDeviceDatapoint . '".*');
 
             switch ($HMDeviceDatapoint) {
-                case "GAS_ENERGY_COUNTER":
-                    $Profil = "~Gas";
+                case 'GAS_ENERGY_COUNTER':
+                    $Profil = '~Gas';
                     $this->HMSufix = 'Gas';
                     $this->HMFactor = 1;
                     break;
-                case "IEC_ENERGY_COUNTER":
+                case 'IEC_ENERGY_COUNTER':
                     $this->HMSufix = 'IEC';
-                    $Profil = "~Electricity";
+                    $Profil = '~Electricity';
                     $this->HMFactor = 1000;
                     break;
-                case "ENERGY_COUNTER":
+                case 'ENERGY_COUNTER':
                     $this->HMSufix = '';
-                    $Profil = "~Electricity";
+                    $Profil = '~Electricity';
                     $this->HMFactor = 1000;
                     break;
             }
 
-            $this->RegisterVariableFloat($HMDeviceDatapoint . "_TOTAL", $HMDeviceDatapoint . "_TOTAL", $Profil);
+            $this->RegisterVariableFloat($HMDeviceDatapoint . '_TOTAL', $HMDeviceDatapoint . '_TOTAL', $Profil);
             $this->SetSummary($this->HMDeviceAddress);
             if (!$this->HasActiveParent()) {
                 return;
@@ -162,7 +162,7 @@ class HomeMaticPowermeter extends HMBase
             }
             return;
         }
-        $this->SetReceiveDataFilter(".*9999999999.*");
+        $this->SetReceiveDataFilter('.*9999999999.*');
     }
 
     /**
@@ -179,7 +179,7 @@ class HomeMaticPowermeter extends HMBase
             $this->UnregisterReference($OldEvent);
             $this->Event = 0;
         }
-        $Event = $this->ReadPropertyInteger("EventID");
+        $Event = $this->ReadPropertyInteger('EventID');
         if ($Event == 0) {
             $this->SetStatus(IS_INACTIVE);
             return false;
@@ -205,20 +205,20 @@ class HomeMaticPowermeter extends HMBase
     private function GetPowerAddress(int $EventID)
     {
         if (($EventID == 0) or (!IPS_VariableExists($EventID))) {
-            $this->HMDeviceAddress = "";
-            $this->HMDeviceDatapoint = "";
+            $this->HMDeviceAddress = '';
+            $this->HMDeviceDatapoint = '';
             $this->HMProtocol = 'BidCos-RF';
             return false;
         }
         $parent = IPS_GetParent($EventID);
         if (IPS_GetInstance($parent)['ModuleInfo']['ModuleID'] <> '{EE4A81C6-5C90-4DB7-AD2F-F6BBD521412E}') {
-            $this->HMDeviceAddress = "";
-            $this->HMDeviceDatapoint = "";
+            $this->HMDeviceAddress = '';
+            $this->HMDeviceDatapoint = '';
             $this->HMProtocol = 'BidCos-RF';
             return false;
         }
-        $EventIdent = IPS_GetObject($EventID)["ObjectIdent"];
-        $PossibleIdent = array("GAS_ENERGY_COUNTER", "IEC_ENERGY_COUNTER", "ENERGY_COUNTER");
+        $EventIdent = IPS_GetObject($EventID)['ObjectIdent'];
+        $PossibleIdent = ['GAS_ENERGY_COUNTER', 'IEC_ENERGY_COUNTER', 'ENERGY_COUNTER'];
         if (in_array($EventIdent, $PossibleIdent)) {
             $this->HMDeviceAddress = IPS_GetProperty($parent, 'Address');
             $this->HMDeviceDatapoint = $EventIdent;
@@ -235,8 +235,8 @@ class HomeMaticPowermeter extends HMBase
             }
             return true;
         }
-        $this->HMDeviceAddress = "";
-        $this->HMDeviceDatapoint = "";
+        $this->HMDeviceAddress = '';
+        $this->HMDeviceDatapoint = '';
         $this->HMProtocol = 'BidCos-RF';
         return false;
     }
@@ -250,10 +250,10 @@ class HomeMaticPowermeter extends HMBase
     private function ReadPowerSysVar()
     {
         if (!$this->HasActiveParent()) {
-            throw new Exception("Instance has no active parent instance!", E_USER_NOTICE);
+            throw new Exception('Instance has no active parent instance!', E_USER_NOTICE);
         }
         if ($this->HMAddress == '') {
-            throw new Exception("Instance has no active parent instance!", E_USER_NOTICE);
+            $this->RegisterParent();
         }
 
         $url = 'GetPowerMeter.exe';

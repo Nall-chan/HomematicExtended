@@ -10,9 +10,9 @@ declare(strict_types = 1);
  * @author        Michael Tröger <micha@nall-chan.net>
  * @copyright     2019 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
- * @version       2.60
+ * @version       3.00
  */
-require_once(__DIR__ . "/../libs/HMBase.php");  // HMBase Klasse
+require_once(__DIR__ . '/../libs/HMBase.php');  // HMBase Klasse
 
 /**
  * HomeMaticDisEPWM55 ist die Klasse für das IPS-Modul 'HomeMatic Dis-EP-WM55'.
@@ -30,9 +30,9 @@ class HomeMaticDisEPWM55 extends HMBase
     {
         parent::Create();
 
-        $this->RegisterPropertyString("Address", "");
-        $this->RegisterPropertyInteger("Protocol", 0);
-        $this->RegisterPropertyBoolean("EmulateStatus", false);
+        $this->RegisterPropertyString('Address', '');
+        $this->RegisterPropertyInteger('Protocol', 0);
+        $this->RegisterPropertyBoolean('EmulateStatus', false);
     }
 
     /**
@@ -43,9 +43,9 @@ class HomeMaticDisEPWM55 extends HMBase
     public function ApplyChanges()
     {
         parent::ApplyChanges();
-        $Address = $this->ReadPropertyString("Address");
+        $Address = $this->ReadPropertyString('Address');
         $this->SetSummary($Address);
-        $this->SetReceiveDataFilter(".*9999999999.*");
+        $this->SetReceiveDataFilter('.*9999999999.*');
     }
 
     ################## protected
@@ -80,23 +80,23 @@ class HomeMaticDisEPWM55 extends HMBase
     private function SendData($Submit)
     {
         if (!$this->HasActiveParent()) {
-            trigger_error($this->Translate("Instance has no active parent instance!"), E_USER_NOTICE);
+            trigger_error($this->Translate('Instance has no active parent instance!'), E_USER_NOTICE);
             return false;
         }
-        $ParentData = array(
-            "DataID"     => "{75B6B237-A7B0-46B9-BBCE-8DF0CFE6FA52}",
-            "Protocol"   => 0,
-            "MethodName" => "setValue",
-            "WaitTime"   => 5000,
-            "Data"       => array($this->ReadPropertyString('Address'), 'SUBMIT', '0x02,' . implode(',', $Submit) . ',0x03')
-        );
+        $ParentData = [
+            'DataID'     => '{75B6B237-A7B0-46B9-BBCE-8DF0CFE6FA52}',
+            'Protocol'   => 0,
+            'MethodName' => 'setValue',
+            'WaitTime'   => 5000,
+            'Data'       => [$this->ReadPropertyString('Address'), 'SUBMIT', '0x02,' . implode(',', $Submit) . ',0x03']
+        ];
         $this->SendDebug('Send', $ParentData, 0);
 
         $JSON = json_encode($ParentData);
         $ResultJSON = @$this->SendDataToParent($JSON);
         $Result = @json_decode($ResultJSON);
         if ($Result === false) {
-            trigger_error($this->Translate("Error on send Data."), E_USER_NOTICE);
+            trigger_error($this->Translate('Error on send Data.'), E_USER_NOTICE);
             $this->SendDebug('Error', '', 0);
         }
         $this->SendDebug('Receive', $Result, 0);
@@ -117,28 +117,28 @@ class HomeMaticDisEPWM55 extends HMBase
     {
         try {
             if (!is_int($Chime)) {
-                throw new Exception(sprintf($this->Translate("Parameter %s must be type of integer."), "Chime"));
+                throw new Exception(sprintf($this->Translate('Parameter %s must be type of integer.'), 'Chime'));
             }
             if (!is_int($Repeat)) {
-                throw new Exception(sprintf($this->Translate("Parameter %s must be type of integer."), "Repeat"));
+                throw new Exception(sprintf($this->Translate('Parameter %s must be type of integer.'), 'Repeat'));
             }
             if (!is_int($Wait)) {
-                throw new Exception(sprintf($this->Translate("Parameter %s must be type of integer."), "Wait"));
+                throw new Exception(sprintf($this->Translate('Parameter %s must be type of integer.'), 'Wait'));
             }
             if (!is_int($Color)) {
-                throw new Exception(sprintf($this->Translate("Parameter %s must be type of integer."), "Color"));
+                throw new Exception(sprintf($this->Translate('Parameter %s must be type of integer.'), 'Color'));
             }
             if (($Chime < 0) or ($Chime > 6)) {
-                throw new Exception(sprintf($this->Translate("Parameter %s out of range."), "Chime"));
+                throw new Exception(sprintf($this->Translate('Parameter %s out of range.'), 'Chime'));
             }
             if (($Repeat < 0) or ($Repeat > 15)) {
-                throw new Exception(sprintf($this->Translate("Parameter %s out of range."), "Repeat"));
+                throw new Exception(sprintf($this->Translate('Parameter %s out of range.'), 'Repeat'));
             }
             if (($Wait < 0) or ($Wait > 15)) {
-                throw new Exception(sprintf($this->Translate("Parameter %s out of range."), "Wait"));
+                throw new Exception(sprintf($this->Translate('Parameter %s out of range.'), 'Wait'));
             }
             if (($Color < 0) or ($Color > 3)) {
-                throw new Exception(sprintf($this->Translate("Parameter %s out of range."), "Color"));
+                throw new Exception(sprintf($this->Translate('Parameter %s out of range.'), 'Color'));
             }
         } catch (Exception $exc) {
             trigger_error($exc->getMessage(), E_USER_NOTICE);
@@ -167,13 +167,13 @@ class HomeMaticDisEPWM55 extends HMBase
     {
         try {
             if (!is_string($Text)) {
-                throw new Exception(sprintf($this->Translate("Parameter %s must be type of string."), "Text"));
+                throw new Exception(sprintf($this->Translate('Parameter %s must be type of string.'), 'Text'));
             }
             if (!is_int($Icon)) {
-                throw new Exception(sprintf($this->Translate("Parameter %s must be type of integer."), "Icon"));
+                throw new Exception(sprintf($this->Translate('Parameter %s must be type of integer.'), 'Icon'));
             }
             if (($Icon < 0) or ($Icon > 9)) {
-                throw new Exception(sprintf($this->Translate("Parameter %s out of range."), "Icon"));
+                throw new Exception(sprintf($this->Translate('Parameter %s out of range.'), 'Icon'));
             }
         } catch (Exception $exc) {
             trigger_error($exc->getMessage(), E_USER_NOTICE);
@@ -182,7 +182,7 @@ class HomeMaticDisEPWM55 extends HMBase
 
 
         $Data[] = '0x12';
-        if ($Text === "") {
+        if ($Text === '') {
             $Data[] = '0x20';
         } else {
             if (strpos($Text, '0x8') === 0) {
@@ -190,7 +190,7 @@ class HomeMaticDisEPWM55 extends HMBase
             } else {
                 $Text = $this->hex_encode($Text);
                 for ($i = 0; $i < ((strlen($Text) < 12) ? strlen($Text) : 12); $i++) {
-                    $Data[] = "0x" . dechex(ord($Text[$i]));
+                    $Data[] = '0x' . dechex(ord($Text[$i]));
                 }
             }
         }
@@ -211,8 +211,8 @@ class HomeMaticDisEPWM55 extends HMBase
      */
     private function hex_encode(string $string)
     {
-        $umlaut = array("Ä", "Ö", "Ü", "ä", "ö", "ü", "ß", ":");
-        $hex_neu = array(chr(0x5b), chr(0x23), chr(0x24), chr(0x7b), chr(0x7c), chr(0x7d), chr(0x5f), chr(0x3a));
+        $umlaut = ['Ä', 'Ö', 'Ü', 'ä', 'ö', 'ü', 'ß', ':'];
+        $hex_neu = [chr(0x5b), chr(0x23), chr(0x24), chr(0x7b), chr(0x7c), chr(0x7d), chr(0x5f), chr(0x3a)];
         $return = str_replace($umlaut, $hex_neu, $string);
         return $return;
     }

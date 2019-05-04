@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 /**
  * @addtogroup homematicextended
  * @{
@@ -8,31 +8,34 @@ declare(strict_types = 1);
  * @package       HomematicExtended
  * @file          HMBase.php
  * @author        Michael Tröger <micha@nall-chan.net>
- * @copyright     2018 Michael Tröger
+ * @copyright     2019 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
- * @version       2.65
+ * @version       3.0
  */
-require_once __DIR__ . '/../libs/ConstHelper.php';  // diverse Klassen
-require_once __DIR__ . '/../libs/DebugHelper.php';  // diverse Klassen
-require_once __DIR__ . '/../libs/VariableHelper.php';
-require_once __DIR__ . '/../libs/BufferHelper.php';  // diverse Klassen
-require_once __DIR__ . '/../libs/ParentIOHelper.php';  // diverse Klassen
+eval('declare(strict_types=1);namespace HMExtended {?>' . file_get_contents(__DIR__ . '/helper/DebugHelper.php') . '}');
+eval('declare(strict_types=1);namespace HMExtended {?>' . file_get_contents(__DIR__ . '/helper/BufferHelper.php') . '}');
+eval('declare(strict_types=1);namespace HMExtended {?>' . file_get_contents(__DIR__ . '/helper/ParentIOHelper.php') . '}');
+eval('declare(strict_types=1);namespace HMExtended {?>' . file_get_contents(__DIR__ . '/helper/VariableHelper.php') . '}');
+eval('declare(strict_types=1);namespace HMExtended {?>' . file_get_contents(__DIR__ . '/helper/VariableProfileHelper.php') . '}');
 
 /**
  * HMBase ist die Basis-Klasse für alle Module welche HMScript verwenden.
  * Erweitert ipsmodule
  *
  * @property string $HMAddress Die Adresse der CCU.
- * @property int $ParentId Aktueller IO-Parent.
+ * @property int $ParentID Aktueller IO-Parent.
  */
 abstract class HMBase extends IPSModule
 {
-    use DebugHelper,
-        VariableHelper,
-        BufferHelper,
-        InstanceStatus {
-        InstanceStatus::RegisterParent as IORegisterParent;
-        InstanceStatus::MessageSink as IOMessageSink; // MessageSink gibt es sowohl hier in der Klasse, als auch im Trait InstanceStatus. Hier wird für die Methode im Trait ein Alias benannt.
+
+    use HMExtended\DebugHelper,
+        HMExtended\VariableHelper,
+        HMExtended\VariableProfileHelper,
+        HMExtended\BufferHelper,
+        HMExtended\InstanceStatus {
+        HMExtended\InstanceStatus::RegisterParent as IORegisterParent;
+        HMExtended\InstanceStatus::MessageSink as IOMessageSink;
+        HMExtended\InstanceStatus::RequestAction as IORequestAction;
     }
     /**
      * Interne Funktion des SDK.
@@ -42,8 +45,8 @@ abstract class HMBase extends IPSModule
     public function Create()
     {
         parent::Create();
-        $this->ParentId = 0;
-        $this->ConnectParent("{A151ECE9-D733-4FB9-AA15-7F7DD10C58AF}");
+        $this->ParentID = 0;
+        $this->ConnectParent('{A151ECE9-D733-4FB9-AA15-7F7DD10C58AF}');
     }
 
     /**
@@ -103,12 +106,12 @@ abstract class HMBase extends IPSModule
      */
     protected function RegisterHMPropertys(string $Address)
     {
-        $this->RegisterPropertyInteger("Protocol", 0);
-        $count = @IPS_GetInstanceListByModuleID(IPS_GetInstance($this->InstanceID)["ModuleInfo"]["ModuleID"]);
+        $this->RegisterPropertyInteger('Protocol', 0);
+        $count = @IPS_GetInstanceListByModuleID(IPS_GetInstance($this->InstanceID)['ModuleInfo']['ModuleID']);
         if (is_array($count)) {
-            $this->RegisterPropertyString("Address", $Address . ":" . count($count));
+            $this->RegisterPropertyString('Address', $Address . ':' . count($count));
         } else {
-            $this->RegisterPropertyString("Address", $Address . ":0");
+            $this->RegisterPropertyString('Address', $Address . ':0');
         }
     }
 
@@ -120,7 +123,7 @@ abstract class HMBase extends IPSModule
      */
     protected function RegisterParent()
     {
-        $OldParentId = $this->ParentId;
+        $OldParentId = $this->ParentID;
         $ParentId = $this->IORegisterParent();
         if ($ParentId <> $OldParentId) {
             if ($ParentId > 0) {
@@ -130,6 +133,12 @@ abstract class HMBase extends IPSModule
             }
         }
         return $ParentId;
+    }
+
+    ################## ActionHandler
+    public function RequestAction($Ident, $Value)
+    {
+        return $this->IORequestAction($Ident, $Value);
     }
 
     /**
@@ -145,24 +154,24 @@ abstract class HMBase extends IPSModule
     {
         if ($this->HMAddress <> '') {
             $this->SendDebug($url, $HMScript, 0);
-            $header[] = "Accept: text/plain,text/xml,application/xml,application/xhtml+xml,text/html";
-            $header[] = "Cache-Control: max-age=0";
-            $header[] = "Connection: close";
-            $header[] = "Accept-Charset: UTF-8";
-            $header[] = "Content-type: text/plain;charset=\"UTF-8\"";
-            $ParentConfig = json_decode(IPS_GetConfiguration($this->ParentId), true);
+            $header[] = 'Accept: text/plain,text/xml,application/xml,application/xhtml+xml,text/html';
+            $header[] = 'Cache-Control: max-age=0';
+            $header[] = 'Connection: close';
+            $header[] = 'Accept-Charset: UTF-8';
+            $header[] = 'Content-type: text/plain;charset="UTF-8"';
+            $ParentConfig = json_decode(IPS_GetConfiguration($this->ParentID), true);
             if (array_key_exists('UseSSL', $ParentConfig)) {
                 if ($ParentConfig['UseSSL']) {
                     $this->SendDebug('useSSL', (string) $ParentConfig['HSSSLPort'], 0);
-                    $ch = curl_init('https://' . (string) $this->HMAddress . ':' . (string)$ParentConfig['HSSSLPort'] . '/' . $url);
+                    $ch = curl_init('https://' . (string) $this->HMAddress . ':' . (string) $ParentConfig['HSSSLPort'] . '/' . $url);
                 } else {
                     $this->SendDebug('useNoSSL', (string) $ParentConfig['HSPort'], 0);
-                    $ch = curl_init('http://' . (string) $this->HMAddress . ':' . (string)$ParentConfig['HSPort'] . '/' . $url);
+                    $ch = curl_init('http://' . (string) $this->HMAddress . ':' . (string) $ParentConfig['HSPort'] . '/' . $url);
                 }
             } else {
                 if (array_key_exists('HSPort', $ParentConfig)) {
                     $this->SendDebug('useNoSSL', (string) $ParentConfig['HSPort'], 0);
-                    $ch = curl_init('http://' . (string) $this->HMAddress . ':' . (string)$ParentConfig['HSPort'] . '/' . $url);
+                    $ch = curl_init('http://' . (string) $this->HMAddress . ':' . (string) $ParentConfig['HSPort'] . '/' . $url);
                 } else {
                     $this->SendDebug('useNoSSL', '8181', 0);
                     $ch = curl_init('http://' . (string) $this->HMAddress . ':8181/' . $url);
@@ -182,7 +191,7 @@ abstract class HMBase extends IPSModule
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
             curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
             curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, array('Expect:'));
+            curl_setopt($ch, CURLOPT_HTTPHEADER, ['Expect:']);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_CONNECTTIMEOUT_MS, 2000);
             curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
@@ -196,13 +205,14 @@ abstract class HMBase extends IPSModule
             if ($result === false) {
                 throw new Exception($this->Translate('CCU unreachable'), E_USER_NOTICE);
             }
-            $this->SendDebug("Result", $result, 0);
+            $this->SendDebug('Result', $result, 0);
             return $result;
         } else {
             $this->SendDebug('Error', $this->Translate('CCU Address not set.'), 0);
             throw new Exception($this->Translate('CCU Address not set.'), E_USER_NOTICE);
         }
     }
+
 }
 
 /** @} */

@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 /**
  * @addtogroup homematicextended
  * @{
@@ -10,9 +10,9 @@ declare(strict_types = 1);
  * @author        Michael Tröger <micha@nall-chan.net>
  * @copyright     2019 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
- * @version       2.60
+ * @version       3.00
  */
-require_once(__DIR__ . "/../libs/HMBase.php");  // HMBase Klasse
+require_once(__DIR__ . '/../libs/HMBase.php');  // HMBase Klasse
 
 /**
  * HomeMaticRFInterface ist die Klasse für das IPS-Modul 'HomeMatic RF-Interface'.
@@ -20,7 +20,8 @@ require_once(__DIR__ . "/../libs/HMBase.php");  // HMBase Klasse
  */
 class HomeMaticRFInterface extends IPSModule
 {
-    use DebugHelper;
+
+    use HMExtended\DebugHelper;
     /**
      * Interne Funktion des SDK.
      *
@@ -29,8 +30,8 @@ class HomeMaticRFInterface extends IPSModule
     public function Create()
     {
         parent::Create();
-        $this->RegisterPropertyString("Address", "");
-        $this->ConnectParent("{6EE35B5B-9DD9-4B23-89F6-37589134852F}");
+        $this->RegisterPropertyString('Address', '');
+        $this->ConnectParent('{6EE35B5B-9DD9-4B23-89F6-37589134852F}');
     }
 
     /**
@@ -42,13 +43,13 @@ class HomeMaticRFInterface extends IPSModule
     {
         parent::ApplyChanges();
 
-        $Address = $this->ReadPropertyString("Address");
+        $Address = $this->ReadPropertyString('Address');
         $this->SetSummary($Address);
 
-        if ($Address !== "") {
+        if ($Address !== '') {
             $this->SetReceiveDataFilter('.*"ADDRESS":"' . $Address . '".*');
         } else {
-            $this->SetReceiveDataFilter(".*9999999999.*");
+            $this->SetReceiveDataFilter('.*9999999999.*');
         }
     }
 
@@ -65,26 +66,26 @@ class HomeMaticRFInterface extends IPSModule
         unset($Data->ADDRESS);
         $this->SendDebug('Receive', $Data, 0);
         foreach ($Data as $Ident => $Value) {
-            if ($Value === "") {
+            if ($Value === '') {
                 continue;
             }
-            $Profil = "";
-            if ($Ident == "DUTY_CYCLE") {
-                $Profil = "~Intensity.100";
+            $Profil = '';
+            if ($Ident == 'DUTY_CYCLE') {
+                $Profil = '~Intensity.100';
             }
             switch (gettype($Value)) {
-                case "boolean":
-                    $Typ = vtBoolean;
+                case 'boolean':
+                    $Typ = VARIABLETYPE_BOOLEAN;
                     break;
-                case "integer":
-                    $Typ = vtInteger;
+                case 'integer':
+                    $Typ = VARIABLETYPE_INTEGER;
                     break;
-                case "double":
-                case "float":
-                    $Typ = vtFloat;
+                case 'double':
+                case 'float':
+                    $Typ = VARIABLETYPE_FLOAT;
                     break;
-                case "string":
-                    $Typ = vtString;
+                case 'string':
+                    $Typ = VARIABLETYPE_STRING;
                     break;
                 default:
                     continue 2;
@@ -104,24 +105,6 @@ class HomeMaticRFInterface extends IPSModule
         }
     }
 
-    /**
-     * Setzte eine IPS-Variable auf den Wert von $value
-     *
-     * @access protected
-     * @param string $Ident Ident der Statusvariable.
-     * @param bool|int|float|string $value Neuer Wert der Statusvariable.
-     */
-    protected function SetValue($Ident, $value)
-    {
-        if (method_exists('IPSModule', 'SetValue')) {
-            parent::SetValue($Ident, $value);
-        } else {
-            $id = @$this->GetIDForIdent($Ident);
-            if ($id > 0) {
-                SetValue($id, $value);
-            }
-        }
-    }
 }
 
 /** @} */

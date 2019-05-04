@@ -10,9 +10,9 @@ declare(strict_types = 1);
  * @author        Michael Tröger <micha@nall-chan.net>
  * @copyright     2019 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
- * @version       2.80
+ * @version       3.00
  */
-require_once(__DIR__ . "/../libs/HMBase.php");
+require_once(__DIR__ . '/../libs/HMBase.php');
 
 /**
  * HomeMaticRemoteScript ist die Klasse für das IPS-Modul 'HomeMatic RemoteScript Interface'.
@@ -29,8 +29,8 @@ class HomeMaticRemoteScript extends HMBase
     {
         parent::Create();
         $this->RegisterHMPropertys('XXX9999993');
-        $this->SetReceiveDataFilter(".*9999999999.*");
-        $this->RegisterPropertyBoolean("EmulateStatus", false);
+        $this->SetReceiveDataFilter('.*9999999999.*');
+        $this->RegisterPropertyBoolean('EmulateStatus', false);
     }
 
     /**
@@ -87,10 +87,10 @@ class HomeMaticRemoteScript extends HMBase
     private function SendScript(string $Script)
     {
         if (!$this->HasActiveParent()) {
-            throw new Exception("Instance has no active parent instance!", E_USER_NOTICE);
+            throw new Exception('Instance has no active parent instance!', E_USER_NOTICE);
         }
         if ($this->HMAddress == '') {
-            throw new Exception("Instance has no active parent instance!", E_USER_NOTICE);
+            $this->RegisterParent();
         }
         $url = 'Script.exe';
         try {

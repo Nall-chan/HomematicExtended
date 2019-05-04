@@ -1,15 +1,15 @@
-[![Version](https://img.shields.io/badge/Symcon-PHPModul-red.svg)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
-[![Version](https://img.shields.io/badge/Modul%20Version-2.80-blue.svg)]()
+[![SDK](https://img.shields.io/badge/Symcon-PHPModul-red.svg)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
+[![Version](https://img.shields.io/badge/Modul%20Version-3.00-blue.svg)]()
 [![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)  
-[![Version](https://img.shields.io/badge/Symcon%20Version-5.1%20%3E-green.svg)]()
+[![Version](https://img.shields.io/badge/Symcon%20Version-5.1%20%3E-green.svg)](https://www.symcon.de/forum/threads/30857-IP-Symcon-5-1-%28Stable%29-Changelog)
 [![StyleCI](https://styleci.io/repos/34275278/shield?style=flat)](https://styleci.io/repos/34275278)  
 
-# IPSHomeMaticExtended
-Erweitert IPS um die native Unterstützung:  
+# Symcon-Modul: HomeMaticExtended
+Erweitert IPS um die native Unterstützung von:  
 
 * Systemvariablen der CCU
 * Programmen auf der CCU
-* Summenzähler aller Typen von Verbrauchsmesser
+* Summenzähler aller Typen von Verbrauchsmessern
 * Display Status-Anzeige (Dis-WM55)
 * ePaper Status-Anzeige (Dis-EP-WM55)
 * HomeMaticScript
@@ -37,11 +37,9 @@ Erweitert IPS um die native Unterstützung:
    Abfragen von System- und Alarmvariablen inkl. Profilen und Werten von der CCU.  
    Schreiben von Werten der Systemvariablen zur CCU.  
    Standard Actionhandler für die Bedienung der System- und Alarmvariablen aus dem IPS-Webfront.  
-   Die Alarmvariablen werden erst ab IPS 4.3 untersützt.  
 
 ### [HomeMatic Powermeter:](PowerMeter/)  
    Abfragen des Summenzählers der Geräte mit Leistungsmessung aus der CCU.  
-   Ab IPS 4.3 werden alle Geräte unterstützt, bei IPS 3.x nur Geräte mit dem Datenpunk 'ENERGY_COUNTER'.  
 
 ### [HomeMatic Programme:](Programme/):  
    Abfragen der auf der CCU vorhandenen HM-Programme.  
@@ -57,31 +55,25 @@ Erweitert IPS um die native Unterstützung:
    Unterstützt mehrseite Anzeigen und das durchblättern per Tastendruck.  
    Ausführen von benutzerspezifischen Aktionen, auch in Abhängigkeit der angezeigten Seite.  
 
-### [HomeMatic Dis-EP-WM55:](ePaperStatusAnzeige/) (ab IPS 4.3)  
+### [HomeMatic Dis-EP-WM55:](ePaperStatusAnzeige/)  
    Hier handelt es sich um eine Instanz, welche die Verwendung des ePaper Statusdisplays im 55er-Rahmen vereinfachen soll.  
    Über spezielle PHP-Befehle ist es möglich das Display anzusteuern.  
    
-### [HomeMatic RF-Interface Splitter:](RFInterfaceSplitter/) (ab IPS 4.3)  
+### [HomeMatic RF-Interface Splitter:](RFInterfaceSplitter/)  
    Auslesen der Informationen zu jedem Funk-Interface der CCU.
 
-### [HomeMatic RF-Interface:](RFInterface/) (ab IPS 4.3)  
+### [HomeMatic RF-Interface:](RFInterface/)  
    Bereitstellen der Informationen zu den Funk-Interfaces innerhalb von IPS.
 
-### [HomeMatic WR-Interface:](WRInterface/) (ab IPS 4.3)  
+### [HomeMatic WR-Interface:](WRInterface/)  
    Bereitstellen der Informationen zu dem Wired-Interface innerhalb von IPS.
 
-### Besonderheiten
-   XML-API-Patch wird nicht benötigt.  
-   Unterstützung von mehreren CCUs.  
-   Einfache Einrichtung und Handhabung.  
-   PHP-Befehle entsprechen dem vorhandenen Standard von IPS.  
- 
 ## 2. Voraussetzungen
 
-   Funktionsfähige CCU1 und/oder CCU2, welche schon mit einem HomeMatic Socket in IPS eingerichtet ist.  
+   Funktionsfähige CCU1, CCU2 oder CCU3, welche schon mit einem HomeMatic Socket in IPS eingerichtet ist.  
    In der CCU muß die Firewall entsprechend eingerichtet sein, das IPS auf die 'Remote HomeMatic-Script API' der CCU zugreifen kann.  
 
-    Einstellungen -> Systemsteuerung -> Firewall
+    Einstellungen -> Systemsteuerung -> Firewall konfigurieren
 
    Bei 'Remote HomeMatic-Script API' muß entweder 'Vollzugriff' oder 'Eingeschränkt' eingestellt sein.
    Bei 'Eingeschränkt' ist dann unter 'IP-Adressen für eingeschränkten Zugriff' euer LAN / IPS-PC einzugeben.  
@@ -93,28 +85,15 @@ Erweitert IPS um die native Unterstützung:
 
 ## 3. Software-Installation
 
-### IPS 3.x  
-        Kopieren von der HMSysVar.dll in das Unterverzeichniss 'modules' unterhalb des IP-Symcon Installationsverzeichnisses.  
-        Der Ordner 'modules' muss u.U. manuell angelegt werden.
-        Beispiel: 'C:\\IP-Symcon\\modules'  
-        IPS-Dienst Neustarten.  
-        Die Version für IPS 3.x wird nicht mehr aktiv gepflegt.  
-
-### IPS 4.x
-        Die Version für IPS 4.x wird nicht mehr aktiv gepflegt.  
-        Über das 'Module-Control' folgende URL hinzufügen:  
-        `git://github.com/Nall-chan/IPSHomematicExtended.git`  
-        Zweig 'IPS4' auswählen.  
-
-### IPS 5.0  oder neuer
-        Über das 'Module-Control' folgende URL hinzufügen:  
-        `git://github.com/Nall-chan/IPSHomematicExtended.git`  
+**IPS 5.1:**  
+   Bei privater Nutzung:
+     Über den 'Module-Store' in IPS.  
+   **Bei kommerzieller Nutzung (z.B. als Errichter oder Integrator) wenden Sie sich bitte an den Autor.**  
 
 ## 4. Einrichten der Instanzen in IP-Symcon
 
   Ist direkt in der Dokumentation der jeweiligen Module beschrieben.  
   Die Module der Geräte sind im Diaog 'Instanz hinzufügen' unter dem Hersteller 'HomeMatic' zu finden.  
-  **Bei kommerzieller Nutzung (z.B. als Errichter oder Integrator) wenden Sie sich bitte an den Autor.**  
 
 ![Instanzen](docs/HMExtendedInstanzen.png)  
 
@@ -137,6 +116,9 @@ Erweitert IPS um die native Unterstützung:
 
 
 ### 2. Changlog
+
+Version 3.00:  
+ Release für IPS 5.1 und den Module-Store   
 
 Version 2.80:
  Neu: Referenzen werden in Symcon registriert.  

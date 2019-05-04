@@ -10,9 +10,9 @@ declare(strict_types = 1);
  * @author        Michael Tröger <micha@nall-chan.net>
  * @copyright     2019 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
- * @version       2.60
+ * @version       3.00
  */
-require_once(__DIR__ . "/../libs/HMBase.php");  // HMBase Klasse
+require_once(__DIR__ . '/../libs/HMBase.php');  // HMBase Klasse
 
 /**
  * HomeMaticRFInterfaceSplitter ist die Klasse für das IPS-Modul 'HomeMatic RFInterface-Splitter'.
@@ -29,9 +29,9 @@ class HomeMaticRFInterfaceSplitter extends HMBase
     {
         parent::Create();
         $this->RegisterHMPropertys('XXX9999994');
-        $this->RegisterPropertyBoolean("EmulateStatus", false);
-        $this->RegisterPropertyInteger("Interval", 0);
-        $this->RegisterTimer("ReadRFInterfaces", 0, '@HM_ReadRFInterfaces($_IPS[\'TARGET\']);');
+        $this->RegisterPropertyBoolean('EmulateStatus', false);
+        $this->RegisterPropertyInteger('Interval', 0);
+        $this->RegisterTimer('ReadRFInterfaces', 0, '@HM_ReadRFInterfaces($_IPS[\'TARGET\']);');
     }
 
     /**
@@ -42,19 +42,19 @@ class HomeMaticRFInterfaceSplitter extends HMBase
     public function ApplyChanges()
     {
         parent::ApplyChanges();
-        $this->SetReceiveDataFilter(".*9999999999.*");
+        $this->SetReceiveDataFilter('.*9999999999.*');
         if (IPS_GetKernelRunlevel() <> KR_READY) {
             return;
         }
 
         if ($this->CheckConfig()) {
-            if ($this->ReadPropertyInteger("Interval") >= 5) {
-                $this->SetTimerInterval("ReadRFInterfaces", $this->ReadPropertyInteger("Interval") * 1000);
+            if ($this->ReadPropertyInteger('Interval') >= 5) {
+                $this->SetTimerInterval('ReadRFInterfaces', $this->ReadPropertyInteger('Interval') * 1000);
             } else {
-                $this->SetTimerInterval("ReadRFInterfaces", 0);
+                $this->SetTimerInterval('ReadRFInterfaces', 0);
             }
         } else {
-            $this->SetTimerInterval("ReadRFInterfaces", 0);
+            $this->SetTimerInterval('ReadRFInterfaces', 0);
         }
 
 
@@ -88,7 +88,7 @@ class HomeMaticRFInterfaceSplitter extends HMBase
         if ($State == IS_ACTIVE) {
             $this->ApplyChanges();
         } else {
-            $this->SetTimerInterval("ReadRFInterfaces", 0);
+            $this->SetTimerInterval('ReadRFInterfaces', 0);
         }
     }
 
@@ -114,7 +114,7 @@ class HomeMaticRFInterfaceSplitter extends HMBase
      */
     private function CheckConfig()
     {
-        $Interval = $this->ReadPropertyInteger("Interval");
+        $Interval = $this->ReadPropertyInteger('Interval');
         if ($Interval < 0) {
             $this->SetStatus(IS_EBASE + 2);
             return false;
@@ -143,31 +143,36 @@ class HomeMaticRFInterfaceSplitter extends HMBase
     private function GetInterfaces()
     {
         if (!$this->HasActiveParent()) {
-            trigger_error($this->Translate("Instance has no active parent instance!"), E_USER_NOTICE);
-            return array();
+            trigger_error($this->Translate('Instance has no active parent instance!'), E_USER_NOTICE);
+            return [];
         }
-        $ParentId = $this->ParentId;
-        $Protocol = array();
-        if (IPS_GetProperty($ParentId, "RFOpen") === true) {
+        $ParentId = $this->ParentID;
+        $Protocol = [];
+        if (IPS_GetProperty($ParentId, 'RFOpen') === true) {
             $Protocol[] = 0;
         }
-        if (IPS_GetProperty($ParentId, "IPOpen") === true) {
+        if (IPS_GetProperty($ParentId, 'IPOpen') === true) {
             $Protocol[] = 2;
         }
 
-        $data = array();
-        $ParentData = array(
-            "DataID"     => "{75B6B237-A7B0-46B9-BBCE-8DF0CFE6FA52}",
-            "Protocol"   => 0,
-            "MethodName" => "listBidcosInterfaces",
-            "WaitTime"   => 5000,
-            "Data"       => $data
-        );
-        $ret = array();
+        $data = [];
+        $ParentData = [
+            'DataID'     => '{75B6B237-A7B0-46B9-BBCE-8DF0CFE6FA52}',
+            'Protocol'   => 0,
+            'MethodName' => 'listBidcosInterfaces',
+            'WaitTime'   => 5000,
+            'Data'       => $data
+            ];
+        $ret = [];
         foreach ($Protocol as $ProtocolId) {
-            $ParentData["Protocol"] = $ProtocolId;
+            $ParentData['Protocol'] = $ProtocolId;
             $JSON = json_encode($ParentData);
             $ResultJSON = @$this->SendDataToParent($JSON);
+            if ($ResultJSON == false) {
+                trigger_error($this->Translate('Error on read interfaces:') . $ProtocolId, E_USER_NOTICE);
+                $this->SendDebug('Error', '', 0);
+                continue;
+            }
             $Result = @json_decode($ResultJSON);
             if (($Result === false) or is_null($Result)) {
                 trigger_error($this->Translate('Error on read interfaces:') . $ProtocolId, E_USER_NOTICE);
@@ -188,9 +193,9 @@ class HomeMaticRFInterfaceSplitter extends HMBase
      */
     public function CreateAllRFInstances()
     {
-        $DevicesIDs = IPS_GetInstanceListByModuleID("{36549B96-FA11-4651-8662-F310EEEC5C7D}");
-        $CreatedDevices = array();
-        $KnownDevices = array();
+        $DevicesIDs = IPS_GetInstanceListByModuleID('{36549B96-FA11-4651-8662-F310EEEC5C7D}');
+        $CreatedDevices = [];
+        $KnownDevices = [];
         foreach ($DevicesIDs as $Device) {
             $KnownDevices[] = IPS_GetProperty($Device, 'Address');
         }
@@ -203,7 +208,7 @@ class HomeMaticRFInterfaceSplitter extends HMBase
                 if (in_array($Interface->ADDRESS, $KnownDevices)) {
                     continue;
                 }
-                $NewDevice = IPS_CreateInstance("{36549B96-FA11-4651-8662-F310EEEC5C7D}");
+                $NewDevice = IPS_CreateInstance('{36549B96-FA11-4651-8662-F310EEEC5C7D}');
                 if (property_exists($Interface, 'TYPE')) {
                     IPS_SetName($NewDevice, $Interface->TYPE);
                 } else {
@@ -252,8 +257,8 @@ class HomeMaticRFInterfaceSplitter extends HMBase
                 continue;
             }
             foreach ($Protocol as $InterfaceIndex => $Interface) {
-                $this->SendDebug("Proto" . $ProtocolID . " If" . $InterfaceIndex, $Interface, 0);
-                $Interface->DataID = "{E2966A08-BCE1-4E76-8C4B-7E0136244E1B}";
+                $this->SendDebug('Proto' . $ProtocolID . ' If' . $InterfaceIndex, $Interface, 0);
+                $Interface->DataID = '{E2966A08-BCE1-4E76-8C4B-7E0136244E1B}';
                 $Data = json_encode($Interface);
                 $this->SendDataToChildren($Data);
                 $ret = true;
@@ -261,6 +266,7 @@ class HomeMaticRFInterfaceSplitter extends HMBase
         }
         return $ret;
     }
+
 }
 
 /** @} */

@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 /**
  * @addtogroup homematicextended
  * @{
@@ -10,10 +10,9 @@ declare(strict_types = 1);
  * @author        Michael Tröger <micha@nall-chan.net>
  * @copyright     2019 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
- * @version       2.60
+ * @version       3.00
  */
-require_once __DIR__ . '/../libs/VariableProfileHelper.php';
-require_once(__DIR__ . "/../libs/HMBase.php");  // HMBase Klasse
+require_once(__DIR__ . '/../libs/HMBase.php');  // HMBase Klasse
 
 /**
  * HomeMaticProgramme ist die Klasse für das IPS-Modul 'HomeMatic Programme'.
@@ -21,8 +20,6 @@ require_once(__DIR__ . "/../libs/HMBase.php");  // HMBase Klasse
  */
 class HomeMaticProgramme extends HMBase
 {
-    use DebugHelper,
-        VariableProfileHelper;
     /**
      * Interne Funktion des SDK.
      *
@@ -32,7 +29,7 @@ class HomeMaticProgramme extends HMBase
     {
         parent::Create();
         $this->RegisterHMPropertys('XXX9999998');
-        $this->RegisterPropertyBoolean("EmulateStatus", false);
+        $this->RegisterPropertyBoolean('EmulateStatus', false);
     }
 
     /**
@@ -57,7 +54,7 @@ class HomeMaticProgramme extends HMBase
     public function ApplyChanges()
     {
         parent::ApplyChanges();
-        $this->SetReceiveDataFilter(".*9999999999.*");
+        $this->SetReceiveDataFilter('.*9999999999.*');
 
         if (!IPS_VariableProfileExists('Execute.HM')) {
             IPS_CreateVariableProfile('Execute.HM', 1);
@@ -126,10 +123,10 @@ class HomeMaticProgramme extends HMBase
     private function ReadCCUPrograms()
     {
         if (!$this->HasActiveParent()) {
-            throw new Exception("Instance has no active parent instance!", E_USER_NOTICE);
+            throw new Exception('Instance has no active parent instance!', E_USER_NOTICE);
         }
         if ($this->HMAddress == '') {
-            throw new Exception("Instance has no active parent instance!", E_USER_NOTICE);
+            $this->RegisterParent();
         }
         $url = 'SysPrg.exe';
         $HMScript = 'SysPrgs=dom.GetObject(ID_PROGRAMS).EnumUsedIDs();';
@@ -138,7 +135,7 @@ class HomeMaticProgramme extends HMBase
             $xml = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
         } catch (Exception $exc) {
             $this->SendDebug('SysPrg', $exc->getMessage(), 0);
-            throw new Exception("Error on read all CCU-Programs.", E_USER_NOTICE);
+            throw new Exception('Error on read all CCU-Programs.', E_USER_NOTICE);
         }
 
         $Result = true;
@@ -151,7 +148,7 @@ class HomeMaticProgramme extends HMBase
             } catch (Exception $exc) {
                 $Result = false;
                 $this->SendDebug($SysPrg, $exc->getMessage(), 0);
-                trigger_error(sprintf($this->Translate("Error on read info of CCU-Program %s."), (string) $SysPrg), E_USER_NOTICE);
+                trigger_error(sprintf($this->Translate('Error on read info of CCU-Program %s.'), (string) $SysPrg), E_USER_NOTICE);
                 continue;
             }
 
@@ -179,10 +176,10 @@ class HomeMaticProgramme extends HMBase
     private function StartCCUProgram($Ident)
     {
         if (!$this->HasActiveParent()) {
-            throw new Exception("Instance has no active parent instance!", E_USER_NOTICE);
+            throw new Exception('Instance has no active parent instance!', E_USER_NOTICE);
         }
         if ($this->HMAddress == '') {
-            throw new Exception("Instance has no active parent instance!", E_USER_NOTICE);
+            $this->RegisterParent();
         }
         $url = 'SysPrg.exe';
         $HMScript = 'State=dom.GetObject(' . $Ident . ').ProgramExecute();';
@@ -191,7 +188,7 @@ class HomeMaticProgramme extends HMBase
             $xml = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
         } catch (Exception $exc) {
             $this->SendDebug($Ident, $exc->getMessage(), 0);
-            throw new Exception("Error on start CCU-Program.", E_USER_NOTICE);
+            throw new Exception('Error on start CCU-Program.', E_USER_NOTICE);
         }
 
         $this->SendDebug('Result', (string) $xml->State, 0);
@@ -199,7 +196,7 @@ class HomeMaticProgramme extends HMBase
             $this->SetValue($Ident, 0);
             return true;
         } else {
-            throw new Exception("Error on start CCU-Program", E_USER_NOTICE);
+            throw new Exception('Error on start CCU-Program', E_USER_NOTICE);
         }
     }
 
@@ -211,6 +208,9 @@ class HomeMaticProgramme extends HMBase
      */
     public function RequestAction($Ident, $Value)
     {
+        if (parent::RequestAction($Ident, $Value)) {
+            return;
+        }
         try {
             $this->StartCCUProgram($Ident);
         } catch (Exception $exc) {
@@ -252,6 +252,7 @@ class HomeMaticProgramme extends HMBase
             return false;
         }
     }
+
 }
 
 /** @} */
