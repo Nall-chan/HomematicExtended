@@ -5,26 +5,26 @@ declare(strict_types=1);
  * @addtogroup homematicextended
  * @{
  *
- * @package       HomematicExtended
  * @file          module.php
+ *
  * @author        Michael Tröger <micha@nall-chan.net>
  * @copyright     2019 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
+ *
  * @version       3.00
  */
-require_once(__DIR__ . '/../libs/HMBase.php');  // HMBase Klasse
+require_once __DIR__ . '/../libs/HMBase.php';  // HMBase Klasse
 
 /**
  * HomeMaticRFInterface ist die Klasse für das IPS-Modul 'HomeMatic RF-Interface'.
- * Erweitert IPSModule
+ * Erweitert IPSModule.
  */
 class HomeMaticRFInterface extends IPSModule
 {
     use HMExtended\DebugHelper;
+
     /**
      * Interne Funktion des SDK.
-     *
-     * @access public
      */
     public function Create()
     {
@@ -35,8 +35,6 @@ class HomeMaticRFInterface extends IPSModule
 
     /**
      * Interne Funktion des SDK.
-     *
-     * @access public
      */
     public function ApplyChanges()
     {
@@ -52,11 +50,10 @@ class HomeMaticRFInterface extends IPSModule
         }
     }
 
-    ################## Datenaustausch
+    //################# Datenaustausch
+
     /**
      * Interne Funktion des SDK.
-     *
-     * @access public
      */
     public function ReceiveData($JSONString)
     {
@@ -98,11 +95,11 @@ class HomeMaticRFInterface extends IPSModule
                 $this->SetValue($Ident, $Value);
                 continue;
             }
-            if (GetValue($vid) <> $Value) {
+            if (GetValue($vid) != $Value) {
                 $this->SetValue($Ident, $Value);
             }
         }
     }
 }
 
-/** @} */
+/* @} */

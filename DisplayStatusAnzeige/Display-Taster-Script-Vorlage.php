@@ -1,6 +1,7 @@
 <?php
 
-### GRUNDFUNKTION
+declare(strict_types=1);
+//## GRUNDFUNKTION
 /*
   Beispiel für das Zusammenstellern der Daten für die Dis-WM55 Instanz.
   Das Script wird als "Display-Script" in der dazugehörigen Dis-WM55 Instanze eingetragen.
@@ -40,7 +41,7 @@
   > => Pfeil nach oben ("V" im Kopfstand)
  */
 
-### Konstanten
+//## Konstanten
 //--------------------------------
 // Definition der Werte für die Icons
 // 0x80 AUS                Icon_on
@@ -57,20 +58,19 @@
 // 0x8B Signal rot         Icon_red
 //      ohne Icon          Icon_no
 
-define("Icon_on", 0x80);
-define("Icon_off", 0x81);
-define("Icon_open", 0x82);
-define("Icon_closed", 0x83);
-define("Icon_error", 0x84);
-define("Icon_ok", 0x85);
-define("Icon_information", 0x86);
-define("Icon_message", 0x87);
-define("Icon_service", 0x88);
-define("Icon_signal_green", 0x89);
-define("Icon_signal_yellow", 0x8A);
-define("Icon_signal_red", 0x8B);
-define("Icon_no", 0);
-
+define('Icon_on', 0x80);
+define('Icon_off', 0x81);
+define('Icon_open', 0x82);
+define('Icon_closed', 0x83);
+define('Icon_error', 0x84);
+define('Icon_ok', 0x85);
+define('Icon_information', 0x86);
+define('Icon_message', 0x87);
+define('Icon_service', 0x88);
+define('Icon_signal_green', 0x89);
+define('Icon_signal_yellow', 0x8A);
+define('Icon_signal_red', 0x8B);
+define('Icon_no', 0);
 
 // Definition der Werte für die Farben
 // 0x80 weiss              Color_white
@@ -80,14 +80,14 @@ define("Icon_no", 0);
 // 0x84 grün               color_green
 // 0x85 blau               color_blue
 
-define("Color_white", 0x82);
-define("Color_red", 0x81);
-define("Color_orange", 0x82);
-define("Color_yellow", 0x83);
-define("Color_green", 0x84);
-define("Color_blue", 0x85);
+define('Color_white', 0x82);
+define('Color_red', 0x81);
+define('Color_orange', 0x82);
+define('Color_yellow', 0x83);
+define('Color_green', 0x84);
+define('Color_blue', 0x85);
 
-### VERWENDUNG VON $_IPS
+//## VERWENDUNG VON $_IPS
 
 /*
   Die Dis-WM55 Instanz stellt über die IPS-Systemvariable $_IPS folgende Daten zur Verfügung:
@@ -117,7 +117,7 @@ define("Color_blue", 0x85);
 
  */
 
-if ($_IPS['SENDER'] <> 'HMDisWM55') {
+if ($_IPS['SENDER'] != 'HMDisWM55') {
     echo 'Dieses Skript wird automatisch über die Homematic Dis-WM55 Instanz ausgeführt';
     return;
 }
@@ -126,73 +126,72 @@ if (($_IPS['ACTION'] == 'UP') or ($_IPS['ACTION'] == 'DOWN')) {
     switch ($_IPS['PAGE']) {                                  // Anzeige pro Seite
         case 1:  // Seite 1
 
-            $display_line[1] = array('Text'  => "SEITE 1", // Text  Seite 1 Zeile 1
-                'Icon'  => Icon_open, // Icon  Seite 1 Zeile 1
-                'Color' => Color_red);                      // Farbe Seite 1 Zeile 1
+            $display_line[1] = ['Text'  => 'SEITE 1', // Text  Seite 1 Zeile 1
+                'Icon'                  => Icon_open, // Icon  Seite 1 Zeile 1
+                'Color'                 => Color_red];                      // Farbe Seite 1 Zeile 1
 
-            $display_line[2] = array('Text'  => "Zeile2",
-                'Icon'  => Icon_no,
-                'Color' => Color_red);
+            $display_line[2] = ['Text'  => 'Zeile2',
+                'Icon'                  => Icon_no,
+                'Color'                 => Color_red];
 
-            $display_line[3] = array('Text'  => "Zeile3",
-                'Icon'  => Icon_open,
-                'Color' => Color_orange);
+            $display_line[3] = ['Text'  => 'Zeile3',
+                'Icon'                  => Icon_open,
+                'Color'                 => Color_orange];
 
-            $display_line[4] = array('Text'  => "Zeile4",
-                'Icon'  => Icon_no,
-                'Color' => Color_orange);
+            $display_line[4] = ['Text'  => 'Zeile4',
+                'Icon'                  => Icon_no,
+                'Color'                 => Color_orange];
 
-            $display_line[5] = array('Text'  => "Zeile5",
-                'Icon'  => Icon_closed,
-                'Color' => Color_green);
+            $display_line[5] = ['Text'  => 'Zeile5',
+                'Icon'                  => Icon_closed,
+                'Color'                 => Color_green];
 
-            $display_line[6] = array('Text'  => "Zeile6",
-                'Icon'  => Icon_no,
-                'Color' => Color_green);
+            $display_line[6] = ['Text'  => 'Zeile6',
+                'Icon'                  => Icon_no,
+                'Color'                 => Color_green];
             break;
         case 2:  // Seite 2
-            $display_line[1] = array('Text' => ":",
-                'Icon' => Icon_no);
+            $display_line[1] = ['Text' => ':',
+                'Icon'                 => Icon_no];
 
-            $display_line[2] = array('Text'  => "SEITE 2",
-                'Icon'  => Icon_open,
-                'Color' => Color_orange);
+            $display_line[2] = ['Text'  => 'SEITE 2',
+                'Icon'                  => Icon_open,
+                'Color'                 => Color_orange];
 
-            $display_line[3] = array('Text' => "",
-                'Icon' => Icon_no);
+            $display_line[3] = ['Text' => '',
+                'Icon'                 => Icon_no];
 
-            $display_line[4] = array('Text'  => "Uhrzeit",
-                'Icon'  => Icon_no,
-                'Color' => Color_white);
+            $display_line[4] = ['Text'  => 'Uhrzeit',
+                'Icon'                  => Icon_no,
+                'Color'                 => Color_white];
 
+            $display_line[5] = ['Text'  => date('H:i:s', time()), // Uhrzeit
+                'Icon'                  => Icon_no,
+                'Color'                 => Color_white];
 
-            $display_line[5] = array('Text'  => date("H:i:s", time()), // Uhrzeit
-                'Icon'  => Icon_no,
-                'Color' => Color_white);
-
-            $display_line[6] = array('Text' => "",
-                'Icon' => Icon_no);
+            $display_line[6] = ['Text' => '',
+                'Icon'                 => Icon_no];
 
             break;
         case 3:  // Seite 3
-            $display_line[1] = array('Text' => "",
-                'Icon' => Icon_no);
+            $display_line[1] = ['Text' => '',
+                'Icon'                 => Icon_no];
 
-            $display_line[4] = array('Text'  => "SEITE 3",
-                'Icon'  => Icon_open,
-                'Color' => Color_orange);
+            $display_line[4] = ['Text'  => 'SEITE 3',
+                'Icon'                  => Icon_open,
+                'Color'                 => Color_orange];
 
-            $display_line[2] = array('Text' => "", // GetValueFormatted(12345 /*[Objekt #12345 existiert nicht]*/);
-                'Icon' => Icon_no);
+            $display_line[2] = ['Text' => '', // GetValueFormatted(12345 /*[Objekt #12345 existiert nicht]*/);
+                'Icon'                 => Icon_no];
 
-            $display_line[3] = array('Text' => "",
-                'Icon' => Icon_no);
+            $display_line[3] = ['Text' => '',
+                'Icon'                 => Icon_no];
 
-            $display_line[5] = array('Text' => "",
-                'Icon' => Icon_no);
+            $display_line[5] = ['Text' => '',
+                'Icon'                 => Icon_no];
 
-            $display_line[6] = array('Text' => "",
-                'Icon' => Icon_no);
+            $display_line[6] = ['Text' => '',
+                'Icon'                 => Icon_no];
 
             break;
     }
@@ -200,62 +199,62 @@ if (($_IPS['ACTION'] == 'UP') or ($_IPS['ACTION'] == 'DOWN')) {
 
 if ($_IPS['ACTION'] == 'ActionUP') {                              // Aktion & Anzeige bei ActionUP
     // Hier kann auch wie oben bei 'PAGE' noch je nach Seite unterschieden werden !
-    $display_line[1] = array('Text'  => hex_encode("Führe"),
-        'Icon'  => Icon_no,
-        'Color' => Color_orange);
+    $display_line[1] = ['Text'  => hex_encode('Führe'),
+        'Icon'                  => Icon_no,
+        'Color'                 => Color_orange];
 
-    $display_line[2] = array('Text'  => "Aktion",
-        'Icon'  => Icon_no,
-        'Color' => Color_orange);
+    $display_line[2] = ['Text'  => 'Aktion',
+        'Icon'                  => Icon_no,
+        'Color'                 => Color_orange];
 
-    $display_line[3] = array('Text'  => "OBEN ",
-        'Icon'  => Icon_no,
-        'Color' => Color_orange);
+    $display_line[3] = ['Text'  => 'OBEN ',
+        'Icon'                  => Icon_no,
+        'Color'                 => Color_orange];
 
-    $display_line[4] = array('Text'  => "Seite " . $_IPS['PAGE'],
-        'Icon'  => Icon_no,
-        'Color' => Color_orange);
+    $display_line[4] = ['Text'  => 'Seite ' . $_IPS['PAGE'],
+        'Icon'                  => Icon_no,
+        'Color'                 => Color_orange];
 
-    $display_line[5] = array('Text'  => "aus",
-        'Icon'  => Icon_no,
-        'Color' => Color_orange);
+    $display_line[5] = ['Text'  => 'aus',
+        'Icon'                  => Icon_no,
+        'Color'                 => Color_orange];
 
-    $display_line[6] = array('Text' => "",
-        'Icon' => Icon_no);
+    $display_line[6] = ['Text' => '',
+        'Icon'                 => Icon_no];
 }
 
 if ($_IPS['ACTION'] == 'ActionDOWN') {                             // Aktion & Anzeige bei ActionDOWN
     // Hier kann auch wie oben bei 'PAGE' noch je nach Seite unterschieden werden !
-    $display_line[1] = array('Text'  => hex_encode("Führe"),
-        'Icon'  => Icon_no,
-        'Color' => Color_orange);
+    $display_line[1] = ['Text'  => hex_encode('Führe'),
+        'Icon'                  => Icon_no,
+        'Color'                 => Color_orange];
 
-    $display_line[2] = array('Text'  => "Aktion",
-        'Icon'  => Icon_no,
-        'Color' => Color_orange);
+    $display_line[2] = ['Text'  => 'Aktion',
+        'Icon'                  => Icon_no,
+        'Color'                 => Color_orange];
 
-    $display_line[3] = array('Text'  => "UNTEN",
-        'Icon'  => Icon_no,
-        'Color' => Color_orange);
+    $display_line[3] = ['Text'  => 'UNTEN',
+        'Icon'                  => Icon_no,
+        'Color'                 => Color_orange];
 
-    $display_line[4] = array('Text'  => "Seite " . $_IPS['PAGE'],
-        'Icon'  => Icon_no,
-        'Color' => Color_orange);
+    $display_line[4] = ['Text'  => 'Seite ' . $_IPS['PAGE'],
+        'Icon'                  => Icon_no,
+        'Color'                 => Color_orange];
 
-    $display_line[5] = array('Text'  => "aus",
-        'Icon'  => Icon_no,
-        'Color' => Color_orange);
+    $display_line[5] = ['Text'  => 'aus',
+        'Icon'                  => Icon_no,
+        'Color'                 => Color_orange];
 
-    $display_line[6] = array('Text' => "",
-        'Icon' => Icon_no);
+    $display_line[6] = ['Text' => '',
+        'Icon'                 => Icon_no];
 }
 
 $data = json_encode($display_line);
 echo $data; //Daten zurückgeben an Dis-WM55-Instanz
 function hex_encode($string)
 {
-    $umlaut = array("Ä", "Ö", "Ü", "ä", "ö", "ü", "ß", ":");
-    $hex_neu = array(chr(0x5b), chr(0x23), chr(0x24), chr(0x7b), chr(0x7c), chr(0x7d), chr(0x5f), chr(0x3a));
+    $umlaut = ['Ä', 'Ö', 'Ü', 'ä', 'ö', 'ü', 'ß', ':'];
+    $hex_neu = [chr(0x5b), chr(0x23), chr(0x24), chr(0x7b), chr(0x7c), chr(0x7d), chr(0x5f), chr(0x3a)];
     $return = str_replace($umlaut, $hex_neu, $string);
     return $return;
 }

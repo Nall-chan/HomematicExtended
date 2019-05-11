@@ -1,29 +1,28 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 /**
  * @addtogroup homematicextended
  * @{
  *
- * @package       HomematicExtended
  * @file          module.php
+ *
  * @author        Michael Tröger <micha@nall-chan.net>
  * @copyright     2019 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
+ *
  * @version       3.00
  */
-require_once(__DIR__ . '/../libs/HMBase.php');  // HMBase Klasse
+require_once __DIR__ . '/../libs/HMBase.php';  // HMBase Klasse
 
 /**
  * HomeMaticRFInterfaceSplitter ist die Klasse für das IPS-Modul 'HomeMatic RFInterface-Splitter'.
- * Erweitert HMBase
+ * Erweitert HMBase.
  */
 class HomeMaticRFInterfaceSplitter extends HMBase
 {
     /**
      * Interne Funktion des SDK.
-     *
-     * @access public
      */
     public function Create()
     {
@@ -36,14 +35,12 @@ class HomeMaticRFInterfaceSplitter extends HMBase
 
     /**
      * Interne Funktion des SDK.
-     *
-     * @access public
      */
     public function ApplyChanges()
     {
         parent::ApplyChanges();
         $this->SetReceiveDataFilter('.*9999999999.*');
-        if (IPS_GetKernelRunlevel() <> KR_READY) {
+        if (IPS_GetKernelRunlevel() != KR_READY) {
             return;
         }
 
@@ -57,10 +54,10 @@ class HomeMaticRFInterfaceSplitter extends HMBase
             $this->SetTimerInterval('ReadRFInterfaces', 0);
         }
 
-
         if (!$this->HasActiveParent()) {
             return;
         }
+
         try {
             $this->ReadRFInterfaces();
         } catch (Exception $exc) {
@@ -68,11 +65,10 @@ class HomeMaticRFInterfaceSplitter extends HMBase
         }
     }
 
-    ################## protected
+    //################# protected
+
     /**
      * Wird ausgeführt wenn der Kernel hochgefahren wurde.
-     *
-     * @access protected
      */
     protected function KernelReady()
     {
@@ -81,7 +77,6 @@ class HomeMaticRFInterfaceSplitter extends HMBase
 
     /**
      * Wird ausgeführt wenn sich der Status vom Parent ändert.
-     * @access protected
      */
     protected function IOChangeState($State)
     {
@@ -95,7 +90,6 @@ class HomeMaticRFInterfaceSplitter extends HMBase
     /**
      * Registriert Nachrichten des aktuellen Parent und ließt die Adresse der CCU aus dem Parent.
      *
-     * @access protected
      * @return int ID des Parent.
      */
     protected function RegisterParent()
@@ -105,12 +99,12 @@ class HomeMaticRFInterfaceSplitter extends HMBase
         return $ParentId;
     }
 
-    ################## PRIVATE
+    //################# PRIVATE
+
     /**
      * Prüft die Konfiguration und setzt den Status der Instanz.
      *
-     * @access privat
-     * @return boolean True wenn Konfig ok, sonst false.
+     * @return bool True wenn Konfig ok, sonst false.
      */
     private function CheckConfig()
     {
@@ -137,7 +131,6 @@ class HomeMaticRFInterfaceSplitter extends HMBase
     /**
      * Liest alle Daten der RF-Interfaces aus der CCU aus.
      *
-     * @access privat
      * @return array Ein Array mit den Daten der Interfaces.
      */
     private function GetInterfaces()
@@ -183,12 +176,12 @@ class HomeMaticRFInterfaceSplitter extends HMBase
         return $ret;
     }
 
-    ################## PUBLIC
+    //################# PUBLIC
+
     /**
      * IPS-Instanz-Funktion 'HM_CreateAllRFInstances'.
      * Erzeugt alle Instanzen vom Typ RF-Interface, wenn diese noch nicht angelegt sind.
      *
-     * @access public
      * @return array Array von IPS-IDs von den angelegten Instanzen.
      */
     public function CreateAllRFInstances()
@@ -225,7 +218,7 @@ class HomeMaticRFInterfaceSplitter extends HMBase
                     }
                     IPS_SetName($NewDevice, $Name . ' - Interface ' . $InterfaceIndex);
                 }
-                if (IPS_GetInstance($NewDevice)['ConnectionID'] <> $this->InstanceID) {
+                if (IPS_GetInstance($NewDevice)['ConnectionID'] != $this->InstanceID) {
                     @IPS_DisconnectInstance($NewDevice);
                     IPS_ConnectInstance($NewDevice, $this->InstanceID);
                 }
@@ -245,7 +238,6 @@ class HomeMaticRFInterfaceSplitter extends HMBase
      * IPS-Instanz-Funktion 'HM_ReadRFInterfaces'.
      * Liest die Daten der RF-Interfaces und versendet sie an die Childs.
      *
-     * @access public
      * @return bool True bei Erfolg, sonst false.
      */
     public function ReadRFInterfaces()
@@ -268,4 +260,4 @@ class HomeMaticRFInterfaceSplitter extends HMBase
     }
 }
 
-/** @} */
+/* @} */

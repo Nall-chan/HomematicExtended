@@ -1,7 +1,7 @@
 <?php
 
 declare(strict_types=1);
-/**
+/*
  * @addtogroup homematicextended
  * @{
  *
@@ -20,7 +20,7 @@ eval('declare(strict_types=1);namespace HMExtended {?>' . file_get_contents(__DI
 
 /**
  * HMBase ist die Basis-Klasse für alle Module welche HMScript verwenden.
- * Erweitert ipsmodule
+ * Erweitert ipsmodule.
  *
  * @property string $HMAddress Die Adresse der CCU.
  * @property int $ParentID Aktueller IO-Parent.
@@ -36,10 +36,9 @@ abstract class HMBase extends IPSModule
         \HMExtended\InstanceStatus::MessageSink as IOMessageSink;
         \HMExtended\InstanceStatus::RequestAction as IORequestAction;
     }
+
     /**
      * Interne Funktion des SDK.
-     *
-     * @access public
      */
     public function Create()
     {
@@ -50,8 +49,6 @@ abstract class HMBase extends IPSModule
 
     /**
      * Interne Funktion des SDK.
-     *
-     * @access public
      */
     public function ApplyChanges()
     {
@@ -59,7 +56,7 @@ abstract class HMBase extends IPSModule
         $this->RegisterMessage(0, IPS_KERNELSTARTED);
         $this->RegisterMessage($this->InstanceID, FM_CONNECT);
         $this->RegisterMessage($this->InstanceID, FM_DISCONNECT);
-        if (IPS_GetKernelRunlevel() <> KR_READY) {
+        if (IPS_GetKernelRunlevel() != KR_READY) {
             return;
         }
 
@@ -69,10 +66,9 @@ abstract class HMBase extends IPSModule
     /**
      * Nachrichten aus der Nachrichtenschlange verarbeiten.
      *
-     * @access public
-     * @param int $TimeStamp
-     * @param int $SenderID
-     * @param int $Message
+     * @param int       $TimeStamp
+     * @param int       $SenderID
+     * @param int       $Message
      * @param array|int $Data
      */
     public function MessageSink($TimeStamp, $SenderID, $Message, $Data)
@@ -85,22 +81,21 @@ abstract class HMBase extends IPSModule
         }
     }
 
-    ################## protected
+    //################# protected
+
     /**
      * Wird ausgeführt wenn sich der Status vom Parent ändert.
-     * @access protected
      */
     abstract protected function IOChangeState($State);
+
     /**
      * Wird ausgeführt wenn der Kernel hochgefahren wurde.
-     *
-     * @access protected
      */
     abstract protected function KernelReady();
+
     /**
      * Setzte alle Eigenschaften, welche Instanzen die mit einem Homematic-Socket verbunden sind, haben müssen.
      *
-     * @access protected
      * @param string $Address Die zu verwendene HM-Device Adresse.
      */
     protected function RegisterHMPropertys(string $Address)
@@ -117,14 +112,13 @@ abstract class HMBase extends IPSModule
     /**
      * Registriert Nachrichten des aktuellen Parent und ließt die Adresse der CCU aus dem Parent.
      *
-     * @access protected
      * @return int ID des Parent.
      */
     protected function RegisterParent()
     {
         $OldParentId = $this->ParentID;
         $ParentId = $this->IORegisterParent();
-        if ($ParentId <> $OldParentId) {
+        if ($ParentId != $OldParentId) {
             if ($ParentId > 0) {
                 $this->HMAddress = (string) IPS_GetProperty($ParentId, 'Host');
             } else {
@@ -134,7 +128,7 @@ abstract class HMBase extends IPSModule
         return $ParentId;
     }
 
-    ################## ActionHandler
+    //################# ActionHandler
     public function RequestAction($Ident, $Value)
     {
         return $this->IORequestAction($Ident, $Value);
@@ -143,15 +137,16 @@ abstract class HMBase extends IPSModule
     /**
      * Überträgt das übergeben HM-Script an die CCU und liefert das Ergebnis.
      *
-     * @access protected
-     * @param string $url Die URL auf der CCU.
+     * @param string $url      Die URL auf der CCU.
      * @param string $HMScript Das zu übertragende HM-Script.
-     * @return string Das Ergebnis von der CCU.
+     *
      * @throws Exception Wenn die CCU nicht erreicht wurde.
+     *
+     * @return string Das Ergebnis von der CCU.
      */
     protected function LoadHMScript(string $url, string $HMScript)
     {
-        if ($this->HMAddress <> '') {
+        if ($this->HMAddress != '') {
             $this->SendDebug($url, $HMScript, 0);
             $header[] = 'Accept: text/plain,text/xml,application/xml,application/xhtml+xml,text/html';
             $header[] = 'Cache-Control: max-age=0';
@@ -208,9 +203,10 @@ abstract class HMBase extends IPSModule
             return $result;
         } else {
             $this->SendDebug('Error', $this->Translate('CCU Address not set.'), 0);
+
             throw new Exception($this->Translate('CCU Address not set.'), E_USER_NOTICE);
         }
     }
 }
 
-/** @} */
+/* @} */

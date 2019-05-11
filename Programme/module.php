@@ -5,25 +5,24 @@ declare(strict_types=1);
  * @addtogroup homematicextended
  * @{
  *
- * @package       HomematicExtended
  * @file          module.php
+ *
  * @author        Michael Tröger <micha@nall-chan.net>
  * @copyright     2019 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
+ *
  * @version       3.00
  */
-require_once(__DIR__ . '/../libs/HMBase.php');  // HMBase Klasse
+require_once __DIR__ . '/../libs/HMBase.php';  // HMBase Klasse
 
 /**
  * HomeMaticProgramme ist die Klasse für das IPS-Modul 'HomeMatic Programme'.
- * Erweitert HMBase
+ * Erweitert HMBase.
  */
 class HomeMaticProgramme extends HMBase
 {
     /**
      * Interne Funktion des SDK.
-     *
-     * @access public
      */
     public function Create()
     {
@@ -34,8 +33,6 @@ class HomeMaticProgramme extends HMBase
 
     /**
      * Interne Funktion des SDK.
-     *
-     * @access public
      */
     public function Destroy()
     {
@@ -48,8 +45,6 @@ class HomeMaticProgramme extends HMBase
 
     /**
      * Interne Funktion des SDK.
-     *
-     * @access public
      */
     public function ApplyChanges()
     {
@@ -61,12 +56,13 @@ class HomeMaticProgramme extends HMBase
             IPS_SetVariableProfileAssociation('Execute.HM', 0, 'Start', '', -1);
         }
 
-        if (IPS_GetKernelRunlevel() <> KR_READY) {
+        if (IPS_GetKernelRunlevel() != KR_READY) {
             return;
         }
         if (!$this->HasActiveParent()) {
             return;
         }
+
         try {
             $this->ReadCCUPrograms();
         } catch (Exception $exc) {
@@ -74,11 +70,10 @@ class HomeMaticProgramme extends HMBase
         }
     }
 
-    ################## protected
+    //################# protected
+
     /**
      * Wird ausgeführt wenn der Kernel hochgefahren wurde.
-     *
-     * @access protected
      */
     protected function KernelReady()
     {
@@ -87,13 +82,13 @@ class HomeMaticProgramme extends HMBase
 
     /**
      * Wird ausgeführt wenn sich der Status vom Parent ändert.
-     * @access protected
      */
     protected function IOChangeState($State)
     {
         if ($State != IS_ACTIVE) {
             return;
         }
+
         try {
             $this->ReadCCUPrograms();
         } catch (Exception $exc) {
@@ -103,8 +98,6 @@ class HomeMaticProgramme extends HMBase
 
     /**
      * Registriert Nachrichten des aktuellen Parent und ließt die Adresse der CCU aus dem Parent.
-     *
-     * @access protected
      */
     protected function RegisterParent()
     {
@@ -112,13 +105,14 @@ class HomeMaticProgramme extends HMBase
         $this->SetSummary($this->HMAddress);
     }
 
-    ################## PRIVATE
+    //################# PRIVATE
+
     /**
      * Liest alle vorhandenen Programme aus der CCU aus und stellt diese als Variablen mit Aktionen da.
      *
-     * @access private
-     * @return boolean True bei Erfolg, sonst false.
      * @throws Exception Wenn CCU nicht erreicht wurde.
+     *
+     * @return bool True bei Erfolg, sonst false.
      */
     private function ReadCCUPrograms()
     {
@@ -130,11 +124,13 @@ class HomeMaticProgramme extends HMBase
         }
         $url = 'SysPrg.exe';
         $HMScript = 'SysPrgs=dom.GetObject(ID_PROGRAMS).EnumUsedIDs();';
+
         try {
             $HMScriptResult = $this->LoadHMScript($url, $HMScript);
             $xml = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
         } catch (Exception $exc) {
             $this->SendDebug('SysPrg', $exc->getMessage(), 0);
+
             throw new Exception('Error on read all CCU-Programs.', E_USER_NOTICE);
         }
 
@@ -142,6 +138,7 @@ class HomeMaticProgramme extends HMBase
         foreach (explode(chr(0x09), (string) $xml->SysPrgs) as $SysPrg) {
             $HMScript = 'Name=dom.GetObject(' . $SysPrg . ').Name();' . PHP_EOL
                     . 'Info=dom.GetObject(' . $SysPrg . ').PrgInfo();' . PHP_EOL;
+
             try {
                 $HMScriptResult = $this->LoadHMScript($url, $HMScript);
                 $varXml = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
@@ -168,10 +165,11 @@ class HomeMaticProgramme extends HMBase
     /**
      * Startet ein auf der CCU hinterlegtes Programm.
      *
-     * @access private
      * @param string $Ident Der Ident des Programmes.
-     * @return boolean True bei erfolg sonst Exception.
+     *
      * @throws Exception Wenn CCU nicht erreicht wurde oder diese eine Fehler meldet.
+     *
+     * @return bool True bei erfolg sonst Exception.
      */
     private function StartCCUProgram($Ident)
     {
@@ -183,11 +181,13 @@ class HomeMaticProgramme extends HMBase
         }
         $url = 'SysPrg.exe';
         $HMScript = 'State=dom.GetObject(' . $Ident . ').ProgramExecute();';
+
         try {
             $HMScriptResult = $this->LoadHMScript($url, $HMScript);
             $xml = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
         } catch (Exception $exc) {
             $this->SendDebug($Ident, $exc->getMessage(), 0);
+
             throw new Exception('Error on start CCU-Program.', E_USER_NOTICE);
         }
 
@@ -200,17 +200,17 @@ class HomeMaticProgramme extends HMBase
         }
     }
 
-    ################## ActionHandler
+    //################# ActionHandler
+
     /**
      * Interne Funktion des SDK.
-     *
-     * @access public
      */
     public function RequestAction($Ident, $Value)
     {
         if (parent::RequestAction($Ident, $Value)) {
             return;
         }
+
         try {
             $this->StartCCUProgram($Ident);
         } catch (Exception $exc) {
@@ -218,13 +218,13 @@ class HomeMaticProgramme extends HMBase
         }
     }
 
-    ################## PUBLIC
+    //################# PUBLIC
+
     /**
      * IPS-Instanz-Funktion 'HM_ReadPrograms'.
      * Liest die Programme aus der CCU aus.
      *
-     * @access public
-     * @return boolean True bei erfolg, sonst false.
+     * @return bool True bei erfolg, sonst false.
      */
     public function ReadPrograms()
     {
@@ -240,8 +240,7 @@ class HomeMaticProgramme extends HMBase
      * IPS-Instanz-Funktion 'HM_StartProgram'.
      * Startet ein auf der CCU hinterlegtes Programme.
      *
-     * @access public
-     * @return boolean True bei erfolg, sonst false.
+     * @return bool True bei erfolg, sonst false.
      */
     public function StartProgram(string $Parameter)
     {
@@ -254,4 +253,4 @@ class HomeMaticProgramme extends HMBase
     }
 }
 
-/** @} */
+/* @} */
