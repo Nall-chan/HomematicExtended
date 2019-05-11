@@ -1,5 +1,14 @@
 ## YAML Template.
 ---
-preset: psr2
+preset: recommended
 
-risky: false
+enabled:
+ - concat_with_spaces
+ - declare_strict_types
+ 
+disabled:
+ - trailing_comma_in_multiline_array
+ - concat_without_spaces
+ - blank_line_before_return
+ - no_useless_return
+ - simplified_null_return   

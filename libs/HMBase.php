@@ -27,14 +27,14 @@ eval('declare(strict_types=1);namespace HMExtended {?>' . file_get_contents(__DI
  */
 abstract class HMBase extends IPSModule
 {
-    use HMExtended\DebugHelper,
-        HMExtended\VariableHelper,
-        HMExtended\VariableProfileHelper,
-        HMExtended\BufferHelper,
-        HMExtended\InstanceStatus {
-        HMExtended\InstanceStatus::RegisterParent as IORegisterParent;
-        HMExtended\InstanceStatus::MessageSink as IOMessageSink;
-        HMExtended\InstanceStatus::RequestAction as IORequestAction;
+    use \HMExtended\DebugHelper,
+        \HMExtended\VariableHelper,
+        \HMExtended\VariableProfileHelper,
+        \HMExtended\BufferHelper,
+        \HMExtended\InstanceStatus {
+        \HMExtended\InstanceStatus::RegisterParent as IORegisterParent;
+        \HMExtended\InstanceStatus::MessageSink as IOMessageSink;
+        \HMExtended\InstanceStatus::RequestAction as IORequestAction;
     }
     /**
      * Interne Funktion des SDK.

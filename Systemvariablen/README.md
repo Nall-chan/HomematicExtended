@@ -59,7 +59,7 @@
 
     **Hinweis:** Über den Homematic Konfigurator in IPS kann das benötigte Homematic Device
     komfortabel angelegt werden.  
-![Doku/CCUPushSystemvariablen.png](docs/CCUPushSystemvariablen.png)  
+![CCUPushSystemvariablen](../docs/CCUPushSystemvariablen.png)  
 
 ## 2. Installation
 
