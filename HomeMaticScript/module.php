@@ -1,29 +1,28 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 /**
  * @addtogroup homematicextended
  * @{
  *
- * @package       HomematicExtended
  * @file          module.php
+ *
  * @author        Michael Tröger <micha@nall-chan.net>
  * @copyright     2019 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
+ *
  * @version       3.00
  */
-require_once(__DIR__ . '/../libs/HMBase.php');
+require_once __DIR__ . '/../libs/HMBase.php';
 
 /**
  * HomeMaticRemoteScript ist die Klasse für das IPS-Modul 'HomeMatic RemoteScript Interface'.
- * Erweitert HMBase
+ * Erweitert HMBase.
  */
 class HomeMaticRemoteScript extends HMBase
 {
     /**
      * Interne Funktion des SDK.
-     *
-     * @access public
      */
     public function Create()
     {
@@ -35,19 +34,16 @@ class HomeMaticRemoteScript extends HMBase
 
     /**
      * Interne Funktion des SDK.
-     *
-     * @access public
      */
     public function ApplyChanges()
     {
         parent::ApplyChanges();
     }
 
-    ################## protected
+    //################# protected
+
     /**
      * Wird ausgeführt wenn der Kernel hochgefahren wurde.
-     *
-     * @access protected
      */
     protected function KernelReady()
     {
@@ -55,9 +51,8 @@ class HomeMaticRemoteScript extends HMBase
     }
 
     /**
-      /**
+     * /**
      * Wird ausgeführt wenn sich der Status vom Parent ändert.
-     * @access protected
      */
     protected function IOChangeState($State)
     {
@@ -66,8 +61,6 @@ class HomeMaticRemoteScript extends HMBase
 
     /**
      * Registriert Nachrichten des aktuellen Parent und ließt die Adresse der CCU aus dem Parent.
-     *
-     * @access protected
      */
     protected function RegisterParent()
     {
@@ -75,14 +68,16 @@ class HomeMaticRemoteScript extends HMBase
         $this->SetSummary($this->HMAddress);
     }
 
-    ################## private
+    //################# private
+
     /**
      * Sendet ein HM-Script an die CCU und liefert das Ergebnis.
      *
-     * @access private
      * @param string $Script Das HM-Script.
-     * @return string das Ergebnis von der CCU als JSON-String.
+     *
      * @throws Exception Wenn die CCU nicht erreicht wurde.
+     *
+     * @return string das Ergebnis von der CCU als JSON-String.
      */
     private function SendScript(string $Script)
     {
@@ -93,11 +88,13 @@ class HomeMaticRemoteScript extends HMBase
             $this->RegisterParent();
         }
         $url = 'Script.exe';
+
         try {
             $HMScriptResult = $this->LoadHMScript($url, $Script);
             $xml = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
         } catch (Exception $exc) {
             $this->SendDebug($url, $exc->getMessage(), 0);
+
             throw new Exception($exc->getMessage(), E_USER_NOTICE);
         }
         unset($xml->exec);
@@ -106,14 +103,15 @@ class HomeMaticRemoteScript extends HMBase
         return json_encode($xml);
     }
 
-    ################## PUBLIC
+    //################# PUBLIC
+
     /**
      * IPS-Instanzfunktion HM_RunScript.
      * Startet das übergebene Script auf der CCU und liefert das Ergbnis als JSON-String.
      *
-     * @access public
      * @param string $Script
-     * @return string|boolean Das Ergebnis als JSON-String oder FALSE im Fehlerfall.
+     *
+     * @return string|bool Das Ergebnis als JSON-String oder FALSE im Fehlerfall.
      */
     public function RunScript(string $Script)
     {
@@ -126,4 +124,4 @@ class HomeMaticRemoteScript extends HMBase
     }
 }
 
-/** @} */
+/* @} */

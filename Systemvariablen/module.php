@@ -5,18 +5,19 @@ declare(strict_types=1);
  * @addtogroup homematicextended
  * @{
  *
- * @package       HomematicExtended
  * @file          module.php
+ *
  * @author        Michael Tröger <micha@nall-chan.net>
  * @copyright     2019 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
+ *
  * @version       3.00
  */
-require_once(__DIR__ . '/../libs/HMBase.php');  // HMBase Klasse
+require_once __DIR__ . '/../libs/HMBase.php';  // HMBase Klasse
 
 /**
  * HomeMaticSystemvariablen ist die Klasse für das IPS-Modul 'HomeMatic Systemvariablen'.
- * Erweitert HMBase
+ * Erweitert HMBase.
  *
  * @property string $HMDeviceAddress Die Geräte-Adresse welche eine Aktualisierung auslöst.
  * @property string $HMDeviceDatapoint Der zu überwachende Datenpunkt welcher eine Aktualisierung auslöst.
@@ -29,8 +30,6 @@ class HomeMaticSystemvariablen extends HMBase
 
     /**
      * Interne Funktion des SDK.
-     *
-     * @access public
      */
     public function Create()
     {
@@ -53,8 +52,6 @@ class HomeMaticSystemvariablen extends HMBase
 
     /**
      * Interne Funktion des SDK.
-     *
-     * @access public
      */
     public function Destroy()
     {
@@ -75,10 +72,9 @@ class HomeMaticSystemvariablen extends HMBase
     /**
      * Nachrichten aus der Nachrichtenschlange verarbeiten.
      *
-     * @access public
-     * @param int $TimeStamp
-     * @param int $SenderID
-     * @param int $Message
+     * @param int       $TimeStamp
+     * @param int       $SenderID
+     * @param int       $Message
      * @param array|int $Data
      */
     public function MessageSink($TimeStamp, $SenderID, $Message, $Data)
@@ -110,8 +106,6 @@ class HomeMaticSystemvariablen extends HMBase
 
     /**
      * Interne Funktion des SDK.
-     *
-     * @access public
      */
     public function ApplyChanges()
     {
@@ -121,7 +115,7 @@ class HomeMaticSystemvariablen extends HMBase
             [0, 'Quittieren', '', 0x00FF00]
         ]);
 
-        if (IPS_GetKernelRunlevel() <> KR_READY) {
+        if (IPS_GetKernelRunlevel() != KR_READY) {
             $this->HMDeviceAddress = '';
             $this->HMDeviceDatapoint = '';
             $this->SystemVars = [];
@@ -134,7 +128,7 @@ class HomeMaticSystemvariablen extends HMBase
         $OldVars = $this->SystemVars;
         foreach ($MyVars as $Var) {
             $Object = IPS_GetObject($Var);
-            if ($Object['ObjectType'] <> 2) {
+            if ($Object['ObjectType'] != 2) {
                 continue;
             }
             if (strpos($Object['ObjectIdent'], 'AlDP') !== false) {
@@ -144,7 +138,6 @@ class HomeMaticSystemvariablen extends HMBase
             $this->RegisterMessage($Var, VM_DELETE);
         }
         $this->SystemVars = $OldVars;
-
 
         $this->SetNewConfig();
 
@@ -160,11 +153,10 @@ class HomeMaticSystemvariablen extends HMBase
         return;
     }
 
-    ################## protected
+    //################# protected
+
     /**
      * Interne Funktion des SDK.
-     *
-     * @access public
      */
     protected function KernelReady()
     {
@@ -173,7 +165,6 @@ class HomeMaticSystemvariablen extends HMBase
 
     /**
      * Wird ausgeführt wenn sich der Status vom Parent ändert.
-     * @access protected
      */
     protected function IOChangeState($State)
     {
@@ -183,7 +174,6 @@ class HomeMaticSystemvariablen extends HMBase
     /**
      * Registriert Nachrichten des aktuellen Parent und ließt die Adresse der CCU aus dem Parent.
      *
-     * @access protected
      * @return int ID des Parent.
      */
     protected function RegisterParent()
@@ -195,8 +185,7 @@ class HomeMaticSystemvariablen extends HMBase
     /**
      * Prüft die Konfiguration und setzt den Status der Instanz.
      *
-     * @access privat
-     * @return boolean True wenn Konfig ok, sonst false.
+     * @return bool True wenn Konfig ok, sonst false.
      */
     private function SetNewConfig()
     {
@@ -252,8 +241,7 @@ class HomeMaticSystemvariablen extends HMBase
     /**
      * Prüft und holt alle Daten zu der Event-Variable und Instanz.
      *
-     * @access private
-     * @return boolean True wenn Quelle gültig ist, sonst false.
+     * @return bool True wenn Quelle gültig ist, sonst false.
      */
     private function GetTriggerVar()
     {
@@ -264,7 +252,7 @@ class HomeMaticSystemvariablen extends HMBase
             return false;
         }
         $parent = IPS_GetParent($EventID);
-        if (IPS_GetInstance($parent)['ModuleInfo']['ModuleID'] <> '{EE4A81C6-5C90-4DB7-AD2F-F6BBD521412E}') {
+        if (IPS_GetInstance($parent)['ModuleInfo']['ModuleID'] != '{EE4A81C6-5C90-4DB7-AD2F-F6BBD521412E}') {
             $this->HMDeviceAddress = '';
             $this->HMDeviceDatapoint = '';
             return false;
@@ -276,29 +264,35 @@ class HomeMaticSystemvariablen extends HMBase
 
     /**
      * Liest alle Systemvariablen aus der CCU und legt diese in IPS mit dem dazugehörigen Profil an.
-     * @return boolean True bei Erfolg, sonst false.
+     *
      * @throws Exception Wenn CUU nicht erreichbar oder Daten nicht auswertbar sind.
+     *
+     * @return bool True bei Erfolg, sonst false.
      */
     private function ReadSysVars()
     {
         // Sysvars
         $HMScript = 'SysVars=dom.GetObject(ID_SYSTEM_VARIABLES).EnumUsedIDs();';
+
         try {
             $HMScriptResult = $this->LoadHMScript('SysVar.exe', $HMScript);
             $xmlVars = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
         } catch (Exception $exc) {
             $this->SendDebug('ID_SYSTEM_VARIABLES', $exc->getMessage(), 0);
+
             throw new Exception($exc->getMessage(), E_USER_NOTICE);
         }
 
         //Time & Timezone
         $HMScript = 'Now=system.Date("%F %T%z");' . PHP_EOL
                 . 'TimeZone=system.Date("%z");' . PHP_EOL;
+
         try {
             $HMScriptResult = $this->LoadHMScript('Time.exe', $HMScript);
             $xmlTime = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
         } catch (Exception $exc) {
             $this->SendDebug('Time', $exc->getMessage(), 0);
+
             throw new Exception($exc->getMessage(), E_USER_NOTICE);
         }
 
@@ -318,6 +312,7 @@ class HomeMaticSystemvariablen extends HMBase
                     . 'integer Type=dom.GetObject(' . $SysVar . ').Type();' . PHP_EOL
                     . 'WriteLine(dom.GetObject(' . $SysVar . ').Variable());' . PHP_EOL
                     . 'Timestamp=dom.GetObject(' . $SysVar . ').Timestamp();' . PHP_EOL;
+
             try {
                 $HMScriptResult = $this->LoadHMScript('SysVar.exe', $HMScript);
                 $lines = explode("\r\n", $HMScriptResult);
@@ -350,6 +345,7 @@ class HomeMaticSystemvariablen extends HMBase
                         . 'ValueMin=dom.GetObject(' . $SysVar . ').ValueMin();' . PHP_EOL
                         . 'ValueMax=dom.GetObject(' . $SysVar . ').ValueMax();' . PHP_EOL
                         . 'ValueUnit=dom.GetObject(' . $SysVar . ').ValueUnit();' . PHP_EOL;
+
                 try {
                     $HMScriptResult = $this->LoadHMScript('SysVar.exe', $HMScript);
                     $xmlVar2 = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
@@ -359,7 +355,6 @@ class HomeMaticSystemvariablen extends HMBase
                     $Result = false;
                     continue;
                 }
-
 
                 if (IPS_VariableProfileExists($VarProfil)) {
                     IPS_DeleteVariableProfile($VarProfil);
@@ -396,13 +391,13 @@ class HomeMaticSystemvariablen extends HMBase
                 $this->MaintainVariable($VarIdent, $VarName, $VarType, $VarProfil, 0, true);
                 $this->EnableAction($VarIdent);
                 $VarID = @$this->GetIDForIdent($VarIdent);
-                if ((int) $xmlVar->ValueType <> VARIABLETYPE_STRING) {
+                if ((int) $xmlVar->ValueType != VARIABLETYPE_STRING) {
                     $OldVars[$VarID] = $SysVar;
                     $OldVarsChange = true;
                     $this->RegisterMessage($VarID, VM_DELETE);
                 }
             }
-            if (IPS_GetVariable($VarID)['VariableType'] <> $VarType) {
+            if (IPS_GetVariable($VarID)['VariableType'] != $VarType) {
                 $this->SendDebug($SysVar, 'Type of CCU Systemvariable ' . IPS_GetName($VarID) . ' has changed.', 0);
                 trigger_error(sprintf($this->Translate('Type of CCU Systemvariable %s has changed.'), IPS_GetName($VarID)), E_USER_NOTICE);
                 $Result = false;
@@ -441,10 +436,11 @@ class HomeMaticSystemvariablen extends HMBase
     /**
      * Liest die Daten einer Systemvariable vom Typ 'Alarm' aus. Visualisiert den Status und startet bei Bedarf ein Script in IPS.
      *
-     * @param int $ParentID IPS-ID der Alarmvariable.
-     * @param string $SysVar ID der Alarmvariable in der CCU.
+     * @param int    $ParentID    IPS-ID der Alarmvariable.
+     * @param string $SysVar      ID der Alarmvariable in der CCU.
      * @param string $CCUTimeZone Die Zeitzone der CCU.
-     * @return boolean True bei Erfolg, sonst false.
+     *
+     * @return bool True bei Erfolg, sonst false.
      */
     private function ProcessAlarmVariable(int $ParentID, string $SysVar, string $CCUTimeZone)
     {
@@ -477,6 +473,7 @@ class HomeMaticSystemvariablen extends HMBase
                          }
                         }
                        }' . PHP_EOL;
+
         try {
             $HMScriptResult = $this->LoadHMScript('AlarmVar.exe', $HMScript);
             $xmlData = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
@@ -536,13 +533,15 @@ class HomeMaticSystemvariablen extends HMBase
      * Schreibt einen Wert in eine Systemvariable auf der CCU.
      *
      * @param string $Parameter Der IDENT der IPS-Statusvariable = Die ID der Systemvariable in der CCU.
-     * @param string $ValueStr Der neue Wert der Systemvariable.
-     * @return boolean True bei Erfolg, sonst false.
+     * @param string $ValueStr  Der neue Wert der Systemvariable.
+     *
      * @throws Exception Wenn CUU nicht erreichbar oder Daten nicht auswertbar sind.
+     *
+     * @return bool True bei Erfolg, sonst false.
      */
     private function WriteSysVar(string $Parameter, string $ValueStr)
     {
-        if (IPS_GetKernelRunlevel() <> KR_READY) {
+        if (IPS_GetKernelRunlevel() != KR_READY) {
             return false;
         }
         if (!$this->HasActiveParent()) {
@@ -550,11 +549,13 @@ class HomeMaticSystemvariablen extends HMBase
         }
         $url = 'SysVar.exe';
         $HMScript = 'State=dom.GetObject(' . $Parameter . ').State("' . $ValueStr . '");';
+
         try {
             $HMScriptResult = $this->LoadHMScript($url, $HMScript);
             $xml = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
         } catch (Exception $exc) {
             $this->SendDebug('SysVar.exe', $exc->getMessage(), 0);
+
             throw new Exception('Error on write CCU Systemvariable.', E_USER_NOTICE);
         }
         if ((string) $xml->State == 'true') {
@@ -567,14 +568,16 @@ class HomeMaticSystemvariablen extends HMBase
     /**
      * Erstellt eine Untervariable in IPS.
      *
-     * @param int $ParentID IPS-ID der übergeordneten Variable.
-     * @param string $Ident IDENT der neuen Statusvariable.
-     * @param string $Name Name der neuen Statusvariable.
-     * @param int $Type Der zu erstellende Typ von Variable.
-     * @param string $Profile Das dazugehörige Variabelprofil.
-     * @param int $Position Position der Variable.
-     * @return int IPS-ID der neuen Variable.
+     * @param int    $ParentID IPS-ID der übergeordneten Variable.
+     * @param string $Ident    IDENT der neuen Statusvariable.
+     * @param string $Name     Name der neuen Statusvariable.
+     * @param int    $Type     Der zu erstellende Typ von Variable.
+     * @param string $Profile  Das dazugehörige Variabelprofil.
+     * @param int    $Position Position der Variable.
+     *
      * @throws Exception Wenn Variable nicht erstellt werden konnte.
+     *
+     * @return int IPS-ID der neuen Variable.
      */
     private function RegisterSubVariable($ParentID, $Ident, $Name, $Type, $Profile = '', $Position = 0)
     {
@@ -620,11 +623,10 @@ class HomeMaticSystemvariablen extends HMBase
         return $vid;
     }
 
-    ################## ActionHandler
+    //################# ActionHandler
+
     /**
      * Interne Funktion des SDK.
-     *
-     * @access public
      */
     public function RequestAction($Ident, $Value)
     {
@@ -662,11 +664,10 @@ class HomeMaticSystemvariablen extends HMBase
         }
     }
 
-    ################## Datenaustausch
+    //################# Datenaustausch
+
     /**
      * Interne Funktion des SDK.
-     *
-     * @access public
      */
     public function ReceiveData($JSONString)
     {
@@ -677,17 +678,19 @@ class HomeMaticSystemvariablen extends HMBase
         }
     }
 
-    ################## PUBLIC
+    //################# PUBLIC
+
     /**
      * IPS-Instanz-Funktion 'HM_AlarmReceipt'.
-     * Bestätigt einen Alarm auf der CCU
+     * Bestätigt einen Alarm auf der CCU.
      *
      * @param string $Ident Der IDENT der IPS-Statusvariable = Die ID der Alarmvariable in der CCU.
-     * @return boolean True bei erfolg, sonst false.
+     *
+     * @return bool True bei erfolg, sonst false.
      */
     public function AlarmReceipt(string $Ident)
     {
-        if (IPS_GetKernelRunlevel() <> KR_READY) {
+        if (IPS_GetKernelRunlevel() != KR_READY) {
             return false;
         }
         if (!$this->HasActiveParent()) {
@@ -704,6 +707,7 @@ class HomeMaticSystemvariablen extends HMBase
                    {
                     var State = oitemID.AlReceipt();
                    }';
+
         try {
             $HMScriptResult = $this->LoadHMScript('AlarmVar.exe', $HMScript);
             $xmlData = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
@@ -727,14 +731,13 @@ class HomeMaticSystemvariablen extends HMBase
     /**
      * IPS-Instanz-Funktion 'HM_SystemVariablesTimer'.
      * Wird durch den Timer ausgeführt und liest alle Systemvariablen von der CCU.
-     *
-     * @access public
      */
     public function SystemVariablesTimer()
     {
         if (!$this->HasActiveParent()) {
             return;
         }
+
         try {
             $this->ReadSysVars();
         } catch (Exception $exc) {
@@ -746,8 +749,7 @@ class HomeMaticSystemvariablen extends HMBase
      * IPS-Instanz-Funktion 'HM_ReadSystemVariables'.
      * Liest alle Systemvariablen von der CCU.
      *
-     * @access public
-     * @return boolean True bei Erfolg, sonst false.
+     * @return bool True bei Erfolg, sonst false.
      */
     public function ReadSystemVariables()
     {
@@ -755,6 +757,7 @@ class HomeMaticSystemvariablen extends HMBase
             trigger_error($this->Translate('Instance has no active parent instance!'), E_USER_NOTICE);
             return false;
         }
+
         try {
             return $this->ReadSysVars();
         } catch (Exception $exc) {
@@ -767,10 +770,10 @@ class HomeMaticSystemvariablen extends HMBase
      * IPS-Instanz-Funktion 'HM_WriteValueBoolean'.
      * Schreibt einen bool-Wert in eine Systemvariable der CCU.
      *
-     * @access public
      * @param string $Parameter Der IDENT der IPS-Statusvariable = Die ID der Alarmvariable in der CCU.
-     * @param bool $Value Der zu schreibende Wert.
-     * @return boolean True bei Erfolg, sonst false.
+     * @param bool   $Value     Der zu schreibende Wert.
+     *
+     * @return bool True bei Erfolg, sonst false.
      */
     public function WriteValueBoolean(string $Parameter, bool $Value)
     {
@@ -781,10 +784,10 @@ class HomeMaticSystemvariablen extends HMBase
      * IPS-Instanz-Funktion 'HM_WriteValueBoolean2'.
      * Schreibt einen bool-Wert in eine Systemvariable der CCU.
      *
-     * @access public
      * @param string $Parameter Der IDENT der IPS-Statusvariable = Die ID der Alarmvariable in der CCU.
-     * @param bool $Value Der zu schreibende Wert.
-     * @return boolean True bei Erfolg, sonst false.
+     * @param bool   $Value     Der zu schreibende Wert.
+     *
+     * @return bool True bei Erfolg, sonst false.
      */
     public function WriteValueBoolean2(string $Parameter, bool $Value)
     {
@@ -794,7 +797,7 @@ class HomeMaticSystemvariablen extends HMBase
             return false;
         }
 
-        if (IPS_GetVariable($VarID)['VariableType'] <> VARIABLETYPE_BOOLEAN) {
+        if (IPS_GetVariable($VarID)['VariableType'] != VARIABLETYPE_BOOLEAN) {
             trigger_error(sprintf($this->Translate('Wrong Datatype for %s.'), (string) $VarID), E_USER_NOTICE);
             return false;
         }
@@ -827,10 +830,10 @@ class HomeMaticSystemvariablen extends HMBase
      * IPS-Instanz-Funktion 'HM_WriteValueInteger'.
      * Schreibt einen integer-Wert in eine Systemvariable der CCU.
      *
-     * @access public
      * @param string $Parameter Der IDENT der IPS-Statusvariable = Die ID der Alarmvariable in der CCU.
-     * @param int $Value Der zu schreibende Wert.
-     * @return boolean True bei Erfolg, sonst false.
+     * @param int    $Value     Der zu schreibende Wert.
+     *
+     * @return bool True bei Erfolg, sonst false.
      */
     public function WriteValueInteger(string $Parameter, int $Value)
     {
@@ -841,10 +844,10 @@ class HomeMaticSystemvariablen extends HMBase
      * IPS-Instanz-Funktion 'HM_WriteValueInteger2'.
      * Schreibt einen integer-Wert in eine Systemvariable der CCU.
      *
-     * @access public
      * @param string $Parameter Der IDENT der IPS-Statusvariable = Die ID der Alarmvariable in der CCU.
-     * @param int $Value Der zu schreibende Wert.
-     * @return boolean True bei Erfolg, sonst false.
+     * @param int    $Value     Der zu schreibende Wert.
+     *
+     * @return bool True bei Erfolg, sonst false.
      */
     public function WriteValueInteger2(string $Parameter, int $Value)
     {
@@ -854,8 +857,7 @@ class HomeMaticSystemvariablen extends HMBase
             return false;
         }
 
-
-        if (IPS_GetVariable($VarID)['VariableType'] <> VARIABLETYPE_INTEGER) {
+        if (IPS_GetVariable($VarID)['VariableType'] != VARIABLETYPE_INTEGER) {
             trigger_error(sprintf($this->Translate('Wrong Datatype for %s.'), (string) $VarID), E_USER_NOTICE);
             return false;
         }
@@ -880,10 +882,10 @@ class HomeMaticSystemvariablen extends HMBase
      * IPS-Instanz-Funktion 'HM_WriteValueFloat'.
      * Schreibt einen float-Wert in eine Systemvariable der CCU.
      *
-     * @access public
      * @param string $Parameter Der IDENT der IPS-Statusvariable = Die ID der Alarmvariable in der CCU.
-     * @param float $Value Der zu schreibende Wert.
-     * @return boolean True bei Erfolg, sonst false.
+     * @param float  $Value     Der zu schreibende Wert.
+     *
+     * @return bool True bei Erfolg, sonst false.
      */
     public function WriteValueFloat(string $Parameter, float $Value)
     {
@@ -894,10 +896,10 @@ class HomeMaticSystemvariablen extends HMBase
      * IPS-Instanz-Funktion 'HM_WriteValueFloat2'.
      * Schreibt einen float-Wert in eine Systemvariable der CCU.
      *
-     * @access public
      * @param string $Parameter Der IDENT der IPS-Statusvariable = Die ID der Alarmvariable in der CCU.
-     * @param float $Value Der zu schreibende Wert.
-     * @return boolean True bei Erfolg, sonst false.
+     * @param float  $Value     Der zu schreibende Wert.
+     *
+     * @return bool True bei Erfolg, sonst false.
      */
     public function WriteValueFloat2(string $Parameter, float $Value)
     {
@@ -907,13 +909,13 @@ class HomeMaticSystemvariablen extends HMBase
             return false;
         }
 
-        if (IPS_GetVariable($VarID)['VariableType'] <> VARIABLETYPE_FLOAT) {
+        if (IPS_GetVariable($VarID)['VariableType'] != VARIABLETYPE_FLOAT) {
             trigger_error(sprintf($this->Translate('Wrong Datatype for %s.'), (string) $VarID), E_USER_NOTICE);
             return false;
         }
 
         try {
-            $Result = $this->WriteSysVar($Parameter, (string) sprintf("%.6F", $Value));
+            $Result = $this->WriteSysVar($Parameter, (string) sprintf('%.6F', $Value));
         } catch (Exception $exc) {
             trigger_error($this->Translate($exc->getMessage()), E_USER_NOTICE);
             return false;
@@ -934,10 +936,10 @@ class HomeMaticSystemvariablen extends HMBase
      * IPS-Instanz-Funktion 'HM_WriteValueString'.
      * Schreibt einen string-Wert in eine Systemvariable der CCU.
      *
-     * @access public
      * @param string $Parameter Der IDENT der IPS-Statusvariable = Die ID der Alarmvariable in der CCU.
-     * @param string $Value Der zu schreibende Wert.
-     * @return boolean True bei Erfolg, sonst false.
+     * @param string $Value     Der zu schreibende Wert.
+     *
+     * @return bool True bei Erfolg, sonst false.
      */
     public function WriteValueString(string $Parameter, string $Value)
     {
@@ -948,10 +950,10 @@ class HomeMaticSystemvariablen extends HMBase
      * IPS-Instanz-Funktion 'HM_WriteValueString2'.
      * Schreibt einen string-Wert in eine Systemvariable der CCU.
      *
-     * @access public
      * @param string $Parameter Der IDENT der IPS-Statusvariable = Die ID der Alarmvariable in der CCU.
-     * @param string $Value Der zu schreibende Wert.
-     * @return boolean True bei Erfolg, sonst false.
+     * @param string $Value     Der zu schreibende Wert.
+     *
+     * @return bool True bei Erfolg, sonst false.
      */
     public function WriteValueString2(string $Parameter, string $Value)
     {
@@ -961,10 +963,11 @@ class HomeMaticSystemvariablen extends HMBase
             return false;
         }
 
-        if (IPS_GetVariable($VarID)['VariableType'] <> VARIABLETYPE_STRING) {
+        if (IPS_GetVariable($VarID)['VariableType'] != VARIABLETYPE_STRING) {
             trigger_error(sprintf($this->Translate('Wrong Datatype for %s.'), (string) $VarID), E_USER_NOTICE);
             return false;
         }
+
         try {
             $Result = $this->WriteSysVar($Parameter, (string) $Value);
         } catch (Exception $exc) {
@@ -984,4 +987,4 @@ class HomeMaticSystemvariablen extends HMBase
     }
 }
 
-/** @} */
+/* @} */

@@ -5,23 +5,24 @@ declare(strict_types=1);
  * @addtogroup homematicextended
  * @{
  *
- * @package       HomematicExtended
  * @file          module.php
+ *
  * @author        Michael Tröger <micha@nall-chan.net>
  * @copyright     2019 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
+ *
  * @version       3.0
  */
-require_once(__DIR__ . '/../libs/HMBase.php');  // HMBase Klasse
+require_once __DIR__ . '/../libs/HMBase.php';  // HMBase Klasse
 
 /**
  * HomeMaticDisWM55 ist die Klasse für das IPS-Modul 'HomeMatic Dis-WM55'.
- * Erweitert HMBase
+ * Erweitert HMBase.
  *
  * @property int $Page Die aktuelle Seite.
  * @property array $HMEventData [self::$PropertysName]
-  ['HMDeviceAddress'] => string $HMDeviceAddress Die Geräte-Adresse des Trigger.
-  ['HMDeviceDatapoint'] => string $HMDeviceDatapoint  Der zu überwachende Datenpunkt vom $HMDeviceAddress
+ * ['HMDeviceAddress'] => string $HMDeviceAddress Die Geräte-Adresse des Trigger.
+ * ['HMDeviceDatapoint'] => string $HMDeviceDatapoint  Der zu überwachende Datenpunkt vom $HMDeviceAddress
  * @property array $Events [self::$PropertysName]  Die IPS-ID der Variable des Datenpunkt welcher eine Aktualisierung auslöst.
  */
 class HomeMaticDisWM55 extends HMBase
@@ -39,8 +40,6 @@ class HomeMaticDisWM55 extends HMBase
 
     /**
      * Interne Funktion des SDK.
-     *
-     * @access public
      */
     public function Create()
     {
@@ -79,10 +78,9 @@ class HomeMaticDisWM55 extends HMBase
     /**
      * Nachrichten aus der Nachrichtenschlange verarbeiten.
      *
-     * @access public
-     * @param int $TimeStamp
-     * @param int $SenderID
-     * @param int $Message
+     * @param int       $TimeStamp
+     * @param int       $SenderID
+     * @param int       $Message
      * @param array|int $Data
      */
     public function MessageSink($TimeStamp, $SenderID, $Message, $Data)
@@ -109,8 +107,6 @@ class HomeMaticDisWM55 extends HMBase
 
     /**
      * Interne Funktion des SDK.
-     *
-     * @access public
      */
     public function ApplyChanges()
     {
@@ -118,11 +114,10 @@ class HomeMaticDisWM55 extends HMBase
         $this->SetNewConfig();
     }
 
-    ################## protected
+    //################# protected
+
     /**
      * Wird ausgeführt wenn der Kernel hochgefahren wurde.
-     *
-     * @access protected
      */
     protected function KernelReady()
     {
@@ -131,18 +126,16 @@ class HomeMaticDisWM55 extends HMBase
 
     /**
      * Wird ausgeführt wenn sich der Status vom Parent ändert.
-     * @access protected
      */
     protected function IOChangeState($State)
     {
         $this->ApplyChanges();
     }
 
-    ################## Datenaustausch
+    //################# Datenaustausch
+
     /**
      * Interne Funktion des SDK.
-     *
-     * @access public
      */
     public function ReceiveData($JSONString)
     {
@@ -155,6 +148,7 @@ class HomeMaticDisWM55 extends HMBase
         if ($Action === false) {
             return;
         }
+
         try {
             $this->RunDisplayScript($Action);
         } catch (Exception $exc) {
@@ -163,11 +157,10 @@ class HomeMaticDisWM55 extends HMBase
         }
     }
 
-    ################## PRIVATE
+    //################# PRIVATE
+
     /**
      * Überführt die Config in die Filter.
-     *
-     * @access privat
      */
     private function SetNewConfig()
     {
@@ -200,8 +193,7 @@ class HomeMaticDisWM55 extends HMBase
     /**
      * Prüft die Konfiguration und setzt den Status der Instanz.
      *
-     * @access privat
-     * @return boolean True wenn Konfig ok, sonst false.
+     * @return bool True wenn Konfig ok, sonst false.
      */
     private function CheckConfig()
     {
@@ -211,7 +203,7 @@ class HomeMaticDisWM55 extends HMBase
         $Events = [];
         foreach (array_keys(self::$PropertysName) as $Name) {
             $Event = $this->ReadPropertyInteger($Name);
-            if ($Event <> $OldEvents[$Name]) {
+            if ($Event != $OldEvents[$Name]) {
                 if ($OldEvents[$Name] > 0) {
                     $this->UnregisterMessage($OldEvents[$Name], VM_DELETE);
                     $this->UnregisterReference($OldEvents[$Name]);
@@ -282,9 +274,9 @@ class HomeMaticDisWM55 extends HMBase
     /**
      * Prüft und holt alle Daten zu den Quell-Variablen und Instanzen.
      *
-     * @access private
      * @param int $EventID IPD-VarID des Datenpunktes, welcher als Event dient.
-     * @return array|boolean Array mit den Daten zum Datenpunkt. False im Fehlerfall.
+     *
+     * @return array|bool Array mit den Daten zum Datenpunkt. False im Fehlerfall.
      */
     private function GetDisplayAddress(int $EventID)
     {
@@ -292,7 +284,7 @@ class HomeMaticDisWM55 extends HMBase
             return false;
         }
         $parent = IPS_GetParent($EventID);
-        if (IPS_GetInstance($parent)['ModuleInfo']['ModuleID'] <> '{EE4A81C6-5C90-4DB7-AD2F-F6BBD521412E}') {
+        if (IPS_GetInstance($parent)['ModuleInfo']['ModuleID'] != '{EE4A81C6-5C90-4DB7-AD2F-F6BBD521412E}') {
             return false;
         }
         return [
@@ -304,8 +296,8 @@ class HomeMaticDisWM55 extends HMBase
     /**
      * Führt das User-Script aus und überträgt das Ergebnis an die CCU.
      *
-     * @access private
      * @param string $Action Die auszuführende Aktion.
+     *
      * @throws Exception Wenn CCU nicht erreicht wurde.
      */
     private function RunDisplayScript($Action)
@@ -340,7 +332,7 @@ class HomeMaticDisWM55 extends HMBase
         }
         $this->SendDebug('Action', $ActionString, 0);
         $ScriptID = $this->ReadPropertyInteger('ScriptID');
-        if ($ScriptID <> 0) {
+        if ($ScriptID != 0) {
             $Result = IPS_RunScriptWaitEx($ScriptID, ['SENDER' => 'HMDisWM55', 'ACTION' => $ActionString, 'PAGE' => $Page, 'EVENT' => $this->InstanceID]);
             $ResultData = json_decode($Result);
             if (is_null($ResultData)) {
@@ -352,6 +344,7 @@ class HomeMaticDisWM55 extends HMBase
             $HMScript = 'string DisplayKeySubmit;' . PHP_EOL;
             $HMScript .= 'DisplayKeySubmit=dom.GetObject("BidCos-RF.' . (string) $this->HMEventData[$Action]['HMDeviceAddress'] . '.SUBMIT").ID();' . PHP_EOL;
             $HMScript .= 'State=dom.GetObject(DisplayKeySubmit).State("' . $Data . '");' . PHP_EOL;
+
             try {
                 $this->LoadHMScript($url, $HMScript);
             } catch (Exception $exc) {
@@ -367,14 +360,16 @@ class HomeMaticDisWM55 extends HMBase
 
     /**
      * Konvertiert die Daten in ein für das Display benötigte Format.
+     *
      * @param object $Data Enthält die Daten für das Display
+     *
      * @return string Die konvertierten Daten als String.
      */
     private function ConvertDisplayData($Data)
     {
         $SendData = '0x02';
         foreach ($Data as $Line) {
-            if ((string) $Line->Text <> '') {
+            if ((string) $Line->Text != '') {
                 $SendData .= ',0x12';
                 for ($i = 0; $i < strlen((string) $Line->Text); $i++) {
                     $SendData .= ',0x' . dechex(ord((string) $Line->Text[$i]));
@@ -382,7 +377,7 @@ class HomeMaticDisWM55 extends HMBase
                 $SendData .= ',0x11';
                 $SendData .= ',0x' . dechex((int) $Line->Color);
             }
-            if ((int) $Line->Icon <> 0) {
+            if ((int) $Line->Icon != 0) {
                 $SendData .= ',0x13';
                 $SendData .= ',0x' . dechex((int) $Line->Icon);
             }
@@ -395,8 +390,8 @@ class HomeMaticDisWM55 extends HMBase
     /**
      * Liefert das Script welches im Objektbaum als Vorlage für das DisplayScript angelegt wird.
      *
-     * @access private
      * @param type $ID Die IPS-ID des HM_OLED Scriptes mit den Konstanten für das Display-Script.
+     *
      * @return string
      */
     private function CreateDisplayScript()
@@ -406,8 +401,6 @@ class HomeMaticDisWM55 extends HMBase
 
     /**
      *  Wird bei einem timeout ausgeführt und setzt die aktuelle Seite wieder auf Null.
-     *
-     * @access public
      */
     public function ResetTimer()
     {
@@ -416,4 +409,4 @@ class HomeMaticDisWM55 extends HMBase
     }
 }
 
-/** @} */
+/* @} */
