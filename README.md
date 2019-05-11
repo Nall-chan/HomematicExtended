@@ -88,7 +88,7 @@ Erweitert IPS um die native Unterstützung:
    (z.B. 192.168.178.0/24 => /24 ist die Subnet-Maske für das Netzwerk. Bei 255.255.255.0 ist das 24 bei 255.255.0.0. ist es 16.  
    Oder es kann direkt eine einzelne Adresse eingetragen werden. z.B. 192.168.0.2  
 
-![Doku/CCUFirewall.png](docs/CCUFirewall.png)  
+![CCUFirewall.png](docs/CCUFirewall.png)  
 
 
 ## 3. Software-Installation
