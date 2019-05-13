@@ -40,7 +40,7 @@ Dieses Modul ist Bestandteil der HomeMaticExtended-Library.
 
 ![RFInterface](../docs/RFInterfaceSplitter.png)  
 
-   Über den Button 'Alle Instanzen in IPS anlegen' werden automatisch alle an der CCU vorhandenen Funk-Interfaces als Instanz in IPS erzeugt.  
+   Über den Button 'Alle erstellen' werden automatisch alle an der CCU vorhandenen Funk-Interfaces als Instanz in IPS erzeugt.  
    Des weiteren ist in dem Splitter der Intervall in Sekunden einzustellen, in welchem die Daten von der CCU gelesen werden sollen.  
 
 | Eigenschaft     | Typ     | Standardwert | Funktion                                      |

@@ -66,7 +66,6 @@ class HomeMaticRFInterfaceSplitter extends HMBase
     }
 
     //################# protected
-
     /**
      * Wird ausgeführt wenn der Kernel hochgefahren wurde.
      */
@@ -100,7 +99,6 @@ class HomeMaticRFInterfaceSplitter extends HMBase
     }
 
     //################# PRIVATE
-
     /**
      * Prüft die Konfiguration und setzt den Status der Instanz.
      *
@@ -155,7 +153,7 @@ class HomeMaticRFInterfaceSplitter extends HMBase
             'MethodName' => 'listBidcosInterfaces',
             'WaitTime'   => 5000,
             'Data'       => $data
-            ];
+        ];
         $ret = [];
         foreach ($Protocol as $ProtocolId) {
             $ParentData['Protocol'] = $ProtocolId;
@@ -177,61 +175,83 @@ class HomeMaticRFInterfaceSplitter extends HMBase
     }
 
     //################# PUBLIC
-
     /**
-     * IPS-Instanz-Funktion 'HM_CreateAllRFInstances'.
-     * Erzeugt alle Instanzen vom Typ RF-Interface, wenn diese noch nicht angelegt sind.
-     *
-     * @return array Array von IPS-IDs von den angelegten Instanzen.
+     * Interne Funktion des SDK.
      */
-    public function CreateAllRFInstances()
+    public function GetConfigurationForm()
     {
-        $DevicesIDs = IPS_GetInstanceListByModuleID('{36549B96-FA11-4651-8662-F310EEEC5C7D}');
-        $CreatedDevices = [];
-        $KnownDevices = [];
-        foreach ($DevicesIDs as $Device) {
-            $KnownDevices[] = IPS_GetProperty($Device, 'Address');
+        $Form = json_decode(file_get_contents(__DIR__ . '/form.json'), true);
+        if (!$this->HasActiveParent()) {
+            $Form['actions'][] = [
+                'type'  => 'PopupAlert',
+                'popup' => [
+                    'items' => [[
+                    'type'    => 'Label',
+                    'caption' => 'Instance has no active parent instance!'
+                        ]]
+                ]
+            ];
+            $this->SendDebug('FORM', json_encode($Form), 0);
+            $this->SendDebug('FORM', json_last_error_msg(), 0);
+
+            return json_encode($Form);
         }
+        $DevicesIDs = IPS_GetInstanceListByModuleID('{36549B96-FA11-4651-8662-F310EEEC5C7D}');
+        $InstanceIDList = [];
+        foreach ($DevicesIDs as $Device) {
+            if (IPS_GetInstance($Device)['ConnectionID'] == $this->InstanceID) {
+                $InstanceIDList[$Device] = IPS_GetProperty($Device, 'Address');
+            }
+        }
+        $Liste = [];
         $Result = $this->GetInterfaces();
         foreach ($Result as $ProtocolID => $Protocol) {
             if (!is_array($Protocol)) {
                 continue;
             }
             foreach ($Protocol as $InterfaceIndex => $Interface) {
-                if (in_array($Interface->ADDRESS, $KnownDevices)) {
-                    continue;
+                switch ($ProtocolID) {
+                    case 0:
+                        $Type = 'Funk';
+                        break;
+                    case 2:
+                        $Type = 'HmIP';
+                        break;
+                    default:
+                        $Type = 'unknow';
+                        break;
                 }
-                $NewDevice = IPS_CreateInstance('{36549B96-FA11-4651-8662-F310EEEC5C7D}');
-                if (property_exists($Interface, 'TYPE')) {
-                    IPS_SetName($NewDevice, $Interface->TYPE);
+                $InstanceID = array_search($Interface->ADDRESS, $InstanceIDList);
+                if ($InstanceID !== false) {
+                    $AddValue = [
+                        'instanceID' => $InstanceID,
+                        'name'       => IPS_GetName($InstanceID),
+                        'type'       => $Type,
+                        'address'    => $Interface->ADDRESS,
+                        'location'   => stristr(IPS_GetLocation($InstanceID), IPS_GetName($InstanceID), true)
+                    ];
+                    unset($InstanceIDList[$InstanceID]);
                 } else {
-                    switch ($ProtocolID) {
-                        case 0:
-                            $Name = 'Funk';
-                            break;
-                        case 2:
-                            $Name = 'HmIP';
-                            break;
-                        default:
-                            $Name = 'unknow';
-                            break;
-                    }
-                    IPS_SetName($NewDevice, $Name . ' - Interface ' . $InterfaceIndex);
+                    $AddValue = [
+                        'instanceID' => 0,
+                        'name'       => $Interface->TYPE,
+                        'type'       => $Type,
+                        'address'    => $Interface->ADDRESS,
+                        'location'   => ''
+                    ];
                 }
-                if (IPS_GetInstance($NewDevice)['ConnectionID'] != $this->InstanceID) {
-                    @IPS_DisconnectInstance($NewDevice);
-                    IPS_ConnectInstance($NewDevice, $this->InstanceID);
-                }
-                IPS_SetProperty($NewDevice, 'Address', $Interface->ADDRESS);
-                IPS_ApplyChanges($NewDevice);
-                $CreatedDevices[] = $NewDevice;
+                $AddValue['create'] = [
+                    'moduleID'      => '{36549B96-FA11-4651-8662-F310EEEC5C7D}',
+                    'configuration' => ['Address' => $Interface->ADDRESS]
+                ];
+                $Liste[] = $AddValue;
             }
         }
-        if (count($CreatedDevices) > 0) {
-            $this->ReadRFInterfaces();
-        }
-
-        return $CreatedDevices;
+        $Form['actions'][0]['values'] = $Liste;
+        $Form['actions'][0][0]['rowCount'] = count($Liste) + 1;
+        $this->SendDebug('FORM', json_encode($Form), 0);
+        $this->SendDebug('FORM', json_last_error_msg(), 0);
+        return json_encode($Form);
     }
 
     /**
@@ -258,6 +278,7 @@ class HomeMaticRFInterfaceSplitter extends HMBase
         }
         return $ret;
     }
+
 }
 
 /* @} */
