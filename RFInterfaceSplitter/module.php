@@ -66,6 +66,7 @@ class HomeMaticRFInterfaceSplitter extends HMBase
     }
 
     //################# protected
+
     /**
      * Wird ausgeführt wenn der Kernel hochgefahren wurde.
      */
@@ -99,6 +100,7 @@ class HomeMaticRFInterfaceSplitter extends HMBase
     }
 
     //################# PRIVATE
+
     /**
      * Prüft die Konfiguration und setzt den Status der Instanz.
      *
@@ -175,6 +177,7 @@ class HomeMaticRFInterfaceSplitter extends HMBase
     }
 
     //################# PUBLIC
+
     /**
      * Interne Funktion des SDK.
      */
@@ -278,7 +281,6 @@ class HomeMaticRFInterfaceSplitter extends HMBase
         }
         return $ret;
     }
-
 }
 
 /* @} */
