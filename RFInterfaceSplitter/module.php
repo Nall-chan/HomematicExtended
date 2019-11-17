@@ -66,7 +66,6 @@ class HomeMaticRFInterfaceSplitter extends HMBase
     }
 
     //################# protected
-
     /**
      * Wird ausgeführt wenn der Kernel hochgefahren wurde.
      */
@@ -100,7 +99,6 @@ class HomeMaticRFInterfaceSplitter extends HMBase
     }
 
     //################# PRIVATE
-
     /**
      * Prüft die Konfiguration und setzt den Status der Instanz.
      *
@@ -163,11 +161,12 @@ class HomeMaticRFInterfaceSplitter extends HMBase
             $ResultJSON = @$this->SendDataToParent($JSON);
             if ($ResultJSON == false) {
                 trigger_error($this->Translate('Error on read interfaces:') . $ProtocolId, E_USER_NOTICE);
-                $this->SendDebug('Error', '', 0);
+                $this->SendDebug('Error JSON', $ResultJSON, 0);
                 continue;
             }
-            $Result = @json_decode($ResultJSON);
+            $Result = json_decode($ResultJSON, true);
             if (($Result === false) or is_null($Result)) {
+                $this->SendDebug('Error decode', $Result, 0);
                 trigger_error($this->Translate('Error on read interfaces:') . $ProtocolId, E_USER_NOTICE);
             } else {
                 $ret[$ProtocolId] = $Result;
@@ -177,7 +176,6 @@ class HomeMaticRFInterfaceSplitter extends HMBase
     }
 
     //################# PUBLIC
-
     /**
      * Interne Funktion des SDK.
      */
@@ -281,6 +279,7 @@ class HomeMaticRFInterfaceSplitter extends HMBase
         }
         return $ret;
     }
+
 }
 
 /* @} */

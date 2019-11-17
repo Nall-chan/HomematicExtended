@@ -65,7 +65,6 @@ class HomeMaticWRInterface extends HMBase
     }
 
     //################# protected
-
     /**
      * Wird ausgeführt wenn der Kernel hochgefahren wurde.
      */
@@ -99,7 +98,6 @@ class HomeMaticWRInterface extends HMBase
     }
 
     //################# PRIVATE
-
     /**
      * Prüft die Konfiguration und setzt den Status der Instanz.
      *
@@ -156,13 +154,13 @@ class HomeMaticWRInterface extends HMBase
         $ResultJSON = @$this->SendDataToParent($JSON);
         if ($ResultJSON == false) {
             trigger_error($this->Translate('Error on read WR-Interface.'), E_USER_NOTICE);
-            $this->SendDebug('Error', '', 0);
+            $this->SendDebug('Error JSON', $ResultJSON, 0);
             return false;
         }
-        $Result = @json_decode($ResultJSON);
+        $Result = json_decode($ResultJSON, true);
         if (($Result === false) or is_null($Result)) {
             trigger_error($this->Translate('Error on read WR-Interface.'), E_USER_NOTICE);
-            $this->SendDebug('Error', '', 0);
+            $this->SendDebug('Error decode', $Result, 0);
             return false;
         }
         $this->SendDebug('Receive', $Result, 0);
@@ -170,7 +168,6 @@ class HomeMaticWRInterface extends HMBase
     }
 
     //################# PUBLIC
-
     /**
      * IPS-Instanz-Funktion 'HM_ReadWRInterface'.
      * Liest die Daten des WR-Interface.
@@ -219,6 +216,7 @@ class HomeMaticWRInterface extends HMBase
         }
         return true;
     }
+
 }
 
 /* @} */
