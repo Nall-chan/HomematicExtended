@@ -65,6 +65,7 @@ class HomeMaticWRInterface extends HMBase
     }
 
     //################# protected
+
     /**
      * Wird ausgeführt wenn der Kernel hochgefahren wurde.
      */
@@ -98,6 +99,7 @@ class HomeMaticWRInterface extends HMBase
     }
 
     //################# PRIVATE
+
     /**
      * Prüft die Konfiguration und setzt den Status der Instanz.
      *
@@ -168,6 +170,7 @@ class HomeMaticWRInterface extends HMBase
     }
 
     //################# PUBLIC
+
     /**
      * IPS-Instanz-Funktion 'HM_ReadWRInterface'.
      * Liest die Daten des WR-Interface.
@@ -216,7 +219,6 @@ class HomeMaticWRInterface extends HMBase
         }
         return true;
     }
-
 }
 
 /* @} */

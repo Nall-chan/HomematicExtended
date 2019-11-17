@@ -45,6 +45,7 @@ class HomeMaticDisEPWM55 extends HMBase
     }
 
     //################# protected
+
     /**
      * Wird ausgeführt wenn der Kernel hochgefahren wurde.
      */
@@ -62,6 +63,7 @@ class HomeMaticDisEPWM55 extends HMBase
     }
 
     //################# PRIVATE
+
     /**
      * Sendet die Daten an dden HM-Socket.
      *
@@ -128,16 +130,16 @@ class HomeMaticDisEPWM55 extends HMBase
             if (!is_int($Color)) {
                 throw new Exception(sprintf($this->Translate('Parameter %s must be type of integer.'), 'Color'));
             }
-            if (($Chime < 0) or ( $Chime > 6)) {
+            if (($Chime < 0) or ($Chime > 6)) {
                 throw new Exception(sprintf($this->Translate('Parameter %s out of range.'), 'Chime'));
             }
-            if (($Repeat < 0) or ( $Repeat > 15)) {
+            if (($Repeat < 0) or ($Repeat > 15)) {
                 throw new Exception(sprintf($this->Translate('Parameter %s out of range.'), 'Repeat'));
             }
-            if (($Wait < 0) or ( $Wait > 15)) {
+            if (($Wait < 0) or ($Wait > 15)) {
                 throw new Exception(sprintf($this->Translate('Parameter %s out of range.'), 'Wait'));
             }
-            if (($Color < 0) or ( $Color > 3)) {
+            if (($Color < 0) or ($Color > 3)) {
                 throw new Exception(sprintf($this->Translate('Parameter %s out of range.'), 'Color'));
             }
         } catch (Exception $exc) {
@@ -172,7 +174,7 @@ class HomeMaticDisEPWM55 extends HMBase
             if (!is_int($Icon)) {
                 throw new Exception(sprintf($this->Translate('Parameter %s must be type of integer.'), 'Icon'));
             }
-            if (($Icon < 0) or ( $Icon > 9)) {
+            if (($Icon < 0) or ($Icon > 9)) {
                 throw new Exception(sprintf($this->Translate('Parameter %s out of range.'), 'Icon'));
             }
         } catch (Exception $exc) {
@@ -217,6 +219,7 @@ class HomeMaticDisEPWM55 extends HMBase
     }
 
     //################# public
+
     /**
      * IPS-Instanz-Funktion 'HM_WriteValueDisplayNotify'.
      * Steuert den Summer und die LED des Display.
@@ -381,7 +384,6 @@ class HomeMaticDisEPWM55 extends HMBase
         $Data = array_merge($Data, $Notify);
         return $this->SendData($Data);
     }
-
 }
 
 /* @} */
