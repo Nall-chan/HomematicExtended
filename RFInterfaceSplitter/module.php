@@ -127,7 +127,17 @@ class HomeMaticRFInterfaceSplitter extends HMBase
         $this->SetStatus(IS_ACTIVE);
         return true;
     }
-
+    /**
+     * Interne Funktion des SDK.
+     *
+     * @param type $JSONString Der IPS-Datenstring
+     *
+     * @return string Die Antwort an den anfragenden Child
+     */
+    public function ForwardData($JSONString)
+    {
+        return serialize($this->GetInterfaces());
+    }
     /**
      * Liest alle Daten der RF-Interfaces aus der CCU aus.
      *
@@ -179,84 +189,7 @@ class HomeMaticRFInterfaceSplitter extends HMBase
 
     //################# PUBLIC
 
-    /**
-     * Interne Funktion des SDK.
-     */
-    public function GetConfigurationForm()
-    {
-        $Form = json_decode(file_get_contents(__DIR__ . '/form.json'), true);
-        if (!$this->HasActiveParent()) {
-            $Form['actions'][] = [
-                'type'  => 'PopupAlert',
-                'popup' => [
-                    'items' => [[
-                    'type'    => 'Label',
-                    'caption' => 'Instance has no active parent instance!'
-                        ]]
-                ]
-            ];
-            $this->SendDebug('FORM', json_encode($Form), 0);
-            $this->SendDebug('FORM', json_last_error_msg(), 0);
-
-            return json_encode($Form);
-        }
-        $DevicesIDs = IPS_GetInstanceListByModuleID('{36549B96-FA11-4651-8662-F310EEEC5C7D}');
-        $InstanceIDList = [];
-        foreach ($DevicesIDs as $Device) {
-            if (IPS_GetInstance($Device)['ConnectionID'] == $this->InstanceID) {
-                $InstanceIDList[$Device] = IPS_GetProperty($Device, 'Address');
-            }
-        }
-        $Liste = [];
-        $Result = $this->GetInterfaces();
-        foreach ($Result as $ProtocolID => $Protocol) {
-            if (!is_array($Protocol)) {
-                continue;
-            }
-            foreach ($Protocol as $InterfaceIndex => $Interface) {
-                switch ($ProtocolID) {
-                    case 0:
-                        $Type = 'Funk';
-                        break;
-                    case 2:
-                        $Type = 'HmIP';
-                        break;
-                    default:
-                        $Type = 'unknow';
-                        break;
-                }
-                $InstanceID = array_search($Interface->ADDRESS, $InstanceIDList);
-                if ($InstanceID !== false) {
-                    $AddValue = [
-                        'instanceID' => $InstanceID,
-                        'name'       => IPS_GetName($InstanceID),
-                        'type'       => $Type,
-                        'address'    => $Interface->ADDRESS,
-                        'location'   => stristr(IPS_GetLocation($InstanceID), IPS_GetName($InstanceID), true)
-                    ];
-                    unset($InstanceIDList[$InstanceID]);
-                } else {
-                    $AddValue = [
-                        'instanceID' => 0,
-                        'name'       => $Interface->TYPE,
-                        'type'       => $Type,
-                        'address'    => $Interface->ADDRESS,
-                        'location'   => ''
-                    ];
-                }
-                $AddValue['create'] = [
-                    'moduleID'      => '{36549B96-FA11-4651-8662-F310EEEC5C7D}',
-                    'configuration' => ['Address' => $Interface->ADDRESS]
-                ];
-                $Liste[] = $AddValue;
-            }
-        }
-        $Form['actions'][0]['values'] = $Liste;
-        $Form['actions'][0][0]['rowCount'] = count($Liste) + 1;
-        $this->SendDebug('FORM', json_encode($Form), 0);
-        $this->SendDebug('FORM', json_last_error_msg(), 0);
-        return json_encode($Form);
-    }
+ 
 
     /**
      * IPS-Instanz-Funktion 'HM_ReadRFInterfaces'.
@@ -274,7 +207,7 @@ class HomeMaticRFInterfaceSplitter extends HMBase
             }
             foreach ($Protocol as $InterfaceIndex => $Interface) {
                 $this->SendDebug('Proto' . $ProtocolID . ' If' . $InterfaceIndex, $Interface, 0);
-                $Interface->DataID = '{E2966A08-BCE1-4E76-8C4B-7E0136244E1B}';
+                $Interface['DataID'] = '{E2966A08-BCE1-4E76-8C4B-7E0136244E1B}';
                 $Data = json_encode($Interface);
                 $this->SendDataToChildren($Data);
                 $ret = true;

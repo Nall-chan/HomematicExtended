@@ -1,0 +1,11 @@
+{
+    "id": "{91624C6F-E67E-47DA-ADFE-9A5A1A89AAC3}",
+    "name": "HomeMatic RF Interface Configurator",
+    "type": 4,
+    "vendor": "HomeMatic",
+    "aliases": ["HomeMatic RF-Interface Konfigurator"],
+    "parentRequirements": ["{2F910A05-3607-4070-A6FF-53539E5D3BBB}"],
+    "childRequirements": [],
+    "implemented": ["{E2966A08-BCE1-4E76-8C4B-7E0136244E1B}"],
+    "prefix": "HM"
+}

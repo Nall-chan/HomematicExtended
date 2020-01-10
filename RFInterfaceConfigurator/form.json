@@ -1,0 +1,39 @@
+{
+    "actions": [
+        {
+            "type": "Configurator",
+            "name": "RFInterfaces",
+            "caption": "RF-Interfaces",
+            "add": false,
+            "delete": true,
+            "rowCount": 5,
+            "sort": {
+                "column": "address",
+                "direction": "ascending"
+            },
+            "columns": [
+                {
+                    "caption": "Type",
+                    "name": "type",
+                    "width": "160px"
+                },
+                {
+                    "caption": "Address",
+                    "name": "address",
+                    "width": "160px"
+                },
+                {
+                    "caption": "Name",
+                    "name": "name",
+                    "width": "160px"
+                },
+                {
+                    "caption": "Location",
+                    "name": "location",
+                    "width": "auto"
+                }
+            ],
+            "values": []
+        }
+    ]
+}

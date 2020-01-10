@@ -7,9 +7,7 @@
             "Interval smaller as 5 not possible.": "Interval kleiner 5 nicht möglich.",
             "read RF-Interfaces": "RF-Interfaces auslesen",
             "Instance has no active parent instance!": "Keine aktive Parent Instanz!",
-            "Error on read interfaces:": "Fehler beim lesen des Interfaces:",
-            "Address": "Adresse",
-            "Location": "Lokation"
+            "Error on read interfaces:": "Fehler beim lesen des Interfaces:"
         }
     }
 }

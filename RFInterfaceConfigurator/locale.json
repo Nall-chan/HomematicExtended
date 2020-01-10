@@ -1,0 +1,10 @@
+{
+    "translations": {
+        "de": {
+            "Instance has no active parent instance!": "Keine aktive Parent Instanz!",
+            "Error on read interfaces:": "Fehler beim lesen des Interfaces:",
+            "Address": "Adresse",
+            "Location": "Lokation"
+        }
+    }
+}
