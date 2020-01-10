@@ -64,6 +64,44 @@ class HomeMaticRFInterfaceSplitter extends HMBase
             echo $this->Translate($exc->getMessage());
         }
     }
+    /**
+     * Interne Funktion des SDK.
+     *
+     * @param type $JSONString Der IPS-Datenstring
+     *
+     * @return string Die Antwort an den anfragenden Child
+     */
+    public function ForwardData($JSONString)
+    {
+        return serialize($this->GetInterfaces());
+    }
+
+    //################# PUBLIC
+
+    /**
+     * IPS-Instanz-Funktion 'HM_ReadRFInterfaces'.
+     * Liest die Daten der RF-Interfaces und versendet sie an die Childs.
+     *
+     * @return bool True bei Erfolg, sonst false.
+     */
+    public function ReadRFInterfaces()
+    {
+        $Result = $this->GetInterfaces();
+        $ret = false;
+        foreach ($Result as $ProtocolID => $Protocol) {
+            if (!is_array($Protocol)) {
+                continue;
+            }
+            foreach ($Protocol as $InterfaceIndex => $Interface) {
+                $this->SendDebug('Proto' . $ProtocolID . ' If' . $InterfaceIndex, $Interface, 0);
+                $Interface['DataID'] = '{E2966A08-BCE1-4E76-8C4B-7E0136244E1B}';
+                $Data = json_encode($Interface);
+                $this->SendDataToChildren($Data);
+                $ret = true;
+            }
+        }
+        return $ret;
+    }
 
     //################# protected
 
@@ -128,17 +166,6 @@ class HomeMaticRFInterfaceSplitter extends HMBase
         return true;
     }
     /**
-     * Interne Funktion des SDK.
-     *
-     * @param type $JSONString Der IPS-Datenstring
-     *
-     * @return string Die Antwort an den anfragenden Child
-     */
-    public function ForwardData($JSONString)
-    {
-        return serialize($this->GetInterfaces());
-    }
-    /**
      * Liest alle Daten der RF-Interfaces aus der CCU aus.
      *
      * @return array Ein Array mit den Daten der Interfaces.
@@ -177,40 +204,11 @@ class HomeMaticRFInterfaceSplitter extends HMBase
                 continue;
             }
             $Result = json_decode($ResultJSON, true);
-            if (($Result === false) or is_null($Result)) {
+            if (($Result === false) || is_null($Result)) {
                 $this->SendDebug('Error decode', $Result, 0);
                 trigger_error($this->Translate('Error on read interfaces:') . $ProtocolId, E_USER_NOTICE);
             } else {
                 $ret[$ProtocolId] = $Result;
-            }
-        }
-        return $ret;
-    }
-
-    //################# PUBLIC
-
- 
-
-    /**
-     * IPS-Instanz-Funktion 'HM_ReadRFInterfaces'.
-     * Liest die Daten der RF-Interfaces und versendet sie an die Childs.
-     *
-     * @return bool True bei Erfolg, sonst false.
-     */
-    public function ReadRFInterfaces()
-    {
-        $Result = $this->GetInterfaces();
-        $ret = false;
-        foreach ($Result as $ProtocolID => $Protocol) {
-            if (!is_array($Protocol)) {
-                continue;
-            }
-            foreach ($Protocol as $InterfaceIndex => $Interface) {
-                $this->SendDebug('Proto' . $ProtocolID . ' If' . $InterfaceIndex, $Interface, 0);
-                $Interface['DataID'] = '{E2966A08-BCE1-4E76-8C4B-7E0136244E1B}';
-                $Data = json_encode($Interface);
-                $this->SendDataToChildren($Data);
-                $ret = true;
             }
         }
         return $ret;

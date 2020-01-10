@@ -45,6 +45,43 @@ class ParaInterface extends HMBase
         }
     }
 
+    //################# PUBLIC
+
+    /**
+     * IPS-Instanz-Funktion 'HM_ReadPara'.
+     * Liest die Daten des WR-Interface.
+     *
+     * @return bool True bei Erfolg, sonst false.
+     */
+    public function ReadPara()
+    {
+        $Result = $this->GetParamset();
+        return $Result;
+    }
+
+    public function ReadRSSI()
+    {
+        $Result = $this->GetRssiInfo();
+        return $Result;
+    }
+
+    /**
+     * IPS-Instanz-Funktion 'HM_WritePara'.
+     * Liest die Daten des WR-Interface.
+     *
+     * @return bool True bei Erfolg, sonst false.
+     */
+    public function WritePara(string $Parameter)
+    {
+        $Data = @json_decode($Parameter, true);
+        if ($Data === false) {
+            trigger_error('Error in Parameter', E_USER_NOTICE);
+            return false;
+        }
+        $Result = $this->PutParamset($Data);
+        return $Result;
+    }
+
     //################# protected
 
     /**
@@ -150,7 +187,7 @@ class ParaInterface extends HMBase
             'MethodName' => 'putParamset',
             'WaitTime'   => 5000,
             'Data'       => $Parameter //array($this->ReadPropertyString('Address'),'MASTER','TEXT1','1234')
-            ];
+        ];
         $this->SendDebug('Send', $ParentData, 0);
 
         $JSON = json_encode($ParentData);
@@ -161,43 +198,6 @@ class ParaInterface extends HMBase
             $this->SendDebug('Error', '', 0);
         }
         $this->SendDebug('Receive', $Result, 0);
-        return $Result;
-    }
-
-    //################# PUBLIC
-
-    /**
-     * IPS-Instanz-Funktion 'HM_ReadPara'.
-     * Liest die Daten des WR-Interface.
-     *
-     * @return bool True bei Erfolg, sonst false.
-     */
-    public function ReadPara()
-    {
-        $Result = $this->GetParamset();
-        return $Result;
-    }
-
-    public function ReadRSSI()
-    {
-        $Result = $this->GetRssiInfo();
-        return $Result;
-    }
-
-    /**
-     * IPS-Instanz-Funktion 'HM_WritePara'.
-     * Liest die Daten des WR-Interface.
-     *
-     * @return bool True bei Erfolg, sonst false.
-     */
-    public function WritePara(string $Parameter)
-    {
-        $Data = @json_decode($Parameter, true);
-        if ($Data === false) {
-            trigger_error('Error in Parameter', E_USER_NOTICE);
-            return false;
-        }
-        $Result = $this->PutParamset($Data);
         return $Result;
     }
 }

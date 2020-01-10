@@ -70,6 +70,20 @@ class HomeMaticPowermeter extends HMBase
         $this->SetNewConfig();
     }
 
+    //################# Datenaustausch
+
+    /**
+     * Interne Funktion des SDK.
+     */
+    public function ReceiveData($JSONString)
+    {
+        try {
+            $this->ReadPowerSysVar();
+        } catch (Exception $exc) {
+            trigger_error($this->Translate($exc->getMessage()), $exc->getCode());
+        }
+    }
+
     //################# protected
 
     /**
@@ -86,20 +100,6 @@ class HomeMaticPowermeter extends HMBase
     protected function IOChangeState($State)
     {
         $this->ApplyChanges();
-    }
-
-    //################# Datenaustausch
-
-    /**
-     * Interne Funktion des SDK.
-     */
-    public function ReceiveData($JSONString)
-    {
-        try {
-            $this->ReadPowerSysVar();
-        } catch (Exception $exc) {
-            trigger_error($this->Translate($exc->getMessage()), $exc->getCode());
-        }
     }
 
     //################# PRIVATE
@@ -196,7 +196,7 @@ class HomeMaticPowermeter extends HMBase
      */
     private function GetPowerAddress(int $EventID)
     {
-        if (($EventID == 0) or (!IPS_VariableExists($EventID))) {
+        if (($EventID == 0) || (!IPS_VariableExists($EventID))) {
             $this->HMDeviceAddress = '';
             $this->HMDeviceDatapoint = '';
             $this->HMProtocol = 'BidCos-RF';

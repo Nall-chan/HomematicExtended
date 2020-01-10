@@ -1,27 +1,28 @@
 {
-    "elements":
-            [{
-                    "name": "Protocol",
-                    "type": "Select",
-                    "caption": "System",
-                    "options": [
-                        {
-                            "caption": "Radio",
-                            "value": 0
-                        },
-                        {
-                            "caption": "Wired",
-                            "value": 1
-                        },
-                        {
-                            "caption": "IP",
-                            "value": 2
-                        }
-                    ]
+    "elements": [
+        {
+            "name": "Protocol",
+            "type": "Select",
+            "caption": "System",
+            "options": [
+                {
+                    "caption": "Radio",
+                    "value": 0
                 },
                 {
-                    "name": "Address",
-                    "type": "ValidationTextBox",
-                    "caption": "Address"
-                }]
+                    "caption": "Wired",
+                    "value": 1
+                },
+                {
+                    "caption": "IP",
+                    "value": 2
+                }
+            ]
+        },
+        {
+            "name": "Address",
+            "type": "ValidationTextBox",
+            "caption": "Address"
+        }
+    ]
 }

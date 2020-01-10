@@ -153,476 +153,6 @@ class HomeMaticSystemvariablen extends HMBase
         return;
     }
 
-    //################# protected
-
-    /**
-     * Interne Funktion des SDK.
-     */
-    protected function KernelReady()
-    {
-        $this->ApplyChanges();
-    }
-
-    /**
-     * Wird ausgeführt wenn sich der Status vom Parent ändert.
-     */
-    protected function IOChangeState($State)
-    {
-        $this->ApplyChanges();
-    }
-
-    /**
-     * Registriert Nachrichten des aktuellen Parent und ließt die Adresse der CCU aus dem Parent.
-     *
-     * @return int ID des Parent.
-     */
-    protected function RegisterParent()
-    {
-        parent::RegisterParent();
-        $this->SetSummary($this->HMAddress);
-    }
-
-    /**
-     * Prüft die Konfiguration und setzt den Status der Instanz.
-     *
-     * @return bool True wenn Konfig ok, sonst false.
-     */
-    private function SetNewConfig()
-    {
-        $OldEvent = $this->Event;
-        if ($OldEvent > 0) {
-            $this->UnregisterMessage($OldEvent, VM_DELETE);
-            $this->UnregisterReference($OldEvent);
-            $this->Event = 0;
-        }
-        $Event = $this->ReadPropertyInteger('EventID');
-        $Interval = $this->ReadPropertyInteger('Interval');
-
-        if ($Interval < 0) {
-            $this->SetTimerInterval('ReadHMSysVar', 0);
-            $this->SetStatus(IS_EBASE + 2); //Error Timer is negativ
-            return false;
-        }
-
-        if ($Interval == 0) {
-            $this->SetTimerInterval('ReadHMSysVar', 0);
-
-            if ($Event == 0) {
-                $this->SetStatus(IS_INACTIVE); // kein Trigger und kein Timer aktiv
-                return false;
-            } else {
-                if ($this->GetTriggerVar()) {
-                    $this->SetReceiveDataFilter('.*"DeviceID":"' . $this->HMDeviceAddress . '","VariableName":"' . $this->HMDeviceDatapoint . '".*');
-                    $this->RegisterMessage($Event, VM_DELETE);
-                    $this->RegisterReference($Event);
-                    $this->Event = $Event;
-                    $this->SetStatus(IS_ACTIVE); // OK
-                    return true;
-                }
-                $this->SetReceiveDataFilter('.*9999999999.*');
-                $this->Event = 0;
-                $this->SetTimerInterval('ReadHMSysVar', 0);
-                $this->SetStatus(IS_INACTIVE); // kein Trigger und kein Timer aktiv
-                return false;
-            }
-        }
-
-        if ($Interval < 5) {
-            $this->SetStatus(IS_EBASE + 3);  //Warnung Trigger zu klein
-            $this->SetTimerInterval('ReadHMSysVar', 0);
-            return false;
-        }
-
-        $this->SetTimerInterval('ReadHMSysVar', $Interval * 1000);
-        $this->SetStatus(IS_ACTIVE); //OK
-        return true;
-    }
-
-    /**
-     * Prüft und holt alle Daten zu der Event-Variable und Instanz.
-     *
-     * @return bool True wenn Quelle gültig ist, sonst false.
-     */
-    private function GetTriggerVar()
-    {
-        $EventID = $this->ReadPropertyInteger('EventID');
-        if (($EventID == 0) or (!IPS_VariableExists($EventID))) {
-            $this->HMDeviceAddress = '';
-            $this->HMDeviceDatapoint = '';
-            return false;
-        }
-        $parent = IPS_GetParent($EventID);
-        if (IPS_GetInstance($parent)['ModuleInfo']['ModuleID'] != '{EE4A81C6-5C90-4DB7-AD2F-F6BBD521412E}') {
-            $this->HMDeviceAddress = '';
-            $this->HMDeviceDatapoint = '';
-            return false;
-        }
-        $this->HMDeviceAddress = IPS_GetProperty($parent, 'Address');
-        $this->HMDeviceDatapoint = IPS_GetObject($EventID)['ObjectIdent'];
-        return true;
-    }
-
-    /**
-     * Liest alle Systemvariablen aus der CCU und legt diese in IPS mit dem dazugehörigen Profil an.
-     *
-     * @throws Exception Wenn CUU nicht erreichbar oder Daten nicht auswertbar sind.
-     *
-     * @return bool True bei Erfolg, sonst false.
-     */
-    private function ReadSysVars()
-    {
-        // Sysvars
-        $HMScript = 'SysVars=dom.GetObject(ID_SYSTEM_VARIABLES).EnumUsedIDs();';
-
-        try {
-            $HMScriptResult = $this->LoadHMScript('SysVar.exe', $HMScript);
-            $xmlVars = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
-        } catch (Exception $exc) {
-            $this->SendDebug('ID_SYSTEM_VARIABLES', $exc->getMessage(), 0);
-
-            throw new Exception($exc->getMessage(), E_USER_NOTICE);
-        }
-
-        //Time & Timezone
-        $HMScript = 'Now=system.Date("%F %T%z");' . PHP_EOL
-                . 'TimeZone=system.Date("%z");' . PHP_EOL;
-
-        try {
-            $HMScriptResult = $this->LoadHMScript('Time.exe', $HMScript);
-            $xmlTime = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
-        } catch (Exception $exc) {
-            $this->SendDebug('Time', $exc->getMessage(), 0);
-
-            throw new Exception($exc->getMessage(), E_USER_NOTICE);
-        }
-
-        $Date = new DateTime((string) $xmlTime->Now);
-        $CCUTime = $Date->getTimestamp();
-        $Date = new DateTime();
-        $NowTime = $Date->getTimestamp();
-        $TimeDiff = $NowTime - $CCUTime;
-        $CCUTimeZone = (string) $xmlTime->TimeZone;
-        $Result = true;
-        $OldVars = $this->SystemVars;
-        $OldVarsChange = false;
-        foreach (explode(chr(0x09), (string) $xmlVars->SysVars) as $SysVar) {
-            $VarIdent = $SysVar;
-            $HMScript = 'Name=dom.GetObject(' . $SysVar . ').Name();' . PHP_EOL
-                    . 'ValueType=dom.GetObject(' . $SysVar . ').ValueType();' . PHP_EOL
-                    . 'integer Type=dom.GetObject(' . $SysVar . ').Type();' . PHP_EOL
-                    . 'WriteLine(dom.GetObject(' . $SysVar . ').Variable());' . PHP_EOL
-                    . 'Timestamp=dom.GetObject(' . $SysVar . ').Timestamp();' . PHP_EOL;
-
-            try {
-                $HMScriptResult = $this->LoadHMScript('SysVar.exe', $HMScript);
-                $lines = explode("\r\n", $HMScriptResult);
-                $xmlVar = @new SimpleXMLElement(utf8_encode(array_pop($lines)), LIBXML_NOBLANKS + LIBXML_NONET);
-            } catch (Exception $exc) {
-                $this->SendDebug($SysVar, $exc->getMessage(), 0);
-                trigger_error($this->Translate($exc->getMessage()), E_USER_NOTICE);
-                $Result = false;
-                continue;
-            }
-            if ((int) $xmlVar->Type == 2113) {
-                if (!$this->ReadPropertyBoolean('EnableAlarmDP')) {
-                    continue;
-                } else {
-                    $VarIdent = 'AlDP' . $SysVar;
-                }
-            }
-            $xmlVar->addChild('Variable', $lines[0]);
-            $VarID = @$this->GetIDForIdent($VarIdent);
-            $VarType = self::$CcuVarType[(int) $xmlVar->ValueType];
-            $VarProfil = 'HM.SysVar' . (string) $this->InstanceID . '.' . (string) $SysVar;
-            $VarName = (string) $xmlVar->Name;
-
-            if (((int) $xmlVar->ValueType != VARIABLETYPE_STRING) and (!IPS_VariableProfileExists($VarProfil))) { // neu anlegen wenn VAR neu ist oder Profil nicht vorhanden
-                $HMScript = 'Name=dom.GetObject(' . $SysVar . ').Name();' . PHP_EOL
-                        . 'ValueSubType=dom.GetObject(' . $SysVar . ').ValueSubType();' . PHP_EOL
-                        . 'ValueList=dom.GetObject(' . $SysVar . ').ValueList();' . PHP_EOL
-                        . 'ValueName0=dom.GetObject(' . $SysVar . ').ValueName0();' . PHP_EOL
-                        . 'ValueName1=dom.GetObject(' . $SysVar . ').ValueName1();' . PHP_EOL
-                        . 'ValueMin=dom.GetObject(' . $SysVar . ').ValueMin();' . PHP_EOL
-                        . 'ValueMax=dom.GetObject(' . $SysVar . ').ValueMax();' . PHP_EOL
-                        . 'ValueUnit=dom.GetObject(' . $SysVar . ').ValueUnit();' . PHP_EOL;
-
-                try {
-                    $HMScriptResult = $this->LoadHMScript('SysVar.exe', $HMScript);
-                    $xmlVar2 = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
-                } catch (Exception $exc) {
-                    $this->SendDebug($SysVar, $exc->getMessage(), 0);
-                    trigger_error($this->Translate($exc->getMessage()), E_USER_NOTICE);
-                    $Result = false;
-                    continue;
-                }
-
-                if (IPS_VariableProfileExists($VarProfil)) {
-                    IPS_DeleteVariableProfile($VarProfil);
-                }
-
-                IPS_CreateVariableProfile($VarProfil, $VarType);
-                switch ($VarType) {
-                    case VARIABLETYPE_BOOLEAN:
-                        if (isset($xmlVar2->ValueName0)) {
-                            @IPS_SetVariableProfileAssociation($VarProfil, 0, (string) $xmlVar2->ValueName0, '', -1);
-                        }
-                        if (isset($xmlVar2->ValueName1)) {
-                            @IPS_SetVariableProfileAssociation($VarProfil, 1, (string) $xmlVar2->ValueName1, '', -1);
-                        }
-                        break;
-                    case VARIABLETYPE_FLOAT:
-                        @IPS_SetVariableProfileDigits($VarProfil, strlen((string) $xmlVar2->ValueMin) - strpos('.', (string) $xmlVar2->ValueMin) - 1);
-                        @IPS_SetVariableProfileValues($VarProfil, (float) $xmlVar2->ValueMin, (float) $xmlVar2->ValueMax, 1);
-                        break;
-                }
-                if (isset($xmlVar2->ValueUnit)) {
-                    @IPS_SetVariableProfileText($VarProfil, '', ' ' . (string) $xmlVar2->ValueUnit);
-                }
-                if ((isset($xmlVar2->ValueSubType)) and ((int) $xmlVar2->ValueSubType == 29)) {
-                    foreach (explode(';', (string) $xmlVar2->ValueList) as $Index => $ValueList) {
-                        @IPS_SetVariableProfileAssociation($VarProfil, $Index, trim($ValueList), '', -1);
-                    }
-                }
-            }
-            if ($VarID === false) {
-                if ((int) $xmlVar->ValueType == VARIABLETYPE_STRING) {
-                    $VarProfil = '';
-                }
-                $this->MaintainVariable($VarIdent, $VarName, $VarType, $VarProfil, 0, true);
-                $this->EnableAction($VarIdent);
-                $VarID = @$this->GetIDForIdent($VarIdent);
-                if ((int) $xmlVar->ValueType != VARIABLETYPE_STRING) {
-                    $OldVars[$VarID] = $SysVar;
-                    $OldVarsChange = true;
-                    $this->RegisterMessage($VarID, VM_DELETE);
-                }
-            }
-            if (IPS_GetVariable($VarID)['VariableType'] != $VarType) {
-                $this->SendDebug($SysVar, 'Type of CCU Systemvariable ' . IPS_GetName($VarID) . ' has changed.', 0);
-                trigger_error(sprintf($this->Translate('Type of CCU Systemvariable %s has changed.'), IPS_GetName($VarID)), E_USER_NOTICE);
-                $Result = false;
-                continue;
-            }
-            $VarTime = new DateTime((string) $xmlVar->Timestamp . $CCUTimeZone);
-
-            if (!(IPS_GetVariable($VarID)['VariableUpdated'] < ($TimeDiff + $VarTime->getTimestamp()))) {
-                continue;
-            }
-            switch ($VarType) {
-                case VARIABLETYPE_BOOLEAN:
-                    if ((int) $xmlVar->Type == 2113) {
-                        $this->ProcessAlarmVariable($VarID, $SysVar, $CCUTimeZone);
-                    } else {
-                        $this->SetValue($VarIdent, (int) $xmlVar->Variable);
-                    }
-                    break;
-                case VARIABLETYPE_INTEGER:
-                    $this->SetValue($VarIdent, (int) $xmlVar->Variable);
-                    break;
-                case VARIABLETYPE_FLOAT:
-                    $this->SetValue($VarIdent, (float) $xmlVar->Variable);
-                    break;
-                case VARIABLETYPE_STRING:
-                    $this->SetValue($VarIdent, (string) $xmlVar->Variable);
-                    break;
-            }
-        }
-        if ($OldVarsChange) {
-            $this->SystemVars = $OldVars;
-        }
-        return $Result;
-    }
-
-    /**
-     * Liest die Daten einer Systemvariable vom Typ 'Alarm' aus. Visualisiert den Status und startet bei Bedarf ein Script in IPS.
-     *
-     * @param int    $ParentID    IPS-ID der Alarmvariable.
-     * @param string $SysVar      ID der Alarmvariable in der CCU.
-     * @param string $CCUTimeZone Die Zeitzone der CCU.
-     *
-     * @return bool True bei Erfolg, sonst false.
-     */
-    private function ProcessAlarmVariable(int $ParentID, string $SysVar, string $CCUTimeZone)
-    {
-        $HMScript = 'Value = dom.GetObject(' . $SysVar . ').Value();
-                        string FirstTime = dom.GetObject(' . $SysVar . ').AlOccurrenceTime();
-                        string LastTime = dom.GetObject(' . $SysVar . ').LastTriggerTime();
-                        integer LastTriggerID = dom.GetObject(' . $SysVar . ').LastTriggerID();
-                        if( LastTriggerID == ID_ERROR )
-                        {
-                         LastTriggerID = dom.GetObject(' . $SysVar . ').AlTriggerDP();
-                        }
-                        string ChannelName = "";
-                        string Room = "";
-                        object oLastTrigger = dom.GetObject( LastTriggerID );
-                        if( oLastTrigger )
-                        {
-                         object oLastTriggerChannel = dom.GetObject( oLastTrigger.Channel() );
-                         if( oLastTriggerChannel )
-                         {
-                          string ChannelName = oLastTriggerChannel.Name();
-                          string sRID;
-                          foreach( sRID, oLastTriggerChannel.ChnRoom() )
-                          {
-                           object oRoom = dom.GetObject( sRID );
-                           if( oRoom )
-                           {
-                            Room = oRoom.Name();
-                           }
-                          }
-                         }
-                        }
-                       }' . PHP_EOL;
-
-        try {
-            $HMScriptResult = $this->LoadHMScript('AlarmVar.exe', $HMScript);
-            $xmlData = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
-        } catch (Exception $exc) {
-            $this->SendDebug('AlarmVar.exe', $exc->getMessage(), 0);
-            trigger_error($this->Translate($exc->getMessage()), E_USER_NOTICE);
-            return false;
-        }
-
-        $ScriptData = [];
-        $ScriptData['SENDER'] = 'AlarmDP';
-        $ScriptData['VARIABLE'] = $ParentID;
-        $ScriptData['OLDVALUE'] = GetValueBoolean($ParentID);
-        $ScriptData['VALUE'] = (string) $xmlData->Value == 'true';
-        if ($ScriptData['VALUE']) {
-            $Time = new DateTime((string) $xmlData->LastTime . $CCUTimeZone);
-            $ScriptData['LastTime'] = $Time->getTimestamp();
-            $Time = new DateTime((string) $xmlData->FirstTime . $CCUTimeZone);
-            $ScriptData['FirstTime'] = $Time->getTimestamp();
-            $ScriptData['Room'] = (string) $xmlData->Room;
-            $ScriptData['ChannelName'] = (string) $xmlData->ChannelName;
-            $Channel = explode('.', (string) $xmlData->oLastTrigger);
-            if (count($Channel) >= 2) {
-                $ScriptData['Channel'] = $Channel[1];
-                $ScriptData['DP'] = $Channel[2];
-            } else {
-                $ScriptData['Channel'] = 'unbekannt';
-                $ScriptData['DP'] = 'unbekannt';
-            }
-        } else {
-            $ScriptData['LastTime'] = 0;
-            $ScriptData['FirstTime'] = 0;
-            $ScriptData['Room'] = '';
-            $ScriptData['ChannelName'] = '';
-            $ScriptData['Channel'] = '';
-            $ScriptData['DP'] = '';
-        }
-
-        SetValue($ParentID, $ScriptData['VALUE']);
-        $LastTimeID = $this->RegisterSubVariable($ParentID, 'LastTime', 'Letzter Alarm', VARIABLETYPE_INTEGER, '~UnixTimestamp');
-        SetValue($LastTimeID, $ScriptData['LastTime']);
-        $FirstTimeID = $this->RegisterSubVariable($ParentID, 'FirstTime', 'Erster Alarm', VARIABLETYPE_INTEGER, '~UnixTimestamp');
-        SetValue($FirstTimeID, $ScriptData['FirstTime']);
-        $RoomID = $this->RegisterSubVariable($ParentID, 'Room', 'Raum', VARIABLETYPE_STRING);
-        SetValue($RoomID, $ScriptData['Room']);
-        $ChannelNameID = $this->RegisterSubVariable($ParentID, 'ChannelName', 'Name', VARIABLETYPE_STRING);
-        SetValue($ChannelNameID, $ScriptData['ChannelName']);
-
-        $ScriptID = $this->ReadPropertyInteger('AlarmScriptID');
-        if ($ScriptID > 0) {
-            IPS_RunScriptEx($ScriptID, $ScriptData);
-        }
-        return true;
-    }
-
-    /**
-     * Schreibt einen Wert in eine Systemvariable auf der CCU.
-     *
-     * @param string $Parameter Der IDENT der IPS-Statusvariable = Die ID der Systemvariable in der CCU.
-     * @param string $ValueStr  Der neue Wert der Systemvariable.
-     *
-     * @throws Exception Wenn CUU nicht erreichbar oder Daten nicht auswertbar sind.
-     *
-     * @return bool True bei Erfolg, sonst false.
-     */
-    private function WriteSysVar(string $Parameter, string $ValueStr)
-    {
-        if (IPS_GetKernelRunlevel() != KR_READY) {
-            return false;
-        }
-        if (!$this->HasActiveParent()) {
-            throw new Exception('Instance has no active parent instance!', E_USER_NOTICE);
-        }
-        $url = 'SysVar.exe';
-        $HMScript = 'State=dom.GetObject(' . $Parameter . ').State("' . $ValueStr . '");';
-
-        try {
-            $HMScriptResult = $this->LoadHMScript($url, $HMScript);
-            $xml = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
-        } catch (Exception $exc) {
-            $this->SendDebug('SysVar.exe', $exc->getMessage(), 0);
-
-            throw new Exception('Error on write CCU Systemvariable.', E_USER_NOTICE);
-        }
-        if ((string) $xml->State == 'true') {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * Erstellt eine Untervariable in IPS.
-     *
-     * @param int    $ParentID IPS-ID der übergeordneten Variable.
-     * @param string $Ident    IDENT der neuen Statusvariable.
-     * @param string $Name     Name der neuen Statusvariable.
-     * @param int    $Type     Der zu erstellende Typ von Variable.
-     * @param string $Profile  Das dazugehörige Variabelprofil.
-     * @param int    $Position Position der Variable.
-     *
-     * @throws Exception Wenn Variable nicht erstellt werden konnte.
-     *
-     * @return int IPS-ID der neuen Variable.
-     */
-    private function RegisterSubVariable($ParentID, $Ident, $Name, $Type, $Profile = '', $Position = 0)
-    {
-        if ($Profile != '') {
-            if (IPS_VariableProfileExists('~' . $Profile)) {
-                $Profile = '~' . $Profile;
-            }
-            if (!IPS_VariableProfileExists($Profile)) {
-                throw new Exception('Profile with name ' . $Profile . ' does not exist', E_USER_NOTICE);
-            }
-        }
-
-        $vid = @IPS_GetObjectIDByIdent($Ident, $ParentID);
-
-        if ($vid === false) {
-            $vid = 0;
-        }
-
-        if ($vid > 0) {
-            if (!IPS_VariableExists($vid)) {
-                throw new Exception('Ident with name ' . $Ident . ' is used for wrong object type', E_USER_NOTICE); //bail out
-            }
-            if (IPS_GetVariable($vid)['VariableType'] != $Type) {
-                IPS_DeleteVariable($vid);
-                $vid = 0;
-            }
-        }
-
-        if ($vid == 0) {
-            $vid = IPS_CreateVariable($Type);
-
-            IPS_SetParent($vid, $ParentID);
-            IPS_SetIdent($vid, $Ident);
-            IPS_SetName($vid, $Name);
-            IPS_SetPosition($vid, $Position);
-            //IPS_SetReadOnly($vid, true);
-        }
-
-        IPS_SetVariableCustomProfile($vid, $Profile);
-        if (!in_array($vid, $this->GetReferenceList())) {
-            $this->RegisterReference($vid);
-        }
-        return $vid;
-    }
-
     //################# ActionHandler
 
     /**
@@ -984,6 +514,476 @@ class HomeMaticSystemvariablen extends HMBase
 
         trigger_error($this->Translate('Error on write Data ') . $Parameter, E_USER_NOTICE);
         return false;
+    }
+
+    //################# protected
+
+    /**
+     * Interne Funktion des SDK.
+     */
+    protected function KernelReady()
+    {
+        $this->ApplyChanges();
+    }
+
+    /**
+     * Wird ausgeführt wenn sich der Status vom Parent ändert.
+     */
+    protected function IOChangeState($State)
+    {
+        $this->ApplyChanges();
+    }
+
+    /**
+     * Registriert Nachrichten des aktuellen Parent und ließt die Adresse der CCU aus dem Parent.
+     *
+     * @return int ID des Parent.
+     */
+    protected function RegisterParent()
+    {
+        parent::RegisterParent();
+        $this->SetSummary($this->HMAddress);
+    }
+
+    /**
+     * Prüft die Konfiguration und setzt den Status der Instanz.
+     *
+     * @return bool True wenn Konfig ok, sonst false.
+     */
+    private function SetNewConfig()
+    {
+        $OldEvent = $this->Event;
+        if ($OldEvent > 0) {
+            $this->UnregisterMessage($OldEvent, VM_DELETE);
+            $this->UnregisterReference($OldEvent);
+            $this->Event = 0;
+        }
+        $Event = $this->ReadPropertyInteger('EventID');
+        $Interval = $this->ReadPropertyInteger('Interval');
+
+        if ($Interval < 0) {
+            $this->SetTimerInterval('ReadHMSysVar', 0);
+            $this->SetStatus(IS_EBASE + 2); //Error Timer is negativ
+            return false;
+        }
+
+        if ($Interval == 0) {
+            $this->SetTimerInterval('ReadHMSysVar', 0);
+
+            if ($Event == 0) {
+                $this->SetStatus(IS_INACTIVE); // kein Trigger und kein Timer aktiv
+                return false;
+            } else {
+                if ($this->GetTriggerVar()) {
+                    $this->SetReceiveDataFilter('.*"DeviceID":"' . $this->HMDeviceAddress . '","VariableName":"' . $this->HMDeviceDatapoint . '".*');
+                    $this->RegisterMessage($Event, VM_DELETE);
+                    $this->RegisterReference($Event);
+                    $this->Event = $Event;
+                    $this->SetStatus(IS_ACTIVE); // OK
+                    return true;
+                }
+                $this->SetReceiveDataFilter('.*9999999999.*');
+                $this->Event = 0;
+                $this->SetTimerInterval('ReadHMSysVar', 0);
+                $this->SetStatus(IS_INACTIVE); // kein Trigger und kein Timer aktiv
+                return false;
+            }
+        }
+
+        if ($Interval < 5) {
+            $this->SetStatus(IS_EBASE + 3);  //Warnung Trigger zu klein
+            $this->SetTimerInterval('ReadHMSysVar', 0);
+            return false;
+        }
+
+        $this->SetTimerInterval('ReadHMSysVar', $Interval * 1000);
+        $this->SetStatus(IS_ACTIVE); //OK
+        return true;
+    }
+
+    /**
+     * Prüft und holt alle Daten zu der Event-Variable und Instanz.
+     *
+     * @return bool True wenn Quelle gültig ist, sonst false.
+     */
+    private function GetTriggerVar()
+    {
+        $EventID = $this->ReadPropertyInteger('EventID');
+        if (($EventID == 0) || (!IPS_VariableExists($EventID))) {
+            $this->HMDeviceAddress = '';
+            $this->HMDeviceDatapoint = '';
+            return false;
+        }
+        $parent = IPS_GetParent($EventID);
+        if (IPS_GetInstance($parent)['ModuleInfo']['ModuleID'] != '{EE4A81C6-5C90-4DB7-AD2F-F6BBD521412E}') {
+            $this->HMDeviceAddress = '';
+            $this->HMDeviceDatapoint = '';
+            return false;
+        }
+        $this->HMDeviceAddress = IPS_GetProperty($parent, 'Address');
+        $this->HMDeviceDatapoint = IPS_GetObject($EventID)['ObjectIdent'];
+        return true;
+    }
+
+    /**
+     * Liest alle Systemvariablen aus der CCU und legt diese in IPS mit dem dazugehörigen Profil an.
+     *
+     * @throws Exception Wenn CUU nicht erreichbar oder Daten nicht auswertbar sind.
+     *
+     * @return bool True bei Erfolg, sonst false.
+     */
+    private function ReadSysVars()
+    {
+        // Sysvars
+        $HMScript = 'SysVars=dom.GetObject(ID_SYSTEM_VARIABLES).EnumUsedIDs();';
+
+        try {
+            $HMScriptResult = $this->LoadHMScript('SysVar.exe', $HMScript);
+            $xmlVars = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
+        } catch (Exception $exc) {
+            $this->SendDebug('ID_SYSTEM_VARIABLES', $exc->getMessage(), 0);
+
+            throw new Exception($exc->getMessage(), E_USER_NOTICE);
+        }
+
+        //Time & Timezone
+        $HMScript = 'Now=system.Date("%F %T%z");' . PHP_EOL
+                . 'TimeZone=system.Date("%z");' . PHP_EOL;
+
+        try {
+            $HMScriptResult = $this->LoadHMScript('Time.exe', $HMScript);
+            $xmlTime = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
+        } catch (Exception $exc) {
+            $this->SendDebug('Time', $exc->getMessage(), 0);
+
+            throw new Exception($exc->getMessage(), E_USER_NOTICE);
+        }
+
+        $Date = new DateTime((string) $xmlTime->Now);
+        $CCUTime = $Date->getTimestamp();
+        $Date = new DateTime();
+        $NowTime = $Date->getTimestamp();
+        $TimeDiff = $NowTime - $CCUTime;
+        $CCUTimeZone = (string) $xmlTime->TimeZone;
+        $Result = true;
+        $OldVars = $this->SystemVars;
+        $OldVarsChange = false;
+        foreach (explode(chr(0x09), (string) $xmlVars->SysVars) as $SysVar) {
+            $VarIdent = $SysVar;
+            $HMScript = 'Name=dom.GetObject(' . $SysVar . ').Name();' . PHP_EOL
+                    . 'ValueType=dom.GetObject(' . $SysVar . ').ValueType();' . PHP_EOL
+                    . 'integer Type=dom.GetObject(' . $SysVar . ').Type();' . PHP_EOL
+                    . 'WriteLine(dom.GetObject(' . $SysVar . ').Variable());' . PHP_EOL
+                    . 'Timestamp=dom.GetObject(' . $SysVar . ').Timestamp();' . PHP_EOL;
+
+            try {
+                $HMScriptResult = $this->LoadHMScript('SysVar.exe', $HMScript);
+                $lines = explode("\r\n", $HMScriptResult);
+                $xmlVar = @new SimpleXMLElement(utf8_encode(array_pop($lines)), LIBXML_NOBLANKS + LIBXML_NONET);
+            } catch (Exception $exc) {
+                $this->SendDebug($SysVar, $exc->getMessage(), 0);
+                trigger_error($this->Translate($exc->getMessage()), E_USER_NOTICE);
+                $Result = false;
+                continue;
+            }
+            if ((int) $xmlVar->Type == 2113) {
+                if (!$this->ReadPropertyBoolean('EnableAlarmDP')) {
+                    continue;
+                } else {
+                    $VarIdent = 'AlDP' . $SysVar;
+                }
+            }
+            $xmlVar->addChild('Variable', $lines[0]);
+            $VarID = @$this->GetIDForIdent($VarIdent);
+            $VarType = self::$CcuVarType[(int) $xmlVar->ValueType];
+            $VarProfil = 'HM.SysVar' . (string) $this->InstanceID . '.' . (string) $SysVar;
+            $VarName = (string) $xmlVar->Name;
+
+            if (((int) $xmlVar->ValueType != VARIABLETYPE_STRING) && (!IPS_VariableProfileExists($VarProfil))) { // neu anlegen wenn VAR neu ist oder Profil nicht vorhanden
+                $HMScript = 'Name=dom.GetObject(' . $SysVar . ').Name();' . PHP_EOL
+                        . 'ValueSubType=dom.GetObject(' . $SysVar . ').ValueSubType();' . PHP_EOL
+                        . 'ValueList=dom.GetObject(' . $SysVar . ').ValueList();' . PHP_EOL
+                        . 'ValueName0=dom.GetObject(' . $SysVar . ').ValueName0();' . PHP_EOL
+                        . 'ValueName1=dom.GetObject(' . $SysVar . ').ValueName1();' . PHP_EOL
+                        . 'ValueMin=dom.GetObject(' . $SysVar . ').ValueMin();' . PHP_EOL
+                        . 'ValueMax=dom.GetObject(' . $SysVar . ').ValueMax();' . PHP_EOL
+                        . 'ValueUnit=dom.GetObject(' . $SysVar . ').ValueUnit();' . PHP_EOL;
+
+                try {
+                    $HMScriptResult = $this->LoadHMScript('SysVar.exe', $HMScript);
+                    $xmlVar2 = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
+                } catch (Exception $exc) {
+                    $this->SendDebug($SysVar, $exc->getMessage(), 0);
+                    trigger_error($this->Translate($exc->getMessage()), E_USER_NOTICE);
+                    $Result = false;
+                    continue;
+                }
+
+                if (IPS_VariableProfileExists($VarProfil)) {
+                    IPS_DeleteVariableProfile($VarProfil);
+                }
+
+                IPS_CreateVariableProfile($VarProfil, $VarType);
+                switch ($VarType) {
+                    case VARIABLETYPE_BOOLEAN:
+                        if (isset($xmlVar2->ValueName0)) {
+                            @IPS_SetVariableProfileAssociation($VarProfil, 0, (string) $xmlVar2->ValueName0, '', -1);
+                        }
+                        if (isset($xmlVar2->ValueName1)) {
+                            @IPS_SetVariableProfileAssociation($VarProfil, 1, (string) $xmlVar2->ValueName1, '', -1);
+                        }
+                        break;
+                    case VARIABLETYPE_FLOAT:
+                        @IPS_SetVariableProfileDigits($VarProfil, strlen((string) $xmlVar2->ValueMin) - strpos('.', (string) $xmlVar2->ValueMin) - 1);
+                        @IPS_SetVariableProfileValues($VarProfil, (float) $xmlVar2->ValueMin, (float) $xmlVar2->ValueMax, 1);
+                        break;
+                }
+                if (isset($xmlVar2->ValueUnit)) {
+                    @IPS_SetVariableProfileText($VarProfil, '', ' ' . (string) $xmlVar2->ValueUnit);
+                }
+                if ((isset($xmlVar2->ValueSubType)) && ((int) $xmlVar2->ValueSubType == 29)) {
+                    foreach (explode(';', (string) $xmlVar2->ValueList) as $Index => $ValueList) {
+                        @IPS_SetVariableProfileAssociation($VarProfil, $Index, trim($ValueList), '', -1);
+                    }
+                }
+            }
+            if ($VarID === false) {
+                if ((int) $xmlVar->ValueType == VARIABLETYPE_STRING) {
+                    $VarProfil = '';
+                }
+                $this->MaintainVariable($VarIdent, $VarName, $VarType, $VarProfil, 0, true);
+                $this->EnableAction($VarIdent);
+                $VarID = @$this->GetIDForIdent($VarIdent);
+                if ((int) $xmlVar->ValueType != VARIABLETYPE_STRING) {
+                    $OldVars[$VarID] = $SysVar;
+                    $OldVarsChange = true;
+                    $this->RegisterMessage($VarID, VM_DELETE);
+                }
+            }
+            if (IPS_GetVariable($VarID)['VariableType'] != $VarType) {
+                $this->SendDebug($SysVar, 'Type of CCU Systemvariable ' . IPS_GetName($VarID) . ' has changed.', 0);
+                trigger_error(sprintf($this->Translate('Type of CCU Systemvariable %s has changed.'), IPS_GetName($VarID)), E_USER_NOTICE);
+                $Result = false;
+                continue;
+            }
+            $VarTime = new DateTime((string) $xmlVar->Timestamp . $CCUTimeZone);
+
+            if (!(IPS_GetVariable($VarID)['VariableUpdated'] < ($TimeDiff + $VarTime->getTimestamp()))) {
+                continue;
+            }
+            switch ($VarType) {
+                case VARIABLETYPE_BOOLEAN:
+                    if ((int) $xmlVar->Type == 2113) {
+                        $this->ProcessAlarmVariable($VarID, $SysVar, $CCUTimeZone);
+                    } else {
+                        $this->SetValue($VarIdent, (int) $xmlVar->Variable);
+                    }
+                    break;
+                case VARIABLETYPE_INTEGER:
+                    $this->SetValue($VarIdent, (int) $xmlVar->Variable);
+                    break;
+                case VARIABLETYPE_FLOAT:
+                    $this->SetValue($VarIdent, (float) $xmlVar->Variable);
+                    break;
+                case VARIABLETYPE_STRING:
+                    $this->SetValue($VarIdent, (string) $xmlVar->Variable);
+                    break;
+            }
+        }
+        if ($OldVarsChange) {
+            $this->SystemVars = $OldVars;
+        }
+        return $Result;
+    }
+
+    /**
+     * Liest die Daten einer Systemvariable vom Typ 'Alarm' aus. Visualisiert den Status und startet bei Bedarf ein Script in IPS.
+     *
+     * @param int    $ParentID    IPS-ID der Alarmvariable.
+     * @param string $SysVar      ID der Alarmvariable in der CCU.
+     * @param string $CCUTimeZone Die Zeitzone der CCU.
+     *
+     * @return bool True bei Erfolg, sonst false.
+     */
+    private function ProcessAlarmVariable(int $ParentID, string $SysVar, string $CCUTimeZone)
+    {
+        $HMScript = 'Value = dom.GetObject(' . $SysVar . ').Value();
+                        string FirstTime = dom.GetObject(' . $SysVar . ').AlOccurrenceTime();
+                        string LastTime = dom.GetObject(' . $SysVar . ').LastTriggerTime();
+                        integer LastTriggerID = dom.GetObject(' . $SysVar . ').LastTriggerID();
+                        if( LastTriggerID == ID_ERROR )
+                        {
+                         LastTriggerID = dom.GetObject(' . $SysVar . ').AlTriggerDP();
+                        }
+                        string ChannelName = "";
+                        string Room = "";
+                        object oLastTrigger = dom.GetObject( LastTriggerID );
+                        if( oLastTrigger )
+                        {
+                         object oLastTriggerChannel = dom.GetObject( oLastTrigger.Channel() );
+                         if( oLastTriggerChannel )
+                         {
+                          string ChannelName = oLastTriggerChannel.Name();
+                          string sRID;
+                          foreach( sRID, oLastTriggerChannel.ChnRoom() )
+                          {
+                           object oRoom = dom.GetObject( sRID );
+                           if( oRoom )
+                           {
+                            Room = oRoom.Name();
+                           }
+                          }
+                         }
+                        }
+                       }' . PHP_EOL;
+
+        try {
+            $HMScriptResult = $this->LoadHMScript('AlarmVar.exe', $HMScript);
+            $xmlData = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
+        } catch (Exception $exc) {
+            $this->SendDebug('AlarmVar.exe', $exc->getMessage(), 0);
+            trigger_error($this->Translate($exc->getMessage()), E_USER_NOTICE);
+            return false;
+        }
+
+        $ScriptData = [];
+        $ScriptData['SENDER'] = 'AlarmDP';
+        $ScriptData['VARIABLE'] = $ParentID;
+        $ScriptData['OLDVALUE'] = GetValueBoolean($ParentID);
+        $ScriptData['VALUE'] = (string) $xmlData->Value == 'true';
+        if ($ScriptData['VALUE']) {
+            $Time = new DateTime((string) $xmlData->LastTime . $CCUTimeZone);
+            $ScriptData['LastTime'] = $Time->getTimestamp();
+            $Time = new DateTime((string) $xmlData->FirstTime . $CCUTimeZone);
+            $ScriptData['FirstTime'] = $Time->getTimestamp();
+            $ScriptData['Room'] = (string) $xmlData->Room;
+            $ScriptData['ChannelName'] = (string) $xmlData->ChannelName;
+            $Channel = explode('.', (string) $xmlData->oLastTrigger);
+            if (count($Channel) >= 2) {
+                $ScriptData['Channel'] = $Channel[1];
+                $ScriptData['DP'] = $Channel[2];
+            } else {
+                $ScriptData['Channel'] = 'unbekannt';
+                $ScriptData['DP'] = 'unbekannt';
+            }
+        } else {
+            $ScriptData['LastTime'] = 0;
+            $ScriptData['FirstTime'] = 0;
+            $ScriptData['Room'] = '';
+            $ScriptData['ChannelName'] = '';
+            $ScriptData['Channel'] = '';
+            $ScriptData['DP'] = '';
+        }
+
+        SetValue($ParentID, $ScriptData['VALUE']);
+        $LastTimeID = $this->RegisterSubVariable($ParentID, 'LastTime', 'Letzter Alarm', VARIABLETYPE_INTEGER, '~UnixTimestamp');
+        SetValue($LastTimeID, $ScriptData['LastTime']);
+        $FirstTimeID = $this->RegisterSubVariable($ParentID, 'FirstTime', 'Erster Alarm', VARIABLETYPE_INTEGER, '~UnixTimestamp');
+        SetValue($FirstTimeID, $ScriptData['FirstTime']);
+        $RoomID = $this->RegisterSubVariable($ParentID, 'Room', 'Raum', VARIABLETYPE_STRING);
+        SetValue($RoomID, $ScriptData['Room']);
+        $ChannelNameID = $this->RegisterSubVariable($ParentID, 'ChannelName', 'Name', VARIABLETYPE_STRING);
+        SetValue($ChannelNameID, $ScriptData['ChannelName']);
+
+        $ScriptID = $this->ReadPropertyInteger('AlarmScriptID');
+        if ($ScriptID > 0) {
+            IPS_RunScriptEx($ScriptID, $ScriptData);
+        }
+        return true;
+    }
+
+    /**
+     * Schreibt einen Wert in eine Systemvariable auf der CCU.
+     *
+     * @param string $Parameter Der IDENT der IPS-Statusvariable = Die ID der Systemvariable in der CCU.
+     * @param string $ValueStr  Der neue Wert der Systemvariable.
+     *
+     * @throws Exception Wenn CUU nicht erreichbar oder Daten nicht auswertbar sind.
+     *
+     * @return bool True bei Erfolg, sonst false.
+     */
+    private function WriteSysVar(string $Parameter, string $ValueStr)
+    {
+        if (IPS_GetKernelRunlevel() != KR_READY) {
+            return false;
+        }
+        if (!$this->HasActiveParent()) {
+            throw new Exception('Instance has no active parent instance!', E_USER_NOTICE);
+        }
+        $url = 'SysVar.exe';
+        $HMScript = 'State=dom.GetObject(' . $Parameter . ').State("' . $ValueStr . '");';
+
+        try {
+            $HMScriptResult = $this->LoadHMScript($url, $HMScript);
+            $xml = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
+        } catch (Exception $exc) {
+            $this->SendDebug('SysVar.exe', $exc->getMessage(), 0);
+
+            throw new Exception('Error on write CCU Systemvariable.', E_USER_NOTICE);
+        }
+        if ((string) $xml->State == 'true') {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Erstellt eine Untervariable in IPS.
+     *
+     * @param int    $ParentID IPS-ID der übergeordneten Variable.
+     * @param string $Ident    IDENT der neuen Statusvariable.
+     * @param string $Name     Name der neuen Statusvariable.
+     * @param int    $Type     Der zu erstellende Typ von Variable.
+     * @param string $Profile  Das dazugehörige Variabelprofil.
+     * @param int    $Position Position der Variable.
+     *
+     * @throws Exception Wenn Variable nicht erstellt werden konnte.
+     *
+     * @return int IPS-ID der neuen Variable.
+     */
+    private function RegisterSubVariable($ParentID, $Ident, $Name, $Type, $Profile = '', $Position = 0)
+    {
+        if ($Profile != '') {
+            if (IPS_VariableProfileExists('~' . $Profile)) {
+                $Profile = '~' . $Profile;
+            }
+            if (!IPS_VariableProfileExists($Profile)) {
+                throw new Exception('Profile with name ' . $Profile . ' does not exist', E_USER_NOTICE);
+            }
+        }
+
+        $vid = @IPS_GetObjectIDByIdent($Ident, $ParentID);
+
+        if ($vid === false) {
+            $vid = 0;
+        }
+
+        if ($vid > 0) {
+            if (!IPS_VariableExists($vid)) {
+                throw new Exception('Ident with name ' . $Ident . ' is used for wrong object type', E_USER_NOTICE); //bail out
+            }
+            if (IPS_GetVariable($vid)['VariableType'] != $Type) {
+                IPS_DeleteVariable($vid);
+                $vid = 0;
+            }
+        }
+
+        if ($vid == 0) {
+            $vid = IPS_CreateVariable($Type);
+
+            IPS_SetParent($vid, $ParentID);
+            IPS_SetIdent($vid, $Ident);
+            IPS_SetName($vid, $Name);
+            IPS_SetPosition($vid, $Position);
+            //IPS_SetReadOnly($vid, true);
+        }
+
+        IPS_SetVariableCustomProfile($vid, $Profile);
+        if (!in_array($vid, $this->GetReferenceList())) {
+            $this->RegisterReference($vid);
+        }
+        return $vid;
     }
 }
 

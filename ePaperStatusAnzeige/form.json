@@ -1,10 +1,9 @@
 {
-    "elements":
-            [
-                {
-                    "name": "Address",
-                    "type": "ValidationTextBox",
-                    "caption": "Address"
-                }
-            ]
+    "elements": [
+        {
+            "name": "Address",
+            "type": "ValidationTextBox",
+            "caption": "Address"
+        }
+    ]
 }

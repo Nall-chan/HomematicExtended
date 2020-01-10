@@ -1,32 +1,30 @@
 {
-    "elements":
-            [
-                {
-                    "type": "Label",
-                    "caption": "Select GAS_ENERGY_COUNTER, IEC_ENERGY_COUNTER or ENERGY_COUNTER as source"
-                },
-                {
-                    "name": "EventID",
-                    "type": "SelectVariable",
-                    "caption": "Variable"
-                }
-            ],
-    "status":
-            [
-                {
-                    "code": 102,
-                    "icon": "active",
-                    "caption": "Configuration is valid."
-                },
-                {
-                    "code": 104,
-                    "icon": "inactive",
-                    "caption": "No ENERGY_COUNTER variable selected."
-                },
-                {
-                    "code": 202,
-                    "icon": "inactive",
-                    "caption": "Selected variable invalid."
-                }
-            ]
+    "elements": [
+        {
+            "type": "Label",
+            "caption": "Select GAS_ENERGY_COUNTER, IEC_ENERGY_COUNTER or ENERGY_COUNTER as source"
+        },
+        {
+            "name": "EventID",
+            "type": "SelectVariable",
+            "caption": "Variable"
+        }
+    ],
+    "status": [
+        {
+            "code": 102,
+            "icon": "active",
+            "caption": "Configuration is valid."
+        },
+        {
+            "code": 104,
+            "icon": "inactive",
+            "caption": "No ENERGY_COUNTER variable selected."
+        },
+        {
+            "code": 202,
+            "icon": "inactive",
+            "caption": "Selected variable invalid."
+        }
+    ]
 }

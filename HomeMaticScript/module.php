@@ -40,6 +40,26 @@ class HomeMaticRemoteScript extends HMBase
         parent::ApplyChanges();
     }
 
+    //################# PUBLIC
+
+    /**
+     * IPS-Instanzfunktion HM_RunScript.
+     * Startet das übergebene Script auf der CCU und liefert das Ergbnis als JSON-String.
+     *
+     * @param string $Script
+     *
+     * @return string|bool Das Ergebnis als JSON-String oder FALSE im Fehlerfall.
+     */
+    public function RunScript(string $Script)
+    {
+        try {
+            return $this->SendScript($Script);
+        } catch (Exception $exc) {
+            trigger_error($this->Translate($exc->getMessage()), $exc->getCode());
+            return false;
+        }
+    }
+
     //################# protected
 
     /**
@@ -101,26 +121,6 @@ class HomeMaticRemoteScript extends HMBase
         unset($xml->sessionId);
         unset($xml->httpUserAgent);
         return json_encode($xml);
-    }
-
-    //################# PUBLIC
-
-    /**
-     * IPS-Instanzfunktion HM_RunScript.
-     * Startet das übergebene Script auf der CCU und liefert das Ergbnis als JSON-String.
-     *
-     * @param string $Script
-     *
-     * @return string|bool Das Ergebnis als JSON-String oder FALSE im Fehlerfall.
-     */
-    public function RunScript(string $Script)
-    {
-        try {
-            return $this->SendScript($Script);
-        } catch (Exception $exc) {
-            trigger_error($this->Translate($exc->getMessage()), $exc->getCode());
-            return false;
-        }
     }
 }
 

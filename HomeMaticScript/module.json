@@ -3,10 +3,16 @@
     "name": "HomeMatic RemoteScript",
     "type": 3,
     "vendor": "HomeMatic",
-    "aliases": ["HomeMatic RemoteScript Interface"],
-    "parentRequirements": ["{75B6B237-A7B0-46B9-BBCE-8DF0CFE6FA52}"],
+    "aliases": [
+        "HomeMatic RemoteScript Interface"
+    ],
+    "parentRequirements": [
+        "{75B6B237-A7B0-46B9-BBCE-8DF0CFE6FA52}"
+    ],
     "childRequirements": [],
-    "implemented": ["{98FEC99D-6AD9-4598-8F50-2976DA0A32C8}"],
+    "implemented": [
+        "{98FEC99D-6AD9-4598-8F50-2976DA0A32C8}"
+    ],
     "prefix": "HM",
     "description": "Ermöglicht das Ausführen von HomeMatic-Scripten auf der CCU.  "
 }

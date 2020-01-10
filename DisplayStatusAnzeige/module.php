@@ -114,24 +114,6 @@ class HomeMaticDisWM55 extends HMBase
         $this->SetNewConfig();
     }
 
-    //################# protected
-
-    /**
-     * Wird ausgeführt wenn der Kernel hochgefahren wurde.
-     */
-    protected function KernelReady()
-    {
-        $this->ApplyChanges();
-    }
-
-    /**
-     * Wird ausgeführt wenn sich der Status vom Parent ändert.
-     */
-    protected function IOChangeState($State)
-    {
-        $this->ApplyChanges();
-    }
-
     //################# Datenaustausch
 
     /**
@@ -155,6 +137,33 @@ class HomeMaticDisWM55 extends HMBase
             $this->SendDebug('Error', $exc->getMessage(), 0);
             trigger_error($this->Translate($exc->getMessage()), $exc->getCode());
         }
+    }
+
+    /**
+     *  Wird bei einem timeout ausgeführt und setzt die aktuelle Seite wieder auf Null.
+     */
+    public function ResetTimer()
+    {
+        $this->Page = 0;
+        $this->SetTimerInterval('DisplayTimeout', 0);
+    }
+
+    //################# protected
+
+    /**
+     * Wird ausgeführt wenn der Kernel hochgefahren wurde.
+     */
+    protected function KernelReady()
+    {
+        $this->ApplyChanges();
+    }
+
+    /**
+     * Wird ausgeführt wenn sich der Status vom Parent ändert.
+     */
+    protected function IOChangeState($State)
+    {
+        $this->ApplyChanges();
     }
 
     //################# PRIVATE
@@ -264,10 +273,6 @@ class HomeMaticDisWM55 extends HMBase
         }
 
         $this->SetStatus(IS_ACTIVE);
-        if (!IPS_VariableExists($EventID)) {
-            return false;
-        }
-
         return true;
     }
 
@@ -397,15 +402,6 @@ class HomeMaticDisWM55 extends HMBase
     private function CreateDisplayScript()
     {
         return file_get_contents(__DIR__ . '/Display-Taster-Script-Vorlage.php');
-    }
-
-    /**
-     *  Wird bei einem timeout ausgeführt und setzt die aktuelle Seite wieder auf Null.
-     */
-    public function ResetTimer()
-    {
-        $this->Page = 0;
-        $this->SetTimerInterval('DisplayTimeout', 0);
     }
 }
 

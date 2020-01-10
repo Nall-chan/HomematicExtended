@@ -1,73 +1,71 @@
 {
-    "elements":
-            [
-                {
-                    "name": "PageUpID",
-                    "type": "SelectVariable",
-                    "caption": "Up-Button"
-                },
-                {
-                    "name": "PageDownID",
-                    "type": "SelectVariable",
-                    "caption": "Down-Button"
-                },
-                {
-                    "name": "ActionUpID",
-                    "type": "SelectVariable",
-                    "caption": "Action Up-Button"
-                },
-                {
-                    "name": "ActionDownID",
-                    "type": "SelectVariable",
-                    "caption": "Action Down-Button"
-                },
-                {
-                    "name": "MaxPage",
-                    "type": "NumberSpinner",
-                    "caption": "Number of pages"
-                },
-                {
-                    "name": "Timeout",
-                    "type": "NumberSpinner",
-                    "caption": "Display timeout"
-                },
-                {
-                    "name": "ScriptID",
-                    "type": "SelectScript",
-                    "caption": "Display-Script"
-                }
-            ],
-    "status":
-            [
-                {
-                    "code": 102,
-                    "icon": "active",
-                    "caption": "Configuration is valid."
-                },
-                {
-                    "code": 104,
-                    "icon": "inactive",
-                    "caption": "No PRESS datapoint selected."
-                },
-                {
-                    "code": 202,
-                    "icon": "inactive",
-                    "caption": "One or more invalid datapoints selected."
-                },
-                {
-                    "code": 203,
-                    "icon": "inactive",
-                    "caption": "No Display-Script selected."
-                },
-                {
-                    "code": 204,
-                    "icon": "inactive",
-                    "caption": "Timeout to small."
-                },
-                {
-                    "code": 205,
-                    "icon": "inactive",
-                    "caption": "Number of pages to small."
-                }
-            ]
+    "elements": [
+        {
+            "name": "PageUpID",
+            "type": "SelectVariable",
+            "caption": "Up-Button"
+        },
+        {
+            "name": "PageDownID",
+            "type": "SelectVariable",
+            "caption": "Down-Button"
+        },
+        {
+            "name": "ActionUpID",
+            "type": "SelectVariable",
+            "caption": "Action Up-Button"
+        },
+        {
+            "name": "ActionDownID",
+            "type": "SelectVariable",
+            "caption": "Action Down-Button"
+        },
+        {
+            "name": "MaxPage",
+            "type": "NumberSpinner",
+            "caption": "Number of pages"
+        },
+        {
+            "name": "Timeout",
+            "type": "NumberSpinner",
+            "caption": "Display timeout"
+        },
+        {
+            "name": "ScriptID",
+            "type": "SelectScript",
+            "caption": "Display-Script"
+        }
+    ],
+    "status": [
+        {
+            "code": 102,
+            "icon": "active",
+            "caption": "Configuration is valid."
+        },
+        {
+            "code": 104,
+            "icon": "inactive",
+            "caption": "No PRESS datapoint selected."
+        },
+        {
+            "code": 202,
+            "icon": "inactive",
+            "caption": "One or more invalid datapoints selected."
+        },
+        {
+            "code": 203,
+            "icon": "inactive",
+            "caption": "No Display-Script selected."
+        },
+        {
+            "code": 204,
+            "icon": "inactive",
+            "caption": "Timeout to small."
+        },
+        {
+            "code": 205,
+            "icon": "inactive",
+            "caption": "Number of pages to small."
+        }
+    ]
 }

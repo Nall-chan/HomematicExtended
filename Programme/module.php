@@ -70,6 +70,58 @@ class HomeMaticProgramme extends HMBase
         }
     }
 
+    //################# ActionHandler
+
+    /**
+     * Interne Funktion des SDK.
+     */
+    public function RequestAction($Ident, $Value)
+    {
+        if (parent::RequestAction($Ident, $Value)) {
+            return;
+        }
+
+        try {
+            $this->StartCCUProgram($Ident);
+        } catch (Exception $exc) {
+            trigger_error($this->Translate($exc->getMessage()), $exc->getCode());
+        }
+    }
+
+    //################# PUBLIC
+
+    /**
+     * IPS-Instanz-Funktion 'HM_ReadPrograms'.
+     * Liest die Programme aus der CCU aus.
+     *
+     * @return bool True bei erfolg, sonst false.
+     */
+    public function ReadPrograms()
+    {
+        try {
+            return $this->ReadCCUPrograms();
+        } catch (Exception $exc) {
+            trigger_error($this->Translate($exc->getMessage()), $exc->getCode());
+            return false;
+        }
+    }
+
+    /**
+     * IPS-Instanz-Funktion 'HM_StartProgram'.
+     * Startet ein auf der CCU hinterlegtes Programme.
+     *
+     * @return bool True bei erfolg, sonst false.
+     */
+    public function StartProgram(string $Parameter)
+    {
+        try {
+            return $this->StartCCUProgram($Parameter);
+        } catch (Exception $exc) {
+            trigger_error($this->Translate($exc->getMessage()), $exc->getCode());
+            return false;
+        }
+    }
+
     //################# protected
 
     /**
@@ -197,58 +249,6 @@ class HomeMaticProgramme extends HMBase
             return true;
         } else {
             throw new Exception('Error on start CCU-Program', E_USER_NOTICE);
-        }
-    }
-
-    //################# ActionHandler
-
-    /**
-     * Interne Funktion des SDK.
-     */
-    public function RequestAction($Ident, $Value)
-    {
-        if (parent::RequestAction($Ident, $Value)) {
-            return;
-        }
-
-        try {
-            $this->StartCCUProgram($Ident);
-        } catch (Exception $exc) {
-            trigger_error($this->Translate($exc->getMessage()), $exc->getCode());
-        }
-    }
-
-    //################# PUBLIC
-
-    /**
-     * IPS-Instanz-Funktion 'HM_ReadPrograms'.
-     * Liest die Programme aus der CCU aus.
-     *
-     * @return bool True bei erfolg, sonst false.
-     */
-    public function ReadPrograms()
-    {
-        try {
-            return $this->ReadCCUPrograms();
-        } catch (Exception $exc) {
-            trigger_error($this->Translate($exc->getMessage()), $exc->getCode());
-            return false;
-        }
-    }
-
-    /**
-     * IPS-Instanz-Funktion 'HM_StartProgram'.
-     * Startet ein auf der CCU hinterlegtes Programme.
-     *
-     * @return bool True bei erfolg, sonst false.
-     */
-    public function StartProgram(string $Parameter)
-    {
-        try {
-            return $this->StartCCUProgram($Parameter);
-        } catch (Exception $exc) {
-            trigger_error($this->Translate($exc->getMessage()), $exc->getCode());
-            return false;
         }
     }
 }

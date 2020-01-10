@@ -41,21 +41,21 @@ class HomeMaticRFInterfaceConfigurator extends IPSModule
         $this->SetReceiveDataFilter('.*9999999999.*');
     }
 
-   /**
+    /**
      * Interne Funktion des SDK.
      */
     public function GetConfigurationForm()
     {
         $Form = json_decode(file_get_contents(__DIR__ . '/form.json'), true);
-        $ParentId=IPS_GetInstance($this->InstanceID)['ConnectionID'];
-        if ((!$this->HasActiveParent()) or ($ParentId == 0)) {
+        $ParentId = IPS_GetInstance($this->InstanceID)['ConnectionID'];
+        if ((!$this->HasActiveParent()) || ($ParentId == 0)) {
             $Form['actions'][] = [
                 'type'  => 'PopupAlert',
                 'popup' => [
                     'items' => [[
-                    'type'    => 'Label',
-                    'caption' => 'Instance has no active parent instance!'
-                        ]]
+                        'type'    => 'Label',
+                        'caption' => 'Instance has no active parent instance!'
+                    ]]
                 ]
             ];
             $this->SendDebug('FORM', json_encode($Form), 0);
@@ -120,14 +120,6 @@ class HomeMaticRFInterfaceConfigurator extends IPSModule
         $this->SendDebug('FORM', json_last_error_msg(), 0);
         return json_encode($Form);
     }
-    //################# Datenaustausch
-private function GetInterfaces(){
-    $Data['DataID'] = '{2F910A05-3607-4070-A6FF-53539E5D3BBB}';
-    $this->SendDebug('Request','GetInterfaces',0);
-    $ResultString = $this->SendDataToParent(json_encode($Data));
-    $this->SendDebug('Response',unserialize($ResultString),0);
-    return unserialize($ResultString);
-}
     /**
      * Interne Funktion des SDK.
      */
@@ -175,6 +167,15 @@ private function GetInterfaces(){
                 $this->SetValue($Ident, $Value);
             }
         }
+    }
+    //################# Datenaustausch
+    private function GetInterfaces()
+    {
+        $Data['DataID'] = '{2F910A05-3607-4070-A6FF-53539E5D3BBB}';
+        $this->SendDebug('Request', 'GetInterfaces', 0);
+        $ResultString = $this->SendDataToParent(json_encode($Data));
+        $this->SendDebug('Response', unserialize($ResultString), 0);
+        return unserialize($ResultString);
     }
 }
 

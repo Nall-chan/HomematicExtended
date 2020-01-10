@@ -44,180 +44,6 @@ class HomeMaticDisEPWM55 extends HMBase
         $this->SetReceiveDataFilter('.*9999999999.*');
     }
 
-    //################# protected
-
-    /**
-     * Wird ausgeführt wenn der Kernel hochgefahren wurde.
-     */
-    protected function KernelReady()
-    {
-        $this->ApplyChanges();
-    }
-
-    /**
-     * Wird ausgeführt wenn sich der Status vom Parent ändert.
-     */
-    protected function IOChangeState($State)
-    {
-        $this->ApplyChanges();
-    }
-
-    //################# PRIVATE
-
-    /**
-     * Sendet die Daten an dden HM-Socket.
-     *
-     * @param array $Submit Das Array mit allen Werten, welche an das Display gesendet werden sollen.
-     *
-     * @return bool True bei Erfolg, sonst false.
-     *
-     * @todo Rückgabewerte fehlen!
-     */
-    private function SendData($Submit)
-    {
-        if (!$this->HasActiveParent()) {
-            trigger_error($this->Translate('Instance has no active parent instance!'), E_USER_NOTICE);
-            return false;
-        }
-        $ParentData = [
-            'DataID'     => '{75B6B237-A7B0-46B9-BBCE-8DF0CFE6FA52}',
-            'Protocol'   => 0,
-            'MethodName' => 'setValue',
-            'WaitTime'   => 5000,
-            'Data'       => [$this->ReadPropertyString('Address'), 'SUBMIT', '0x02,' . implode(',', $Submit) . ',0x03']
-        ];
-        $this->SendDebug('Send', $ParentData, 0);
-
-        $JSON = json_encode($ParentData);
-        $ResultJSON = @$this->SendDataToParent($JSON);
-        if ($ResultJSON == false) {
-            trigger_error($this->Translate('Error on send Data.'), E_USER_NOTICE);
-            $this->SendDebug('Error JSON', $ResultJSON, 0);
-            return false;
-        }
-        $Result = json_decode($ResultJSON);
-        if ($Result === false) {
-            trigger_error($this->Translate('Error on send Data.'), E_USER_NOTICE);
-            $this->SendDebug('Error decode', $Result, 0);
-            return false;
-        }
-        $this->SendDebug('Receive', $Result, 0);
-        return true;
-    }
-
-    /**
-     * Erzeugt das Daten-Array aus den übergebenden Parametern.
-     *
-     * @param int $Chime  Tonfolge 0-6
-     * @param int $Repeat Anzahl der Wiederholgungen 0-15
-     * @param int $Wait   Wartezeit in 10 Sekunden zwischen den Wiederholungen.
-     * @param int $Color  Frabe der LED 0-3
-     *
-     * @return bool|array Das Array mit den Daten, oder im Fehlerfall false.
-     */
-    private function GetSignal(int $Chime, int $Repeat, int $Wait, int $Color)
-    {
-        try {
-            if (!is_int($Chime)) {
-                throw new Exception(sprintf($this->Translate('Parameter %s must be type of integer.'), 'Chime'));
-            }
-            if (!is_int($Repeat)) {
-                throw new Exception(sprintf($this->Translate('Parameter %s must be type of integer.'), 'Repeat'));
-            }
-            if (!is_int($Wait)) {
-                throw new Exception(sprintf($this->Translate('Parameter %s must be type of integer.'), 'Wait'));
-            }
-            if (!is_int($Color)) {
-                throw new Exception(sprintf($this->Translate('Parameter %s must be type of integer.'), 'Color'));
-            }
-            if (($Chime < 0) or ($Chime > 6)) {
-                throw new Exception(sprintf($this->Translate('Parameter %s out of range.'), 'Chime'));
-            }
-            if (($Repeat < 0) or ($Repeat > 15)) {
-                throw new Exception(sprintf($this->Translate('Parameter %s out of range.'), 'Repeat'));
-            }
-            if (($Wait < 0) or ($Wait > 15)) {
-                throw new Exception(sprintf($this->Translate('Parameter %s out of range.'), 'Wait'));
-            }
-            if (($Color < 0) or ($Color > 3)) {
-                throw new Exception(sprintf($this->Translate('Parameter %s out of range.'), 'Color'));
-            }
-        } catch (Exception $exc) {
-            trigger_error($exc->getMessage(), E_USER_NOTICE);
-            return false;
-        }
-        $Data[] = '0x14';
-        $Data[] = '0xC' . dechex($Chime);
-        $Data[] = '0x1C';
-        $Data[] = '0xD' . dechex($Repeat);
-        $Data[] = '0x1D';
-        $Data[] = '0xE' . dechex($Wait);
-        $Data[] = '0x16';
-        $Data[] = '0xF' . dechex($Color);
-        return $Data;
-    }
-
-    /**
-     * Erzeugt aus dem übergebenen Parametern eine Daten-Array für den Text und das Icon.
-     *
-     * @param string $Text Der darzustellenden Text (0-12 Zeichen)
-     * @param int    $Icon Das anzuzeigende Icon (0-9)
-     *
-     * @return array Das Daten-Array für eine Zeile.
-     */
-    private function GetLine(string $Text, int $Icon)
-    {
-        try {
-            if (!is_string($Text)) {
-                throw new Exception(sprintf($this->Translate('Parameter %s must be type of string.'), 'Text'));
-            }
-            if (!is_int($Icon)) {
-                throw new Exception(sprintf($this->Translate('Parameter %s must be type of integer.'), 'Icon'));
-            }
-            if (($Icon < 0) or ($Icon > 9)) {
-                throw new Exception(sprintf($this->Translate('Parameter %s out of range.'), 'Icon'));
-            }
-        } catch (Exception $exc) {
-            trigger_error($exc->getMessage(), E_USER_NOTICE);
-            return false;
-        }
-
-        $Data[] = '0x12';
-        if ($Text === '') {
-            $Data[] = '0x20';
-        } else {
-            if (strpos($Text, '0x8') === 0) {
-                $Data[] = substr($Text, 0, 4);
-            } else {
-                $Text = $this->hex_encode($Text);
-                for ($i = 0; $i < ((strlen($Text) < 12) ? strlen($Text) : 12); $i++) {
-                    $Data[] = '0x' . dechex(ord($Text[$i]));
-                }
-            }
-        }
-        if ($Icon != 0) {
-            $Data[] = '0x13';
-            $Data[] = '0x8' . dechex($Icon - 1);
-        }
-        $Data[] = '0x0A';
-        return $Data;
-    }
-
-    /**
-     * Konvertiert die deutschen Sonderzeichen.
-     *
-     * @param string $string Der Original-String.
-     *
-     * @return string Der veränderte String.
-     */
-    private function hex_encode(string $string)
-    {
-        $umlaut = ['Ä', 'Ö', 'Ü', 'ä', 'ö', 'ü', 'ß', ':'];
-        $hex_neu = [chr(0x5b), chr(0x23), chr(0x24), chr(0x7b), chr(0x7c), chr(0x7d), chr(0x5f), chr(0x3a)];
-        $return = str_replace($umlaut, $hex_neu, $string);
-        return $return;
-    }
-
     //################# public
 
     /**
@@ -383,6 +209,180 @@ class HomeMaticDisEPWM55 extends HMBase
         }
         $Data = array_merge($Data, $Notify);
         return $this->SendData($Data);
+    }
+
+    //################# protected
+
+    /**
+     * Wird ausgeführt wenn der Kernel hochgefahren wurde.
+     */
+    protected function KernelReady()
+    {
+        $this->ApplyChanges();
+    }
+
+    /**
+     * Wird ausgeführt wenn sich der Status vom Parent ändert.
+     */
+    protected function IOChangeState($State)
+    {
+        $this->ApplyChanges();
+    }
+
+    //################# PRIVATE
+
+    /**
+     * Sendet die Daten an dden HM-Socket.
+     *
+     * @param array $Submit Das Array mit allen Werten, welche an das Display gesendet werden sollen.
+     *
+     * @return bool True bei Erfolg, sonst false.
+     *
+     * @todo Rückgabewerte fehlen!
+     */
+    private function SendData($Submit)
+    {
+        if (!$this->HasActiveParent()) {
+            trigger_error($this->Translate('Instance has no active parent instance!'), E_USER_NOTICE);
+            return false;
+        }
+        $ParentData = [
+            'DataID'     => '{75B6B237-A7B0-46B9-BBCE-8DF0CFE6FA52}',
+            'Protocol'   => 0,
+            'MethodName' => 'setValue',
+            'WaitTime'   => 5000,
+            'Data'       => [$this->ReadPropertyString('Address'), 'SUBMIT', '0x02,' . implode(',', $Submit) . ',0x03']
+        ];
+        $this->SendDebug('Send', $ParentData, 0);
+
+        $JSON = json_encode($ParentData);
+        $ResultJSON = @$this->SendDataToParent($JSON);
+        if ($ResultJSON == false) {
+            trigger_error($this->Translate('Error on send Data.'), E_USER_NOTICE);
+            $this->SendDebug('Error JSON', $ResultJSON, 0);
+            return false;
+        }
+        $Result = json_decode($ResultJSON);
+        if ($Result === false) {
+            trigger_error($this->Translate('Error on send Data.'), E_USER_NOTICE);
+            $this->SendDebug('Error decode', $Result, 0);
+            return false;
+        }
+        $this->SendDebug('Receive', $Result, 0);
+        return true;
+    }
+
+    /**
+     * Erzeugt das Daten-Array aus den übergebenden Parametern.
+     *
+     * @param int $Chime  Tonfolge 0-6
+     * @param int $Repeat Anzahl der Wiederholgungen 0-15
+     * @param int $Wait   Wartezeit in 10 Sekunden zwischen den Wiederholungen.
+     * @param int $Color  Frabe der LED 0-3
+     *
+     * @return bool|array Das Array mit den Daten, oder im Fehlerfall false.
+     */
+    private function GetSignal(int $Chime, int $Repeat, int $Wait, int $Color)
+    {
+        try {
+            if (!is_int($Chime)) {
+                throw new Exception(sprintf($this->Translate('Parameter %s must be type of integer.'), 'Chime'));
+            }
+            if (!is_int($Repeat)) {
+                throw new Exception(sprintf($this->Translate('Parameter %s must be type of integer.'), 'Repeat'));
+            }
+            if (!is_int($Wait)) {
+                throw new Exception(sprintf($this->Translate('Parameter %s must be type of integer.'), 'Wait'));
+            }
+            if (!is_int($Color)) {
+                throw new Exception(sprintf($this->Translate('Parameter %s must be type of integer.'), 'Color'));
+            }
+            if (($Chime < 0) || ($Chime > 6)) {
+                throw new Exception(sprintf($this->Translate('Parameter %s out of range.'), 'Chime'));
+            }
+            if (($Repeat < 0) || ($Repeat > 15)) {
+                throw new Exception(sprintf($this->Translate('Parameter %s out of range.'), 'Repeat'));
+            }
+            if (($Wait < 0) || ($Wait > 15)) {
+                throw new Exception(sprintf($this->Translate('Parameter %s out of range.'), 'Wait'));
+            }
+            if (($Color < 0) || ($Color > 3)) {
+                throw new Exception(sprintf($this->Translate('Parameter %s out of range.'), 'Color'));
+            }
+        } catch (Exception $exc) {
+            trigger_error($exc->getMessage(), E_USER_NOTICE);
+            return false;
+        }
+        $Data[] = '0x14';
+        $Data[] = '0xC' . dechex($Chime);
+        $Data[] = '0x1C';
+        $Data[] = '0xD' . dechex($Repeat);
+        $Data[] = '0x1D';
+        $Data[] = '0xE' . dechex($Wait);
+        $Data[] = '0x16';
+        $Data[] = '0xF' . dechex($Color);
+        return $Data;
+    }
+
+    /**
+     * Erzeugt aus dem übergebenen Parametern eine Daten-Array für den Text und das Icon.
+     *
+     * @param string $Text Der darzustellenden Text (0-12 Zeichen)
+     * @param int    $Icon Das anzuzeigende Icon (0-9)
+     *
+     * @return array Das Daten-Array für eine Zeile.
+     */
+    private function GetLine(string $Text, int $Icon)
+    {
+        try {
+            if (!is_string($Text)) {
+                throw new Exception(sprintf($this->Translate('Parameter %s must be type of string.'), 'Text'));
+            }
+            if (!is_int($Icon)) {
+                throw new Exception(sprintf($this->Translate('Parameter %s must be type of integer.'), 'Icon'));
+            }
+            if (($Icon < 0) || ($Icon > 9)) {
+                throw new Exception(sprintf($this->Translate('Parameter %s out of range.'), 'Icon'));
+            }
+        } catch (Exception $exc) {
+            trigger_error($exc->getMessage(), E_USER_NOTICE);
+            return false;
+        }
+
+        $Data[] = '0x12';
+        if ($Text === '') {
+            $Data[] = '0x20';
+        } else {
+            if (strpos($Text, '0x8') === 0) {
+                $Data[] = substr($Text, 0, 4);
+            } else {
+                $Text = $this->hex_encode($Text);
+                for ($i = 0; $i < ((strlen($Text) < 12) ? strlen($Text) : 12); $i++) {
+                    $Data[] = '0x' . dechex(ord($Text[$i]));
+                }
+            }
+        }
+        if ($Icon != 0) {
+            $Data[] = '0x13';
+            $Data[] = '0x8' . dechex($Icon - 1);
+        }
+        $Data[] = '0x0A';
+        return $Data;
+    }
+
+    /**
+     * Konvertiert die deutschen Sonderzeichen.
+     *
+     * @param string $string Der Original-String.
+     *
+     * @return string Der veränderte String.
+     */
+    private function hex_encode(string $string)
+    {
+        $umlaut = ['Ä', 'Ö', 'Ü', 'ä', 'ö', 'ü', 'ß', ':'];
+        $hex_neu = [chr(0x5b), chr(0x23), chr(0x24), chr(0x7b), chr(0x7c), chr(0x7d), chr(0x5f), chr(0x3a)];
+        $return = str_replace($umlaut, $hex_neu, $string);
+        return $return;
     }
 }
 

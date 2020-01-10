@@ -122,7 +122,7 @@ if ($_IPS['SENDER'] != 'HMDisWM55') {
     return;
 }
 
-if (($_IPS['ACTION'] == 'UP') or ($_IPS['ACTION'] == 'DOWN')) {
+if (($_IPS['ACTION'] == 'UP') || ($_IPS['ACTION'] == 'DOWN')) {
     switch ($_IPS['PAGE']) {                                  // Anzeige pro Seite
         case 1:  // Seite 1
 

@@ -7,7 +7,7 @@
             "Interval smaller as 5 not possible.": "Interval kleiner 5 nicht möglich.",
             "read WR-Interfaces": "WR-Interfaces auslesen",
             "Instance has no active parent instance!": "Keine aktive Parent Instanz!",
-            "Error on read WR-Interface.": "Fehler beim lesen des WR-Interface"            
+            "Error on read WR-Interface.": "Fehler beim lesen des WR-Interface"
         }
     }
 }

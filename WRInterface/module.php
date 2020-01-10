@@ -64,6 +64,57 @@ class HomeMaticWRInterface extends HMBase
         $this->ReadWRInterface();
     }
 
+    //################# PUBLIC
+
+    /**
+     * IPS-Instanz-Funktion 'HM_ReadWRInterface'.
+     * Liest die Daten des WR-Interface.
+     *
+     * @return bool True bei Erfolg, sonst false.
+     */
+    public function ReadWRInterface()
+    {
+        $Result = $this->GetInterface();
+        if ($Result === false) {
+            return false;
+        }
+        foreach ($Result as $Ident => $Value) {
+            if ($Value === '') {
+                continue;
+            }
+            switch (gettype($Value)) {
+                case 'boolean':
+                    $Typ = VARIABLETYPE_BOOLEAN;
+                    break;
+                case 'integer':
+                    $Typ = VARIABLETYPE_INTEGER;
+                    break;
+                case 'double':
+                case 'float':
+                    $Typ = VARIABLETYPE_FLOAT;
+                    break;
+                case 'string':
+                    $Typ = VARIABLETYPE_STRING;
+                    break;
+                default:
+                    continue 2;
+            }
+            $vid = @$this->GetIDForIdent($Ident);
+            if ($vid === false) {
+                $this->MaintainVariable($Ident, $Ident, $Typ, '', 0, true);
+                $vid = $this->GetIDForIdent($Ident);
+            }
+            if ($Ident == 'CONNECTED') {
+                $this->SetValue($Ident, $Value);
+                continue;
+            }
+            if (GetValue($vid) != $Value) {
+                $this->SetValue($Ident, $Value);
+            }
+        }
+        return true;
+    }
+
     //################# protected
 
     /**
@@ -160,64 +211,13 @@ class HomeMaticWRInterface extends HMBase
             return false;
         }
         $Result = json_decode($ResultJSON, true);
-        if (($Result === false) or is_null($Result)) {
+        if (($Result === false) || is_null($Result)) {
             trigger_error($this->Translate('Error on read WR-Interface.'), E_USER_NOTICE);
             $this->SendDebug('Error decode', $Result, 0);
             return false;
         }
         $this->SendDebug('Receive', $Result, 0);
         return $Result;
-    }
-
-    //################# PUBLIC
-
-    /**
-     * IPS-Instanz-Funktion 'HM_ReadWRInterface'.
-     * Liest die Daten des WR-Interface.
-     *
-     * @return bool True bei Erfolg, sonst false.
-     */
-    public function ReadWRInterface()
-    {
-        $Result = $this->GetInterface();
-        if ($Result === false) {
-            return false;
-        }
-        foreach ($Result as $Ident => $Value) {
-            if ($Value === '') {
-                continue;
-            }
-            switch (gettype($Value)) {
-                case 'boolean':
-                    $Typ = VARIABLETYPE_BOOLEAN;
-                    break;
-                case 'integer':
-                    $Typ = VARIABLETYPE_INTEGER;
-                    break;
-                case 'double':
-                case 'float':
-                    $Typ = VARIABLETYPE_FLOAT;
-                    break;
-                case 'string':
-                    $Typ = VARIABLETYPE_STRING;
-                    break;
-                default:
-                    continue 2;
-            }
-            $vid = @$this->GetIDForIdent($Ident);
-            if ($vid === false) {
-                $this->MaintainVariable($Ident, $Ident, $Typ, '', 0, true);
-                $vid = $this->GetIDForIdent($Ident);
-            }
-            if ($Ident == 'CONNECTED') {
-                $this->SetValue($Ident, $Value);
-                continue;
-            }
-            if (GetValue($vid) != $Value) {
-                $this->SetValue($Ident, $Value);
-            }
-        }
-        return true;
     }
 }
 

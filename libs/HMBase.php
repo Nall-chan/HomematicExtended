@@ -81,6 +81,12 @@ abstract class HMBase extends IPSModule
         }
     }
 
+    //################# ActionHandler
+    public function RequestAction($Ident, $Value)
+    {
+        return $this->IORequestAction($Ident, $Value);
+    }
+
     //################# protected
 
     /**
@@ -126,12 +132,6 @@ abstract class HMBase extends IPSModule
             }
         }
         return $ParentId;
-    }
-
-    //################# ActionHandler
-    public function RequestAction($Ident, $Value)
-    {
-        return $this->IORequestAction($Ident, $Value);
     }
 
     /**

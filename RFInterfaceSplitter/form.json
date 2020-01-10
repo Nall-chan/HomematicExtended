@@ -1,39 +1,38 @@
 {
-    "elements":
-            [{
-                    "name": "Interval",
-                    "type": "IntervalBox",
-                    "caption": "seconds"
-                }],
-    "status":
-            [
-                {
-                    "code": 102,
-                    "icon": "active",
-                    "caption": "Configuration is valid."
-                },
-                {
-                    "code": 104,
-                    "icon": "inactive",
-                    "caption": "No interval active."
-                },
-                {
-                    "code": 202,
-                    "icon": "error",
-                    "caption": "Interval to small."
-                },
-                {
-                    "code": 203,
-                    "icon": "inactive",
-                    "caption": "Interval smaller as 5 not possible."
-                }
-            ],
-    "actions":
-            [
-                {
-                    "type": "Button",
-                    "caption": "read RF-Interfaces",
-                    "onClick": "HM_ReadRFInterfaces($id);"
-                }
-            ]
+    "elements": [
+        {
+            "name": "Interval",
+            "type": "IntervalBox",
+            "caption": "seconds"
+        }
+    ],
+    "status": [
+        {
+            "code": 102,
+            "icon": "active",
+            "caption": "Configuration is valid."
+        },
+        {
+            "code": 104,
+            "icon": "inactive",
+            "caption": "No interval active."
+        },
+        {
+            "code": 202,
+            "icon": "error",
+            "caption": "Interval to small."
+        },
+        {
+            "code": 203,
+            "icon": "inactive",
+            "caption": "Interval smaller as 5 not possible."
+        }
+    ],
+    "actions": [
+        {
+            "type": "Button",
+            "caption": "read RF-Interfaces",
+            "onClick": "HM_ReadRFInterfaces($id);"
+        }
+    ]
 }

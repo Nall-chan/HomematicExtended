@@ -1,12 +1,10 @@
 {
-    "elements":
-            [],
-    "actions":
-            [
-                {
-                    "type": "Button",
-                    "caption": "read CCU",
-                    "onClick": "HM_ReadPrograms($id);"
-                }
-            ]
+    "elements": [],
+    "actions": [
+        {
+            "type": "Button",
+            "caption": "read CCU",
+            "onClick": "HM_ReadPrograms($id);"
+        }
+    ]
 }

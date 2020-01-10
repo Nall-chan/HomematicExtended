@@ -1,61 +1,58 @@
 {
-    "elements":
-            [
-                {
-                    "name": "EventID",
-                    "type": "SelectVariable",
-                    "caption": "Trigger for refresh"
-                },
-                {
-                    "name": "Interval",
-                    "type": "IntervalBox",
-                    "caption": "seconds"
-                },
-                {
-                    "name": "EmulateStatus",
-                    "type": "CheckBox",
-                    "caption": "emulate state"
-                },
-                {
-                    "name": "EnableAlarmDP",
-                    "type": "CheckBox",
-                    "caption": "enable alarm variable"
-                },
-                {
-                    "name": "AlarmScriptID",
-                    "type": "SelectScript",
-                    "caption": "Alarmmanagement-Script"
-                }                
-            ],
-    "status":
-            [
-                {
-                    "code": 102,
-                    "icon": "active",
-                    "caption": "Configuration is valid."
-                },
-                {
-                    "code": 104,
-                    "icon": "inactive",
-                    "caption": "No trigger or interval active."
-                },
-                {
-                    "code": 202,
-                    "icon": "error",
-                    "caption": "Interval to small."
-                },
-                {
-                    "code": 203,
-                    "icon": "inactive",
-                    "caption": "Interval smaller as 5 not possible."
-                }
-            ],
-    "actions":
-            [
-                {
-                    "type": "Button",
-                    "caption": "read CCU",
-                    "onClick": "HM_ReadSystemVariables($id);"
-                }
-            ]
+    "elements": [
+        {
+            "name": "EventID",
+            "type": "SelectVariable",
+            "caption": "Trigger for refresh"
+        },
+        {
+            "name": "Interval",
+            "type": "IntervalBox",
+            "caption": "seconds"
+        },
+        {
+            "name": "EmulateStatus",
+            "type": "CheckBox",
+            "caption": "emulate state"
+        },
+        {
+            "name": "EnableAlarmDP",
+            "type": "CheckBox",
+            "caption": "enable alarm variable"
+        },
+        {
+            "name": "AlarmScriptID",
+            "type": "SelectScript",
+            "caption": "Alarmmanagement-Script"
+        }
+    ],
+    "status": [
+        {
+            "code": 102,
+            "icon": "active",
+            "caption": "Configuration is valid."
+        },
+        {
+            "code": 104,
+            "icon": "inactive",
+            "caption": "No trigger or interval active."
+        },
+        {
+            "code": 202,
+            "icon": "error",
+            "caption": "Interval to small."
+        },
+        {
+            "code": 203,
+            "icon": "inactive",
+            "caption": "Interval smaller as 5 not possible."
+        }
+    ],
+    "actions": [
+        {
+            "type": "Button",
+            "caption": "read CCU",
+            "onClick": "HM_ReadSystemVariables($id);"
+        }
+    ]
 }
