@@ -62,6 +62,9 @@ Erweitert IPS um die native Unterstützung von:
 ### [HomeMatic RF-Interface Splitter:](RFInterfaceSplitter/)  
    Auslesen der Informationen zu jedem Funk-Interface der CCU.
 
+### [HomeMatic RF-Interface Konfigurator:](RFInterfaceConfigurator/)  
+   Konfigurator zum erstellen der 'Homematic RF-Interface'-Instanzen.  
+
 ### [HomeMatic RF-Interface:](RFInterface/)  
    Bereitstellen der Informationen zu den Funk-Interfaces innerhalb von IPS.
 
@@ -102,17 +105,18 @@ Erweitert IPS um die native Unterstützung von:
 
 ###  1. GUID der Module
 
-|              Modul               |   Typ    |                  GUID                  |
-| :------------------------------: | :------: | :------------------------------------: |
-|    HomeMatic Systemvariablen     |  Device  | {400F9193-FE79-4086-8D76-958BF9C1B357} |
-|       HomeMatic Powermeter       |  Device  | {AF50C42B-7183-4992-B04A-FAFB07BB1B90} |
-|       HomeMatic Programme        |  Device  | {A5010577-C443-4A85-ABF2-3F2D6CDD2465} |
-| HomeMatic RemoteScript Interface |  Device  | {246EDB89-70BC-403B-A1FA-3B3B1B540401} |
-|        HomeMatic Dis-WM55        |  Device  | {271BCAB1-0658-46D9-A164-985AEB641B48} |
-|      HomeMatic Dis-EP-WM55       |  Device  | {E64ED916-FA6C-45B2-B8E3-EDC3191BC4C0} |
-| HomeMatic RF-Interface Splitter  | Splitter | {6EE35B5B-9DD9-4B23-89F6-37589134852F} |
-|      HomeMatic RF-Interface      |  Device  | {36549B96-FA11-4651-8662-F310EEEC5C7D} |
-|      HomeMatic WR-Interface      |  Device  | {01C66202-7E94-49C4-8D8F-6A75CE944E87} |
+|                Modul                |     Typ      |                  GUID                  |
+| :---------------------------------: | :----------: | :------------------------------------: |
+|      HomeMatic Systemvariablen      |    Device    | {400F9193-FE79-4086-8D76-958BF9C1B357} |
+|        HomeMatic Powermeter         |    Device    | {AF50C42B-7183-4992-B04A-FAFB07BB1B90} |
+|         HomeMatic Programme         |    Device    | {A5010577-C443-4A85-ABF2-3F2D6CDD2465} |
+|  HomeMatic RemoteScript Interface   |    Device    | {246EDB89-70BC-403B-A1FA-3B3B1B540401} |
+|         HomeMatic Dis-WM55          |    Device    | {271BCAB1-0658-46D9-A164-985AEB641B48} |
+|        HomeMatic Dis-EP-WM55        |    Device    | {E64ED916-FA6C-45B2-B8E3-EDC3191BC4C0} |
+|   HomeMatic RF-Interface Splitter   |   Splitter   | {6EE35B5B-9DD9-4B23-89F6-37589134852F} |
+| HomeMatic RF-Interface Konfigurator | Configurator | {91624C6F-E67E-47DA-ADFE-9A5A1A89AAC3} |
+|       HomeMatic RF-Interface        |    Device    | {36549B96-FA11-4651-8662-F310EEEC5C7D} |
+|       HomeMatic WR-Interface        |    Device    | {01C66202-7E94-49C4-8D8F-6A75CE944E87} |
 
 
 ### 2. Changlog

@@ -34,10 +34,9 @@ Dieses Modul ist Bestandteil der HomeMaticExtended-Library.
 ![Instanzen](../docs/HMExtendedInstanzen.png)  
    Unter Instanz hinzufügen ist das Gerät 'HomeMatic RF-Interface' unter dem Hersteller 'HomeMatic' zu finden.  
    Nach dem Anlegen der Instanz sollte als übergeordnetes Gerät schon der 'HomeMatic RF-Interface Splitter' ausgewählt sein.  
-   Existieren in IPS mehrere 'HomeMatic RF-Interface Splitter', so ist der auszuwählen, an welche CCU dieses Funk-Interface angeschlossen ist.  
+   Existieren in IPS mehrere 'HomeMatic RF-Interface Splitter', so ist der auszuwählen, an welcher CCU dieses Funk-Interface angeschlossen ist.  
 
-   Da das auslesen der Adresse der Funk-Interfaces über die WebUI der CCU relativ schwierig ist, ist es einfach diese Instanzen automatisch durch den Splitter anlegen zu lassen (siehe [HomeMatic RF-Interface Splitter](../RFInterfaceSplitter/) ).  
-
+   Da das auslesen der Adresse der Funk-Interfaces über die WebUI der CCU relativ schwierig ist, wird empfohlen den zum Modul gehörenden [HomeMatic RF-Interface Konfigurator](../RFInterfaceConfigurator/) zu benutzen.   
 
 **Konfigurationsseite:**  
 

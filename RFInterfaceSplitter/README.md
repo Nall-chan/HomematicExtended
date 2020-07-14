@@ -21,7 +21,7 @@
 
 ## 1. Funktionsumfang
 
-   Dies Instanz liest alle an einer CCU betriebenen Funk-Interfaces aus und stellt diese Daten den Instanzen 'HomeMatic RF-Interface' bereit.  
+   Diese Instanz liest alle an einer CCU betriebenen Funk-Interfaces aus und stellt diese Daten den Instanzen 'HomeMatic RF-Interface' bereit.  
 
 ## 2. Installation
 
@@ -31,17 +31,18 @@ Dieses Modul ist Bestandteil der HomeMaticExtended-Library.
 ## 3. Einrichten der Instanzen in IP-Symcon
 
 
-![Instanzen](../docs/HMExtendedInstanzen.png)  
+![Instanzen](../docs/HMExtendedInstanzenRFSplitter.png)  
    Unter Instanz hinzufügen ist das Gerät 'HomeMatic RF-Interface Splitter' unter dem Hersteller 'HomeMatic' zu finden.  
+   Diese Instanz wird automatisch erzeugt, sobald ein [HomeMatic RF-Interface Konfigurator](../RFInterfaceConfigurator/) erstellt wird.
    Nach dem Anlegen der Instanz sollte als übergeordnetes Gerät schon der HomeMatic Socket ausgewählt sein.  
-   Existieren in IPS mehrere Homematic Socket, so ist der auszuwählen, an welche CCU die Funk-Interfaces ausgelesen werden sollen.  
-
+   Existieren in IPS mehrere Homematic Socket, so ist über 'Schnittstelle ändern' der Homematic Socket auszuwählen, an welcher CCU die Funk-Interfaces ausgelesen werden sollen.  
+   ![RFInterfaceSplitterGateway](../docs/RFInterfaceSplitterGateway.png)  
+   
 **Konfigurationsseite:**  
 
 ![RFInterface](../docs/RFInterfaceSplitter.png)  
 
-   Über den Button 'Alle erstellen' werden automatisch alle an der CCU vorhandenen Funk-Interfaces als Instanz in IPS erzeugt.  
-   Des weiteren ist in dem Splitter der Intervall in Sekunden einzustellen, in welchem die Daten von der CCU gelesen werden sollen.  
+   In dem Splitter ist der Intervall in Sekunden einzustellen, in welchem die Daten von der CCU gelesen werden sollen.  
 
 | Eigenschaft     | Typ     | Standardwert | Funktion                                      |
 | :-------------: | :-----: | :----------: | :-------------------------------------------: |
