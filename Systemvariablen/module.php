@@ -46,6 +46,7 @@ class HomeMaticSystemvariablen extends HMBase
         $this->HMDeviceAddress = '';
         $this->HMDeviceDatapoint = '';
         $this->SystemVars = [];
+        $this->AlarmScriptID = 0;
         $this->SetReceiveDataFilter('.*9999999999.*');
         $this->SetSummary('');
     }
@@ -552,6 +553,10 @@ class HomeMaticSystemvariablen extends HMBase
      */
     private function SetNewConfig()
     {
+        $this->UnregisterReference($this->AlarmScriptID);
+        $this->AlarmScriptID = $this->ReadPropertyInteger('AlarmScriptID');
+        $this->RegisterReference($this->AlarmScriptID);
+
         $OldEvent = $this->Event;
         if ($OldEvent > 0) {
             $this->UnregisterMessage($OldEvent, VM_DELETE);
@@ -673,7 +678,7 @@ class HomeMaticSystemvariablen extends HMBase
             $HMScript = 'Name=dom.GetObject(' . $SysVar . ').Name();' . PHP_EOL
                     . 'ValueType=dom.GetObject(' . $SysVar . ').ValueType();' . PHP_EOL
                     . 'integer Type=dom.GetObject(' . $SysVar . ').Type();' . PHP_EOL
-                    . 'WriteLine(dom.GetObject(' . $SysVar . ').Variable());' . PHP_EOL
+                    . 'WriteLine(dom.GetObject(' . $SysVar . ').Value());' . PHP_EOL
                     . 'Timestamp=dom.GetObject(' . $SysVar . ').Timestamp();' . PHP_EOL;
 
             try {

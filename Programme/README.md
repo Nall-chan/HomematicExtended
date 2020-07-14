@@ -2,7 +2,7 @@
 [![Version](https://img.shields.io/badge/Modul%20Version-3.00-blue.svg)]()
 [![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)  
 [![Version](https://img.shields.io/badge/Symcon%20Version-5.1%20%3E-green.svg)](https://www.symcon.de/forum/threads/30857-IP-Symcon-5-1-%28Stable%29-Changelog)
-[![StyleCI](https://styleci.io/repos/34275278/shield?style=flat)](https://styleci.io/repos/34275278)  
+[![Check Style](https://github.com/Nall-chan/IPSHomematicExtended/workflows/Check%20Style/badge.svg)](https://github.com/Nall-chan/IPSHomematicExtended/actions) [![Run Tests](https://github.com/Nall-chan/IPSHomematicExtended/workflows/Run%20Tests/badge.svg)](https://github.com/Nall-chan/IPSHomematicExtended/actions)  
 
 # HomeMatic Programme  
   Integration der Programme auf der CCU.  

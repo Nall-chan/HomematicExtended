@@ -47,7 +47,6 @@ class HomeMaticDisWM55 extends HMBase
 
         $this->RegisterHMPropertys('XXX9999995');
         $this->RegisterPropertyBoolean('EmulateStatus', false);
-
         $this->RegisterPropertyInteger('PageUpID', 0);
         $this->RegisterPropertyInteger('PageDownID', 0);
         $this->RegisterPropertyInteger('ActionUpID', 0);

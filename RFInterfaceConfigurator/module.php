@@ -8,7 +8,7 @@ declare(strict_types=1);
  * @file          module.php
  *
  * @author        Michael Tröger <micha@nall-chan.net>
- * @copyright     2019 Michael Tröger
+ * @copyright     2020 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  *
  * @version       3.00
@@ -65,9 +65,9 @@ class HomeMaticRFInterfaceConfigurator extends IPSModule
         }
         $DevicesIDs = IPS_GetInstanceListByModuleID('{36549B96-FA11-4651-8662-F310EEEC5C7D}');
         $InstanceIDList = [];
-        foreach ($DevicesIDs as $Device) {
-            if (IPS_GetInstance($Device)['ConnectionID'] == $ParentId) {
-                $InstanceIDList[$Device] = IPS_GetProperty($Device, 'Address');
+        foreach ($DevicesIDs as $DeviceID) {
+            if (IPS_GetInstance($DeviceID)['ConnectionID'] == $ParentId) {
+                $InstanceIDList[$DeviceID] = IPS_GetProperty($DeviceID, 'Address');
             }
         }
         $Liste = [];
@@ -114,60 +114,23 @@ class HomeMaticRFInterfaceConfigurator extends IPSModule
                 $Liste[] = $AddValue;
             }
         }
+        foreach ($InstanceIDList as $InstanceID => $Address) {
+            $AddValue = [
+                'instanceID' => $InstanceID,
+                'name'       => IPS_GetName($InstanceID),
+                'type'       => 'unknow',
+                'address'    => $Address,
+                'location'   => stristr(IPS_GetLocation($InstanceID), IPS_GetName($InstanceID), true)
+            ];
+            $Liste[] = $AddValue;
+        }
         $Form['actions'][0]['values'] = $Liste;
         $Form['actions'][0][0]['rowCount'] = count($Liste) + 1;
         $this->SendDebug('FORM', json_encode($Form), 0);
         $this->SendDebug('FORM', json_last_error_msg(), 0);
         return json_encode($Form);
     }
-    /**
-     * Interne Funktion des SDK.
-     */
-    public function ReceiveData($JSONString)
-    {
-        $Data = json_decode($JSONString);
-        unset($Data->DataID);
-        unset($Data->ADDRESS);
-        $this->SendDebug('Receive', $Data, 0);
-        foreach ($Data as $Ident => $Value) {
-            if ($Value === '') {
-                continue;
-            }
-            $Profil = '';
-            if ($Ident == 'DUTY_CYCLE') {
-                $Profil = '~Intensity.100';
-            }
-            switch (gettype($Value)) {
-                case 'boolean':
-                    $Typ = VARIABLETYPE_BOOLEAN;
-                    break;
-                case 'integer':
-                    $Typ = VARIABLETYPE_INTEGER;
-                    break;
-                case 'double':
-                case 'float':
-                    $Typ = VARIABLETYPE_FLOAT;
-                    break;
-                case 'string':
-                    $Typ = VARIABLETYPE_STRING;
-                    break;
-                default:
-                    continue 2;
-            }
-            $vid = @$this->GetIDForIdent($Ident);
-            if ($vid === false) {
-                $this->MaintainVariable($Ident, $Ident, $Typ, $Profil, 0, true);
-                $vid = $this->GetIDForIdent($Ident);
-            }
-            if ($Ident == 'CONNECTED') {
-                $this->SetValue($Ident, $Value);
-                continue;
-            }
-            if (GetValue($vid) != $Value) {
-                $this->SetValue($Ident, $Value);
-            }
-        }
-    }
+
     //################# Datenaustausch
     private function GetInterfaces()
     {

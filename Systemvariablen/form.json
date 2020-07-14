@@ -50,6 +50,9 @@
     ],
     "actions": [
         {
+            "type": "TestCenter"
+        },
+        {
             "type": "Button",
             "caption": "read CCU",
             "onClick": "HM_ReadSystemVariables($id);"

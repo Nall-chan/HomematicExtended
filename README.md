@@ -2,7 +2,7 @@
 [![Version](https://img.shields.io/badge/Modul%20Version-3.00-blue.svg)]()
 [![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)  
 [![Version](https://img.shields.io/badge/Symcon%20Version-5.1%20%3E-green.svg)](https://www.symcon.de/forum/threads/30857-IP-Symcon-5-1-%28Stable%29-Changelog)
-[![StyleCI](https://styleci.io/repos/34275278/shield?style=flat)](https://styleci.io/repos/34275278)  
+[![Check Style](https://github.com/Nall-chan/IPSHomematicExtended/workflows/Check%20Style/badge.svg)](https://github.com/Nall-chan/IPSHomematicExtended/actions) [![Run Tests](https://github.com/Nall-chan/IPSHomematicExtended/workflows/Run%20Tests/badge.svg)](https://github.com/Nall-chan/IPSHomematicExtended/actions)  
 
 # Symcon-Modul: HomeMaticExtended
 Erweitert IPS um die native Unterstützung von:  
@@ -16,7 +16,7 @@ Erweitert IPS um die native Unterstützung von:
 * Status der Funk-Interfaces
 * Status des Wired-Interface
 
-## Dokumentation
+## Dokumentation <!-- omit in toc -->
 
 **Inhaltsverzeichnis**
 
@@ -102,20 +102,24 @@ Erweitert IPS um die native Unterstützung von:
 
 ###  1. GUID der Module
 
-| Modul                            | Typ      | GUID                                   |
+|              Modul               |   Typ    |                  GUID                  |
 | :------------------------------: | :------: | :------------------------------------: |
-| HomeMatic Systemvariablen        | Device   | {400F9193-FE79-4086-8D76-958BF9C1B357} |
-| HomeMatic Powermeter             | Device   | {AF50C42B-7183-4992-B04A-FAFB07BB1B90} |
-| HomeMatic Programme              | Device   | {A5010577-C443-4A85-ABF2-3F2D6CDD2465} |
-| HomeMatic RemoteScript Interface | Device   | {246EDB89-70BC-403B-A1FA-3B3B1B540401} |
-| HomeMatic Dis-WM55               | Device   | {271BCAB1-0658-46D9-A164-985AEB641B48} |
-| HomeMatic Dis-EP-WM55            | Device   | {E64ED916-FA6C-45B2-B8E3-EDC3191BC4C0} |
+|    HomeMatic Systemvariablen     |  Device  | {400F9193-FE79-4086-8D76-958BF9C1B357} |
+|       HomeMatic Powermeter       |  Device  | {AF50C42B-7183-4992-B04A-FAFB07BB1B90} |
+|       HomeMatic Programme        |  Device  | {A5010577-C443-4A85-ABF2-3F2D6CDD2465} |
+| HomeMatic RemoteScript Interface |  Device  | {246EDB89-70BC-403B-A1FA-3B3B1B540401} |
+|        HomeMatic Dis-WM55        |  Device  | {271BCAB1-0658-46D9-A164-985AEB641B48} |
+|      HomeMatic Dis-EP-WM55       |  Device  | {E64ED916-FA6C-45B2-B8E3-EDC3191BC4C0} |
 | HomeMatic RF-Interface Splitter  | Splitter | {6EE35B5B-9DD9-4B23-89F6-37589134852F} |
-| HomeMatic RF-Interface           | Device   | {36549B96-FA11-4651-8662-F310EEEC5C7D} |
-| HomeMatic WR-Interface           | Device   | {01C66202-7E94-49C4-8D8F-6A75CE944E87} |
+|      HomeMatic RF-Interface      |  Device  | {36549B96-FA11-4651-8662-F310EEEC5C7D} |
+|      HomeMatic WR-Interface      |  Device  | {01C66202-7E94-49C4-8D8F-6A75CE944E87} |
 
 
 ### 2. Changlog
+
+Version 3.10:  
+ Neu: Konfigurator für RF-Interfaces  
+ Fix: HMScript Fehler im Log der CCU bei Verwendung der Systemvariablen-Instanz.  
 
 Version 3.00:  
  Release für IPS 5.1 und den Module-Store   
