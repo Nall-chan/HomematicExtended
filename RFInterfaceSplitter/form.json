@@ -2,8 +2,9 @@
     "elements": [
         {
             "name": "Interval",
-            "type": "IntervalBox",
-            "caption": "seconds"
+            "type": "NumberSpinner",
+            "caption": "Seconds",
+            "suffix": "seconds"
         }
     ],
     "status": [

@@ -1,6 +1,8 @@
 {
     "translations": {
         "de": {
+            "Seconds": "Sekunden",
+            "seconds": "Sekunden",
             "Configuration is valid.": "Konfiguration gültig.",
             "No interval active.": "Kein Interval aktiv.",
             "Interval to small.": "Interval darf nicht kleiner 1 sein.",
