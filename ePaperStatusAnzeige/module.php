@@ -8,10 +8,10 @@ declare(strict_types=1);
  * @file          module.php
  *
  * @author        Michael Tröger <micha@nall-chan.net>
- * @copyright     2019 Michael Tröger
+ * @copyright     2020 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  *
- * @version       3.00
+ * @version       3.11
  */
 require_once __DIR__ . '/../libs/HMBase.php';  // HMBase Klasse
 
@@ -51,9 +51,9 @@ class HomeMaticDisEPWM55 extends HMBase
      * Steuert den Summer und die LED des Display.
      *
      * @param int $Chime  Tonfolge 0-6
-     * @param int $Repeat Anzahl der Wiederholgungen 0-15
+     * @param int $Repeat Anzahl der Wiederholungen 0-15
      * @param int $Wait   Wartezeit in 10 Sekunden zwischen den Wiederholungen.
-     * @param int $Color  Frabe der LED 0-3
+     * @param int $Color  Farbe der LED 0-3
      *
      * @return bool True bei Erfolg, sonst false.
      */
@@ -102,9 +102,9 @@ class HomeMaticDisEPWM55 extends HMBase
      * @param string $Text   Der darzustellende Text (bis 12 Zeichen)
      * @param int    $Icon   Das anzuzeigende Icon (0-9)
      * @param int    $Chime  Tonfolge 0-6
-     * @param int    $Repeat Anzahl der Wiederholgungen 0-15
+     * @param int    $Repeat Anzahl der Wiederholungen 0-15
      * @param int    $Wait   Wartezeit in 10 Sekunden zwischen den Wiederholungen.
-     * @param int    $Color  Frabe der LED 0-3
+     * @param int    $Color  Farbe der LED 0-3
      *
      * @return bool True bei Erfolg, sonst false.
      */
@@ -177,9 +177,9 @@ class HomeMaticDisEPWM55 extends HMBase
      * @param string $Text3  Der darzustellende Text in Zeile 3(bis 12 Zeichen)
      * @param int    $Icon3  Das anzuzeigende Icon in Zeile 3(0-9)
      * @param int    $Chime  Tonfolge 0-6
-     * @param int    $Repeat Anzahl der Wiederholgungen 0-15
+     * @param int    $Repeat Anzahl der Wiederholungen 0-15
      * @param int    $Wait   Wartezeit in 10 Sekunden zwischen den Wiederholungen.
-     * @param int    $Color  Frabe der LED 0-3
+     * @param int    $Color  Farbe der LED 0-3
      *
      * @return bool True bei Erfolg, sonst false.
      */
@@ -232,7 +232,7 @@ class HomeMaticDisEPWM55 extends HMBase
     //################# PRIVATE
 
     /**
-     * Sendet die Daten an dden HM-Socket.
+     * Sendet die Daten an den HM-Socket.
      *
      * @param array $Submit Das Array mit allen Werten, welche an das Display gesendet werden sollen.
      *
@@ -276,9 +276,9 @@ class HomeMaticDisEPWM55 extends HMBase
      * Erzeugt das Daten-Array aus den übergebenden Parametern.
      *
      * @param int $Chime  Tonfolge 0-6
-     * @param int $Repeat Anzahl der Wiederholgungen 0-15
+     * @param int $Repeat Anzahl der Wiederholungen 0-15
      * @param int $Wait   Wartezeit in 10 Sekunden zwischen den Wiederholungen.
-     * @param int $Color  Frabe der LED 0-3
+     * @param int $Color  Farbe der LED 0-3
      *
      * @return bool|array Das Array mit den Daten, oder im Fehlerfall false.
      */

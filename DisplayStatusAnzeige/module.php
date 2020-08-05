@@ -8,10 +8,10 @@ declare(strict_types=1);
  * @file          module.php
  *
  * @author        Michael Tröger <micha@nall-chan.net>
- * @copyright     2019 Michael Tröger
+ * @copyright     2020 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  *
- * @version       3.0
+ * @version       3.11
  */
 require_once __DIR__ . '/../libs/HMBase.php';  // HMBase Klasse
 
@@ -394,7 +394,7 @@ class HomeMaticDisWM55 extends HMBase
     /**
      * Liefert das Script welches im Objektbaum als Vorlage für das DisplayScript angelegt wird.
      *
-     * @param type $ID Die IPS-ID des HM_OLED Scriptes mit den Konstanten für das Display-Script.
+     * @param type $ID Die IPS-ID des HM_OLED Scripts mit den Konstanten für das Display-Script.
      *
      * @return string
      */

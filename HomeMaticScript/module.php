@@ -8,10 +8,10 @@ declare(strict_types=1);
  * @file          module.php
  *
  * @author        Michael Tröger <micha@nall-chan.net>
- * @copyright     2019 Michael Tröger
+ * @copyright     2020 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  *
- * @version       3.00
+ * @version       3.11
  */
 require_once __DIR__ . '/../libs/HMBase.php';
 
@@ -44,7 +44,7 @@ class HomeMaticRemoteScript extends HMBase
 
     /**
      * IPS-Instanzfunktion HM_RunScript.
-     * Startet das übergebene Script auf der CCU und liefert das Ergbnis als JSON-String.
+     * Startet das übergebene Script auf der CCU und liefert das Ergebnis als JSON-String.
      *
      * @param string $Script
      *

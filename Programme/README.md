@@ -1,5 +1,5 @@
 [![SDK](https://img.shields.io/badge/Symcon-PHPModul-red.svg)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
-[![Version](https://img.shields.io/badge/Modul%20Version-3.00-blue.svg)]()
+[![Version](https://img.shields.io/badge/Modul%20Version-3.11-blue.svg)]()
 [![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)  
 [![Version](https://img.shields.io/badge/Symcon%20Version-5.1%20%3E-green.svg)](https://www.symcon.de/forum/threads/30857-IP-Symcon-5-1-%28Stable%29-Changelog)
 [![Check Style](https://github.com/Nall-chan/IPSHomematicExtended/workflows/Check%20Style/badge.svg)](https://github.com/Nall-chan/IPSHomematicExtended/actions) [![Run Tests](https://github.com/Nall-chan/IPSHomematicExtended/workflows/Run%20Tests/badge.svg)](https://github.com/Nall-chan/IPSHomematicExtended/actions)  
@@ -7,17 +7,17 @@
 # HomeMatic Programme  
   Integration der Programme auf der CCU.  
 
-## Dokumentation
+## Dokumentation <!-- omit in toc -->
 
 **Inhaltsverzeichnis**
 
-1. [Funktionsumfang](#1-funktionsumfang) 
-2. [Installation](#2-installation)
-3. [Einrichten der Instanzen in IP-Symcon](#3-einrichten-der-instanzen-in-ip-symcon)  
-4. [Statusvariablen und Profile](#4-statusvariablen-und-profile)  
-5. [WebFront](#5-webfront) 
-6. [PHP-Befehlsreferenz](#6-php-befehlsreferenz)   
-7. [Lizenz](#7-lizenz)
+- [1. Funktionsumfang](#1-funktionsumfang)
+- [2. Installation](#2-installation)
+- [3. Einrichten der Instanzen in IP-Symcon](#3-einrichten-der-instanzen-in-ip-symcon)
+- [4. Statusvariablen und Profile](#4-statusvariablen-und-profile)
+- [5. WebFront](#5-webfront)
+- [6. PHP-Befehlsreferenz](#6-php-befehlsreferenz)
+- [7. Lizenz](#7-lizenz)
 
 ## 1. Funktionsumfang
 
@@ -27,7 +27,7 @@
 
 ## 2. Installation
 
-Dieses Modul ist Bestandteil der HomeMaticExtended-Library.  
+Dieses Modul ist Bestandteil der [HomeMaticExtended-Library](../).  
 
 
 ## 3. Einrichten der Instanzen in IP-Symcon
@@ -44,7 +44,7 @@ Dieses Modul ist Bestandteil der HomeMaticExtended-Library.
    Dieses Modul hat keinerlei Einstellungen, welche konfiguriert werden müssen.  
 
    Im Testcenter ist es jedoch über den Button 'CCU auslesen' möglich, die auf der CCU vorhandenen Programme auszulesen.  
-   Dies erfolgt auch autoamtisch bei Systemstart von IPS und wenn die Instanz angelegt wird.  
+   Dies erfolgt auch automatisch wenn Symcon die Verbindung zur CCU herstellt und wenn die Instanz angelegt wird.  
 
 
 ## 4. Statusvariablen und Profile  
@@ -65,7 +65,7 @@ Die direkte Darstellung im WebFront ist möglich, es wird aber empfohlen mit Lin
    ```php
     boolean HM_ReadPrograms(integer $InstantID /*[HomeMatic Programme]*/)
 ```
-   Alle Programme auf der CCU werden ausgelesen und bei Bedarf umbenannt oder neu angelegt.
+   Alle Programme auf der CCU werden ausgelesen und bei Bedarf neu angelegt.
 
 ```php
     boolean HM_StartProgram(integer $InstantID /*[HomeMatic Programme]*/, string $IDENT);

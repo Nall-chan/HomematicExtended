@@ -1,5 +1,5 @@
 [![SDK](https://img.shields.io/badge/Symcon-PHPModul-red.svg)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
-[![Version](https://img.shields.io/badge/Modul%20Version-3.00-blue.svg)]()
+[![Version](https://img.shields.io/badge/Modul%20Version-3.11-blue.svg)]()
 [![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)  
 [![Version](https://img.shields.io/badge/Symcon%20Version-5.1%20%3E-green.svg)](https://www.symcon.de/forum/threads/30857-IP-Symcon-5-1-%28Stable%29-Changelog)
 [![Check Style](https://github.com/Nall-chan/IPSHomematicExtended/workflows/Check%20Style/badge.svg)](https://github.com/Nall-chan/IPSHomematicExtended/actions) [![Run Tests](https://github.com/Nall-chan/IPSHomematicExtended/workflows/Run%20Tests/badge.svg)](https://github.com/Nall-chan/IPSHomematicExtended/actions)   
@@ -7,16 +7,21 @@
 # HomeMatic Dis-EP-WM55  
    Hier handelt es sich um eine Instanz, welche die Verwendung des ePaper-Statusdisplays vereinfachen soll.  
 
-## Dokumentation
+## Dokumentation <!-- omit in toc -->
 
 **Inhaltsverzeichnis**
 
-1. [Funktionsumfang](#1-funktionsumfang) 
-2. [Installation](#2-installation)
-3. [Einrichten der Instanzen in IP-Symcon](#3-einrichten-der-instanzen-in-ip-symcon)  
-4. [Statusvariablen und Profile](#4-statusvariablen-und-profile)  
-5. [PHP-Befehlsreferenz](#5-php-befehlsreferenz)   
-6. [Lizenz](#6-lizenz)
+- [1. Funktionsumfang](#1-funktionsumfang)
+- [2. Installation](#2-installation)
+- [3. Einrichten der Instanzen in IP-Symcon](#3-einrichten-der-instanzen-in-ip-symcon)
+- [4. Statusvariablen und Profile](#4-statusvariablen-und-profile)
+- [5. PHP-Befehlsreferenz](#5-php-befehlsreferenz)
+  - [HM_WriteValueDisplayNotify](#hm_writevaluedisplaynotify)
+  - [HM_WriteValueDisplayLine](#hm_writevaluedisplayline)
+  - [HM_WriteValueDisplayLineEx](#hm_writevaluedisplaylineex)
+  - [HM_WriteValueDisplay](#hm_writevaluedisplay)
+  - [HM_WriteValueDisplayEx](#hm_writevaluedisplayex)
+- [6. Lizenz](#6-lizenz)
 
 ## 1. Funktionsumfang
 
@@ -25,7 +30,7 @@
 
 ## 2. Installation
 
-Dieses Modul ist Bestandteil der HomeMaticExtended-Library.  
+Dieses Modul ist Bestandteil der [HomeMaticExtended-Library](../).  
 
 ## 3. Einrichten der Instanzen in IP-Symcon
 
@@ -33,14 +38,14 @@ Dieses Modul ist Bestandteil der HomeMaticExtended-Library.
 ![Instanzen](../docs/HMExtendedInstanzen.png)  
    Unter Instanz hinzufügen ist das Gerät 'HomeMatic WM55-EP-Dis' unter dem Hersteller 'HomeMatic' zu finden.  
    Nach dem Anlegen der Instanz sollte als übergeordnetes Gerät schon der HomeMatic Socket ausgewählt sein.  
-   Existieren in IPS mehrere Homematic Socket, so ist der auszuwählen, an welcher CCU das Ststusdisplay angelernt ist.  
+   Existieren in IPS mehrere Homematic Socket, so ist der auszuwählen, an welcher CCU das Statusdisplay angelernt ist.  
 
 **Konfigurationsseite:**  
    Als Adresse ist der Kanal 3 der Anzeige einzutragen z.B. LEY012345:3  
 
-| Eigenschaft     | Typ     | Standardwert | Funktion                                      |
-| :-------------: | :-----: | :----------: | :-------------------------------------------: |
-| Address         | string  |              | Adresse des Gerätes                           |
+| Eigenschaft |  Typ   | Standardwert |      Funktion       |
+| :---------: | :----: | :----------: | :-----------------: |
+|   Address   | string |              | Adresse des Gerätes |
 
 
 ## 4. Statusvariablen und Profile  
@@ -52,49 +57,49 @@ Dieses Modul ist Bestandteil der HomeMaticExtended-Library.
 
    Das Display wird über folgende PHP-Befehle beschrieben.  
 
-   Die Werte für die Paramter sind dabei immer identisch:  
+   Die Werte für die Parameter sind dabei immer identisch:  
    '$Text' Der darzustellende Text (bis 12 Zeichen).  
-       Es können auch die vorfedinierten Textblöcke durch die Zeichenfolge '0x80' bis '0x89' angesprochen werden.  
+       Es können auch die vordefinierten Textblöcke durch die Zeichenfolge '0x80' bis '0x89' angesprochen werden.  
 
    '$Icon' Das anzuzeigende Icon (0-9):  
 
-| Wert | Icon        |
-| :--: | :---------: |
-| 0    | keins       |
-| 1    | Lampe aus   |
-| 2    | Lampe an    |
-| 3    | Schloss auf |
-| 4    | Schloss zu  |
-| 5    | Fehler      |
-| 6    | OK          |
-| 7    | Info        |
-| 8    | Nachricht   |
-| 9    | Service     |
+| Wert  |    Icon     |
+| :---: | :---------: |
+|   0   |    keins    |
+|   1   |  Lampe aus  |
+|   2   |  Lampe an   |
+|   3   | Schloss auf |
+|   4   | Schloss zu  |
+|   5   |   Fehler    |
+|   6   |     OK      |
+|   7   |    Info     |
+|   8   |  Nachricht  |
+|   9   |   Service   |
 
    '$Chime' Tonfolge (0-6):  
 
-| Wert | Ton            |
-| :--: | :------------: |
-| 0    | aus            |
-| 1    | lang lang      |
-| 2    | lang kurz      |
-| 3    | lang kurz kurz |
-| 4    | kurz           |
-| 5    | kurz kurz      |
-| 6    | lang           |
+| Wert  |      Ton       |
+| :---: | :------------: |
+|   0   |      aus       |
+|   1   |   lang lang    |
+|   2   |   lang kurz    |
+|   3   | lang kurz kurz |
+|   4   |      kurz      |
+|   5   |   kurz kurz    |
+|   6   |      lang      |
 
-   '$Repeat' Anzahl der Wiederholgungen (0-15).  
+   '$Repeat' Anzahl der Wiederholungen (0-15).  
 
    '$Wait' Wartezeit in 10 Sekunden zwischen den Wiederholungen.  
 
-   '$Color' Frabe der LED (0-3):  
+   '$Color' Farbe der LED (0-3):  
 
-| Wert | Farbe  |
-| :--: | :----: |
-| 0    | aus    |
-| 1    | rot    |
-| 2    | grün   |
-| 3    | orange |
+| Wert  | Farbe  |
+| :---: | :----: |
+|   0   |  aus   |
+|   1   |  rot   |
+|   2   |  grün  |
+|   3   | orange |
 
 
    

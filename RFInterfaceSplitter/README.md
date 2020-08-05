@@ -1,5 +1,5 @@
 [![SDK](https://img.shields.io/badge/Symcon-PHPModul-red.svg)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
-[![Version](https://img.shields.io/badge/Modul%20Version-3.00-blue.svg)]()
+[![Version](https://img.shields.io/badge/Modul%20Version-3.11-blue.svg)]()
 [![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)  
 [![Version](https://img.shields.io/badge/Symcon%20Version-5.1%20%3E-green.svg)](https://www.symcon.de/forum/threads/30857-IP-Symcon-5-1-%28Stable%29-Changelog)
 [![Check Style](https://github.com/Nall-chan/IPSHomematicExtended/workflows/Check%20Style/badge.svg)](https://github.com/Nall-chan/IPSHomematicExtended/actions) [![Run Tests](https://github.com/Nall-chan/IPSHomematicExtended/workflows/Run%20Tests/badge.svg)](https://github.com/Nall-chan/IPSHomematicExtended/actions)   
@@ -7,17 +7,17 @@
 # HomeMatic RF-Interface Splitter  
    Abrufen der Informationen für die Funk-Interfaces.  
 
-## Dokumentation
+## Dokumentation <!-- omit in toc -->
 
 **Inhaltsverzeichnis**
 
-1. [Funktionsumfang](#1-funktionsumfang) 
-2. [Installation](#2-installation)
-3. [Einrichten der Instanzen in IP-Symcon](#3-einrichten-der-instanzen-in-ip-symcon)  
-4. [Statusvariablen und Profile](#4-statusvariablen-und-profile)  
-5. [PHP-Befehlsreferenz](#5-php-befehlsreferenz)   
-6. [Datenaustausch](#6-datenaustausch)
-7. [Lizenz](#7-lizenz)
+- [1. Funktionsumfang](#1-funktionsumfang)
+- [2. Installation](#2-installation)
+- [3. Einrichten der Instanzen in IP-Symcon](#3-einrichten-der-instanzen-in-ip-symcon)
+- [4. Statusvariablen und Profile](#4-statusvariablen-und-profile)
+- [5. PHP-Befehlsreferenz](#5-php-befehlsreferenz)
+- [6. Datenaustausch](#6-datenaustausch)
+- [7. Lizenz](#7-lizenz)
 
 ## 1. Funktionsumfang
 
@@ -25,7 +25,7 @@
 
 ## 2. Installation
 
-Dieses Modul ist Bestandteil der HomeMaticExtended-Library.  
+Dieses Modul ist Bestandteil der [HomeMaticExtended-Library](../).  
 
 
 ## 3. Einrichten der Instanzen in IP-Symcon
@@ -44,9 +44,9 @@ Dieses Modul ist Bestandteil der HomeMaticExtended-Library.
 
    In dem Splitter ist der Intervall in Sekunden einzustellen, in welchem die Daten von der CCU gelesen werden sollen.  
 
-| Eigenschaft     | Typ     | Standardwert | Funktion                                      |
-| :-------------: | :-----: | :----------: | :-------------------------------------------: |
-| Interval        | integer | 0            | Intervall in Sekunden für den Datenabruf      |
+| Eigenschaft |   Typ   | Standardwert |                 Funktion                 |
+| :---------: | :-----: | :----------: | :--------------------------------------: |
+|  Interval   | integer |      0       | Intervall in Sekunden für den Datenabruf |
  
 
 ## 4. Statusvariablen und Profile  
@@ -59,9 +59,9 @@ Dieses Modul ist Bestandteil der HomeMaticExtended-Library.
 
 ## 6. Datenaustausch  
 
-GUIDs für den Datenaustausch zwischen RF-Interface Splitter und RF-Interface:  
+GUID für den Datenaustausch zwischen RF-Interface Splitter und RF-Interface:  
 
-| Device                            | GUID                                   | 
+|              Device               |                  GUID                  |
 | :-------------------------------: | :------------------------------------: |
 | Senden zum RF-Interface Splitter  | {2F910A05-3607-4070-A6FF-53539E5D3BBB} |
 | Empfang vom RF-Interface Splitter | {E2966A08-BCE1-4E76-8C4B-7E0136244E1B} |

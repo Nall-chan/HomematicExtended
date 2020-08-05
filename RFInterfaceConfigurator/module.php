@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @copyright     2020 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  *
- * @version       3.00
+ * @version       3.11
  */
 require_once __DIR__ . '/../libs/HMBase.php';  // HMBase Klasse
 
@@ -85,7 +85,7 @@ class HomeMaticRFInterfaceConfigurator extends IPSModule
                         $Type = 'HmIP';
                         break;
                     default:
-                        $Type = 'unknow';
+                        $Type = 'unknown';
                         break;
                 }
                 $InstanceID = array_search($Interface['ADDRESS'], $InstanceIDList);
@@ -118,7 +118,7 @@ class HomeMaticRFInterfaceConfigurator extends IPSModule
             $AddValue = [
                 'instanceID' => $InstanceID,
                 'name'       => IPS_GetName($InstanceID),
-                'type'       => 'unknow',
+                'type'       => 'unknown',
                 'address'    => $Address,
                 'location'   => stristr(IPS_GetLocation($InstanceID), IPS_GetName($InstanceID), true)
             ];

@@ -8,10 +8,10 @@ declare(strict_types=1);
  * @file          module.php
  *
  * @author        Michael Tröger <micha@nall-chan.net>
- * @copyright     2019 Michael Tröger
+ * @copyright     2020 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  *
- * @version       3.00
+ * @version       3.11
  */
 require_once __DIR__ . '/../libs/HMBase.php';  // HMBase Klasse
 
@@ -23,7 +23,7 @@ require_once __DIR__ . '/../libs/HMBase.php';  // HMBase Klasse
  * @property string $HMDeviceAddress Die Geräte-Adresse des Zählers.
  * @property string $HMDeviceDatapoint Der zu überwachende Datenpunkt.
  * @property string $HMProtocol HmIP-RF oder BidCos-RF BidCos-WR
- * @property string $HMSufix Anhang für die HMSystemvariable
+ * @property string $HMSuffix Anhang für die HMSystemvariable
  * @property int $HMFactor Faktor für die Berechnung.
  */
 class HomeMaticPowermeter extends HMBase
@@ -112,7 +112,7 @@ class HomeMaticPowermeter extends HMBase
         if (IPS_GetKernelRunlevel() != KR_READY) {
             $this->HMDeviceAddress = '';
             $this->HMDeviceDatapoint = '';
-            $this->HMSufix = '';
+            $this->HMSuffix = '';
             $this->HMProtocol = 'BidCos-RF';
             $this->Event = 0;
             $this->HMFactor = 1;
@@ -127,16 +127,16 @@ class HomeMaticPowermeter extends HMBase
             switch ($HMDeviceDatapoint) {
                 case 'GAS_ENERGY_COUNTER':
                     $Profil = '~Gas';
-                    $this->HMSufix = 'Gas';
+                    $this->HMSuffix = 'Gas';
                     $this->HMFactor = 1;
                     break;
                 case 'IEC_ENERGY_COUNTER':
-                    $this->HMSufix = 'IEC';
+                    $this->HMSuffix = 'IEC';
                     $Profil = '~Electricity';
                     $this->HMFactor = 1000;
                     break;
                 case 'ENERGY_COUNTER':
-                    $this->HMSufix = '';
+                    $this->HMSuffix = '';
                     $Profil = '~Electricity';
                     $this->HMFactor = 1000;
                     break;
@@ -249,7 +249,7 @@ class HomeMaticPowermeter extends HMBase
 
         $url = 'GetPowerMeter.exe';
         $HMScript = 'object oitemID;' . PHP_EOL
-                . 'oitemID = dom.GetObject("svEnergyCounter' . $this->HMSufix . '_" # dom.GetObject("' . $this->HMProtocol . '.' . $this->HMDeviceAddress . '.' . $this->HMDeviceDatapoint . '").Channel() # "_' . $this->HMDeviceAddress . '");' . PHP_EOL
+                . 'oitemID = dom.GetObject("svEnergyCounter' . $this->HMSuffix . '_" # dom.GetObject("' . $this->HMProtocol . '.' . $this->HMDeviceAddress . '.' . $this->HMDeviceDatapoint . '").Channel() # "_' . $this->HMDeviceAddress . '");' . PHP_EOL
                 . 'Value=oitemID.Value();' . PHP_EOL;
 
         try {

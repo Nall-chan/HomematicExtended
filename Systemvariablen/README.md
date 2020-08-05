@@ -1,5 +1,5 @@
 [![SDK](https://img.shields.io/badge/Symcon-PHPModul-red.svg)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
-[![Version](https://img.shields.io/badge/Modul%20Version-3.00-blue.svg)]()
+[![Version](https://img.shields.io/badge/Modul%20Version-3.11-blue.svg)]()
 [![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)  
 [![Version](https://img.shields.io/badge/Symcon%20Version-5.1%20%3E-green.svg)](https://www.symcon.de/forum/threads/30857-IP-Symcon-5-1-%28Stable%29-Changelog)
 [![Check Style](https://github.com/Nall-chan/IPSHomematicExtended/workflows/Check%20Style/badge.svg)](https://github.com/Nall-chan/IPSHomematicExtended/actions) [![Run Tests](https://github.com/Nall-chan/IPSHomematicExtended/workflows/Run%20Tests/badge.svg)](https://github.com/Nall-chan/IPSHomematicExtended/actions)  
@@ -7,24 +7,23 @@
 # HomeMatic Systemvariablen  
    Bereitstellen der System und Alarmvariablen einer CCU in IPS.  
 
-## Dokumentation
+## Dokumentation <!-- omit in toc -->
 
 **Inhaltsverzeichnis**
 
-1. [Funktionsumfang](#1-funktionsumfang) 
-2. [Installation](#2-installation)
-3. [Einrichten der Instanzen in IP-Symcon](#3-einrichten-der-instanzen-in-ip-symcon)  
-4. [Statusvariablen und Profile](#4-statusvariablen-und-profile)  
-5. [WebFront](#5-webfront) 
-6. [PHP-Befehlsreferenz](#6-php-befehlsreferenz)   
-7. [Lizenz](#7-lizenz)
+- [1. Funktionsumfang](#1-funktionsumfang)
+- [2. Installation](#2-installation)
+- [3. Einrichten der Instanzen in IP-Symcon](#3-einrichten-der-instanzen-in-ip-symcon)
+- [4. Statusvariablen und Profile](#4-statusvariablen-und-profile)
+- [5. WebFront](#5-webfront)
+- [6. PHP-Befehlsreferenz](#6-php-befehlsreferenz)
+- [7. Lizenz](#7-lizenz)
 
 ## 1. Funktionsumfang
 
    Abfragen von System- und Alarmvariablen inkl. Profilen und Werten von der CCU.  
    Schreiben von Werten der Systemvariablen zur CCU.  
    Standard Actionhandler für die Bedienung der System- und Alarmvariablen aus dem IPS-Webfront.  
-   Die Alarmvariablen werden erst ab IPS 4.3 untersützt.  
 
    Dieses Modul unterstützt zwei Möglichkeiten die Systemvariablen von der CCU abzufragen:  
 
@@ -63,7 +62,7 @@
 
 ## 2. Installation
 
-Dieses Modul ist Bestandteil der HomeMaticExtended-Library.  
+Dieses Modul ist Bestandteil der [HomeMaticExtended-Library](../).  
 
 
 ## 3. Einrichten der Instanzen in IP-Symcon
@@ -86,13 +85,13 @@ Dieses Modul ist Bestandteil der HomeMaticExtended-Library.
    Variable, aus dem WebFront heraus, unterbunden werden.  
 ![Systemvariablen](../docs/Systemvariablen.png)  
 
-| Eigenschaft     | Typ     | Standardwert | Funktion                                                    |
-| :-------------: | :-----: | :----------: | :---------------------------------------------------------: |
-| EventID         | integer | 0            | Variablen-ID welche einen Refresh auslöst                   |
-| Interval        | integer | 0            | Intervall in Sekunden für den Datenabruf                    |
-| EmulateStatus   | boolean | false        | Wert der Systemvariable wartet nicht auf Rückmeldung        |
-| EnableAlarmDP   | boolean | true         | Aktiviert die verarbeitung von Alarmvariablen               |
-| AlarmScriptID   | integer | 0            | Script-ID welches bei der Alarmverarbeitung ausgeführt wird |
+|  Eigenschaft  |   Typ   | Standardwert |                          Funktion                           |
+| :-----------: | :-----: | :----------: | :---------------------------------------------------------: |
+|    EventID    | integer |      0       |          Variablen-ID welche einen Refresh auslöst          |
+|   Interval    | integer |      0       |          Intervall in Sekunden für den Datenabruf           |
+| EmulateStatus | boolean |    false     |    Wert der Systemvariable wartet nicht auf Rückmeldung     |
+| EnableAlarmDP | boolean |     true     |        Aktiviert die verarbeitung von Alarmvariablen        |
+| AlarmScriptID | integer |      0       | Script-ID welches bei der Alarmverarbeitung ausgeführt wird |
 
 
 ## 4. Statusvariablen und Profile  
@@ -101,8 +100,8 @@ Dieses Modul ist Bestandteil der HomeMaticExtended-Library.
    Alle von der CCU gemeldeten Systemvariablen werden in IPS dargestellt.  
    Die Statusvariablen der Instanz  werden so benannt wie in der CCU.  
 
-   Namensänderungen in IPS werden durch die CCU immer überschrieben!  
-   In der CCU gelöschte Systemvariablen, werden in IPS nicht antomatisch gelöscht.  
+   Namensänderungen in IPS werden durch die CCU nicht überschrieben!  
+   In der CCU gelöschte Systemvariablen, werden in IPS nicht automatisch gelöscht.  
 
    Alle aus der CUU ausgelesenen Werte werden in IPS aufgrund des Zeitstempels der
    CCU-Variable und der IPS-Variable abgeglichen.  
@@ -157,7 +156,7 @@ Die direkte Darstellung im WebFront ist möglich, es wird aber empfohlen mit Lin
 
 ```php
     HM_WriteValueBoolean(12345 /*[HomeMatic Systemvariablen]*/, '950' /* IDENT von Anwesenheit */, true);  
-    HM_WriteValueFloat(12345 /*[HomeMatic Systemvariablen]*/, '2588' /* IDENT von Solltemp Tag */, 21.0);  
+    HM_WriteValueFloat(12345 /*[HomeMatic Systemvariablen]*/, '2588' /* IDENT von Solltemperatur Tag */, 21.0);  
     HM_WriteValueInteger(12345 /*[HomeMatic Systemvariablen]*/, '12829', 56);  
     HM_WriteValueString(12345 /*[HomeMatic Systemvariablen]*/, '14901', 'TestString');  
 ```
@@ -173,17 +172,17 @@ Die direkte Darstellung im WebFront ist möglich, es wird aber empfohlen mit Lin
 **Übersicht aller übergeben Variablen im Alarm-Script:**  
 ![Alarmvariable](../docs/Alarmvariable.png)  
 
-| Indexname   | Type    | Bedeutung                          |
+|  Indexname  |  Type   |             Bedeutung              |
 | :---------: | :-----: | :--------------------------------: |
-| Channel     | string  | Kannalbezeichnung des Melders      |
+|   Channel   | string  |    Kanalbezeichnung des Melders    |
 | ChannelName | string  | Bezeichnung des Kanals aus der CCU |
-| DP          | string  | Bezeichnung des Datenpunktes       |
-| FirstTime   | integer | Erste Auslösung (Unixtimestamp)    |
-| LastTime    | integer | Letzte Auslösung (Unixtimestamp)   |
-| OLDVALUE    | boolean | Vorheriger Wert                    |
-| SENDER      | string  | FixWert 'AlarmDP'                  |
-| VALUE       | boolean | Aktueller Wert                     |
-| VARIABLE    | integer | ObjektID der Alarmvariable         |
+|     DP      | string  |    Bezeichnung des Datenpunktes    |
+|  FirstTime  | integer |  Erste Auslösung (Unixtimestamp)   |
+|  LastTime   | integer |  Letzte Auslösung (Unixtimestamp)  |
+|  OLDVALUE   | boolean |          Vorheriger Wert           |
+|   SENDER    | string  |         FixWert 'AlarmDP'          |
+|    VALUE    | boolean |           Aktueller Wert           |
+|  VARIABLE   | integer |     ObjektID der Alarmvariable     |
 
 
 ## 7. Lizenz

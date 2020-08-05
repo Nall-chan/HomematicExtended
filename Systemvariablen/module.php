@@ -8,10 +8,10 @@ declare(strict_types=1);
  * @file          module.php
  *
  * @author        Michael Tröger <micha@nall-chan.net>
- * @copyright     2019 Michael Tröger
+ * @copyright     2020 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  *
- * @version       3.00
+ * @version       3.11
  */
 require_once __DIR__ . '/../libs/HMBase.php';  // HMBase Klasse
 
@@ -639,7 +639,7 @@ class HomeMaticSystemvariablen extends HMBase
      */
     private function ReadSysVars()
     {
-        // Sysvars
+        // Systemvariablen
         $HMScript = 'SysVars=dom.GetObject(ID_SYSTEM_VARIABLES).EnumUsedIDs();';
 
         try {

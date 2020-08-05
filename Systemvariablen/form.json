@@ -7,8 +7,9 @@
         },
         {
             "name": "Interval",
-            "type": "IntervalBox",
-            "caption": "seconds"
+            "type": "NumberSpinner",
+            "caption": "Interval",
+            "suffix": "seconds"
         },
         {
             "name": "EmulateStatus",

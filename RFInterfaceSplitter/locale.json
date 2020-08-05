@@ -2,9 +2,11 @@
     "translations": {
         "de": {
             "Configuration is valid.": "Konfiguration gültig.",
-            "No interval active.": "Kein Interval aktiv.",
-            "Interval to small.": "Interval darf nicht kleiner 1 sein.",
-            "Interval smaller as 5 not possible.": "Interval kleiner 5 nicht möglich.",
+            "No interval active.": "Kein Intervall aktiv.",
+            "Interval to small.": "Intervall darf nicht kleiner 1 sein.",
+            "Interval smaller as 5 not possible.": "Intervall kleiner 5 nicht möglich.",
+            "Interval": "Intervall",
+            "seconds": "Sekunden",
             "read RF-Interfaces": "RF-Interfaces auslesen",
             "Instance has no active parent instance!": "Keine aktive Parent Instanz!",
             "Error on read interfaces:": "Fehler beim lesen des Interfaces:"
