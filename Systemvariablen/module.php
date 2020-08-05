@@ -781,7 +781,7 @@ class HomeMaticSystemvariablen extends HMBase
                     if ((int) $xmlVar->Type == 2113) {
                         $this->ProcessAlarmVariable($VarID, $SysVar, $CCUTimeZone);
                     } else {
-                        $this->SetValue($VarIdent, (int) $xmlVar->Variable);
+                        $this->SetValue($VarIdent, (string) $xmlVar->Variable == 'true');
                     }
                     break;
                 case VARIABLETYPE_INTEGER:

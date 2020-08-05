@@ -57,8 +57,8 @@ class HomeMaticDisWM55 extends HMBase
         $ID = @$this->GetIDForIdent('DisplayScript');
         if ($ID === false) {
             $ID = $this->RegisterScript('DisplayScript', 'Display Script', $this->CreateDisplayScript(), -1);
+            IPS_SetHidden($ID, true);
         }
-        IPS_SetHidden($ID, true);
         $this->RegisterPropertyInteger('ScriptID', $ID);
 
         $this->UnregisterVariable('PAGE');
