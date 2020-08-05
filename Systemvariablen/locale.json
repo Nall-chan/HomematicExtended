@@ -2,6 +2,7 @@
     "translations": {
         "de": {
             "Trigger for refresh": "Trigger für Refresh",
+            "Seconds": "Sekunden",
             "seconds": "Sekunden",
             "emulate state": "Status emulieren",
             "enable alarm variable": "Alarm-Variablen aktiv",

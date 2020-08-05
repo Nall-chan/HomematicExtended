@@ -1,11 +1,12 @@
 {
     "translations": {
         "de": {
+            "Seconds": "Sekunden",
+            "seconds": "Sekunden",
             "Configuration is valid.": "Konfiguration gültig.",
             "No interval active.": "Kein Intervall aktiv.",
             "Interval to small.": "Intervall darf nicht kleiner 1 sein.",
             "Interval": "Intervall",
-            "seconds": "Sekunden",
             "Interval smaller as 5 not possible.": "Intervall kleiner 5 nicht möglich.",
             "read WR-Interfaces": "WR-Interfaces auslesen",
             "Instance has no active parent instance!": "Keine aktive Parent Instanz!",
