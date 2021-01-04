@@ -1,5 +1,5 @@
 [![SDK](https://img.shields.io/badge/Symcon-PHPModul-red.svg)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
-[![Version](https://img.shields.io/badge/Modul%20Version-3.11-blue.svg)]()
+[![Version](https://img.shields.io/badge/Modul%20version-3.12-blue.svg)]()
 [![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)  
 [![Version](https://img.shields.io/badge/Symcon%20Version-5.1%20%3E-green.svg)](https://www.symcon.de/forum/threads/30857-IP-Symcon-5-1-%28Stable%29-Changelog)
 [![Check Style](https://github.com/Nall-chan/HomematicExtended/workflows/Check%20Style/badge.svg)](https://github.com/Nall-chan/HomematicExtended/actions) [![Run Tests](https://github.com/Nall-chan/HomematicExtended/workflows/Run%20Tests/badge.svg)](https://github.com/Nall-chan/HomematicExtended/actions)  
@@ -20,25 +20,26 @@ Erweitert IPS um die native Unterstützung von:
 
 **Inhaltsverzeichnis**
 
-- [1. Funktionsumfang](#1-funktionsumfang)
-  - [HomeMatic Systemvariablen:](#homematic-systemvariablen)
-  - [HomeMatic Powermeter:](#homematic-powermeter)
-  - [HomeMatic Programme::](#homematic-programme)
-  - [HomeMatic RemoteScript Interface:](#homematic-remotescript-interface)
-  - [HomeMatic Dis-WM55:](#homematic-dis-wm55)
-  - [HomeMatic Dis-EP-WM55:](#homematic-dis-ep-wm55)
-  - [HomeMatic RF-Interface Splitter:](#homematic-rf-interface-splitter)
-  - [HomeMatic RF-Interface Konfigurator:](#homematic-rf-interface-konfigurator)
-  - [HomeMatic RF-Interface:](#homematic-rf-interface)
-  - [HomeMatic WR-Interface:](#homematic-wr-interface)
-- [2. Voraussetzungen](#2-voraussetzungen)
-- [3. Software-Installation](#3-software-installation)
-- [4. Einrichten der Instanzen in IP-Symcon](#4-einrichten-der-instanzen-in-ip-symcon)
-- [5. Anhang](#5-anhang)
-  - [1. GUID der Module](#1-guid-der-module)
-  - [2. Changelog](#2-changelog)
-  - [3. Spenden](#3-spenden)
-- [6. Lizenz](#6-lizenz)
+- [Symcon-Modul: HomeMaticExtended](#symcon-modul-homematicextended)
+  - [1. Funktionsumfang](#1-funktionsumfang)
+    - [HomeMatic Systemvariablen:](#homematic-systemvariablen)
+    - [HomeMatic Powermeter:](#homematic-powermeter)
+    - [HomeMatic Programme::](#homematic-programme)
+    - [HomeMatic RemoteScript Interface:](#homematic-remotescript-interface)
+    - [HomeMatic Dis-WM55:](#homematic-dis-wm55)
+    - [HomeMatic Dis-EP-WM55:](#homematic-dis-ep-wm55)
+    - [HomeMatic RF-Interface Splitter:](#homematic-rf-interface-splitter)
+    - [HomeMatic RF-Interface Konfigurator:](#homematic-rf-interface-konfigurator)
+    - [HomeMatic RF-Interface:](#homematic-rf-interface)
+    - [HomeMatic WR-Interface:](#homematic-wr-interface)
+  - [2. Voraussetzungen](#2-voraussetzungen)
+  - [3. Software-Installation](#3-software-installation)
+  - [4. Einrichten der Instanzen in IP-Symcon](#4-einrichten-der-instanzen-in-ip-symcon)
+  - [5. Anhang](#5-anhang)
+    - [1. GUID der Module](#1-guid-der-module)
+    - [2. Changelog](#2-changelog)
+  - [6. Spenden](#6-spenden)
+  - [7. Lizenz](#7-lizenz)
 
 ## 1. Funktionsumfang
 
@@ -130,6 +131,10 @@ Erweitert IPS um die native Unterstützung von:
 
 
 ### 2. Changelog
+
+Version 3.12:
+ - Fix: Fehlermeldung bei Senden an Dis-EP-WM55.  
+ - Fix: Dokumentation für Dis-EP-WM55 korrigiert.  
 
 Version 3.11:
  - Fix: IntervalBox durch NumberSpinner ersetzt.  
@@ -239,12 +244,12 @@ Version 1.3:
 
 Version 1.1:  
 
-### 3. Spenden  
+## 6. Spenden  
   
   Die Library ist für die nicht kommerzielle Nutzung kostenlos, Schenkungen als Unterstützung für den Autor werden hier akzeptiert:  
 
 <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=G2SLW2MEMQZH2" target="_blank"><img src="https://www.paypalobjects.com/de_DE/DE/i/btn/btn_donate_LG.gif" border="0" /></a>
 
-## 6. Lizenz
+## 7. Lizenz
 
   [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)  

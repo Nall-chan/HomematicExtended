@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @copyright     2020 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  *
- * @version       3.11
+ * @version       3.12
  */
 require_once __DIR__ . '/../libs/HMBase.php';  // HMBase Klasse
 
@@ -205,7 +205,7 @@ class HomeMaticWRInterface extends HMBase
 
         $JSON = json_encode($ParentData);
         $ResultJSON = @$this->SendDataToParent($JSON);
-        if ($ResultJSON == false) {
+        if ($ResultJSON === false) {
             trigger_error($this->Translate('Error on read WR-Interface.'), E_USER_NOTICE);
             $this->SendDebug('Error JSON', $ResultJSON, 0);
             return false;

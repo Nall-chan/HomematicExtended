@@ -1,10 +1,11 @@
 [![SDK](https://img.shields.io/badge/Symcon-PHPModul-red.svg)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
-[![Version](https://img.shields.io/badge/Modul%20Version-3.11-blue.svg)]()
+[![Version](https://img.shields.io/badge/Modul%20version-3.12-blue.svg)]()
 [![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)  
 [![Version](https://img.shields.io/badge/Symcon%20Version-5.1%20%3E-green.svg)](https://www.symcon.de/forum/threads/30857-IP-Symcon-5-1-%28Stable%29-Changelog)
 [![Check Style](https://github.com/Nall-chan/HomematicExtended/workflows/Check%20Style/badge.svg)](https://github.com/Nall-chan/HomematicExtended/actions) [![Run Tests](https://github.com/Nall-chan/HomematicExtended/workflows/Run%20Tests/badge.svg)](https://github.com/Nall-chan/HomematicExtended/actions)  
+[![Spenden](https://www.paypalobjects.com/de_DE/DE/i/btn/btn_donate_SM.gif)](../README.md#6-spenden) 
 
-# HomeMatic Programme  
+# HomeMatic Programme  <!-- omit in toc -->
   Integration der Programme auf der CCU.  
 
 ## Dokumentation <!-- omit in toc -->
@@ -63,12 +64,12 @@ Die direkte Darstellung im WebFront ist möglich, es wird aber empfohlen mit Lin
 ## 6. PHP-Befehlsreferenz
 
    ```php
-    boolean HM_ReadPrograms(integer $InstantID /*[HomeMatic Programme]*/)
+    boolean HM_ReadPrograms(int $InstantID /*[HomeMatic Programme]*/)
 ```
    Alle Programme auf der CCU werden ausgelesen und bei Bedarf neu angelegt.
 
 ```php
-    boolean HM_StartProgram(integer $InstantID /*[HomeMatic Programme]*/, string $IDENT);
+    boolean HM_StartProgram(int $InstantID /*[HomeMatic Programme]*/, string $IDENT);
 ```
    Startet ein auf der CCU hinterlegtes Programm. Als `$IDENT` muss der Ident der Variable des Programmes übergeben werden.  
    (Die IDENT werden unter dem Reiter 'Statusvariablen' des Einstellungsdialogs der Instanz angezeigt.)  

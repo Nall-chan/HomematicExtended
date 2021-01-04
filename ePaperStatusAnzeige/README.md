@@ -1,10 +1,11 @@
 [![SDK](https://img.shields.io/badge/Symcon-PHPModul-red.svg)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
-[![Version](https://img.shields.io/badge/Modul%20Version-3.11-blue.svg)]()
+[![Version](https://img.shields.io/badge/Modul%20version-3.12-blue.svg)]()
 [![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)  
 [![Version](https://img.shields.io/badge/Symcon%20Version-5.1%20%3E-green.svg)](https://www.symcon.de/forum/threads/30857-IP-Symcon-5-1-%28Stable%29-Changelog)
 [![Check Style](https://github.com/Nall-chan/HomematicExtended/workflows/Check%20Style/badge.svg)](https://github.com/Nall-chan/HomematicExtended/actions) [![Run Tests](https://github.com/Nall-chan/HomematicExtended/workflows/Run%20Tests/badge.svg)](https://github.com/Nall-chan/HomematicExtended/actions)   
+[![Spenden](https://www.paypalobjects.com/de_DE/DE/i/btn/btn_donate_SM.gif)](../README.md#6-spenden) 
 
-# HomeMatic Dis-EP-WM55  
+# HomeMatic Dis-EP-WM55  <!-- omit in toc -->
    Hier handelt es sich um eine Instanz, welche die Verwendung des ePaper-Statusdisplays vereinfachen soll.  
 
 ## Dokumentation <!-- omit in toc -->
@@ -108,7 +109,7 @@ Dieses Modul ist Bestandteil der [HomeMaticExtended-Library](../).
 Steuert den Summer und die LED des Display.  
 
  ```php
-    boolean HM_WriteValueDisplayNotify(integer $InstantID /*[HomeMatic Dis-EP-WM55]*/,int $Chime, int $Repeat, int $Wait, int $Color)
+    boolean HM_WriteValueDisplayNotify(int $InstantID /*[HomeMatic Dis-EP-WM55]*/,int $Chime, int $Repeat, int $Wait, int $Color)
 ```  
 
 **Beispiele:**  
@@ -133,7 +134,7 @@ Beschreibt eine Zeile vom Display.
 Wird ein leerer Text übergeben, wird die Anzeige gelöscht.  
 
  ```php
-    boolean HM_WriteValueDisplayLine(integer $InstantID /*[HomeMatic Dis-EP-WM55]*/,int $Line, string $Text, int $Icon)
+    boolean HM_WriteValueDisplayLine(int $InstantID /*[HomeMatic Dis-EP-WM55]*/,int $Line, string $Text, int $Icon)
 ```  
 
 **Beispiele:**  
@@ -158,7 +159,7 @@ Beschreibt eine Zeile vom Display und steuert den Summer sowie die LED des Displ
 Wird ein leerer Text übergeben, wird die Anzeige gelöscht.  
 
  ```php
-    boolean HM_WriteValueDisplayLineEx(integer $InstantID /*[HomeMatic Dis-EP-WM55]*/,int $Line, string $Text, int $Icon, int $Chime, int $Repeat, int $Wait, int $Color)
+    boolean HM_WriteValueDisplayLineEx(int $InstantID /*[HomeMatic Dis-EP-WM55]*/,int $Line, string $Text, int $Icon, int $Chime, int $Repeat, int $Wait, int $Color)
 ```  
 
 **Beispiele:**  
@@ -166,7 +167,7 @@ Wird ein leerer Text übergeben, wird die Anzeige gelöscht.
 ```php
 // Zeile 1 mit Text 'Zeile 1' ohne Icon setzen.
 // Ton 1, keine Wiederholung, Farbe rot
-HM_WriteValueDisplayLine(12345,1,'Zeile 1',0,1,0,0,1);
+HM_WriteValueDisplayLineEx(12345,1,'Zeile 1',0,1,0,0,1);
 ```
 
 ### HM_WriteValueDisplay  
@@ -175,7 +176,7 @@ Beschreibt alle Zeilen vom Display.
 Wird ein leerer Text übergeben, wird die Anzeige gelöscht.  
 
  ```php
-    boolean HM_WriteValueDisplayLine(integer $InstantID /*[HomeMatic Dis-EP-WM55]*/,string $Text1, int $Icon1, string $Text2, int $Icon2, string $Text3, int $Icon3)
+    boolean HM_WriteValueDisplay(int $InstantID /*[HomeMatic Dis-EP-WM55]*/,string $Text1, int $Icon1, string $Text2, int $Icon2, string $Text3, int $Icon3)
 ```  
 
 **Beispiele:**  
@@ -184,7 +185,7 @@ Wird ein leerer Text übergeben, wird die Anzeige gelöscht.
 // Zeile 1 mit Text '111' und Icon Licht an
 // Zeile 2 mit Text '222' und Icon Licht aus
 // Zeile 3 mit Text '333' und Icon Schloss offen
-HM_WriteValueDisplayEx(12345,'111',1,'222',2,'333',3);
+HM_WriteValueDisplay(12345,'111',1,'222',2,'333',3);
 ```
 
 ### HM_WriteValueDisplayEx  
@@ -193,7 +194,7 @@ Beschreibt alle Zeilen vom Display und steuert den Summer sowie die LED des Disp
 Wird ein leerer Text übergeben, wird die Anzeige gelöscht.  
 
  ```php
-    boolean HM_WriteValueDisplayLineEx(integer $InstantID /*[HomeMatic Dis-EP-WM55]*/,string $Text1, int $Icon1, string $Text2, int $Icon2, string $Text3, int $Icon3, int $Chime, int $Repeat, int $Wait, int $Color)
+    boolean HM_WriteValueDisplayEx(int $InstantID /*[HomeMatic Dis-EP-WM55]*/,string $Text1, int $Icon1, string $Text2, int $Icon2, string $Text3, int $Icon3, int $Chime, int $Repeat, int $Wait, int $Color)
 ```  
 
 **Beispiele:**  
