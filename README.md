@@ -3,8 +3,9 @@
 [![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)  
 [![Version](https://img.shields.io/badge/Symcon%20Version-5.1%20%3E-green.svg)](https://www.symcon.de/forum/threads/30857-IP-Symcon-5-1-%28Stable%29-Changelog)
 [![Check Style](https://github.com/Nall-chan/HomematicExtended/workflows/Check%20Style/badge.svg)](https://github.com/Nall-chan/HomematicExtended/actions) [![Run Tests](https://github.com/Nall-chan/HomematicExtended/workflows/Run%20Tests/badge.svg)](https://github.com/Nall-chan/HomematicExtended/actions)  
+[![Spenden](https://www.paypalobjects.com/de_DE/DE/i/btn/btn_donate_SM.gif)](#6-spenden) 
 
-# Symcon-Modul: HomeMaticExtended
+# Symcon-Modul: HomeMaticExtended <!-- omit in toc -->  
 Erweitert IPS um die native Unterstützung von:  
 
 * Systemvariablen der CCU
@@ -20,26 +21,25 @@ Erweitert IPS um die native Unterstützung von:
 
 **Inhaltsverzeichnis**
 
-- [Symcon-Modul: HomeMaticExtended](#symcon-modul-homematicextended)
-  - [1. Funktionsumfang](#1-funktionsumfang)
-    - [HomeMatic Systemvariablen:](#homematic-systemvariablen)
-    - [HomeMatic Powermeter:](#homematic-powermeter)
-    - [HomeMatic Programme::](#homematic-programme)
-    - [HomeMatic RemoteScript Interface:](#homematic-remotescript-interface)
-    - [HomeMatic Dis-WM55:](#homematic-dis-wm55)
-    - [HomeMatic Dis-EP-WM55:](#homematic-dis-ep-wm55)
-    - [HomeMatic RF-Interface Splitter:](#homematic-rf-interface-splitter)
-    - [HomeMatic RF-Interface Konfigurator:](#homematic-rf-interface-konfigurator)
-    - [HomeMatic RF-Interface:](#homematic-rf-interface)
-    - [HomeMatic WR-Interface:](#homematic-wr-interface)
-  - [2. Voraussetzungen](#2-voraussetzungen)
-  - [3. Software-Installation](#3-software-installation)
-  - [4. Einrichten der Instanzen in IP-Symcon](#4-einrichten-der-instanzen-in-ip-symcon)
-  - [5. Anhang](#5-anhang)
-    - [1. GUID der Module](#1-guid-der-module)
-    - [2. Changelog](#2-changelog)
-  - [6. Spenden](#6-spenden)
-  - [7. Lizenz](#7-lizenz)
+- [1. Funktionsumfang](#1-funktionsumfang)
+  - [HomeMatic Systemvariablen:](#homematic-systemvariablen)
+  - [HomeMatic Powermeter:](#homematic-powermeter)
+  - [HomeMatic Programme::](#homematic-programme)
+  - [HomeMatic RemoteScript Interface:](#homematic-remotescript-interface)
+  - [HomeMatic Dis-WM55:](#homematic-dis-wm55)
+  - [HomeMatic Dis-EP-WM55:](#homematic-dis-ep-wm55)
+  - [HomeMatic RF-Interface Splitter:](#homematic-rf-interface-splitter)
+  - [HomeMatic RF-Interface Konfigurator:](#homematic-rf-interface-konfigurator)
+  - [HomeMatic RF-Interface:](#homematic-rf-interface)
+  - [HomeMatic WR-Interface:](#homematic-wr-interface)
+- [2. Voraussetzungen](#2-voraussetzungen)
+- [3. Software-Installation](#3-software-installation)
+- [4. Einrichten der Instanzen in IP-Symcon](#4-einrichten-der-instanzen-in-ip-symcon)
+- [5. Anhang](#5-anhang)
+  - [1. GUID der Module](#1-guid-der-module)
+  - [2. Changelog](#2-changelog)
+- [6. Spenden](#6-spenden)
+- [7. Lizenz](#7-lizenz)
 
 ## 1. Funktionsumfang
 
