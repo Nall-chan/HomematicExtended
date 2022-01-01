@@ -234,11 +234,11 @@ class HomeMaticSystemvariablen extends HMBase
             return false;
         }
         $HMScript = 'object oitemID = dom.GetObject(' . substr($Ident, 4) . ');
-                   if (oitemID.AlState() == asOncoming )
-                   {
-                    var State = oitemID.AlReceipt();
-                   }';
-
+                    var State = 0;
+                    if (oitemID.AlState() == asOncoming )
+                    {
+                        State = oitemID.AlReceipt();
+                    }';
         try {
             $HMScriptResult = $this->LoadHMScript('AlarmVar.exe', $HMScript);
             $xmlData = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
@@ -247,13 +247,17 @@ class HomeMaticSystemvariablen extends HMBase
             trigger_error($this->Translate($exc->getMessage()), E_USER_NOTICE);
             return false;
         }
-        if ((int) $xmlData->State == 1) {
-            if ($this->ReadPropertyBoolean('EmulateStatus') === true) {
-                $this->SetValue($Ident, false);
+        if (isset($xmlData->State)) {
+            if ((int) $xmlData->State === 1) {
+                if ($this->ReadPropertyBoolean('EmulateStatus') === true) {
+                    $this->SetValue($Ident, false);
+                }
+                return true;
             }
-            return true;
+            if ((int) $xmlData->State === 0) {
+                return false;
+            }
         }
-
         $this->SendDebug('AlarmVar.' . $Ident, 'error on receipt', 0);
         trigger_error(sprintf($this->Translate('Error on receipt alarm of %s.'), (string) $Ident), E_USER_NOTICE);
         return false;

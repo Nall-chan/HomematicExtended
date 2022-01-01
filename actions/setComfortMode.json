@@ -1,0 +1,24 @@
+{
+    "id": "{DB9DF59B-0FDC-FD62-5AB7-0B1193598897}",
+    "caption": "Set mode to COMFORT_MODE",
+    "form": [],
+    "restrictions": {
+        "objectType": [
+            1
+        ],
+        "hasActionStatusVariables": true,
+        "moduleID": [
+            "{EE4A81C6-5C90-4DB7-AD2F-F6BBD521412E}"
+        ],
+        "includeEnvironments": [
+            "TestCommands",
+            "Default"
+        ]
+    },
+    "action": "HM_WriteValueBoolean($_IPS['TARGET'], 'COMFORT_MODE',true);",
+    "locale": {
+        "de": {
+            "Set mode to COMFORT_MODE": "Setze Modus auf COMFORT_MODE"
+        }
+    }
+}

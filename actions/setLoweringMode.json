@@ -1,0 +1,24 @@
+{
+    "id": "{0313A8A5-3686-293A-6AB5-2AC646D292D3}",
+    "caption": "Set mode to LOWERING_MODE",
+    "form": [],
+    "restrictions": {
+        "objectType": [
+            1
+        ],
+        "hasActionStatusVariables": true,
+        "moduleID": [
+            "{EE4A81C6-5C90-4DB7-AD2F-F6BBD521412E}"
+        ],
+        "includeEnvironments": [
+            "TestCommands",
+            "Default"
+        ]
+    },
+    "action": "HM_WriteValueBoolean($_IPS['TARGET'], 'LOWERING_MODE',true);",
+    "locale": {
+        "de": {
+            "Set mode to LOWERING_MODE": "Setze Modus auf LOWERING_MODE"
+        }
+    }
+}

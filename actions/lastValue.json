@@ -1,0 +1,24 @@
+{
+    "id": "{627B83BB-BC57-32C3-2C4C-3A16284932AF}",
+    "caption": "Set actor to last value",
+    "form": [],
+    "restrictions": {
+        "objectType": [
+            1
+        ],
+        "hasActionStatusVariables": true,
+        "moduleID": [
+            "{EE4A81C6-5C90-4DB7-AD2F-F6BBD521412E}"
+        ],
+        "includeEnvironments": [
+            "TestCommands",
+            "Default"
+        ]
+    },
+    "action": "HM_WriteValueBoolean($_IPS['TARGET'], 'OLD_LEVEL',true);",
+    "locale": {
+        "de": {
+            "Set actor to last value": "Setze den Aktor auf den vorherigen Wert"
+        }
+    }
+}

@@ -1,7 +1,7 @@
 [![SDK](https://img.shields.io/badge/Symcon-PHPModul-red.svg)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
-[![Version](https://img.shields.io/badge/Modul%20version-3.12-blue.svg)]()
+[![Version](https://img.shields.io/badge/Modul%20version-3.20-blue.svg)]()
 [![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)  
-[![Version](https://img.shields.io/badge/Symcon%20Version-5.1%20%3E-green.svg)](https://www.symcon.de/forum/threads/30857-IP-Symcon-5-1-%28Stable%29-Changelog)
+[![Version](https://img.shields.io/badge/Symcon%20Version-5.6%20%3E-green.svg)](https://www.symcon.de/forum/threads/30857)
 [![Check Style](https://github.com/Nall-chan/HomematicExtended/workflows/Check%20Style/badge.svg)](https://github.com/Nall-chan/HomematicExtended/actions) [![Run Tests](https://github.com/Nall-chan/HomematicExtended/workflows/Run%20Tests/badge.svg)](https://github.com/Nall-chan/HomematicExtended/actions)  
 [![Spenden](https://www.paypalobjects.com/de_DE/DE/i/btn/btn_donate_SM.gif)](#6-spenden) 
 
@@ -131,6 +131,9 @@ Erweitert IPS um die native Unterstützung von:
 
 
 ### 2. Changelog
+
+Version 3.20:
+ - Neu: Symcon-Aktionen (Actions) für Homematic-Instanzen.  
 
 Version 3.12:
  - Fix: Fehlermeldung bei Senden an Dis-EP-WM55.  
