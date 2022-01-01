@@ -59,6 +59,15 @@ class ParaInterface extends HMBase
         return $Result;
     }
 
+    public function GetChannels(){
+
+    }
+
+    public function ReadParameterChannel(string $Channel)
+    {
+        
+    }
+
     public function ReadRSSI()
     {
         $Result = $this->GetRssiInfo();
@@ -186,7 +195,7 @@ class ParaInterface extends HMBase
             'Protocol'   => $this->ReadPropertyInteger('Protocol'),
             'MethodName' => 'putParamset',
             'WaitTime'   => 5000,
-            'Data'       => $Parameter //array($this->ReadPropertyString('Address'),'MASTER','TEXT1','1234')
+            'Data'       =>  [$this->ReadPropertyString('Address'), $Parameter] //array($this->ReadPropertyString('Address'),'MASTER','TEXT1','1234')
         ];
         $this->SendDebug('Send', $ParentData, 0);
 

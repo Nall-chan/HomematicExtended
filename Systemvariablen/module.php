@@ -258,6 +258,7 @@ class HomeMaticSystemvariablen extends HMBase
                 return false;
             }
         }
+        
         $this->SendDebug('AlarmVar.' . $Ident, 'error on receipt', 0);
         trigger_error(sprintf($this->Translate('Error on receipt alarm of %s.'), (string) $Ident), E_USER_NOTICE);
         return false;
