@@ -7,6 +7,7 @@
             "emulate state": "Status emulieren",
             "enable alarm variable": "Alarm-Variablen aktiv",
             "Alarmmanagement-Script": "Script für Alarmverarbeitung",
+            "show hidden system variables": "Versteckte Systemvariablen anzeigen",
             "Configuration is valid.": "Konfiguration gültig.",
             "No trigger or interval active.": "Kein Trigger oder Intervall aktiv.",
             "Interval to small.": "Intervall darf nicht kleiner 1 sein.",

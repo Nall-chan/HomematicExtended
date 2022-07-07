@@ -41,6 +41,7 @@ class HomeMaticSystemvariablen extends HMBase
         $this->RegisterPropertyBoolean('EmulateStatus', false);
         $this->RegisterPropertyBoolean('EnableAlarmDP', true);
         $this->RegisterPropertyInteger('AlarmScriptID', 0);
+        $this->RegisterPropertyBoolean('ShowHidden', false);
 
         $this->RegisterTimer('ReadHMSysVar', 0, 'HM_SystemVariablesTimer($_IPS[\'TARGET\']);');
         $this->HMDeviceAddress = '';
@@ -640,7 +641,11 @@ class HomeMaticSystemvariablen extends HMBase
     private function ReadSysVars()
     {
         // Systemvariablen
-        $HMScript = 'SysVars=dom.GetObject(ID_SYSTEM_VARIABLES).EnumUsedIDs();';
+        if ($this->ReadPropertyBoolean('ShowHidden')) {
+            $HMScript = 'SysVars=dom.GetObject(ID_SYSTEM_VARIABLES).EnumIDs();';
+        } else {
+            $HMScript = 'SysVars=dom.GetObject(ID_SYSTEM_VARIABLES).EnumUsedIDs();';
+        }
 
         try {
             $HMScriptResult = $this->LoadHMScript('SysVar.exe', $HMScript);
