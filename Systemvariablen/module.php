@@ -146,12 +146,7 @@ class HomeMaticSystemvariablen extends HMBase
             return;
         }
 
-        try {
-            $this->ReadSysVars();
-        } catch (Exception $exc) {
-            echo $this->Translate($exc->getMessage());
-        }
-        return;
+        $this->ReadSysVars();
     }
 
     //################# ActionHandler
@@ -162,10 +157,6 @@ class HomeMaticSystemvariablen extends HMBase
     public function RequestAction($Ident, $Value)
     {
         if (parent::RequestAction($Ident, $Value)) {
-            return;
-        }
-        if (!$this->HasActiveParent()) {
-            trigger_error($this->Translate('Instance has no active parent instance!'), E_USER_NOTICE);
             return;
         }
         if (strpos($Ident, 'AlDP') !== false) {
@@ -202,11 +193,7 @@ class HomeMaticSystemvariablen extends HMBase
      */
     public function ReceiveData($JSONString)
     {
-        try {
-            $this->ReadSysVars();
-        } catch (Exception $exc) {
-            echo $this->Translate($exc->getMessage());
-        }
+        $this->ReadSysVars();
     }
 
     //################# PUBLIC
@@ -224,10 +211,6 @@ class HomeMaticSystemvariablen extends HMBase
         if (IPS_GetKernelRunlevel() != KR_READY) {
             return false;
         }
-        if (!$this->HasActiveParent()) {
-            trigger_error($this->Translate('Instance has no active parent instance!'), E_USER_NOTICE);
-            return false;
-        }
         $VarID = @$this->GetIDForIdent($Ident);
         if ($VarID === false) {
             trigger_error(sprintf($this->Translate('Ident %s do not exist.'), (string) $Ident), E_USER_NOTICE);
@@ -239,12 +222,12 @@ class HomeMaticSystemvariablen extends HMBase
                     {
                         State = oitemID.AlReceipt();
                     }';
-        try {
-            $HMScriptResult = $this->LoadHMScript('AlarmVar.exe', $HMScript);
-            $xmlData = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
-        } catch (Exception $exc) {
-            $this->SendDebug('AlarmVar.exe', $exc->getMessage(), 0);
-            trigger_error($this->Translate($exc->getMessage()), E_USER_NOTICE);
+        $HMScriptResult = $this->LoadHMScript($HMScript);
+        if ($HMScriptResult === false) {
+            return false;
+        }
+        $xmlData = $this->GetScriptXML($HMScriptResult);
+        if ($xmlData === false) {
             return false;
         }
         if (isset($xmlData->State)) {
@@ -258,7 +241,7 @@ class HomeMaticSystemvariablen extends HMBase
                 return false;
             }
         }
-        
+
         $this->SendDebug('AlarmVar.' . $Ident, 'error on receipt', 0);
         trigger_error(sprintf($this->Translate('Error on receipt alarm of %s.'), (string) $Ident), E_USER_NOTICE);
         return false;
@@ -274,11 +257,7 @@ class HomeMaticSystemvariablen extends HMBase
             return;
         }
 
-        try {
-            $this->ReadSysVars();
-        } catch (Exception $exc) {
-            echo $this->Translate($exc->getMessage());
-        }
+        $this->ReadSysVars();
     }
 
     /**
@@ -289,17 +268,7 @@ class HomeMaticSystemvariablen extends HMBase
      */
     public function ReadSystemVariables()
     {
-        if (!$this->HasActiveParent()) {
-            trigger_error($this->Translate('Instance has no active parent instance!'), E_USER_NOTICE);
-            return false;
-        }
-
-        try {
-            return $this->ReadSysVars();
-        } catch (Exception $exc) {
-            trigger_error($this->Translate($exc->getMessage()), E_USER_NOTICE);
-            return false;
-        }
+        return $this->ReadSysVars();
     }
 
     /**
@@ -344,12 +313,7 @@ class HomeMaticSystemvariablen extends HMBase
             $ValueStr = 'false';
         }
 
-        try {
-            $Result = $this->WriteSysVar($Parameter, $ValueStr);
-        } catch (Exception $exc) {
-            trigger_error($this->Translate($exc->getMessage()), E_USER_NOTICE);
-            return false;
-        }
+        $Result = $this->WriteSysVar($Parameter, $ValueStr);
 
         if ($Result === true) {
             if ($this->ReadPropertyBoolean('EmulateStatus') === true) {
@@ -398,12 +362,7 @@ class HomeMaticSystemvariablen extends HMBase
             return false;
         }
 
-        try {
-            $Result = $this->WriteSysVar($Parameter, (string) $Value);
-        } catch (Exception $exc) {
-            trigger_error($this->Translate($exc->getMessage()), E_USER_NOTICE);
-            return false;
-        }
+        $Result = $this->WriteSysVar($Parameter, (string) $Value);
         if ($Result === true) {
             if ($this->ReadPropertyBoolean('EmulateStatus') === true) {
                 $this->SetValue($Parameter, $Value);
@@ -450,12 +409,7 @@ class HomeMaticSystemvariablen extends HMBase
             return false;
         }
 
-        try {
-            $Result = $this->WriteSysVar($Parameter, (string) sprintf('%.6F', $Value));
-        } catch (Exception $exc) {
-            trigger_error($this->Translate($exc->getMessage()), E_USER_NOTICE);
-            return false;
-        }
+        $Result = $this->WriteSysVar($Parameter, (string) sprintf('%.6F', $Value));
 
         if ($Result === true) {
             if ($this->ReadPropertyBoolean('EmulateStatus') === true) {
@@ -504,12 +458,7 @@ class HomeMaticSystemvariablen extends HMBase
             return false;
         }
 
-        try {
-            $Result = $this->WriteSysVar($Parameter, (string) $Value);
-        } catch (Exception $exc) {
-            trigger_error($this->Translate($exc->getMessage()), E_USER_NOTICE);
-            return false;
-        }
+        $Result = $this->WriteSysVar($Parameter, (string) $Value);
 
         if ($Result === true) {
             if ($this->ReadPropertyBoolean('EmulateStatus') === true) {
@@ -538,17 +487,6 @@ class HomeMaticSystemvariablen extends HMBase
     protected function IOChangeState($State)
     {
         $this->ApplyChanges();
-    }
-
-    /**
-     * Registriert Nachrichten des aktuellen Parent und ließt die Adresse der CCU aus dem Parent.
-     *
-     * @return int ID des Parent.
-     */
-    protected function RegisterParent()
-    {
-        parent::RegisterParent();
-        $this->SetSummary($this->HMAddress);
     }
 
     /**
@@ -647,28 +585,27 @@ class HomeMaticSystemvariablen extends HMBase
         // Systemvariablen
         $HMScript = 'SysVars=dom.GetObject(ID_SYSTEM_VARIABLES).EnumUsedIDs();';
 
-        try {
-            $HMScriptResult = $this->LoadHMScript('SysVar.exe', $HMScript);
-            $xmlVars = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
-        } catch (Exception $exc) {
-            $this->SendDebug('ID_SYSTEM_VARIABLES', $exc->getMessage(), 0);
-
-            throw new Exception($exc->getMessage(), E_USER_NOTICE);
+        $HMScriptResult = $this->LoadHMScript($HMScript);
+        if ($HMScriptResult === false) {
+            return false;
+        }
+        $xmlVars = $this->GetScriptXML($HMScriptResult);
+        if ($xmlVars === false) {
+            return false;
         }
 
         //Time & Timezone
         $HMScript = 'Now=system.Date("%F %T%z");' . PHP_EOL
                 . 'TimeZone=system.Date("%z");' . PHP_EOL;
 
-        try {
-            $HMScriptResult = $this->LoadHMScript('Time.exe', $HMScript);
-            $xmlTime = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
-        } catch (Exception $exc) {
-            $this->SendDebug('Time', $exc->getMessage(), 0);
-
-            throw new Exception($exc->getMessage(), E_USER_NOTICE);
+        $HMScriptResult = $this->LoadHMScript($HMScript);
+        if ($HMScriptResult === false) {
+            return false;
         }
-
+        $xmlTime = $this->GetScriptXML($HMScriptResult);
+        if ($xmlTime === false) {
+            return false;
+        }
         $Date = new DateTime((string) $xmlTime->Now);
         $CCUTime = $Date->getTimestamp();
         $Date = new DateTime();
@@ -686,11 +623,14 @@ class HomeMaticSystemvariablen extends HMBase
                     . 'WriteLine(dom.GetObject(' . $SysVar . ').Value());' . PHP_EOL
                     . 'Timestamp=dom.GetObject(' . $SysVar . ').Timestamp();' . PHP_EOL;
 
+            $HMScriptResult = $this->LoadHMScript($HMScript);
+            if ($HMScriptResult === false) {
+                return false;
+            }
+            $lines = explode("\r\n", $HMScriptResult);
             try {
-                $HMScriptResult = $this->LoadHMScript('SysVar.exe', $HMScript);
-                $lines = explode("\r\n", $HMScriptResult);
                 $xmlVar = @new SimpleXMLElement(utf8_encode(array_pop($lines)), LIBXML_NOBLANKS + LIBXML_NONET);
-            } catch (Exception $exc) {
+            } catch (Throwable $exc) {
                 $this->SendDebug($SysVar, $exc->getMessage(), 0);
                 trigger_error($this->Translate($exc->getMessage()), E_USER_NOTICE);
                 $Result = false;
@@ -719,12 +659,12 @@ class HomeMaticSystemvariablen extends HMBase
                         . 'ValueMax=dom.GetObject(' . $SysVar . ').ValueMax();' . PHP_EOL
                         . 'ValueUnit=dom.GetObject(' . $SysVar . ').ValueUnit();' . PHP_EOL;
 
-                try {
-                    $HMScriptResult = $this->LoadHMScript('SysVar.exe', $HMScript);
-                    $xmlVar2 = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
-                } catch (Exception $exc) {
-                    $this->SendDebug($SysVar, $exc->getMessage(), 0);
-                    trigger_error($this->Translate($exc->getMessage()), E_USER_NOTICE);
+                $HMScriptResult = $this->LoadHMScript($HMScript);
+                if ($HMScriptResult === false) {
+                    return false;
+                }
+                $xmlVar2 = $this->GetScriptXML($HMScriptResult);
+                if ($xmlVar2 === false) {
                     $Result = false;
                     continue;
                 }
@@ -847,12 +787,12 @@ class HomeMaticSystemvariablen extends HMBase
                         }
                        }' . PHP_EOL;
 
-        try {
-            $HMScriptResult = $this->LoadHMScript('AlarmVar.exe', $HMScript);
-            $xmlData = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
-        } catch (Exception $exc) {
-            $this->SendDebug('AlarmVar.exe', $exc->getMessage(), 0);
-            trigger_error($this->Translate($exc->getMessage()), E_USER_NOTICE);
+        $HMScriptResult = $this->LoadHMScript($HMScript);
+        if ($HMScriptResult === false) {
+            return false;
+        }
+        $xmlData = $this->GetScriptXML($HMScriptResult);
+        if ($xmlData === false) {
             return false;
         }
 
@@ -917,19 +857,14 @@ class HomeMaticSystemvariablen extends HMBase
         if (IPS_GetKernelRunlevel() != KR_READY) {
             return false;
         }
-        if (!$this->HasActiveParent()) {
-            throw new Exception('Instance has no active parent instance!', E_USER_NOTICE);
-        }
-        $url = 'SysVar.exe';
         $HMScript = 'State=dom.GetObject(' . $Parameter . ').State("' . $ValueStr . '");';
-
-        try {
-            $HMScriptResult = $this->LoadHMScript($url, $HMScript);
-            $xml = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
-        } catch (Exception $exc) {
-            $this->SendDebug('SysVar.exe', $exc->getMessage(), 0);
-
-            throw new Exception('Error on write CCU Systemvariable.', E_USER_NOTICE);
+        $HMScriptResult = $this->LoadHMScript($HMScript);
+        if ($HMScriptResult === false) {
+            return false;
+        }
+        $xml = $this->GetScriptXML($HMScriptResult);
+        if ($xml === false) {
+            return false;
         }
         if ((string) $xml->State == 'true') {
             return true;

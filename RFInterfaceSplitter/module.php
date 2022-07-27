@@ -125,18 +125,6 @@ class HomeMaticRFInterfaceSplitter extends HMBase
         }
     }
 
-    /**
-     * Registriert Nachrichten des aktuellen Parent und ließt die Adresse der CCU aus dem Parent.
-     *
-     * @return int ID des Parent.
-     */
-    protected function RegisterParent()
-    {
-        $ParentId = parent::RegisterParent();
-        $this->SetSummary($this->HMAddress);
-        return $ParentId;
-    }
-
     //################# PRIVATE
 
     /**
@@ -203,7 +191,7 @@ class HomeMaticRFInterfaceSplitter extends HMBase
                 $this->SendDebug('Error JSON', $ResultJSON, 0);
                 continue;
             }
-            $Result = json_decode($ResultJSON, true);
+            $Result = json_decode(utf8_encode($ResultJSON), true);
             if (($Result === false) || is_null($Result)) {
                 $this->SendDebug('Error decode', $Result, 0);
                 trigger_error($this->Translate('Error on read interfaces:') . $ProtocolId, E_USER_NOTICE);

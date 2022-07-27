@@ -77,11 +77,7 @@ class HomeMaticPowermeter extends HMBase
      */
     public function ReceiveData($JSONString)
     {
-        try {
-            $this->ReadPowerSysVar();
-        } catch (Exception $exc) {
-            trigger_error($this->Translate($exc->getMessage()), $exc->getCode());
-        }
+        $this->ReadPowerSysVar();
     }
 
     //################# protected
@@ -240,26 +236,15 @@ class HomeMaticPowermeter extends HMBase
      */
     private function ReadPowerSysVar()
     {
-        if (!$this->HasActiveParent()) {
-            throw new Exception('Instance has no active parent instance!', E_USER_NOTICE);
-        }
-        if ($this->HMAddress == '') {
-            $this->RegisterParent();
-        }
-
-        $url = 'GetPowerMeter.exe';
         $HMScript = 'object oitemID;' . PHP_EOL
                 . 'oitemID = dom.GetObject("svEnergyCounter' . $this->HMSuffix . '_" # dom.GetObject("' . $this->HMProtocol . '.' . $this->HMDeviceAddress . '.' . $this->HMDeviceDatapoint . '").Channel() # "_' . $this->HMDeviceAddress . '");' . PHP_EOL
                 . 'Value=oitemID.Value();' . PHP_EOL;
 
-        try {
-            $HMScriptResult = $this->LoadHMScript($url, $HMScript);
-            $xml = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
-        } catch (Exception $exc) {
-            $this->SendDebug('GetPowerMeter', $exc->getMessage(), 0);
-
-            throw new Exception('Error on read PowerMeter data.', E_USER_NOTICE);
+        $HMScriptResult = $this->LoadHMScript($HMScript);
+        if ($HMScriptResult === false) {
+            return false;
         }
+        $xml = $this->GetScriptXML($HMScriptResult);
         $this->SendDebug($this->HMDeviceDatapoint, (string) $xml->Value, 0);
         $Value = ((float) $xml->Value) / $this->HMFactor;
         $this->SetValue($this->HMDeviceDatapoint . '_TOTAL', $Value);

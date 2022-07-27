@@ -1,0 +1,35 @@
+{
+    "translations": {
+        "de": {
+            "Address": "Adresse",
+            "Optional status variables": "Optionale Statusvariablen",
+            "Schedule": "Zeitplan",
+            "Temperature": "Temperatur",
+            "Setpoint temperature": "Solltemperatur",
+            "Operation mode": "Betriebsart",
+            "Automatic": "Automatik",
+            "Manually": "Manuell",
+            "Central": "Zentral",
+            "Holiday/Party": "Urlaub/Party",
+            "Decalcification day": "Entkalkung Wochentag",
+            "Saturday": "Samstag",
+            "Sunday": "Sonntag",
+            "Monday": "Montag",
+            "Tuesday": "Dienstag",
+            "Wednesday": "Mittwoch",
+            "Thursday": "Donnerstag",
+            "Friday": "Freitag",
+            "Decalcification": "Entkalkung",
+            "Decalcification time": "Entkalkung Uhrzeit",
+            "Valve": "Ventil",
+            "Valve mode": "Betriebsart Ventil",
+            "Closed": "Geschlossen",
+            "Open": "Geöffnet",
+            "Lowering temperature": "Absenktemperatur",
+            "Comfort temperature": "Komforttemperatur",
+            "Holiday/Party end": "Urlaub/Party Ende",
+            "Time cannot be in the past": "Zeitpunkt kann nicht in der Vergangenheit liegen",
+            "Time too far in the future": "Zeitpunkt zu weit in der Zukunft"
+        }
+    }
+}

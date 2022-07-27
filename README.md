@@ -1,11 +1,13 @@
 [![SDK](https://img.shields.io/badge/Symcon-PHPModul-red.svg)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
-[![Version](https://img.shields.io/badge/Modul%20version-3.20-blue.svg)]()
+[![Version](https://img.shields.io/badge/Modul%20version-3.50-blue.svg)]()
 [![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)  
-[![Version](https://img.shields.io/badge/Symcon%20Version-5.6%20%3E-green.svg)](https://www.symcon.de/forum/threads/30857)
+[![Version](https://img.shields.io/badge/Symcon%20Version-6.1%20%3E-green.svg)](https://community.symcon.de/t/ip-symcon-6-1-stable-changelog/40276)
 [![Check Style](https://github.com/Nall-chan/HomematicExtended/workflows/Check%20Style/badge.svg)](https://github.com/Nall-chan/HomematicExtended/actions) [![Run Tests](https://github.com/Nall-chan/HomematicExtended/workflows/Run%20Tests/badge.svg)](https://github.com/Nall-chan/HomematicExtended/actions)  
-[![Spenden](https://www.paypalobjects.com/de_DE/DE/i/btn/btn_donate_SM.gif)](#6-spenden) 
+[![Spenden](https://www.paypalobjects.com/de_DE/DE/i/btn/btn_donate_SM.gif)](#6-spenden)
+[![Wunschliste](https://img.shields.io/badge/Wunschliste-Amazon-ff69fb.svg)](#6-spenden)  
 
 # Symcon-Modul: HomeMaticExtended <!-- omit in toc -->  
+
 Erweitert IPS um die native Unterstützung von:  
 
 * Systemvariablen der CCU
@@ -24,7 +26,7 @@ Erweitert IPS um die native Unterstützung von:
 - [1. Funktionsumfang](#1-funktionsumfang)
   - [HomeMatic Systemvariablen:](#homematic-systemvariablen)
   - [HomeMatic Powermeter:](#homematic-powermeter)
-  - [HomeMatic Programme::](#homematic-programme)
+  - [HomeMatic Programme:](#homematic-programme)
   - [HomeMatic RemoteScript Interface:](#homematic-remotescript-interface)
   - [HomeMatic Dis-WM55:](#homematic-dis-wm55)
   - [HomeMatic Dis-EP-WM55:](#homematic-dis-ep-wm55)
@@ -50,36 +52,45 @@ Erweitert IPS um die native Unterstützung von:
    Standard Actionhandler für die Bedienung der System- und Alarmvariablen aus dem IPS-Webfront.  
 
 ### [HomeMatic Powermeter:](PowerMeter/)  
+
    Abfragen des Summenzählers der Geräte mit Leistungsmessung aus der CCU.  
 
-### [HomeMatic Programme:](Programme/):  
+### [HomeMatic Programme:](Programme/)  
+
    Abfragen der auf der CCU vorhandenen HM-Programme.  
    Ausführen der HM-Programme auf der CCU.  
    Standard Actionhandler für die Bedienung der HM-Programme aus dem IPS-Webfront.  
 
 ### [HomeMatic RemoteScript Interface:](HomeMaticScript)  
+
    Native Schnittstelle zur CCU, um HomeMatic-Scripte durch die CCU ausführen zu lassen.  
    Direkte Rückmeldung der Ausführung durch einen Antwortstring im JSON-Format.  
 
 ### [HomeMatic Dis-WM55:](DisplayStatusAnzeige/)
+
    Dynamische Textanzeige auf dem Display-Wandtaster mit Statusdisplay.  
    Unterstützt mehrseite Anzeigen und das durchblättern per Tastendruck.  
    Ausführen von benutzerspezifischen Aktionen, auch in Abhängigkeit der angezeigten Seite.  
 
 ### [HomeMatic Dis-EP-WM55:](ePaperStatusAnzeige/)  
+
    Hier handelt es sich um eine Instanz, welche die Verwendung des ePaper Statusdisplays im 55er-Rahmen vereinfachen soll.  
    Über spezielle PHP-Befehle ist es möglich das Display anzusteuern.  
-   
+
 ### [HomeMatic RF-Interface Splitter:](RFInterfaceSplitter/)  
+
    Auslesen der Informationen zu jedem Funk-Interface der CCU.
 
 ### [HomeMatic RF-Interface Konfigurator:](RFInterfaceConfigurator/)  
+
    Konfigurator zum erstellen der 'Homematic RF-Interface'-Instanzen.  
 
 ### [HomeMatic RF-Interface:](RFInterface/)  
+
    Bereitstellen der Informationen zu den Funk-Interfaces innerhalb von IPS.
 
 ### [HomeMatic WR-Interface:](WRInterface/)  
+
    Bereitstellen der Informationen zu dem Wired-Interface innerhalb von IPS.
 
 ## 2. Voraussetzungen
@@ -96,12 +107,11 @@ Erweitert IPS um die native Unterstützung von:
 
 ![CCUFirewall.png](docs/CCUFirewall.png)  
 
-
 ## 3. Software-Installation
 
 **IPS 5.1:**  
-   Bei privater Nutzung:
-     Über den 'Module-Store' in IPS.  
+
+   Über den 'Module-Store' in IPS das Modul 'HomematicExtended' hinzufügen.  
    **Bei kommerzieller Nutzung (z.B. als Errichter oder Integrator) wenden Sie sich bitte an den Autor.**  
 
 ## 4. Einrichten der Instanzen in IP-Symcon
@@ -111,10 +121,9 @@ Erweitert IPS um die native Unterstützung von:
 
 ![Instanzen](docs/HMExtendedInstanzen.png)  
 
-
 ## 5. Anhang
 
-###  1. GUID der Module
+### 1. GUID der Module
 
 |                Modul                |     Typ      |                  GUID                  |
 | :---------------------------------: | :----------: | :------------------------------------: |
@@ -129,115 +138,146 @@ Erweitert IPS um die native Unterstützung von:
 |       HomeMatic RF-Interface        |    Device    | {36549B96-FA11-4651-8662-F310EEEC5C7D} |
 |       HomeMatic WR-Interface        |    Device    | {01C66202-7E94-49C4-8D8F-6A75CE944E87} |
 
-
 ### 2. Changelog
 
+Version 3.50:
+
+* Neu: HomeMatic Paraset Interface Instanz zum lesen und schreiben von Parametern von Geräten.  
+* Neu: HM-Script wird intern über Symcon übertragen.  
+
 Version 3.20:
- - Neu: Symcon-Aktionen (Actions) für Homematic-Instanzen.  
+
+* Neu: Symcon-Aktionen (Actions) für Homematic-Instanzen.  
 
 Version 3.12:
- - Fix: Fehlermeldung bei Senden an Dis-EP-WM55.  
- - Fix: Dokumentation für Dis-EP-WM55 korrigiert.  
+
+* Fix: Fehlermeldung bei Senden an Dis-EP-WM55.  
+* Fix: Dokumentation für Dis-EP-WM55 korrigiert.  
 
 Version 3.11:
- - Fix: IntervalBox durch NumberSpinner ersetzt.  
- - Fix: Diverse Schreibfehler.  
+
+* Fix: IntervalBox durch NumberSpinner ersetzt.  
+* Fix: Diverse Schreibfehler.  
 
 Version 3.10:  
- - Neu: Konfigurator für RF-Interfaces  
- - Fix: HMScript Fehler im Log der CCU bei Verwendung der Systemvariablen-Instanz.  
+
+* Neu: Konfigurator für RF-Interfaces  
+* Fix: HMScript Fehler im Log der CCU bei Verwendung der Systemvariablen-Instanz.  
 
 Version 3.00:  
- - Neu: Release für IPS 5.1 und den Module-Store   
+
+* Neu: Release für IPS 5.1 und den Module-Store
 
 Version 2.80:
- - Neu: Referenzen werden in Symcon registriert.  
- - Fix: IPS_SetProperty und IPS_Applychanges auf sich selbst entfernt.  
+
+* Neu: Referenzen werden in Symcon registriert.  
+* Fix: IPS_SetProperty und IPS_Applychanges auf sich selbst entfernt.  
 
 Version 2.65:
- - Fix: Keine Verbindung mehr bei CCU1 und CCU2.  
+
+* Fix: Keine Verbindung mehr bei CCU1 und CCU2.  
 
 Version 2.61:
- - Fix: memory exhausted error.  
- - Fix: Fehler bei der Verarbeitung von AlarmVariablen bei der CCU3.  
- - Neu: SSL und Authentifizierung wird für CCU3 unterstützt (sofern in IPS verfügbar!).  
+
+* Fix: memory exhausted error.  
+* Fix: Fehler bei der Verarbeitung von AlarmVariablen bei der CCU3.  
+* Neu: SSL und Authentifizierung wird für CCU3 unterstützt (sofern in IPS verfügbar!).  
 
 Version 2.60:
- - Neu: Modul intern überarbeitet.  
- - Neu: Diverse Anpassungen für IPS 5.0 und neuer.  
- - Fix: HmScript Fehler im Log der CCU bei Verwendung der PowerMeter-Instanz.  
- - Fix: Fehlermeldung bei AlarmScriptID in der Instanz Systemvariablen.  
- 
+
+* Neu: Modul intern überarbeitet.  
+* Neu: Diverse Anpassungen für IPS 5.0 und neuer.  
+* Fix: HmScript Fehler im Log der CCU bei Verwendung der PowerMeter-Instanz.  
+* Fix: Fehlermeldung bei AlarmScriptID in der Instanz Systemvariablen.  
+
 Version 2.50:  
- - Fix: Für PHP 7.3
+
+* Fix: Für PHP 7.3
 
 Version 2.44:  
- - Fix: ~String-Profil entfernt  
+
+* Fix: ~String-Profil entfernt  
 
 Version 2.43:  
- - Fix: Für IPS 5.0  
+
+* Fix: Für IPS 5.0  
 
 Version 2.42:  
- - Fix: RF-Splitter hat beim anlegen von RF-Interface Instanzen der CCU1 Fehler gemeldet.  
- - Fix: Icon ON/OFF vertauscht in der Display-Statusanzeige.  
+
+* Fix: RF-Splitter hat beim anlegen von RF-Interface Instanzen der CCU1 Fehler gemeldet.  
+* Fix: Icon ON/OFF vertauscht in der Display-Statusanzeige.  
 
 Version 2.40:  
- - Neu: Übersetzungen für IPS 4.3  
- - Neu: Doku überarbeitet  
- - Fix: Systemvariablen vom Typ Float konnten falsch übertragen werden.  
+
+* Neu: Übersetzungen für IPS 4.3  
+* Neu: Doku überarbeitet  
+* Fix: Systemvariablen vom Typ Float konnten falsch übertragen werden.  
 
 Version 2.35:  
- - Fix: Dis-EP-WM55 hat nur Icons von 0-3 angenommen.  
+
+* Fix: Dis-EP-WM55 hat nur Icons von 0-3 angenommen.  
 
 Version 2.31:  
- - Fix: Fehlerbehandlung verbessert.  
+
+* Fix: Fehlerbehandlung verbessert.  
 
 Version 2.30:  
- - Fix: Fehlerbehandlung verbessert.  
- - Fix: Eventuelle XML-Fehler durch die CCU versucht abzufangen.  
+
+* Fix: Fehlerbehandlung verbessert.  
+* Fix: Eventuelle XML-Fehler durch die CCU versucht abzufangen.  
 
 Version 2.22:  
- - Fix: HomeMatic Remote-Script Instanzen belegten unnötig PHP-Slots.  
- - Fix: Fehlermeldung im HomeMatic Systemvariablen durch eine falsche Fehlermeldung wurde ein eigentlicher Fehler überdeckt.  
+
+* Fix: HomeMatic Remote-Script Instanzen belegten unnötig PHP-Slots.  
+* Fix: Fehlermeldung im HomeMatic Systemvariablen durch eine falsche Fehlermeldung wurde ein eigentlicher Fehler überdeckt.  
 
 Version 2.20:  
- - Neu: Dis-EP-WM55 Ermöglicht es per PHP die Anzeige zu beschreiben.
- - Neu: Doku für HomeMatic WR-Interface ergänzt.
- 
+
+* Neu: Dis-EP-WM55 Ermöglicht es per PHP die Anzeige zu beschreiben.
+* Neu: Doku für HomeMatic WR-Interface ergänzt.
+
 Version 2.10:  
- - Neu: HomeMatic WR-Interface zeigt den Status des Wired-Interfaces der CCU an.  
- - Neu: Alle 'CONNECTED' Statusvariablen der CCU-Interfaces werden immer aktualisiert um Ausfälle besser detektieren zu können.  
- - Fix: Instanzen haben nicht erkannt wenn sich der Parent geändert hat.  
- - Fix: Timer erzeugen keine Fehlermeldungen mehr.  
- 
+
+* Neu: HomeMatic WR-Interface zeigt den Status des Wired-Interfaces der CCU an.  
+* Neu: Alle 'CONNECTED' Statusvariablen der CCU-Interfaces werden immer aktualisiert um Ausfälle besser detektieren zu können.  
+* Fix: Instanzen haben nicht erkannt wenn sich der Parent geändert hat.  
+* Fix: Timer erzeugen keine Fehlermeldungen mehr.  
+
 Version 2.07:  
- - Fix: Summenzähler für Powermeter hat bei GAS falsche Werte geliefert.  
- - Fix: Dis-WM55 ohne Funktion.  
- - Fix: Dis-WM55 hat immer das Display-Script überschrieben.  
- - Neu: Mehr Debug-Ausgaben bei Dis-WM55.  
+
+* Fix: Summenzähler für Powermeter hat bei GAS falsche Werte geliefert.  
+* Fix: Dis-WM55 ohne Funktion.  
+* Fix: Dis-WM55 hat immer das Display-Script überschrieben.  
+* Neu: Mehr Debug-Ausgaben bei Dis-WM55.  
 
 Version 2.06:  
- - Fix: Doku geändert (Final).  
- - Fix: GUID für Empfang vom RF-Interface Splitter.  
- - Fix: Trigger für Powermeter und Systemvariablen waren unter Umständen falsch.  
- - Fix: HM-Systemvariablen vom Typ String wurden falsch dargestellt, wenn Umlaute enthalten waren.  
- 
+
+* Fix: Doku geändert (Final).  
+* Fix: GUID für Empfang vom RF-Interface Splitter.  
+* Fix: Trigger für Powermeter und Systemvariablen waren unter Umständen falsch.  
+* Fix: HM-Systemvariablen vom Typ String wurden falsch dargestellt, wenn Umlaute enthalten waren.  
+
 Version 2.05:  
- - Fix: Unter Umständen konnte die Adresse der CCU nicht aus dem HomeMatic-Socket ermitteln werden.  
+
+* Fix: Unter Umständen konnte die Adresse der CCU nicht aus dem HomeMatic-Socket ermitteln werden.  
 
 Version 2.04:  
- - Fix: RFInstance-Splitter hat fehler gemeldet beim Anlegen von Instanzen, wenn keine vorhanden waren.  
+
+* Fix: RFInstance-Splitter hat fehler gemeldet beim Anlegen von Instanzen, wenn keine vorhanden waren.  
 
 Version 2.03:  
- - Fix: Doku geändert (Teil1).
+
+* Fix: Doku geändert (Teil1).
 
 Version 2.02:  
- - Fix: Powermeter-Instanz kann jetzt auch mit allen Varianten von HM-ES-TX-WM umgehen.  
- - Fix: Powermeter-Instanz unterstützt jetzt auch HMIP-PSM und ähnliche HMIP-'Mess-Steckdosen'  
+
+* Fix: Powermeter-Instanz kann jetzt auch mit allen Varianten von HM-ES-TX-WM umgehen.  
+* Fix: Powermeter-Instanz unterstützt jetzt auch HMIP-PSM und ähnliche HMIP-'Mess-Steckdosen'  
 
 Version 2.01:  
- - Neu: RF-Interface-Splitter zum auslesen der RF-Interfaces aus der CCU.  
- - Neu: RF-Interface zum darstellen der Werte eines RF-Interfaces der CCU.  
+
+* Neu: RF-Interface-Splitter zum auslesen der RF-Interfaces aus der CCU.  
+* Neu: RF-Interface zum darstellen der Werte eines RF-Interfaces der CCU.  
 
 Version 2.0:  
 
@@ -252,6 +292,8 @@ Version 1.1:
   Die Library ist für die nicht kommerzielle Nutzung kostenlos, Schenkungen als Unterstützung für den Autor werden hier akzeptiert:  
 
 <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=G2SLW2MEMQZH2" target="_blank"><img src="https://www.paypalobjects.com/de_DE/DE/i/btn/btn_donate_LG.gif" border="0" /></a>
+
+[![Wunschliste](https://img.shields.io/badge/Wunschliste-Amazon-ff69fb.svg)](https://www.amazon.de/hz/wishlist/ls/YU4AI9AQT9F?ref_=wl_share)
 
 ## 7. Lizenz
 

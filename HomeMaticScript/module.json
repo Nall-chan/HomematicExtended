@@ -7,7 +7,8 @@
         "HomeMatic RemoteScript Interface"
     ],
     "parentRequirements": [
-        "{75B6B237-A7B0-46B9-BBCE-8DF0CFE6FA52}"
+        "{75B6B237-A7B0-46B9-BBCE-8DF0CFE6FA52}",
+        "{F4D2A45B-D513-3507-871B-36F01309D885}"
     ],
     "childRequirements": [],
     "implemented": [

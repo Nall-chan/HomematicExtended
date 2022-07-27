@@ -6,10 +6,7 @@
             "Error on read all CCU-Programs.": "Fehler beim lesen aller CCU-Programme.",
             "CCU-Program %s not found!'": "CCU-Programm %s nicht gefunden!",
             "Error on start CCU-Program.": "Fehler beim starten des CCU-Programmes.",
-            "Error on read info of CCU-Program %s.": "Fehler beim lesen der Informationen des CCU-Programmes %s.",
-            "CCU unreachable:": "CCU nicht erreichbar:",
-            "CCU unreachable": "CCU nicht erreichbar",
-            "CCU Address not set.": "CCU Adresse nicht gesetzt."
+            "Error on read info of CCU-Program %s.": "Fehler beim lesen der Informationen des CCU-Programmes %s."
         }
     }
 }

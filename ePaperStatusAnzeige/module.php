@@ -211,24 +211,6 @@ class HomeMaticDisEPWM55 extends HMBase
         return $this->SendData($Data);
     }
 
-    //################# protected
-
-    /**
-     * Wird ausgeführt wenn der Kernel hochgefahren wurde.
-     */
-    protected function KernelReady()
-    {
-        $this->ApplyChanges();
-    }
-
-    /**
-     * Wird ausgeführt wenn sich der Status vom Parent ändert.
-     */
-    protected function IOChangeState($State)
-    {
-        $this->ApplyChanges();
-    }
-
     //################# PRIVATE
 
     /**
@@ -242,10 +224,6 @@ class HomeMaticDisEPWM55 extends HMBase
      */
     private function SendData($Submit)
     {
-        if (!$this->HasActiveParent()) {
-            trigger_error($this->Translate('Instance has no active parent instance!'), E_USER_NOTICE);
-            return false;
-        }
         $ParentData = [
             'DataID'     => '{75B6B237-A7B0-46B9-BBCE-8DF0CFE6FA52}',
             'Protocol'   => 0,
@@ -262,7 +240,7 @@ class HomeMaticDisEPWM55 extends HMBase
             $this->SendDebug('Error JSON', $ResultJSON, 0);
             return false;
         }
-        $Result = json_decode($ResultJSON);
+        $Result = json_decode(utf8_encode($ResultJSON));
         if ($Result === false) {
             trigger_error($this->Translate('Error on send Data.'), E_USER_NOTICE);
             $this->SendDebug('Error decode', $Result, 0);

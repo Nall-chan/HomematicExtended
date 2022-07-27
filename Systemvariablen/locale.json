@@ -19,10 +19,7 @@
             "Error on receipt alarm of %s.": "Fehler beim bestätigen des Alarms %s.",
             "Wrong Datatype for %s.": "Falschen Datentyp für %s.",
             "Error on write Data ": "Fehler beim schreiben der Daten ",
-            "Error on write CCU Systemvariable.": "Fehler beim schreiben der CCU Systemvariable.",
-            "CCU unreachable:": "CCU nicht erreichbar:",
-            "CCU unreachable": "CCU nicht erreichbar",
-            "CCU Address not set.": "CCU Adresse nicht gesetzt."
+            "Error on write CCU Systemvariable.": "Fehler beim schreiben der CCU Systemvariable."
         }
     }
 }

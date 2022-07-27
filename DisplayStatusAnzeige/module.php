@@ -129,13 +129,7 @@ class HomeMaticDisWM55 extends HMBase
         if ($Action === false) {
             return;
         }
-
-        try {
-            $this->RunDisplayScript($Action);
-        } catch (Exception $exc) {
-            $this->SendDebug('Error', $exc->getMessage(), 0);
-            trigger_error($this->Translate($exc->getMessage()), $exc->getCode());
-        }
+        $this->RunDisplayScript($Action);
     }
 
     /**
@@ -162,9 +156,10 @@ class HomeMaticDisWM55 extends HMBase
      */
     protected function IOChangeState($State)
     {
-        $this->ApplyChanges();
+        if ($State == IS_ACTIVE) {
+            $this->ApplyChanges();
+        }
     }
-
     //################# PRIVATE
 
     /**
@@ -306,14 +301,6 @@ class HomeMaticDisWM55 extends HMBase
      */
     private function RunDisplayScript($Action)
     {
-        if (!$this->HasActiveParent()) {
-            throw new Exception('Instance has no active parent instance!', E_USER_NOTICE);
-        }
-
-        if ($this->HMAddress == '') {
-            $this->RegisterParent();
-        }
-
         $Page = $this->Page;
         $MaxPage = $this->ReadPropertyInteger('MaxPage');
         switch ($Action) {
@@ -344,16 +331,11 @@ class HomeMaticDisWM55 extends HMBase
             }
             $this->SendDebug('DisplayScript', $ResultData, 0);
             $Data = $this->ConvertDisplayData($ResultData);
-            $url = 'GetDisplay.exe';
             $HMScript = 'string DisplayKeySubmit;' . PHP_EOL;
             $HMScript .= 'DisplayKeySubmit=dom.GetObject("BidCos-RF.' . (string) $this->HMEventData[$Action]['HMDeviceAddress'] . '.SUBMIT").ID();' . PHP_EOL;
             $HMScript .= 'State=dom.GetObject(DisplayKeySubmit).State("' . $Data . '");' . PHP_EOL;
 
-            try {
-                $this->LoadHMScript($url, $HMScript);
-            } catch (Exception $exc) {
-                throw new Exception('Error on send data to HM-Dis-WM55.', E_USER_NOTICE);
-            }
+            $this->LoadHMScript($HMScript);
         }
         $Timeout = $this->ReadPropertyInteger('Timeout');
         if ($Timeout > 0) {

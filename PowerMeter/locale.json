@@ -6,10 +6,7 @@
             "No ENERGY_COUNTER variable selected.": "Kein ENERGY_COUNTER Datenpunkt ausgewählt.",
             "Selected variable invalid.": "Gewählter Datenpunkt ist ungültig.",
             "Instance has no active parent instance!": "Keine aktive Parent Instanz!",
-            "Error on read PowerMeter data.": "Fehler beim lesen der PowerMeter Daten.",
-            "CCU unreachable:": "CCU nicht erreichbar:",
-            "CCU unreachable": "CCU nicht erreichbar",
-            "CCU Address not set.": "CCU Adresse nicht gesetzt."
+            "Error on read PowerMeter data.": "Fehler beim lesen der PowerMeter Daten."
         }
     }
 }

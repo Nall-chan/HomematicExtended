@@ -1,0 +1,403 @@
+{
+    "elements": [
+        {
+            "name": "Address",
+            "type": "ValidationTextBox",
+            "caption": "Address"
+        },
+        {
+            "type": "ExpansionPanel",
+            "caption": "Schedule",
+            "expanded": true,
+            "items": [
+                {
+                    "type": "RowLayout",
+                    "items": [
+                        {
+                            "name": "enable_ACTIVE_PROFILE",
+                            "type": "CheckBox",
+                            "caption": "Active profile",
+                            "width": "250px"
+                        },
+                        {
+                            "name": "enable_SCHEDULE",
+                            "type": "CheckBox",
+                            "caption": "Schedule",
+                            "width": "250px"
+                        }
+                    ]
+                },
+                {
+                    "type": "RowLayout",
+                    "items": [
+                        {
+                            "name": "ScheduleMinTemp",
+                            "type": "NumberSpinner",
+                            "caption": "lowest temperature",
+                            "digits": 1,
+                            "minimum": 5,
+                            "maximum": 17,
+                            "suffix": " °C",
+                            "width": "250px",
+                            "onChange": "echo '1:'.$ScheduleMinTemp;"
+                        },
+                        {
+                            "name": "ScheduleMaxTemp",
+                            "type": "NumberSpinner",
+                            "caption": "highest temperature",
+                            "digits": 1,
+                            "minimum": 18,
+                            "maximum": 30,
+                            "suffix": " °C",
+                            "width": "250px"
+                        },
+                        {
+                            "name": "ScheduleStepsTemp",
+                            "type": "Select",
+                            "caption": "temperature steps",
+                            "options": [
+                                {
+                                    "caption": "0,5 °C",
+                                    "value": 1
+                                },
+                                {
+                                    "caption": "1,0 °C",
+                                    "value": 2
+                                },
+                                {
+                                    "caption": "2 °C",
+                                    "value": 4
+                                },
+                                {
+                                    "caption": "3 °C",
+                                    "value": 6
+                                },
+                                {
+                                    "caption": "4 °C",
+                                    "value": 8
+                                },
+                                {
+                                    "caption": "5 °C",
+                                    "value": 10
+                                },
+                                {
+                                    "caption": "6 °C",
+                                    "value": 12
+                                },
+                                {
+                                    "caption": "7 °C",
+                                    "value": 14
+                                },
+                                {
+                                    "caption": "8 °C",
+                                    "value": 16
+                                }
+                            ],
+                            "width": "250px"
+                        }
+                    ]
+                },
+                {
+                    "type": "RowLayout",
+                    "items": [
+                        {
+                            "name": "ScheduleMinColor",
+                            "type": "SelectColor",
+                            "caption": "lowest temperature color",
+                            "allowTransparent ": false,
+                            "width": "250px"
+                        },
+                        {
+                            "name": "ScheduleMaxColor",
+                            "type": "SelectColor",
+                            "caption": "highest temperature color",
+                            "allowTransparent ": false,
+                            "width": "250px"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "ExpansionPanel",
+            "caption": "Optional status variables",
+            "items": [
+                {
+                    "type": "ExpansionPanel",
+                    "caption": "Control",
+                    "expanded": true,
+                    "items": [
+                        {
+                            "type": "RowLayout",
+                            "items": [
+                                {
+                                    "name": "enable_SET_POINT_MODE",
+                                    "type": "CheckBox",
+                                    "caption": "Target temperature mode",
+                                    "width": "250px"
+                                },
+                                {
+                                    "name": "enable_HEATING_COOLING",
+                                    "type": "CheckBox",
+                                    "caption": "Operation mode",
+                                    "width": "250px"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "ExpansionPanel",
+                    "caption": "Boost",
+                    "expanded": true,
+                    "items": [
+                        {
+                            "type": "RowLayout",
+                            "items": [
+                                {
+                                    "name": "enable_BOOST_MODE",
+                                    "type": "CheckBox",
+                                    "caption": "Boost",
+                                    "width": "250px"
+                                },
+                                {
+                                    "name": "enable_BOOST_TIME",
+                                    "type": "CheckBox",
+                                    "caption": "Boost remaining time",
+                                    "width": "250px"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "RowLayout",
+                            "items": [
+                                {
+                                    "name": "enable_BOOST_POSITION",
+                                    "type": "CheckBox",
+                                    "caption": "Boost valve opening",
+                                    "width": "250px"
+                                },
+                                {
+                                    "name": "enable_BOOST_TIME_PERIOD",
+                                    "type": "CheckBox",
+                                    "caption": "Boost duration",
+                                    "width": "250px"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "ExpansionPanel",
+                    "caption": "Holiday/Party",
+                    "expanded": true,
+                    "items": [
+                        {
+                            "name": "enable_PARTY_SET_POINT_TEMPERATURE",
+                            "type": "CheckBox",
+                            "caption": "Holiday/Party set point temperature",
+                            "width": "250px"
+                        },
+                        {
+                            "type": "RowLayout",
+                            "items": [
+                                {
+                                    "name": "enable_PARTY_TIME_START",
+                                    "type": "CheckBox",
+                                    "caption": "Holiday/Party start",
+                                    "width": "250px"
+                                },
+                                {
+                                    "name": "enable_PARTY_TIME_END",
+                                    "type": "CheckBox",
+                                    "caption": "Holiday/Party end",
+                                    "width": "250px"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "ExpansionPanel",
+                    "caption": "Temperature",
+                    "expanded": true,
+                    "items": [
+                        {
+                            "type": "RowLayout",
+                            "items": [
+                                {
+                                    "name": "enable_TEMPERATURE_COMFORT",
+                                    "type": "CheckBox",
+                                    "caption": "Comfort temperature",
+                                    "width": "250px"
+                                },
+                                {
+                                    "name": "enable_TEMPERATURE_LOWERING",
+                                    "type": "CheckBox",
+                                    "caption": "Lowering temperature",
+                                    "width": "250px"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "RowLayout",
+                            "items": [
+                                {
+                                    "name": "enable_TEMPERATURE_COMFORT_COOLING",
+                                    "type": "CheckBox",
+                                    "caption": "Comfort temperature cooling",
+                                    "width": "250px"
+                                },
+                                {
+                                    "name": "enable_TEMPERATURE_LOWERING_COOLING",
+                                    "type": "CheckBox",
+                                    "caption": "Lowering temperature cooling",
+                                    "width": "250px"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "RowLayout",
+                            "items": [
+                                {
+                                    "name": "enable_TEMPERATURE_WINDOW_OPEN",
+                                    "type": "CheckBox",
+                                    "caption": "Window open temperature",
+                                    "width": "250px"
+                                },
+                                {
+                                    "name": "enable_WINDOW_STATE",
+                                    "type": "CheckBox",
+                                    "caption": "Window state",
+                                    "width": "250px"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "ExpansionPanel",
+                    "caption": "Decalcification",
+                    "expanded": true,
+                    "items": [
+                        {
+                            "type": "RowLayout",
+                            "items": [
+                                {
+                                    "name": "enable_DECALCIFICATION_TIME",
+                                    "type": "CheckBox",
+                                    "caption": "Decalcification time",
+                                    "width": "250px"
+                                },
+                                {
+                                    "name": "enable_DECALCIFICATION_WEEKDAY",
+                                    "type": "CheckBox",
+                                    "caption": "Decalcification day",
+                                    "width": "250px"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "ExpansionPanel",
+                    "caption": "Valve",
+                    "expanded": true,
+                    "items": [
+                        {
+                            "type": "RowLayout",
+                            "items": [
+                                {
+                                    "name": "enable_VALVE_ADAPTION",
+                                    "type": "CheckBox",
+                                    "caption": "Valve adaption",
+                                    "width": "250px"
+                                },
+                                {
+                                    "name": "enable_VALVE_STATE",
+                                    "type": "CheckBox",
+                                    "caption": "Valve state",
+                                    "width": "250px"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "RowLayout",
+                            "items": [
+                                {
+                                    "name": "enable_LEVEL",
+                                    "type": "CheckBox",
+                                    "caption": "Valve opening",
+                                    "width": "250px"
+                                },
+                                {
+                                    "name": "enable_FROST_PROTECTION",
+                                    "type": "CheckBox",
+                                    "caption": "Frost protection",
+                                    "width": "250px"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "enable_SWITCH_POINT_OCCURED",
+                            "type": "CheckBox",
+                            "caption": "Switch point occurred",
+                            "width": "250px"
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "actions": [
+        {
+            "type": "ExpansionPanel",
+            "caption": "Schedule",
+            "expanded": true,
+            "visible": false,
+            "items": [
+                {
+                    "type": "List",
+                    "add": true,
+                    "caption": "temperature steps",
+                    "name": "ScheduleColor",
+                    "onAdd": [
+                        "var_dump($ScheduleColor);"
+                    ],
+                    "onDelete": [
+                        "var_dump($ScheduleColor);"
+                    ],
+                    "columns": [
+                        {
+                            "caption": "Temperature",
+                            "name": "temperature",
+                            "width": "200px",
+                            "add": 5,
+                            "edit": {
+                                "type": "NumberSpinner",
+                                "digits": 1,
+                                "minimum": 5,
+                                "maximum": 30,
+                                "suffix": " °C"
+                            }
+                        },
+                        {
+                            "caption": "Color",
+                            "name": "color",
+                            "width": "200px",
+                            "add": 0,
+                            "edit": {
+                                "type": "SelectColor",
+                                "allowTransparent ": false
+                            }
+                        }
+                    ],
+                    "values": []
+                }
+            ]
+        },
+        {
+            "type": "TestCenter"
+        }
+    ]
+}

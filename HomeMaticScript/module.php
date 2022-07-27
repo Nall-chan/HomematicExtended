@@ -52,40 +52,12 @@ class HomeMaticRemoteScript extends HMBase
      */
     public function RunScript(string $Script)
     {
-        try {
-            return $this->SendScript($Script);
-        } catch (Exception $exc) {
-            trigger_error($this->Translate($exc->getMessage()), $exc->getCode());
+        return  $this->LoadHMScript($Script);
+        $xml = $this->SendScript($Script);
+        if ($xml === false) {
             return false;
         }
-    }
-
-    //################# protected
-
-    /**
-     * Wird ausgeführt wenn der Kernel hochgefahren wurde.
-     */
-    protected function KernelReady()
-    {
-        $this->ApplyChanges();
-    }
-
-    /**
-     * /**
-     * Wird ausgeführt wenn sich der Status vom Parent ändert.
-     */
-    protected function IOChangeState($State)
-    {
-        $this->ApplyChanges();
-    }
-
-    /**
-     * Registriert Nachrichten des aktuellen Parent und ließt die Adresse der CCU aus dem Parent.
-     */
-    protected function RegisterParent()
-    {
-        parent::RegisterParent();
-        $this->SetSummary($this->HMAddress);
+        return json_encode($xml);
     }
 
     //################# private
@@ -101,26 +73,11 @@ class HomeMaticRemoteScript extends HMBase
      */
     private function SendScript(string $Script)
     {
-        if (!$this->HasActiveParent()) {
-            throw new Exception('Instance has no active parent instance!', E_USER_NOTICE);
+        $HMScriptResult = $this->LoadHMScript($Script);
+        if ($HMScriptResult === false) {
+            return false;
         }
-        if ($this->HMAddress == '') {
-            $this->RegisterParent();
-        }
-        $url = 'Script.exe';
-
-        try {
-            $HMScriptResult = $this->LoadHMScript($url, $Script);
-            $xml = @new SimpleXMLElement(utf8_encode($HMScriptResult), LIBXML_NOBLANKS + LIBXML_NONET);
-        } catch (Exception $exc) {
-            $this->SendDebug($url, $exc->getMessage(), 0);
-
-            throw new Exception($exc->getMessage(), E_USER_NOTICE);
-        }
-        unset($xml->exec);
-        unset($xml->sessionId);
-        unset($xml->httpUserAgent);
-        return json_encode($xml);
+        return $this->GetScriptXML($HMScriptResult);
     }
 }
 

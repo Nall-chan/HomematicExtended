@@ -2,7 +2,12 @@
     "translations": {
         "de": {
             "Address": "Adresse",
-            "System": "System"
+            "System": "System",
+            "Group": "Gruppe",
+            "IP": "IP",
+            "Radio": "Funk",
+            "Wired": "Wired",
+            "Emulate Status": "Status emulieren"
         }
     }
 }

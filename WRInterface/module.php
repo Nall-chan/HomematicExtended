@@ -137,18 +137,6 @@ class HomeMaticWRInterface extends HMBase
         }
     }
 
-    /**
-     * Registriert Nachrichten des aktuellen Parent und ließt die Adresse der CCU aus dem Parent.
-     *
-     * @return int ID des Parent.
-     */
-    protected function RegisterParent()
-    {
-        $ParentId = parent::RegisterParent();
-        $this->SetSummary($this->HMAddress);
-        return $ParentId;
-    }
-
     //################# PRIVATE
 
     /**
@@ -210,7 +198,7 @@ class HomeMaticWRInterface extends HMBase
             $this->SendDebug('Error JSON', $ResultJSON, 0);
             return false;
         }
-        $Result = json_decode($ResultJSON, true);
+        $Result = json_decode(utf8_encode($ResultJSON), true);
         if (($Result === false) || is_null($Result)) {
             trigger_error($this->Translate('Error on read WR-Interface.'), E_USER_NOTICE);
             $this->SendDebug('Error decode', $Result, 0);

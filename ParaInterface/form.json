@@ -16,6 +16,10 @@
                 {
                     "caption": "IP",
                     "value": 2
+                },
+                {
+                    "caption": "Group",
+                    "value": 3
                 }
             ]
         },
@@ -23,6 +27,11 @@
             "name": "Address",
             "type": "ValidationTextBox",
             "caption": "Address"
+        },
+        {
+            "name": "EmulateStatus",
+            "type": "CheckBox",
+            "caption": "Emulate Status"
         }
     ]
 }

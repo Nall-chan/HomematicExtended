@@ -1,0 +1,94 @@
+{
+    "elements": [
+        {
+            "name": "Address",
+            "type": "ValidationTextBox",
+            "caption": "Address"
+        },
+        {
+            "type": "ExpansionPanel",
+            "caption": "Optional status variables",
+            "items": [
+                {
+                    "type": "ExpansionPanel",
+                    "caption": "Holiday/Party",
+                    "expanded": true,
+                    "items": [
+                        {
+                            "name": "enable_PARTY_END_TIME",
+                            "type": "CheckBox",
+                            "caption": "Holiday/Party end",
+                            "width": "250px"
+                        }
+                    ]
+                },
+                {
+                    "type": "ExpansionPanel",
+                    "caption": "Temperature",
+                    "expanded": true,
+                    "items": [
+                        {
+                            "type": "RowLayout",
+                            "items": [
+                                {
+                                    "name": "enable_TEMPERATUR_COMFORT_VALUE",
+                                    "type": "CheckBox",
+                                    "caption": "Comfort temperature",
+                                    "width": "250px"
+                                },
+                                {
+                                    "name": "enable_TEMPERATUR_LOWERING_VALUE",
+                                    "type": "CheckBox",
+                                    "caption": "Lowering temperature",
+                                    "width": "250px"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "ExpansionPanel",
+                    "caption": "Decalcification",
+                    "expanded": true,
+                    "items": [
+                        {
+                            "type": "RowLayout",
+                            "items": [
+                                {
+                                    "name": "enable_DECALCIFICATION_TIME",
+                                    "type": "CheckBox",
+                                    "caption": "Decalcification time",
+                                    "width": "250px"
+                                },
+                                {
+                                    "name": "enable_DECALCIFICATION_DAY",
+                                    "type": "CheckBox",
+                                    "caption": "Decalcification day",
+                                    "width": "250px"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "ExpansionPanel",
+                    "caption": "Valve",
+                    "expanded": true,
+                    "items": [
+                        {
+                            "name": "enable_MODE_TEMPERATUR_VALVE",
+                            "type": "CheckBox",
+                            "caption": "Valve mode",
+                            "width": "250px"
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "actions": [
+        {
+            "type": "TestCenter"
+        }
+    ]
+}
