@@ -698,7 +698,7 @@ class HomeMaticSystemvariablen extends HMBase
                     $VarIdent = 'AlDP' . $SysVar;
                 }
             }
-            $xmlVar->addChild('Variable', $lines[0]);
+            $xmlVar->addChild('Variable', implode("\r\n", $lines));
             $VarID = @$this->GetIDForIdent($VarIdent);
             $VarType = self::$CcuVarType[(int) $xmlVar->ValueType];
             $VarProfil = 'HM.SysVar' . (string) $this->InstanceID . '.' . (string) $SysVar;
