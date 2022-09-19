@@ -25,6 +25,11 @@
             "name": "AlarmScriptID",
             "type": "SelectScript",
             "caption": "Alarmmanagement-Script"
+        },
+        {
+            "name": "ShowHidden",
+            "type": "CheckBox",
+            "caption": "show hidden system variables"
         }
     ],
     "status": [
