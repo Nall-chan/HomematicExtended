@@ -124,7 +124,7 @@ class HomeMaticClimateControlRegulator extends HMDeviceBase
         $d->setTime($Params['DECALCIFICATION_HOUR'], $Params['DECALCIFICATION_MINUTE'], 0, 0);
         $Params['DECALCIFICATION_TIME'] = $d->getTimestamp();
         $d = new DateTime();
-        $d->setTime($Params['PARTY_END_HOUR'],($Params['PARTY_END_MINUTE'] == 0 ? 0 : 30),0,0);
+        $d->setTime($Params['PARTY_END_HOUR'], ($Params['PARTY_END_MINUTE'] == 0 ? 0 : 30), 0, 0);
         $i = new DateInterval('P' . $Params['PARTY_END_DAY'] . 'D');
         $Params['PARTY_END_TIME'] = $d->add($i)->getTimestamp();
         foreach ($Params as $Ident => $Value) {

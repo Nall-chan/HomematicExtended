@@ -78,7 +78,6 @@ class HomeMaticExtendedConfigurator extends HMBase
      */
     public function Test(string $MethodName, int $Protocol, array $Data)
     {
-
         return $this->SendRPC($MethodName, $Protocol, $Data);
     }
     /**
