@@ -3,8 +3,8 @@
         "de": {
             "Address": "Adresse",
             "Optional status variables": "Optionale Statusvariablen",
-            "Control":"Regelung",
-            "Schedule":"Zeitplan",
+            "Control": "Regelung",
+            "Schedule": "Zeitplan",
             "On": "An",
             "Off": "Aus",
             "Active profile": "Aktives Zeitprofil",

@@ -1,6 +1,6 @@
 {
     "actions": [
-              {
+        {
             "type": "Configurator",
             "name": "Configuration",
             "caption": "Devices",

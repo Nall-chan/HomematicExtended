@@ -1,6 +1,6 @@
 {
     "id": "{AE6D87CF-041F-4603-9FBB-8D6F3EA82B81}",
-    "author": "Michael Tr\u00f6ger",
+    "author": "Michael Tröger",
     "name": "Homematic Erweiterung",
     "url": "https://github.com/Nall-chan/HomematicExtended",
     "compatibility": {
@@ -8,5 +8,5 @@
     },
     "version": "3.5",
     "build": 350,
-    "date": 1609865888 
+    "date": 1609865888
 }
