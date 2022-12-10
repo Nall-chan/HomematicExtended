@@ -5,17 +5,9 @@ on: [push, pull_request]
 jobs:
 
   style:
- 
     runs-on: ubuntu-latest
- 
     steps:
-    - uses: actions/checkout@master
-
-    - name: Only fetch Style PHP submodule
-      run: git submodule update --init -- .style
-
-    - name: Install latest PHP-CS-Fixer
-      run: wget https://cs.symfony.com/download/php-cs-fixer-v2.phar
-
-    - name: Run Checks
-      run: PHP_CS_FIXER_IGNORE_ENV=1 php php-cs-fixer-v2.phar fix --config=.style/.php_cs -v --dry-run --allow-risky=yes --path-mode=intersection .
+    - name: Checkout module
+      uses: actions/checkout@master
+    - name: Check style
+      uses: Nall-chan/action-style@master
