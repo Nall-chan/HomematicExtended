@@ -67,7 +67,7 @@ class HomeMaticParasetInterface extends HMBase
      */
     public function WriteParameterBoolean(string $Parameter, bool $Data)
     {
-        $Result = $this->PutParamset([$Parameter=> $Data]);
+        $Result = $this->PutParamSet([$Parameter=> $Data]);
         return $Result;
     }
 
@@ -79,7 +79,7 @@ class HomeMaticParasetInterface extends HMBase
      */
     public function WriteParameterInteger(string $Parameter, int $Data)
     {
-        $Result = $this->PutParamset([$Parameter=> $Data]);
+        $Result = $this->PutParamSet([$Parameter=> $Data]);
         return $Result;
     }
 
@@ -91,7 +91,7 @@ class HomeMaticParasetInterface extends HMBase
      */
     public function WriteParameterFloat(string $Parameter, float $Data)
     {
-        $Result = $this->PutParamset([$Parameter=> $Data]);
+        $Result = $this->PutParamSet([$Parameter=> $Data]);
         return $Result;
     }
 
@@ -103,7 +103,7 @@ class HomeMaticParasetInterface extends HMBase
      */
     public function WriteParameterString(string $Parameter, string $Data)
     {
-        $Result = $this->PutParamset([$Parameter=> $Data]);
+        $Result = $this->PutParamSet([$Parameter=> $Data]);
         return $Result;
     }
 
@@ -120,7 +120,7 @@ class HomeMaticParasetInterface extends HMBase
             trigger_error('Error in Parameter', E_USER_NOTICE);
             return false;
         }
-        $Result = $this->PutParamset($Data);
+        $Result = $this->PutParamSet($Data);
         return $Result;
     }
 
@@ -163,7 +163,7 @@ class HomeMaticParasetInterface extends HMBase
      *
      * @return array Ein Array mit den Daten des Interface.
      */
-    private function PutParamset(array $Parameter)
+    private function PutParamSet(array $Parameter)
     {
         if (!$this->HasActiveParent()) {
             trigger_error('Instance has no active Parent Instance!', E_USER_NOTICE);
@@ -173,7 +173,7 @@ class HomeMaticParasetInterface extends HMBase
         $ParentData = [
             'DataID'     => '{75B6B237-A7B0-46B9-BBCE-8DF0CFE6FA52}',
             'Protocol'   => $this->ReadPropertyInteger('Protocol'),
-            'MethodName' => 'putParamset',
+            'MethodName' => 'PutParamSet',
             'WaitTime'   => ($EmulateStatus ? 1 : 5000),
             'Data'       => [$this->ReadPropertyString('Address'), 'MASTER', json_encode($Parameter)]
         ];

@@ -21,8 +21,9 @@ require_once __DIR__ . '/../libs/HMDeviceBase.php';  // HMBase Klasse
  */
 class HomeMaticHeatingGroup extends HMDeviceBase
 {
-    const DeviceTyp = 'CLIMATECONTROL_RT_TRANSCEIVER';
-
+    const DeviceTyp = \HMExtended\DeviceType::HeatingGroup;
+    const ValuesChannel = \HMExtended\Channels::First;
+    const ParamChannel = \HMExtended\Channels::Device;
     /**
      * Interne Funktion des SDK.
      */
@@ -45,10 +46,10 @@ class HomeMaticHeatingGroup extends HMDeviceBase
         if (parent::RequestAction($Ident, $Value)) {
             return;
         }
-        if (array_key_exists($Ident, static::$Variables[static::DeviceTyp])) {
-            $Ident = is_string(static::$Variables[static::DeviceTyp][$Ident][2]) ? static::$Variables[self::DeviceTyp][$Ident][2] : $Ident;
-            $this->FixValueType(static::$Variables[static::DeviceTyp][$Ident][0], $Value);
-            switch (static::$Variables[static::DeviceTyp][$Ident][0]) {
+        if (array_key_exists($Ident, \HMExtended\ValuesSet::$Variables[static::DeviceTyp])) {
+            $Ident = is_string(\HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][2]) ? \HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][2] : $Ident;
+            $this->FixValueType(\HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][0], $Value);
+            switch (\HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][0]) {
                 case VARIABLETYPE_BOOLEAN:
                     $Value = (bool) $Value;
                     break;
@@ -77,7 +78,7 @@ class HomeMaticHeatingGroup extends HMDeviceBase
                         $Start = (new DateTime())->setTimestamp($this->GetValue('PARTY_TIME_START'));
                         $End = (new DateTime())->setTimestamp($this->GetValue('PARTY_TIME_END'));
 
-                        return $this->PutValueset(
+                        return $this->PutValueSet(
                             [
                                 'SET_POINT_MODE'        => 2,
                                 'SET_POINT_TEMPERATURE' => $this->GetValue('PARTY_SET_POINT_TEMPERATURE'),
@@ -90,22 +91,22 @@ class HomeMaticHeatingGroup extends HMDeviceBase
             }
             return $this->PutValue($Ident, $Value);
         }
-        if (array_key_exists($Ident, static::$Parameters[static::DeviceTyp])) {
-            $Ident = is_string(static::$Parameters[static::DeviceTyp][$Ident][2]) ? static::$Variables[self::DeviceTyp][$Ident][2] : $Ident;
-            $this->FixValueType(static::$Parameters[static::DeviceTyp][$Ident][0], $Value);
+        if (array_key_exists($Ident, \HMExtended\ParamSet::$Variables[static::DeviceTyp])) {
+            $Ident = is_string(\HMExtended\ParamSet::$Variables[static::DeviceTyp][$Ident][2]) ? \HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][2] : $Ident;
+            $this->FixValueType(\HMExtended\ParamSet::$Variables[static::DeviceTyp][$Ident][0], $Value);
             switch ($Ident) {
                 case 'DECALCIFICATION_TIME':
                     $d = (new DateTime())->setTimestamp($Value);
                     $CalcMin = (int) $d->format('i');
                     $CalcHour = (int) $d->format('H');
                     $Value = ($CalcHour * 2) + ($CalcMin > 30 ? 1 : 0);
-                    if ($this->PutParamset([$Ident=>(int) $Value])) {
+                    if ($this->PutParamSet([$Ident=>(int) $Value])) {
                         $this->SetValue($Ident, $Value);
                         return true;
                     }
                     return false;
                 }
-            if ($this->PutParamset([$Ident=>$Value])) {
+            if ($this->PutParamSet([$Ident=>$Value])) {
                 $this->SetValue($Ident, $Value);
                 return true;
             }

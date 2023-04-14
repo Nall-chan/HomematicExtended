@@ -22,8 +22,9 @@ require_once __DIR__ . '/../libs/HMDeviceBase.php';  // HMBase Klasse
  */
 class HomeMaticClimateControlRegulator extends HMDeviceBase
 {
-    const DeviceTyp = 'CLIMATECONTROL_REGULATOR';
-
+    const DeviceTyp = \HMExtended\DeviceType::ClimacontrolRegulator;
+    const ValuesChannel = \HMExtended\Channels::Second;
+    const ParamChannel = \HMExtended\Channels::Second;
     /**
      * Interne Funktion des SDK.
      */
@@ -46,9 +47,9 @@ class HomeMaticClimateControlRegulator extends HMDeviceBase
         if (parent::RequestAction($Ident, $Value)) {
             return;
         }
-        if (array_key_exists($Ident, static::$Variables[static::DeviceTyp])) {
-            $Ident = is_string(static::$Variables[static::DeviceTyp][$Ident][2]) ? static::$Variables[self::DeviceTyp][$Ident][2] : $Ident;
-            $this->FixValueType(static::$Variables[static::DeviceTyp][$Ident][0], $Value);
+        if (array_key_exists($Ident, \HMExtended\ValuesSet::$Variables[static::DeviceTyp])) {
+            $Ident = is_string(\HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][2]) ? \HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][2] : $Ident;
+            $this->FixValueType(\HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][0], $Value);
             switch ($Ident) {
                 case 'SETPOINT':
                     $this->SetValue($Ident, $Value);
@@ -59,17 +60,18 @@ class HomeMaticClimateControlRegulator extends HMDeviceBase
                     $Value = 100;
                 }
             }
-            return $this->SendRPC('setValue', $Ident, $Value, true);
+            $Paramset = [$this->ReadPropertyString('Address') . static::ValuesChannel, $Ident];            
+            return $this->SendRPC('setValue', $Paramset, $Value, true);
         }
-        if (array_key_exists($Ident, static::$Parameters[static::DeviceTyp])) {
-            $Ident = is_string(static::$Parameters[static::DeviceTyp][$Ident][2]) ? static::$Variables[self::DeviceTyp][$Ident][2] : $Ident;
-            $this->FixValueType(static::$Parameters[static::DeviceTyp][$Ident][0], $Value);
+        if (array_key_exists($Ident, \HMExtended\ParamSet::$Variables[static::DeviceTyp])) {
+            $Ident = is_string(\HMExtended\ParamSet::$Variables[static::DeviceTyp][$Ident][2]) ? \HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][2] : $Ident;
+            $this->FixValueType(\HMExtended\ParamSet::$Variables[static::DeviceTyp][$Ident][0], $Value);
             switch ($Ident) {
                 case 'DECALCIFICATION_TIME':
                     $d = (new DateTime())->setTimestamp($Value);
                     $CalcMin = (int) $d->format('i');
                     $CalcHour = (int) $d->format('H');
-                    if ($this->PutParamset(
+                    if ($this->PutParamSet(
                         [
                             'DECALCIFICATION_MINUTE'=>($CalcMin > 50) ? 50 : $CalcMin,
                             'DECALCIFICATION_HOUR'=>$CalcHour
@@ -79,38 +81,38 @@ class HomeMaticClimateControlRegulator extends HMDeviceBase
                         return true;
                     }
                     return false;
-                    case 'PARTY_END_TIME':
-                        if ($Value < time()) {
-                            trigger_error($this->Translate('Time cannot be in the past'));
-                            return false;
-                        }
+                case 'PARTY_END_TIME':
+                    if ($Value < time()) {
+                        trigger_error($this->Translate('Time cannot be in the past'));
+                        return false;
+                    }
 
-                        $d = (new DateTime())->setTimestamp($Value);
-                        $CalcMin = (int) $d->format('i');
-                        $CalcHour = (int) $d->format('H');
-                        $d->setTime(0, 0, 0, 0);
-                        $days = ((new DateTime())->setTime(0, 0, 0, 0))->diff($d);
-                        if ($days > 200) {
-                            trigger_error($this->Translate('Time too far in the future'));
-                            return false;
-                        }
-                        $d->setTime($CalcHour, ($CalcMin >= 30) ? 1 : 0, 0, 0);
+                    $d = (new DateTime())->setTimestamp($Value);
+                    $CalcMin = (int) $d->format('i');
+                    $CalcHour = (int) $d->format('H');
+                    $d->setTime(0, 0, 0, 0);
+                    $days = ((new DateTime())->setTime(0, 0, 0, 0))->diff($d);
+                    if ($days > 200) {
+                        trigger_error($this->Translate('Time too far in the future'));
+                        return false;
+                    }
+                    $d->setTime($CalcHour, ($CalcMin >= 30) ? 1 : 0, 0, 0);
 
-                        if ($this->PutParamset(
-                            [
-                                'MODE_TEMPERATUR_REGULATOR'=> 3,
-                                'PARTY_END_DAY'            => $days->format('%a'),
-                                'PARTY_END_MINUTE'         => ($CalcMin >= 30) ? 1 : 0,
-                                'PARTY_END_HOUR'           => $CalcHour
-                            ]
-                        )) {
-                            $this->SetValue('MODE_TEMPERATUR_REGULATOR', 3);
-                            $this->SetValue('PARTY_END_TIME', $d->getTimestamp());
-                            return true;
-                        }
+                    if ($this->PutParamSet(
+                        [
+                            'MODE_TEMPERATUR_REGULATOR'=> 3,
+                            'PARTY_END_DAY'            => $days->format('%a'),
+                            'PARTY_END_MINUTE'         => ($CalcMin >= 30) ? 1 : 0,
+                            'PARTY_END_HOUR'           => $CalcHour
+                        ]
+                    )) {
+                        $this->SetValue('MODE_TEMPERATUR_REGULATOR', 3);
+                        $this->SetValue('PARTY_END_TIME', $d->getTimestamp());
+                        return true;
+                    }
 
             }
-            if ($this->PutParamset([$Ident=>$Value])) {
+            if ($this->PutParamSet([$Ident=>$Value])) {
                 $this->SetValue($Ident, $Value);
                 return true;
             }

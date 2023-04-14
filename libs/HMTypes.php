@@ -4,9 +4,64 @@ declare(strict_types=1);
 
 namespace HMExtended;
 
-trait HMTypes
+class GUID
 {
-    protected static $VariabeProfiles = [
+    const Systemvariablen = '{400F9193-FE79-4086-8D76-958BF9C1B357}';
+    const Powermeter = '{AF50C42B-7183-4992-B04A-FAFB07BB1B90}';
+    const Programme = '{A5010577-C443-4A85-ABF2-3F2D6CDD2465}';
+    const Dis_WM55 = '{271BCAB1-0658-46D9-A164-985AEB641B48}';
+    const Dis_EP_WM55 = '{E64ED916-FA6C-45B2-B8E3-EDC3191BC4C0}';
+    const RF_Interface_Splitter = '{6EE35B5B-9DD9-4B23-89F6-37589134852F}';
+    const RF_Interface_Konfigurator = '{91624C6F-E67E-47DA-ADFE-9A5A1A89AAC3}';
+    const WR_Interface = '{01C66202-7E94-49C4-8D8F-6A75CE944E87}';
+    const HeatingGroup = '{F179857C-DF5A-2CED-F553-CDB4D42815ED}';
+    const HeatingGroupHmIP = '{05CD9BAE-5A3B-E10B-79D6-48CB45A02C6A}';
+    const ClimacontrolRegulator = '{AA29D32D-A00D-EC8F-4987-5EB071F77011}';
+}
+class CCU
+{
+    const BidCos_RF = 'BidCos-RF';
+    const BidCos_WR = 'BidCos-Wired';
+    const HmIP = 'HmIP-RF';
+    const Groups = 'VirtualDevices';
+
+    public static $Interfaces = [
+        self::BidCos_RF,
+        self::BidCos_WR,
+        self::HmIP,
+        self::Groups
+    ];
+}
+class DeviceType
+{
+    const HeatingGroup = 'HM-CC-VG-1';//'CLIMATECONTROL_RT_TRANSCEIVER';
+    const HeatingGroupHmIP = 'HmIP-HEATING';//'HEATING_CLIMATECONTROL_TRANSCEIVER';
+    const ClimacontrolRegulator = 'HM-CC-TC';//'CLIMATECONTROL_REGULATOR';
+
+    public static $GuidToType = [
+        /*GUID::Systemvariablen                =>
+        GUID::Powermeter                     =>
+        GUID::Programme                      =>
+        GUID::Dis_WM55                       =>
+        GUID::Dis_EP_WM55                    =>
+        GUID::RF_Interface_Splitter          =>
+        GUID::RF_Interface_Konfigurator      =>
+        GUID::WR_Interface                   => */
+        GUID::HeatingGroup                  => self::HeatingGroup,
+        GUID::HeatingGroupHmIP              => self::HeatingGroupHmIP,
+        GUID::ClimacontrolRegulator         => self::ClimacontrolRegulator
+
+    ];
+}
+class Channels{
+    const Device = '';
+    const First=':1';
+    const Second=':2';
+}
+class Variables
+{
+    const VARIABLETYPE_NONE = -1;
+    public static $Profiles = [
         'Heating.Control.SetPoint.Temperature.HmIP'=> [
             VARIABLETYPE_FLOAT,
             'Temperature',
@@ -212,9 +267,12 @@ trait HMTypes
             1
         ],
     ];
+}
 
-    protected static $Variables = [
-        'CLIMATECONTROL_REGULATOR'=> [
+class ValuesSet
+{
+    public static $Variables = [
+        DeviceType::ClimacontrolRegulator => [
             'SETPOINT' => [
                 VARIABLETYPE_FLOAT,
                 'Heating.Control.SetPoint.Temperature.HmIP',
@@ -222,16 +280,16 @@ trait HMTypes
                 'Setpoint temperature'
             ],
             'ADJUSTING_DATA'=> [
-                parent::VARIABLETYPE_NONE
+                Variables::VARIABLETYPE_NONE
             ],
             'ADJUSTING_COMMAND'=> [
-                parent::VARIABLETYPE_NONE
+                Variables::VARIABLETYPE_NONE
             ],
             'STATE' => [
-                parent::VARIABLETYPE_NONE
+                Variables::VARIABLETYPE_NONE
             ],
         ],
-        'HEATING_CLIMATECONTROL_TRANSCEIVER' => [
+        DeviceType::HeatingGroupHmIP => [
             'ACTIVE_PROFILE' => [
                 VARIABLETYPE_INTEGER,
                 'Heating.Control.Profile.HmIP',
@@ -246,7 +304,7 @@ trait HMTypes
                 'Temperature'
             ],
             'ACTUAL_TEMPERATURE_STATUS' => [
-                parent::VARIABLETYPE_NONE
+                Variables::VARIABLETYPE_NONE
             ],
             'BOOST_MODE' => [
                 VARIABLETYPE_BOOLEAN,
@@ -283,7 +341,7 @@ trait HMTypes
                 'Humidity'
             ],
             'HUMIDITY_STATUS' => [
-                parent::VARIABLETYPE_NONE
+                Variables::VARIABLETYPE_NONE
             ],
             'LEVEL' => [
                 VARIABLETYPE_FLOAT,
@@ -293,10 +351,10 @@ trait HMTypes
                 true
             ],
             'LEVEL_STATUS' => [
-                parent::VARIABLETYPE_NONE
+                Variables::VARIABLETYPE_NONE
             ],
             'PARTY_MODE' => [
-                parent::VARIABLETYPE_NONE
+                Variables::VARIABLETYPE_NONE
             ],
             'PARTY_SET_POINT_TEMPERATURE' => [
                 VARIABLETYPE_FLOAT,
@@ -320,7 +378,7 @@ trait HMTypes
                 true
             ],
             'QUICK_VETO_TIME' => [
-                parent::VARIABLETYPE_NONE
+                Variables::VARIABLETYPE_NONE
             ],
             'SET_POINT_MODE' => [
                 VARIABLETYPE_INTEGER,
@@ -331,7 +389,7 @@ trait HMTypes
 
             ],
             'CONTROL_MODE'=> [
-                parent::VARIABLETYPE_NONE
+                Variables::VARIABLETYPE_NONE
             ],
             'SET_POINT_TEMPERATURE' => [
                 VARIABLETYPE_FLOAT,
@@ -366,10 +424,17 @@ trait HMTypes
                 true,
                 'Window state',
                 true
-            ]]
+            ]
+        ],
+        DeviceType::HeatingGroup=> [
+        ]
     ];
-    protected static $Parameters = [
-        'CLIMATECONTROL_REGULATOR'=> [
+}
+
+class ParamSet
+{
+    public static $Variables = [
+        DeviceType::ClimacontrolRegulator => [
             'MODE_TEMPERATUR_REGULATOR' => [
                 VARIABLETYPE_INTEGER,
                 'Heating.Control.SetPoint.Mode.HM-CC-TC',
@@ -391,7 +456,7 @@ trait HMTypes
                 false
             ],
             'DECALCIFICATION_HOUR'=> [
-                parent::VARIABLETYPE_NONE,
+                Variables::VARIABLETYPE_NONE,
                 '',
                 'DECALCIFICATION_TIME'
             ],
@@ -424,18 +489,18 @@ trait HMTypes
                 true
             ],
             'PARTY_END_DAY'            => [
-                parent::VARIABLETYPE_NONE,
+                Variables::VARIABLETYPE_NONE,
                 '',
                 'PARTY_END_TIME'
             ],
             'PARTY_END_HOUR'           => [
-                parent::VARIABLETYPE_NONE
+                Variables::VARIABLETYPE_NONE
             ],
             'PARTY_END_MINUTE'         => [
-                parent::VARIABLETYPE_NONE
+                Variables::VARIABLETYPE_NONE
             ]
         ],
-        'HEATING_CLIMATECONTROL_TRANSCEIVER' => [
+        DeviceType::HeatingGroupHmIP => [
             'DECALCIFICATION_TIME'=> [
                 VARIABLETYPE_INTEGER,
                 '~UnixTimestampTime',
@@ -499,7 +564,8 @@ trait HMTypes
                 'Window open temperature',
                 true
             ]
-
+        ],
+        DeviceType::HeatingGroup=> [
         ]
     ];
 }

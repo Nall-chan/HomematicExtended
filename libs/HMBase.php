@@ -35,20 +35,10 @@ eval('declare(strict_types=1);namespace HMExtended {?>' . file_get_contents(__DI
         \HMExtended\InstanceStatus::MessageSink as IOMessageSink;
         \HMExtended\InstanceStatus::RequestAction as IORequestAction;
     }
-     const VARIABLETYPE_NONE = -1;
-     const GUID_Systemvariablen = '{400F9193-FE79-4086-8D76-958BF9C1B357}';
-     const GUID_Powermeter = '{AF50C42B-7183-4992-B04A-FAFB07BB1B90}';
-     const GUID_Programme = '{A5010577-C443-4A85-ABF2-3F2D6CDD2465}';
-     const GUID_Dis_WM55 = '{271BCAB1-0658-46D9-A164-985AEB641B48}';
-     const GUID_Dis_EP_WM55 = '{E64ED916-FA6C-45B2-B8E3-EDC3191BC4C0}';
-     const GUID_RF_Interface_Splitter = '{6EE35B5B-9DD9-4B23-89F6-37589134852F}';
-     const GUID_RF_Interface_Konfigurator = '{91624C6F-E67E-47DA-ADFE-9A5A1A89AAC3}';
-     const GUID_WR_Interface = '{01C66202-7E94-49C4-8D8F-6A75CE944E87}';
-     const GUID_HeatingGroup = '{F179857C-DF5A-2CED-F553-CDB4D42815ED}';
-     const GUID_HeatingGroupHmIP = '{05CD9BAE-5A3B-E10B-79D6-48CB45A02C6A}';
-     const GUID_ClimacontrolRegulator = '{AA29D32D-A00D-EC8F-4987-5EB071F77011}';
 
-     /**
+
+
+    /**
       * Interne Funktion des SDK.
       */
      public function Create()

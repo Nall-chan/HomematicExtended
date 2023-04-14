@@ -23,30 +23,6 @@ require_once __DIR__ . '/../libs/HMTypes.php';  // HMTypes Data
  */
 class HomeMaticExtendedConfigurator extends HMBase
 {
-    use \HMExtended\HMTypes;
-
-    protected static $DeviceTypes = [
-        /*parent::GUID_Systemvariablen           => '{400F9193-FE79-4086-8D76-958BF9C1B357}',
-        parent::GUID_Powermeter                => '{AF50C42B-7183-4992-B04A-FAFB07BB1B90}',
-        parent::GUID_Programme                 => '{A5010577-C443-4A85-ABF2-3F2D6CDD2465}',
-        parent::GUID_Dis_WM55                  => '{271BCAB1-0658-46D9-A164-985AEB641B48}',
-        parent::GUID_Dis_EP_WM55               => '{E64ED916-FA6C-45B2-B8E3-EDC3191BC4C0}',
-        parent::GUID_RF_Interface_Splitter     => '{6EE35B5B-9DD9-4B23-89F6-37589134852F}',
-        parent::GUID_RF_Interface_Konfigurator => '{91624C6F-E67E-47DA-ADFE-9A5A1A89AAC3}',
-        parent::GUID_WR_Interface              => '{01C66202-7E94-49C4-8D8F-6A75CE944E87}',*/
-
-        parent::GUID_HeatingGroup                  => 'CLIMATECONTROL_RT_TRANSCEIVER',
-        parent::GUID_HeatingGroupHmIP              => 'HEATING_CLIMATECONTROL_TRANSCEIVER',
-        parent::GUID_ClimacontrolRegulator         => 'CLIMATECONTROL_REGULATOR'
-
-    ];
-    protected static $Interfaces = [
-        'BidCos-RF',
-        'BidCos-Wired',
-        'HmIP-RF',
-        'VirtualDevices'
-    ];
-
     private $DeviceData = [];
     private $DeviceTyp = '';
     /**
@@ -166,9 +142,9 @@ class HomeMaticExtendedConfigurator extends HMBase
                 }
          */
         $this->DeviceData = $this->LoadDeviceData();
-        $Form['actions'][0]['values'] = array_merge($Form['actions'][0]['values'], $this->GetConfigRows(0, static::GUID_ClimacontrolRegulator));
-        $Form['actions'][0]['values'] = array_merge($Form['actions'][0]['values'], $this->GetConfigRows(3, static::GUID_HeatingGroupHmIP));
-        $Form['actions'][0]['values'] = array_merge($Form['actions'][0]['values'], $this->GetConfigRows(3, static::GUID_HeatingGroup));
+        $Form['actions'][0]['values'] = array_merge($Form['actions'][0]['values'], $this->GetConfigRows(0, \HMExtended\GUID::ClimacontrolRegulator));
+        $Form['actions'][0]['values'] = array_merge($Form['actions'][0]['values'], $this->GetConfigRows(3, \HMExtended\GUID::HeatingGroupHmIP));
+        $Form['actions'][0]['values'] = array_merge($Form['actions'][0]['values'], $this->GetConfigRows(3, \HMExtended\GUID::HeatingGroup));
         $Form['actions'][0][0]['rowCount'] = count($Form['actions'][0]['values']) + 1;
         $this->SendDebug('FORM', json_encode($Form), 0);
         $this->SendDebug('FORM', json_last_error_msg(), 0);
@@ -203,7 +179,7 @@ class HomeMaticExtendedConfigurator extends HMBase
             'location'      => []
         ];
 
-        $Devices = $this->GetDevices($Protocol, self::$DeviceTypes[$GUID]);
+        $Devices = $this->GetDevices($Protocol, \HMExtended\DeviceType::$GuidToType[$GUID]);
         $IPSDevices = $this->GetInstanceList($GUID, 'Address');
         foreach ($Devices as &$Device) {
             $Device = array_change_key_case($Device);
@@ -240,7 +216,7 @@ class HomeMaticExtendedConfigurator extends HMBase
     }
     private function GetDeviceData(int $Protocol, array &$Device)
     {
-        $InterfaceString = self::$Interfaces[$Protocol];
+        $InterfaceString = \HMExtended\CCU::$Interfaces[$Protocol];
         if (isset($this->DeviceData[$InterfaceString][$Device['address']])) {
             $DeviceData = $this->DeviceData[$InterfaceString][$Device['address']];
             $Device['name'] = $DeviceData['Name'];
@@ -323,7 +299,7 @@ class HomeMaticExtendedConfigurator extends HMBase
         ];
         $this->SendDebug('Send', $ParentData, 0);
 
-        $ResultJSON = @$this->SendDataToParent(json_encode($ParentData));
+        $ResultJSON = $this->SendDataToParent(json_encode($ParentData, JSON_PRESERVE_ZERO_FRACTION));
         if ($ResultJSON === false) {
             trigger_error('Error on ' . $MethodName, E_USER_NOTICE);
             $this->SendDebug('Error', '', 0);
