@@ -62,6 +62,9 @@ class HomeMaticExtendedConfigurator extends HMBase
     public function GetConfigurationForm()
     {
         $Form = json_decode(file_get_contents(__DIR__ . '/form.json'), true);
+        if ($this->GetStatus() == IS_CREATING) {
+            return json_encode($Form);
+        }
         $ParentId = IPS_GetInstance($this->InstanceID)['ConnectionID'];
         if ((!$this->HasActiveParent()) || ($ParentId == 0)) {
             $Form['actions'][] = [

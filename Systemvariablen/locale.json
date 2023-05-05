@@ -19,7 +19,8 @@
             "Error on receipt alarm of %s.": "Fehler beim bestätigen des Alarms %s.",
             "Wrong Datatype for %s.": "Falschen Datentyp für %s.",
             "Error on write Data ": "Fehler beim schreiben der Daten ",
-            "Error on write CCU Systemvariable.": "Fehler beim schreiben der CCU Systemvariable."
+            "Error on write CCU Systemvariable.": "Fehler beim schreiben der CCU Systemvariable.",
+            "This module is free for non-commercial use,\r\nDonations in support of the author are accepted here:": "Dieses Modul ist für die nicht kommerzielle Nutzung kostenlos,\r\nSchenkungen als Unterstützung für den Autor werden hier akzeptiert:"
         }
     }
 }

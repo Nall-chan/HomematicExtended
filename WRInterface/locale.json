@@ -10,7 +10,8 @@
             "Interval smaller as 5 not possible.": "Intervall kleiner 5 nicht möglich.",
             "read WR-Interfaces": "WR-Interfaces auslesen",
             "Instance has no active parent instance!": "Keine aktive Parent Instanz!",
-            "Error on read WR-Interface.": "Fehler beim lesen des WR-Interface"
+            "Error on read WR-Interface.": "Fehler beim lesen des WR-Interface",
+            "This module is free for non-commercial use,\r\nDonations in support of the author are accepted here:": "Dieses Modul ist für die nicht kommerzielle Nutzung kostenlos,\r\nSchenkungen als Unterstützung für den Autor werden hier akzeptiert:"
         }
     }
 }

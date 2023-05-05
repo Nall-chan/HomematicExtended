@@ -1,7 +1,8 @@
 {
     "translations": {
         "de": {
-            "Instance has no active parent instance!": "Keine aktive Parent Instanz!"
+            "Instance has no active parent instance!": "Keine aktive Parent Instanz!",
+            "This module is free for non-commercial use,\r\nDonations in support of the author are accepted here:": "Dieses Modul ist für die nicht kommerzielle Nutzung kostenlos,\r\nSchenkungen als Unterstützung für den Autor werden hier akzeptiert:"
         }
     }
 }

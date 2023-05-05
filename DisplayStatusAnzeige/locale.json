@@ -16,7 +16,8 @@
             "Number of pages to small.": "Seitenanzahl darf nicht negativ sein.",
             "Instance has no active parent instance!": "Keine aktive Parent Instanz!",
             "Error in display-script.": "Fehler im Display-Script.",
-            "Error on send data to HM-Dis-WM55.": "Fehler beim senden der Daten an HM-DIS-WM55."
+            "Error on send data to HM-Dis-WM55.": "Fehler beim senden der Daten an HM-DIS-WM55.",
+            "This module is free for non-commercial use,\r\nDonations in support of the author are accepted here:": "Dieses Modul ist für die nicht kommerzielle Nutzung kostenlos,\r\nSchenkungen als Unterstützung für den Autor werden hier akzeptiert:"
         }
     }
 }
