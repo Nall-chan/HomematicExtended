@@ -3,7 +3,6 @@ name: Run Tests
 on: [push, pull_request]
 
 jobs:
-
   test:
     runs-on: ubuntu-latest
     steps:
@@ -11,5 +10,5 @@ jobs:
         uses: actions/checkout@master
         with:
           submodules: true
-      - name: Run tests 
+      - name: Run tests
         uses: symcon/action-tests@master

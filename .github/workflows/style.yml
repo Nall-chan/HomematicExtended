@@ -3,11 +3,14 @@ name: Check Style
 on: [push, pull_request]
 
 jobs:
-
   style:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout module
-      uses: actions/checkout@master
-    - name: Check style
-      uses: Nall-chan/action-style@master
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 7.4
+      - name: Checkout module
+        uses: actions/checkout@master
+      - name: Check style
+        uses: Nall-chan/action-style@master
