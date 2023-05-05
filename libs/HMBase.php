@@ -36,9 +36,7 @@ eval('declare(strict_types=1);namespace HMExtended {?>' . file_get_contents(__DI
         \HMExtended\InstanceStatus::RequestAction as IORequestAction;
     }
 
-
-
-    /**
+     /**
       * Interne Funktion des SDK.
       */
      public function Create()

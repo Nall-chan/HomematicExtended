@@ -60,7 +60,7 @@ class HomeMaticClimateControlRegulator extends HMDeviceBase
                     $Value = 100;
                 }
             }
-            $Paramset = [$this->ReadPropertyString('Address') . static::ValuesChannel, $Ident];            
+            $Paramset = [$this->ReadPropertyString('Address') . static::ValuesChannel, $Ident];
             return $this->SendRPC('setValue', $Paramset, $Value, true);
         }
         if (array_key_exists($Ident, \HMExtended\ParamSet::$Variables[static::DeviceTyp])) {

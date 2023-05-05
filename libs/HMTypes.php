@@ -34,9 +34,9 @@ class CCU
 }
 class DeviceType
 {
-    const HeatingGroup = 'HM-CC-VG-1';//'CLIMATECONTROL_RT_TRANSCEIVER';
-    const HeatingGroupHmIP = 'HmIP-HEATING';//'HEATING_CLIMATECONTROL_TRANSCEIVER';
-    const ClimacontrolRegulator = 'HM-CC-TC';//'CLIMATECONTROL_REGULATOR';
+    const HeatingGroup = 'HM-CC-VG-1'; //'CLIMATECONTROL_RT_TRANSCEIVER';
+    const HeatingGroupHmIP = 'HmIP-HEATING'; //'HEATING_CLIMATECONTROL_TRANSCEIVER';
+    const ClimacontrolRegulator = 'HM-CC-TC'; //'CLIMATECONTROL_REGULATOR';
 
     public static $GuidToType = [
         /*GUID::Systemvariablen                =>
@@ -53,10 +53,11 @@ class DeviceType
 
     ];
 }
-class Channels{
+class Channels
+{
     const Device = '';
-    const First=':1';
-    const Second=':2';
+    const First = ':1';
+    const Second = ':2';
 }
 class Variables
 {
