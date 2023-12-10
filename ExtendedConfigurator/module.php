@@ -303,7 +303,7 @@ class HomeMaticExtendedConfigurator extends HMBase
         $this->SendDebug('Send', $ParentData, 0);
 
         $ResultJSON = $this->SendDataToParent(json_encode($ParentData, JSON_PRESERVE_ZERO_FRACTION));
-        if ($ResultJSON === false) {
+        if (!$ResultJSON) {
             trigger_error('Error on ' . $MethodName, E_USER_NOTICE);
             $this->SendDebug('Error', '', 0);
             return false;
