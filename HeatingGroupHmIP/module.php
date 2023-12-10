@@ -16,14 +16,14 @@ declare(strict_types=1);
 require_once __DIR__ . '/../libs/HMDeviceBase.php';  // HMBase Klasse
 
 /**
- * ParaInterface ist die Klasse für das IPS-Modul 'HomeMatic Paraset Interface'.
- * Erweitert HMBase.
+ * HomeMaticIPHeatingGroup
+ * Erweitert HMDeviceBase Virtuelles Gerät: HmIP-HEATING
  */
 class HomeMaticIPHeatingGroup extends HMDeviceBase
 {
-    const DeviceTyp = \HMExtended\DeviceType::HeatingGroupHmIP;
-    const ValuesChannel = \HMExtended\Channels::First;
-    const ParamChannel = \HMExtended\Channels::First;
+    public const DeviceTyp = \HMExtended\DeviceType::HeatingGroupHmIP;
+    public const ValuesChannel = \HMExtended\Channels::First;
+    public const ParamChannel = \HMExtended\Channels::First;
     /**
      * Interne Funktion des SDK.
      */
@@ -73,21 +73,21 @@ class HomeMaticIPHeatingGroup extends HMDeviceBase
                     return true;
                 case 'CONTROL_MODE':
                     switch ($Value) { // Sonderfall Mode Party
-                    case 2:
+                        case 2:
 
-                        $Start = (new DateTime())->setTimestamp($this->GetValue('PARTY_TIME_START'));
-                        $End = (new DateTime())->setTimestamp($this->GetValue('PARTY_TIME_END'));
+                            $Start = (new DateTime())->setTimestamp((int) $this->GetValue('PARTY_TIME_START'));
+                            $End = (new DateTime())->setTimestamp((int) $this->GetValue('PARTY_TIME_END'));
 
-                        return $this->PutValueSet(
-                            [
-                                'SET_POINT_MODE'        => 2,
-                                'SET_POINT_TEMPERATURE' => $this->GetValue('PARTY_SET_POINT_TEMPERATURE'),
-                                'PARTY_TIME_START'      => $Start->format('Y_m_d H:i'),
-                                'PARTY_TIME_END'        => $End->format('Y_m_d H:i')
-                            ]);
+                            return $this->PutValueSet(
+                                [
+                                    'SET_POINT_MODE'        => 2,
+                                    'SET_POINT_TEMPERATURE' => $this->GetValue('PARTY_SET_POINT_TEMPERATURE'),
+                                    'PARTY_TIME_START'      => $Start->format('Y_m_d H:i'),
+                                    'PARTY_TIME_END'        => $End->format('Y_m_d H:i')
+                                ]
+                            );
                     }
                     break;
-
             }
             return $this->PutValue($Ident, $Value);
         }
@@ -96,7 +96,7 @@ class HomeMaticIPHeatingGroup extends HMDeviceBase
             $this->FixValueType(\HMExtended\ParamSet::$Variables[static::DeviceTyp][$Ident][0], $Value);
             switch ($Ident) {
                 case 'DECALCIFICATION_TIME':
-                    $d = (new DateTime())->setTimestamp($Value);
+                    $d = (new DateTime())->setTimestamp((int) $Value);
                     $CalcMin = (int) $d->format('i');
                     $CalcHour = (int) $d->format('H');
                     $Value = ($CalcHour * 2) + ($CalcMin > 30 ? 1 : 0);
@@ -105,7 +105,7 @@ class HomeMaticIPHeatingGroup extends HMDeviceBase
                         return true;
                     }
                     return false;
-                }
+            }
             if ($this->PutParamSet([$Ident=>$Value])) {
                 $this->SetValue($Ident, $Value);
                 return true;
@@ -128,15 +128,15 @@ class HomeMaticIPHeatingGroup extends HMDeviceBase
     protected function SetVariable(string $Ident, $Value)
     {
         switch ($Ident) {
-        case 'PARTY_TIME_START':
-        case 'PARTY_TIME_END':
-            $d = DateTime::createFromFormat('Y_m_d H:i', $Value);
-            @$this->SetValue($Ident, $d->getTimestamp());
+            case 'PARTY_TIME_START':
+            case 'PARTY_TIME_END':
+                $d = DateTime::createFromFormat('Y_m_d H:i', $Value);
+                @$this->SetValue($Ident, $d->getTimestamp());
                 break;
-        default:
-        @$this->SetValue($Ident, $Value);
-        break;
-    }
+            default:
+                @$this->SetValue($Ident, $Value);
+                break;
+        }
     }
     //################# PRIVATE
 }

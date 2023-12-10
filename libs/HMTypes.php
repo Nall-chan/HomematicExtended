@@ -6,24 +6,24 @@ namespace HMExtended;
 
 class GUID
 {
-    const Systemvariablen = '{400F9193-FE79-4086-8D76-958BF9C1B357}';
-    const Powermeter = '{AF50C42B-7183-4992-B04A-FAFB07BB1B90}';
-    const Programme = '{A5010577-C443-4A85-ABF2-3F2D6CDD2465}';
-    const Dis_WM55 = '{271BCAB1-0658-46D9-A164-985AEB641B48}';
-    const Dis_EP_WM55 = '{E64ED916-FA6C-45B2-B8E3-EDC3191BC4C0}';
-    const RF_Interface_Splitter = '{6EE35B5B-9DD9-4B23-89F6-37589134852F}';
-    const RF_Interface_Konfigurator = '{91624C6F-E67E-47DA-ADFE-9A5A1A89AAC3}';
-    const WR_Interface = '{01C66202-7E94-49C4-8D8F-6A75CE944E87}';
-    const HeatingGroup = '{F179857C-DF5A-2CED-F553-CDB4D42815ED}';
-    const HeatingGroupHmIP = '{05CD9BAE-5A3B-E10B-79D6-48CB45A02C6A}';
-    const ClimacontrolRegulator = '{AA29D32D-A00D-EC8F-4987-5EB071F77011}';
+    public const Systemvariablen = '{400F9193-FE79-4086-8D76-958BF9C1B357}';
+    public const Powermeter = '{AF50C42B-7183-4992-B04A-FAFB07BB1B90}';
+    public const Programme = '{A5010577-C443-4A85-ABF2-3F2D6CDD2465}';
+    public const Dis_WM55 = '{271BCAB1-0658-46D9-A164-985AEB641B48}';
+    public const Dis_EP_WM55 = '{E64ED916-FA6C-45B2-B8E3-EDC3191BC4C0}';
+    public const RF_Interface_Splitter = '{6EE35B5B-9DD9-4B23-89F6-37589134852F}';
+    public const RF_Interface_Konfigurator = '{91624C6F-E67E-47DA-ADFE-9A5A1A89AAC3}';
+    public const WR_Interface = '{01C66202-7E94-49C4-8D8F-6A75CE944E87}';
+    public const HeatingGroup = '{F179857C-DF5A-2CED-F553-CDB4D42815ED}';
+    public const HeatingGroupHmIP = '{05CD9BAE-5A3B-E10B-79D6-48CB45A02C6A}';
+    public const ClimacontrolRegulator = '{AA29D32D-A00D-EC8F-4987-5EB071F77011}';
 }
 class CCU
 {
-    const BidCos_RF = 'BidCos-RF';
-    const BidCos_WR = 'BidCos-Wired';
-    const HmIP = 'HmIP-RF';
-    const Groups = 'VirtualDevices';
+    public const BidCos_RF = 'BidCos-RF';
+    public const BidCos_WR = 'BidCos-Wired';
+    public const HmIP = 'HmIP-RF';
+    public const Groups = 'VirtualDevices';
 
     public static $Interfaces = [
         self::BidCos_RF,
@@ -34,9 +34,9 @@ class CCU
 }
 class DeviceType
 {
-    const HeatingGroup = 'HM-CC-VG-1'; //'CLIMATECONTROL_RT_TRANSCEIVER';
-    const HeatingGroupHmIP = 'HmIP-HEATING'; //'HEATING_CLIMATECONTROL_TRANSCEIVER';
-    const ClimacontrolRegulator = 'HM-CC-TC'; //'CLIMATECONTROL_REGULATOR';
+    public const HeatingGroup = 'HM-CC-VG-1'; //'CLIMATECONTROL_RT_TRANSCEIVER';
+    public const HeatingGroupHmIP = 'HmIP-HEATING'; //'HEATING_CLIMATECONTROL_TRANSCEIVER';
+    public const ClimacontrolRegulator = 'HM-CC-TC'; //'CLIMATECONTROL_REGULATOR';
 
     public static $GuidToType = [
         /*GUID::Systemvariablen                =>
@@ -55,13 +55,13 @@ class DeviceType
 }
 class Channels
 {
-    const Device = '';
-    const First = ':1';
-    const Second = ':2';
+    public const Device = '';
+    public const First = ':1';
+    public const Second = ':2';
 }
 class Variables
 {
-    const VARIABLETYPE_NONE = -1;
+    public const VARIABLETYPE_NONE = -1;
     public static $Profiles = [
         'Heating.Control.SetPoint.Temperature.HmIP'=> [
             VARIABLETYPE_FLOAT,

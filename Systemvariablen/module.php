@@ -22,6 +22,7 @@ require_once __DIR__ . '/../libs/HMBase.php';  // HMBase Klasse
  * @property string $HMDeviceAddress Die Geräte-Adresse welche eine Aktualisierung auslöst.
  * @property string $HMDeviceDatapoint Der zu überwachende Datenpunkt welcher eine Aktualisierung auslöst.
  * @property int $Event Die IPS-ID der Variable des Datenpunkt welcher eine Aktualisierung auslöst.
+ * @property int $AlarmScriptID
  * @property array $SystemVars Ein Array mit allen IPS-Var-IDs welche den Namen des IDENT (ID der Systemvariable in der CCU) enthalten.
  */
 class HomeMaticSystemvariablen extends HMBase
@@ -524,6 +525,7 @@ class HomeMaticSystemvariablen extends HMBase
             } else {
                 if ($this->GetTriggerVar()) {
                     $this->SetReceiveDataFilter('.*"DeviceID":"' . $this->HMDeviceAddress . '","VariableName":"' . $this->HMDeviceDatapoint . '".*');
+                    $this->SendDebug('EventFilter', '.*"DeviceID":"' . $this->HMDeviceAddress . '","VariableName":"' . $this->HMDeviceDatapoint . '".*', 0);
                     $this->RegisterMessage($Event, VM_DELETE);
                     $this->RegisterReference($Event);
                     $this->Event = $Event;
@@ -724,7 +726,7 @@ class HomeMaticSystemvariablen extends HMBase
             switch ($VarType) {
                 case VARIABLETYPE_BOOLEAN:
                     if ((int) $xmlVar->Type == 2113) {
-                        $this->ProcessAlarmVariable($VarID, $SysVar, $CCUTimeZone);
+                        $this->ProcessAlarmVariable($VarIdent, $SysVar, $CCUTimeZone);
                     } else {
                         $this->SetValue($VarIdent, (string) $xmlVar->Variable == 'true');
                     }
@@ -749,13 +751,13 @@ class HomeMaticSystemvariablen extends HMBase
     /**
      * Liest die Daten einer Systemvariable vom Typ 'Alarm' aus. Visualisiert den Status und startet bei Bedarf ein Script in IPS.
      *
-     * @param int    $ParentID    IPS-ID der Alarmvariable.
+     * @param string $VarIdent    Ident der Alarmvariable.
      * @param string $SysVar      ID der Alarmvariable in der CCU.
      * @param string $CCUTimeZone Die Zeitzone der CCU.
      *
      * @return bool True bei Erfolg, sonst false.
      */
-    private function ProcessAlarmVariable(int $ParentID, string $SysVar, string $CCUTimeZone)
+    private function ProcessAlarmVariable(string $VarIdent, string $SysVar, string $CCUTimeZone)
     {
         $HMScript = 'Value = dom.GetObject(' . $SysVar . ').Value();
                         string FirstTime = dom.GetObject(' . $SysVar . ').AlOccurrenceTime();
@@ -795,7 +797,7 @@ class HomeMaticSystemvariablen extends HMBase
         if ($xmlData === false) {
             return false;
         }
-
+        $ParentID = $this->GetIDForIdent($VarIdent);
         $ScriptData = [];
         $ScriptData['SENDER'] = 'AlarmDP';
         $ScriptData['VARIABLE'] = $ParentID;
@@ -825,7 +827,7 @@ class HomeMaticSystemvariablen extends HMBase
             $ScriptData['DP'] = '';
         }
 
-        SetValue($ParentID, $ScriptData['VALUE']);
+        $this->SetValue($VarIdent, $ScriptData['VALUE']);
         $LastTimeID = $this->RegisterSubVariable($ParentID, 'LastTime', 'Letzter Alarm', VARIABLETYPE_INTEGER, '~UnixTimestamp');
         SetValue($LastTimeID, $ScriptData['LastTime']);
         $FirstTimeID = $this->RegisterSubVariable($ParentID, 'FirstTime', 'Erster Alarm', VARIABLETYPE_INTEGER, '~UnixTimestamp');

@@ -16,10 +16,13 @@ declare(strict_types=1);
 require_once __DIR__ . '/HMBase.php';  // HMBase Klasse
 require_once __DIR__ . '/HMTypes.php';  // HMTypes Data
 
+/**
+ * HMDeviceBase
+ */
 abstract class HMDeviceBase extends HMBase
 {
-    const ValuesChannel = '';
-    const ParamChannel = '';
+    public const ValuesChannel = '';
+    public const ParamChannel = '';
     protected const DeviceTyp = '';
 
     protected static $VariableTypes = [
@@ -45,7 +48,7 @@ abstract class HMDeviceBase extends HMBase
                 $this->RegisterPropertyBoolean('enable_' . $Ident, $VarData[4]);
             }
         }
-        $this->RegisterPropertyBoolean('enable_SCHEDULE', true);
+        $this->RegisterPropertyBoolean('enable_SCHEDULE', false);
         $this->RegisterPropertyFloat('ScheduleMinTemp', 5);
         $this->RegisterPropertyFloat('ScheduleMaxTemp', 30);
         $this->RegisterPropertyInteger('ScheduleStepsTemp', 2);
@@ -312,14 +315,14 @@ abstract class HMDeviceBase extends HMBase
                 if (array_key_exists($Profile, \HMExtended\Variables::$Profiles)) {
                     $this->RegisterProfileEx(
                         \HMExtended\Variables::$Profiles[$Profile][0],
-                     $Profile,
-                     \HMExtended\Variables::$Profiles[$Profile][1],
-                     \HMExtended\Variables::$Profiles[$Profile][2],
-                     \HMExtended\Variables::$Profiles[$Profile][3],
-                     \HMExtended\Variables::$Profiles[$Profile][4],
-                     \HMExtended\Variables::$Profiles[$Profile][5],
-                     \HMExtended\Variables::$Profiles[$Profile][6],
-                     \HMExtended\Variables::$Profiles[$Profile][7]
+                        $Profile,
+                        \HMExtended\Variables::$Profiles[$Profile][1],
+                        \HMExtended\Variables::$Profiles[$Profile][2],
+                        \HMExtended\Variables::$Profiles[$Profile][3],
+                        \HMExtended\Variables::$Profiles[$Profile][4],
+                        \HMExtended\Variables::$Profiles[$Profile][5],
+                        \HMExtended\Variables::$Profiles[$Profile][6],
+                        \HMExtended\Variables::$Profiles[$Profile][7]
                     );
                 }
             }
@@ -399,19 +402,19 @@ abstract class HMDeviceBase extends HMBase
     protected function FixValueType($VarType, &$Value)
     {
         switch ($VarType) {
-        case VARIABLETYPE_BOOLEAN:
-            $Value = (bool) $Value;
-            break;
-        case VARIABLETYPE_INTEGER:
-            $Value = (int) $Value;
-            break;
-        case VARIABLETYPE_FLOAT:
-            $Value = (float) $Value;
-            break;
-        case VARIABLETYPE_STRING:
-            $Value = (string) $Value;
-            break;
-    }
+            case VARIABLETYPE_BOOLEAN:
+                $Value = (bool) $Value;
+                break;
+            case VARIABLETYPE_INTEGER:
+                $Value = (int) $Value;
+                break;
+            case VARIABLETYPE_FLOAT:
+                $Value = (float) $Value;
+                break;
+            case VARIABLETYPE_STRING:
+                $Value = (string) $Value;
+                break;
+        }
     }
     /**
      * Liest alle Parameter des Devices aus.

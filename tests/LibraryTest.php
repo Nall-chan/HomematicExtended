@@ -10,22 +10,38 @@ class LibraryTest extends TestCaseSymconValidation
     {
         $this->validateLibrary(__DIR__ . '/..');
     }
-
+    public function testValidateClimacontrolRegulator(): void
+    {
+        $this->validateModule(__DIR__ . '/../ClimacontrolRegulator');
+    }
     public function testValidateDisplayStatusAnzeige(): void
     {
         $this->validateModule(__DIR__ . '/../DisplayStatusAnzeige');
     }
-
     public function testValidateePaperStatusAnzeige(): void
     {
         $this->validateModule(__DIR__ . '/../ePaperStatusAnzeige');
     }
-
+    public function testValidateExtendedConfigurator(): void
+    {
+        $this->validateModule(__DIR__ . '/../ExtendedConfigurator');
+    }
+    public function testValidateHeatingGroup(): void
+    {
+        $this->validateModule(__DIR__ . '/../HeatingGroup');
+    }
+    public function testValidateHeatingGroupHmIP(): void
+    {
+        $this->validateModule(__DIR__ . '/../HeatingGroupHmIP');
+    }
     public function testValidateHomeMaticScript(): void
     {
         $this->validateModule(__DIR__ . '/../HomeMaticScript');
     }
-
+    public function testValidateParaInterface(): void
+    {
+        $this->validateModule(__DIR__ . '/../ParaInterface');
+    }
     public function testValidatePowerMeter(): void
     {
         $this->validateModule(__DIR__ . '/../PowerMeter');

@@ -16,15 +16,15 @@ declare(strict_types=1);
 require_once __DIR__ . '/../libs/HMDeviceBase.php';  // HMBase Klasse
 
 /**
- * ParaInterface ist die Klasse für das IPS-Modul 'HomeMatic Paraset Interface'.
- * Erweitert HMBase.
+ * HomeMaticClimateControlRegulator
+ * Erweitert HMDeviceBase. Gerät: HM-CC-TC
  *
  */
 class HomeMaticClimateControlRegulator extends HMDeviceBase
 {
-    const DeviceTyp = \HMExtended\DeviceType::ClimacontrolRegulator;
-    const ValuesChannel = \HMExtended\Channels::Second;
-    const ParamChannel = \HMExtended\Channels::Second;
+    public const DeviceTyp = \HMExtended\DeviceType::ClimacontrolRegulator;
+    public const ValuesChannel = \HMExtended\Channels::Second;
+    public const ParamChannel = \HMExtended\Channels::Second;
     /**
      * Interne Funktion des SDK.
      */
@@ -53,12 +53,12 @@ class HomeMaticClimateControlRegulator extends HMDeviceBase
             switch ($Ident) {
                 case 'SETPOINT':
                     $this->SetValue($Ident, $Value);
-                if ($Value == 4.5) {
-                    $Value = 0;
-                }
-                if ($Value == 30.5) {
-                    $Value = 100;
-                }
+                    if ($Value == 4.5) {
+                        $Value = 0;
+                    }
+                    if ($Value == 30.5) {
+                        $Value = 100;
+                    }
             }
             $Paramset = [$this->ReadPropertyString('Address') . static::ValuesChannel, $Ident];
             return $this->SendRPC('setValue', $Paramset, $Value, true);
@@ -68,13 +68,13 @@ class HomeMaticClimateControlRegulator extends HMDeviceBase
             $this->FixValueType(\HMExtended\ParamSet::$Variables[static::DeviceTyp][$Ident][0], $Value);
             switch ($Ident) {
                 case 'DECALCIFICATION_TIME':
-                    $d = (new DateTime())->setTimestamp($Value);
+                    $d = (new DateTime())->setTimestamp((int) $Value);
                     $CalcMin = (int) $d->format('i');
                     $CalcHour = (int) $d->format('H');
                     if ($this->PutParamSet(
                         [
-                            'DECALCIFICATION_MINUTE'=>($CalcMin > 50) ? 50 : $CalcMin,
-                            'DECALCIFICATION_HOUR'=>$CalcHour
+                            'DECALCIFICATION_MINUTE'=> ($CalcMin > 50) ? 50 : $CalcMin,
+                            'DECALCIFICATION_HOUR'  => $CalcHour
                         ]
                     )) {
                         $this->SetValue($Ident, $Value);
@@ -87,7 +87,7 @@ class HomeMaticClimateControlRegulator extends HMDeviceBase
                         return false;
                     }
 
-                    $d = (new DateTime())->setTimestamp($Value);
+                    $d = (new DateTime())->setTimestamp((int) $Value);
                     $CalcMin = (int) $d->format('i');
                     $CalcHour = (int) $d->format('H');
                     $d->setTime(0, 0, 0, 0);
@@ -110,7 +110,6 @@ class HomeMaticClimateControlRegulator extends HMDeviceBase
                         $this->SetValue('PARTY_END_TIME', $d->getTimestamp());
                         return true;
                     }
-
             }
             if ($this->PutParamSet([$Ident=>$Value])) {
                 $this->SetValue($Ident, $Value);
@@ -148,7 +147,7 @@ class HomeMaticClimateControlRegulator extends HMDeviceBase
                 break;
             default:
                 @$this->SetValue($Ident, $Value);
-            break;
+                break;
         }
     }
     //################# PRIVATE

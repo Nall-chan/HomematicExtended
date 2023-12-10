@@ -20,6 +20,7 @@
                             "width": "250px"
                         },
                         {
+                            "visible": false,
                             "name": "enable_SCHEDULE",
                             "type": "CheckBox",
                             "caption": "Schedule",
@@ -28,24 +29,24 @@
                     ]
                 },
                 {
+                    "visible": false,
                     "type": "RowLayout",
                     "items": [
                         {
                             "name": "ScheduleMinTemp",
                             "type": "NumberSpinner",
                             "caption": "lowest temperature",
-                            "digits": 1,
+                            "digits": 0,
                             "minimum": 5,
                             "maximum": 17,
                             "suffix": " °C",
-                            "width": "250px",
-                            "onChange": "echo '1:'.$ScheduleMinTemp;"
+                            "width": "250px"
                         },
                         {
                             "name": "ScheduleMaxTemp",
                             "type": "NumberSpinner",
                             "caption": "highest temperature",
-                            "digits": 1,
+                            "digits": 0,
                             "minimum": 18,
                             "maximum": 30,
                             "suffix": " °C",
@@ -98,6 +99,7 @@
                     ]
                 },
                 {
+                    "visible": false,
                     "type": "RowLayout",
                     "items": [
                         {
