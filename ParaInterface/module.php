@@ -134,7 +134,7 @@ class HomeMaticParasetInterface extends HMBase
     private function GetParamset()
     {
         if (!$this->HasActiveParent()) {
-            trigger_error('Instance has no active Parent Instance!', E_USER_NOTICE);
+            trigger_error($this->Translate('Instance has no active Parent Instance!'), E_USER_NOTICE);
             return false;
         }
         $ParentData = [
@@ -166,7 +166,7 @@ class HomeMaticParasetInterface extends HMBase
     private function PutParamSet(array $Parameter)
     {
         if (!$this->HasActiveParent()) {
-            trigger_error('Instance has no active Parent Instance!', E_USER_NOTICE);
+            trigger_error($this->Translate('Instance has no active Parent Instance!'), E_USER_NOTICE);
             return false;
         }
         $EmulateStatus = $this->ReadPropertyBoolean('EmulateStatus');

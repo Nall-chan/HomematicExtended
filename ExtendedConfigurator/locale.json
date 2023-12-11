@@ -1,7 +1,11 @@
 {
     "translations": {
         "de": {
+            "Devices": "Geräte",
+            "Address": "Adresse",
+            "Type": "Typ",
             "Use of the HomeMatic groups must be activated in the IO.": "Verwendung der HomeMatic Gruppen muss im IO aktiviert sein.",
+            "Instance has no active parent instance!": "Keine aktive Parent Instanz!",
             "This module is free for non-commercial use,\r\nDonations in support of the author are accepted here:": "Dieses Modul ist für die nicht kommerzielle Nutzung kostenlos,\r\nSchenkungen als Unterstützung für den Autor werden hier akzeptiert:"
         }
     }

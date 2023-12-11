@@ -161,8 +161,8 @@ abstract class HMBase extends IPSModule
         ];
         $this->SendDebug('Send', $ParentData, 0);
         $Result = @$this->SendDataToParent(json_encode($ParentData));
-        $this->SendDebug('Receive', $Result, 0);
-        return $Result;
+        $this->SendDebug('Receive', utf8_encode($Result), 0);
+        return utf8_encode($Result);
     }
 
     protected function GetScriptXML($Content)

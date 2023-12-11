@@ -460,7 +460,7 @@ abstract class HMDeviceBase extends HMBase
     protected function SendRPC(string $MethodName, array $Paramset, $Data = null, bool $EmulateStatus = false)
     {
         if (!$this->HasActiveParent()) {
-            trigger_error('Instance has no active Parent Instance!', E_USER_NOTICE);
+            trigger_error($this->Translate('Instance has no active Parent Instance!'), E_USER_NOTICE);
             return false;
         }
         $ParentData = [
