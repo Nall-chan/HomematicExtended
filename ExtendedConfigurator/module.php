@@ -145,9 +145,23 @@ class HomeMaticExtendedConfigurator extends HMBase
                 }
          */
         $this->DeviceData = $this->LoadDeviceData();
-        $Form['actions'][0]['values'] = array_merge($Form['actions'][0]['values'], $this->GetConfigRows(0, \HMExtended\GUID::ClimacontrolRegulator));
-        $Form['actions'][0]['values'] = array_merge($Form['actions'][0]['values'], $this->GetConfigRows(3, \HMExtended\GUID::HeatingGroupHmIP));
-        $Form['actions'][0]['values'] = array_merge($Form['actions'][0]['values'], $this->GetConfigRows(3, \HMExtended\GUID::HeatingGroup));
+        if (IPS_GetProperty($ParentId, 'RFOpen')) {
+            $Form['actions'][0]['values'] = array_merge($Form['actions'][0]['values'], $this->GetConfigRows(0, \HMExtended\GUID::ClimacontrolRegulator));
+        }
+        if (IPS_GetProperty($ParentId, 'GROpen')) {
+            $Form['actions'][0]['values'] = array_merge($Form['actions'][0]['values'], $this->GetConfigRows(3, \HMExtended\GUID::HeatingGroupHmIP));
+            $Form['actions'][0]['values'] = array_merge($Form['actions'][0]['values'], $this->GetConfigRows(3, \HMExtended\GUID::HeatingGroup));
+        } else {
+            $Form['actions'][] = [
+                'type'  => 'PopupAlert',
+                'popup' => [
+                    'items' => [[
+                        'type'    => 'Label',
+                        'caption' => 'Use of the HomeMatic groups must be activated in the IO.'
+                    ]]
+                ]
+            ];
+        }
         $Form['actions'][0][0]['rowCount'] = count($Form['actions'][0]['values']) + 1;
         $this->SendDebug('FORM', json_encode($Form), 0);
         $this->SendDebug('FORM', json_last_error_msg(), 0);
@@ -304,7 +318,6 @@ class HomeMaticExtendedConfigurator extends HMBase
 
         $ResultJSON = $this->SendDataToParent(json_encode($ParentData, JSON_PRESERVE_ZERO_FRACTION));
         if (!$ResultJSON) {
-            trigger_error('Error on ' . $MethodName, E_USER_NOTICE);
             $this->SendDebug('Error', '', 0);
             return false;
         }
