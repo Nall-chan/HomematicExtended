@@ -90,7 +90,7 @@ abstract class HMDeviceBase extends HMBase
     {
         parent::ApplyChanges();
         $Address = $this->ReadPropertyString('Address');
-        $this->SetReceiveDataFilter($Address == '' ? '.*9999999999.*' : '.*"DeviceID":"' . $Address . '".*');
+        $this->SetReceiveDataFilter($Address == '' ? '.*9999999999.*' : '.*"DeviceID":"' . $Address . '.*');
 
         foreach (\HMExtended\ValuesSet::$Variables[static::DeviceTyp] as $Ident => $VarData) {
             if (isset($VarData[4])) {
@@ -439,14 +439,14 @@ abstract class HMDeviceBase extends HMBase
     protected function PutParamSet(array $Parameter)
     {
         $Paramset = [$this->ReadPropertyString('Address') . static::ParamChannel, 'MASTER'];
-        $Result = $this->SendRPC('PutParamSet', $Paramset, $Parameter, $this->ReadPropertyBoolean('EmulateStatus'));
+        $Result = $this->SendRPC('putParamset', $Paramset, $Parameter, $this->ReadPropertyBoolean('EmulateStatus'));
         return ($Result) ? true : false;
     }
 
     protected function PutValueSet($Value)
     {
         $Paramset = [$this->ReadPropertyString('Address') . static::ValuesChannel, 'VALUES'];
-        $Result = $this->SendRPC('PutParamSet', $Paramset, $Value, $this->ReadPropertyBoolean('EmulateStatus'));
+        $Result = $this->SendRPC('putParamset', $Paramset, $Value, $this->ReadPropertyBoolean('EmulateStatus'));
         return ($Result) ? true : false;
     }
 
@@ -486,11 +486,11 @@ abstract class HMDeviceBase extends HMBase
             $this->SendDebug('Error', '', 0);
             return false;
         }
-        $this->SendDebug('Receive', utf8_encode($ResultJSON), 0);
+        $this->SendDebug('Receive', $ResultJSON, 0);
         if ($ResultJSON === '') {
             return true;
         }
-        $Result = json_decode(utf8_encode($ResultJSON), true);
+        $Result = json_decode($ResultJSON, true);
         $this->SendDebug('Receive', $Result, 0);
         return $Result;
     }

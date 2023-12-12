@@ -67,10 +67,10 @@ class HomeMaticIPHeatingGroup extends HMDeviceBase
                 case 'PARTY_TIME_START':
                 case 'PARTY_TIME_END':
                     $this->SetValue($Ident, $Value);
-                    return true;
+                    return;
                 case 'PARTY_SET_POINT_TEMPERATURE':
                     $this->SetValue($Ident, $Value);
-                    return true;
+                    return;
                 case 'CONTROL_MODE':
                     switch ($Value) { // Sonderfall Mode Party
                         case 2:
@@ -89,7 +89,8 @@ class HomeMaticIPHeatingGroup extends HMDeviceBase
                     }
                     break;
             }
-            return $this->PutValue($Ident, $Value);
+            $this->PutValue($Ident, $Value);
+            return;
         }
         if (array_key_exists($Ident, \HMExtended\ParamSet::$Variables[static::DeviceTyp])) {
             $Ident = is_string(\HMExtended\ParamSet::$Variables[static::DeviceTyp][$Ident][2]) ? \HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][2] : $Ident;
@@ -102,17 +103,17 @@ class HomeMaticIPHeatingGroup extends HMDeviceBase
                     $Value = ($CalcHour * 2) + ($CalcMin > 30 ? 1 : 0);
                     if ($this->PutParamSet([$Ident=>(int) $Value])) {
                         $this->SetValue($Ident, $Value);
-                        return true;
                     }
-                    return false;
+                    return;
             }
             if ($this->PutParamSet([$Ident=>$Value])) {
                 $this->SetValue($Ident, $Value);
-                return true;
+                return;
             }
+            return;
         }
         trigger_error('Invalid Ident.', E_USER_NOTICE);
-        return false;
+        return;
     }
     protected function SetParamVariable(array $Params)
     {
