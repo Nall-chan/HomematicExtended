@@ -28,7 +28,7 @@ class HomeMaticProgramme extends HMBase
     {
         parent::Create();
         $this->RegisterHMPropertys('XXX9999998');
-        $this->RegisterPropertyBoolean('EmulateStatus', false);
+        $this->RegisterPropertyBoolean(\HMExtended\Device\Property::EmulateStatus, false);
     }
 
     /**

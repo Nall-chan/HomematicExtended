@@ -17,6 +17,7 @@ eval('declare(strict_types=1);namespace HMExtended {?>' . file_get_contents(__DI
 eval('declare(strict_types=1);namespace HMExtended {?>' . file_get_contents(__DIR__ . '/helper/ParentIOHelper.php') . '}');
 eval('declare(strict_types=1);namespace HMExtended {?>' . file_get_contents(__DIR__ . '/helper/VariableHelper.php') . '}');
 eval('declare(strict_types=1);namespace HMExtended {?>' . file_get_contents(__DIR__ . '/helper/VariableProfileHelper.php') . '}');
+require_once __DIR__ . '/HMTypes.php';  // HMTypes Data
 
 /**
  * HMBase ist die Basis-Klasse für alle Module welche HMScript verwenden.
@@ -51,7 +52,7 @@ abstract class HMBase extends IPSModule
         parent::Create();
         $this->ParentID = 0;
         $this->SetReceiveDataFilter('.*9999999999.*');
-        $this->ConnectParent('{A151ECE9-D733-4FB9-AA15-7F7DD10C58AF}');
+        $this->ConnectParent(\HMExtended\GUID::HmIO);
     }
 
     /**
@@ -119,15 +120,15 @@ abstract class HMBase extends IPSModule
      */
     protected function RegisterHMPropertys(string $Address)
     {
-        $this->RegisterPropertyInteger('Protocol', 0);
+        $this->RegisterPropertyInteger(\HMExtended\Device\Property::Protocol, 0);
         if (IPS_GetKernelRunlevel() == KR_READY) {
             $count = IPS_GetInstanceListByModuleID(IPS_GetInstance($this->InstanceID)['ModuleInfo']['ModuleID']);
             if (is_array($count)) {
-                $this->RegisterPropertyString('Address', $Address . ':' . count($count));
+                $this->RegisterPropertyString(\HMExtended\Device\Property::Address, $Address . ':' . count($count));
                 return;
             }
         }
-        $this->RegisterPropertyString('Address', $Address . ':0');
+        $this->RegisterPropertyString(\HMExtended\Device\Property::Address, $Address . ':0');
     }
 
     /**
@@ -156,7 +157,7 @@ abstract class HMBase extends IPSModule
             return false;
         }
         $ParentData = [
-            'DataID'        => '{F4D2A45B-D513-3507-871B-36F01309D885}',
+            'DataID'        => \HMExtended\GUID::SendScriptToIO,
             'Content'       => $HMScript
         ];
         $this->SendDebug('Send', $ParentData, 0);

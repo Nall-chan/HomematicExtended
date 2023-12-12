@@ -35,7 +35,7 @@ class HomeMaticPowermeter extends HMBase
     {
         parent::Create();
         $this->RegisterHMPropertys('XXX9999997');
-        $this->RegisterPropertyBoolean('EmulateStatus', false);
+        $this->RegisterPropertyBoolean(\HMExtended\Device\Property::EmulateStatus, false);
         $this->RegisterPropertyInteger('EventID', 0);
     }
 
@@ -109,7 +109,7 @@ class HomeMaticPowermeter extends HMBase
             $this->HMDeviceAddress = '';
             $this->HMDeviceDatapoint = '';
             $this->HMSuffix = '';
-            $this->HMProtocol = 'BidCos-RF';
+            $this->HMProtocol = \HMExtended\CCU::BidCos_RF;
             $this->Event = 0;
             $this->HMFactor = 1;
             $this->SetReceiveDataFilter('.*9999999999.*');
@@ -195,37 +195,37 @@ class HomeMaticPowermeter extends HMBase
         if (($EventID == 0) || (!IPS_VariableExists($EventID))) {
             $this->HMDeviceAddress = '';
             $this->HMDeviceDatapoint = '';
-            $this->HMProtocol = 'BidCos-RF';
+            $this->HMProtocol = \HMExtended\CCU::BidCos_RF;
             return false;
         }
         $parent = IPS_GetParent($EventID);
         if (IPS_GetInstance($parent)['ModuleInfo']['ModuleID'] != '{EE4A81C6-5C90-4DB7-AD2F-F6BBD521412E}') {
             $this->HMDeviceAddress = '';
             $this->HMDeviceDatapoint = '';
-            $this->HMProtocol = 'BidCos-RF';
+            $this->HMProtocol = \HMExtended\CCU::BidCos_RF;
             return false;
         }
         $EventIdent = IPS_GetObject($EventID)['ObjectIdent'];
         $PossibleIdent = ['GAS_ENERGY_COUNTER', 'IEC_ENERGY_COUNTER', 'ENERGY_COUNTER'];
         if (in_array($EventIdent, $PossibleIdent)) {
-            $this->HMDeviceAddress = IPS_GetProperty($parent, 'Address');
+            $this->HMDeviceAddress = IPS_GetProperty($parent, \HMExtended\Device\Property::Address);
             $this->HMDeviceDatapoint = $EventIdent;
-            switch (IPS_GetProperty($parent, 'Protocol')) {
+            switch (IPS_GetProperty($parent, \HMExtended\Device\Property::Protocol)) {
                 case 0:
-                    $this->HMProtocol = 'BidCos-RF';
+                    $this->HMProtocol = \HMExtended\CCU::BidCos_RF;
                     break;
                 case 1:
                     $this->HMProtocol = 'BidCos-WR';
                     break;
                 case 2:
-                    $this->HMProtocol = 'HmIP-RF';
+                    $this->HMProtocol = \HMExtended\CCU::HmIP;
                     break;
             }
             return true;
         }
         $this->HMDeviceAddress = '';
         $this->HMDeviceDatapoint = '';
-        $this->HMProtocol = 'BidCos-RF';
+        $this->HMProtocol = \HMExtended\CCU::BidCos_RF;
         return false;
     }
 

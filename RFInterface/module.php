@@ -29,7 +29,7 @@ class HomeMaticRFInterface extends IPSModule
     public function Create()
     {
         parent::Create();
-        $this->RegisterPropertyString('Address', '');
+        $this->RegisterPropertyString(\HMExtended\Device\Property::Address, '');
         $this->ConnectParent('{6EE35B5B-9DD9-4B23-89F6-37589134852F}');
     }
 
@@ -40,7 +40,7 @@ class HomeMaticRFInterface extends IPSModule
     {
         parent::ApplyChanges();
 
-        $Address = $this->ReadPropertyString('Address');
+        $Address = $this->ReadPropertyString(\HMExtended\Device\Property::Address);
         $this->SetSummary($Address);
 
         if ($Address !== '') {

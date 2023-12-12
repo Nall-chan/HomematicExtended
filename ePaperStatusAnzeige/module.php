@@ -28,9 +28,9 @@ class HomeMaticDisEPWM55 extends HMBase
     {
         parent::Create();
 
-        $this->RegisterPropertyString('Address', '');
-        $this->RegisterPropertyInteger('Protocol', 0);
-        $this->RegisterPropertyBoolean('EmulateStatus', false);
+        $this->RegisterPropertyString(\HMExtended\Device\Property::Address, '');
+        $this->RegisterPropertyInteger(\HMExtended\Device\Property::Protocol, 0);
+        $this->RegisterPropertyBoolean(\HMExtended\Device\Property::EmulateStatus, false);
     }
 
     /**
@@ -39,7 +39,7 @@ class HomeMaticDisEPWM55 extends HMBase
     public function ApplyChanges()
     {
         parent::ApplyChanges();
-        $Address = $this->ReadPropertyString('Address');
+        $Address = $this->ReadPropertyString(\HMExtended\Device\Property::Address);
         $this->SetSummary($Address);
         $this->SetReceiveDataFilter('.*9999999999.*');
     }
@@ -225,11 +225,11 @@ class HomeMaticDisEPWM55 extends HMBase
     private function SendData($Submit)
     {
         $ParentData = [
-            'DataID'     => '{75B6B237-A7B0-46B9-BBCE-8DF0CFE6FA52}',
+            'DataID'     => \HMExtended\GUID::SendRpcToIO,
             'Protocol'   => 0,
             'MethodName' => 'setValue',
             'WaitTime'   => 5000,
-            'Data'       => [$this->ReadPropertyString('Address'), 'SUBMIT', '0x02,' . implode(',', $Submit) . ',0x03']
+            'Data'       => [$this->ReadPropertyString(\HMExtended\Device\Property::Address), 'SUBMIT', '0x02,' . implode(',', $Submit) . ',0x03']
         ];
         $this->SendDebug('Send', $ParentData, 0);
 

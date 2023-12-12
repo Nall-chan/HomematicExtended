@@ -32,9 +32,9 @@ class HomeMaticClimateControlRegulator extends HMDeviceBase
     {
         parent::Create();
 
-        $this->RegisterPropertyBoolean('EmulateStatus', false);
-        $this->RegisterPropertyString('Address', '');
-        $this->RegisterPropertyInteger('Protocol', 0);
+        $this->RegisterPropertyBoolean(\HMExtended\Device\Property::EmulateStatus, false);
+        $this->RegisterPropertyString(\HMExtended\Device\Property::Address, '');
+        $this->RegisterPropertyInteger(\HMExtended\Device\Property::Protocol, 0);
     }
 
     //################# PUBLIC
@@ -51,7 +51,7 @@ class HomeMaticClimateControlRegulator extends HMDeviceBase
             $Ident = is_string(\HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][2]) ? \HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][2] : $Ident;
             $this->FixValueType(\HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][0], $Value);
             switch ($Ident) {
-                case 'SETPOINT':
+                case \HMExtended\ClimacontrolRegulator\SETPOINT:
                     $this->SetValue($Ident, $Value);
                     if ($Value == 4.5) {
                         $Value = 0;
@@ -60,7 +60,7 @@ class HomeMaticClimateControlRegulator extends HMDeviceBase
                         $Value = 100;
                     }
             }
-            $Paramset = [$this->ReadPropertyString('Address') . static::ValuesChannel, $Ident];
+            $Paramset = [$this->ReadPropertyString(\HMExtended\Device\Property::Address) . static::ValuesChannel, $Ident];
             return $this->SendRPC('setValue', $Paramset, $Value, true);
         }
         if (array_key_exists($Ident, \HMExtended\ParamSet::$Variables[static::DeviceTyp])) {
@@ -135,7 +135,7 @@ class HomeMaticClimateControlRegulator extends HMDeviceBase
     protected function SetVariable(string $Ident, $Value)
     {
         switch ($Ident) {
-            case 'SETPOINT':
+            case \HMExtended\ClimacontrolRegulator\SETPOINT:
                 if ($Value == 0) {
                     $Value = 4.5;
                 }

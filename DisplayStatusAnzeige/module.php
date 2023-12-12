@@ -46,7 +46,7 @@ class HomeMaticDisWM55 extends HMBase
         parent::Create();
 
         $this->RegisterHMPropertys('XXX9999995');
-        $this->RegisterPropertyBoolean('EmulateStatus', false);
+        $this->RegisterPropertyBoolean(\HMExtended\Device\Property::EmulateStatus, false);
         $this->RegisterPropertyInteger('PageUpID', 0);
         $this->RegisterPropertyInteger('PageDownID', 0);
         $this->RegisterPropertyInteger('ActionUpID', 0);
@@ -287,7 +287,7 @@ class HomeMaticDisWM55 extends HMBase
             return false;
         }
         return [
-            'HMDeviceAddress'   => IPS_GetProperty($parent, 'Address'),
+            'HMDeviceAddress'   => IPS_GetProperty($parent, \HMExtended\Device\Property::Address),
             'HMDeviceDatapoint' => IPS_GetObject($EventID)['ObjectIdent']
         ];
     }

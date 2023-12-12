@@ -28,9 +28,9 @@ class HomeMaticParasetInterface extends HMBase
     {
         parent::Create();
 
-        $this->RegisterPropertyBoolean('EmulateStatus', false);
-        $this->RegisterPropertyString('Address', '');
-        $this->RegisterPropertyInteger('Protocol', 0);
+        $this->RegisterPropertyBoolean(\HMExtended\Device\Property::EmulateStatus, false);
+        $this->RegisterPropertyString(\HMExtended\Device\Property::Address, '');
+        $this->RegisterPropertyInteger(\HMExtended\Device\Property::Protocol, 0);
     }
 
     /**
@@ -138,11 +138,11 @@ class HomeMaticParasetInterface extends HMBase
             return false;
         }
         $ParentData = [
-            'DataID'     => '{75B6B237-A7B0-46B9-BBCE-8DF0CFE6FA52}',
-            'Protocol'   => $this->ReadPropertyInteger('Protocol'),
+            'DataID'     => \HMExtended\GUID::SendRpcToIO,
+            'Protocol'   => $this->ReadPropertyInteger(\HMExtended\Device\Property::Protocol),
             'MethodName' => 'getParamset',
             'WaitTime'   => 5000,
-            'Data'       => [$this->ReadPropertyString('Address'), 'MASTER']
+            'Data'       => [$this->ReadPropertyString(\HMExtended\Device\Property::Address), 'MASTER']
         ];
         $this->SendDebug('Send', $ParentData, 0);
 
@@ -169,13 +169,13 @@ class HomeMaticParasetInterface extends HMBase
             trigger_error($this->Translate('Instance has no active Parent Instance!'), E_USER_NOTICE);
             return false;
         }
-        $EmulateStatus = $this->ReadPropertyBoolean('EmulateStatus');
+        $EmulateStatus = $this->ReadPropertyBoolean(\HMExtended\Device\Property::EmulateStatus);
         $ParentData = [
-            'DataID'     => '{75B6B237-A7B0-46B9-BBCE-8DF0CFE6FA52}',
-            'Protocol'   => $this->ReadPropertyInteger('Protocol'),
+            'DataID'     => \HMExtended\GUID::SendRpcToIO,
+            'Protocol'   => $this->ReadPropertyInteger(\HMExtended\Device\Property::Protocol),
             'MethodName' => 'PutParamSet',
             'WaitTime'   => ($EmulateStatus ? 1 : 5000),
-            'Data'       => [$this->ReadPropertyString('Address'), 'MASTER', json_encode($Parameter)]
+            'Data'       => [$this->ReadPropertyString(\HMExtended\Device\Property::Address), 'MASTER', json_encode($Parameter)]
         ];
         $this->SendDebug('Send', $ParentData, 0);
 

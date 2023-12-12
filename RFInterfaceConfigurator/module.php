@@ -70,7 +70,7 @@ class HomeMaticRFInterfaceConfigurator extends IPSModule
         $InstanceIDList = [];
         foreach ($DevicesIDs as $DeviceID) {
             if (IPS_GetInstance($DeviceID)['ConnectionID'] == $ParentId) {
-                $InstanceIDList[$DeviceID] = IPS_GetProperty($DeviceID, 'Address');
+                $InstanceIDList[$DeviceID] = IPS_GetProperty($DeviceID, \HMExtended\Device\Property::Address);
             }
         }
         $Liste = [];
@@ -112,7 +112,7 @@ class HomeMaticRFInterfaceConfigurator extends IPSModule
                 }
                 $AddValue['create'] = [
                     'moduleID'      => '{36549B96-FA11-4651-8662-F310EEEC5C7D}',
-                    'configuration' => ['Address' => $Interface['ADDRESS']]
+                    'configuration' => [\HMExtended\Device\Property::Address => $Interface['ADDRESS']]
                 ];
                 $Liste[] = $AddValue;
             }
@@ -137,7 +137,7 @@ class HomeMaticRFInterfaceConfigurator extends IPSModule
     //################# Datenaustausch
     private function GetInterfaces()
     {
-        $Data['DataID'] = '{2F910A05-3607-4070-A6FF-53539E5D3BBB}';
+        $Data['DataID'] = \HMExtended\GUID::SendToRFSplitter;
         $this->SendDebug('Request', 'GetInterfaces', 0);
         $ResultString = $this->SendDataToParent(json_encode($Data));
         $this->SendDebug('Response', unserialize($ResultString), 0);

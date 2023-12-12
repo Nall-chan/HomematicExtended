@@ -28,7 +28,7 @@ class HomeMaticRFInterfaceSplitter extends HMBase
     {
         parent::Create();
         $this->RegisterHMPropertys('XXX9999994');
-        $this->RegisterPropertyBoolean('EmulateStatus', false);
+        $this->RegisterPropertyBoolean(\HMExtended\Device\Property::EmulateStatus, false);
         $this->RegisterPropertyInteger('Interval', 0);
         $this->RegisterTimer('ReadRFInterfaces', 0, '@HM_ReadRFInterfaces($_IPS[\'TARGET\']);');
     }
@@ -94,7 +94,7 @@ class HomeMaticRFInterfaceSplitter extends HMBase
             }
             foreach ($Protocol as $InterfaceIndex => $Interface) {
                 $this->SendDebug('Proto' . $ProtocolID . ' If' . $InterfaceIndex, $Interface, 0);
-                $Interface['DataID'] = '{E2966A08-BCE1-4E76-8C4B-7E0136244E1B}';
+                $Interface['DataID'] = \HMExtended\GUID::SendToRFInterfaceDevice;
                 $Data = json_encode($Interface);
                 $this->SendDataToChildren($Data);
                 $ret = true;
@@ -175,7 +175,7 @@ class HomeMaticRFInterfaceSplitter extends HMBase
 
         $data = [];
         $ParentData = [
-            'DataID'     => '{75B6B237-A7B0-46B9-BBCE-8DF0CFE6FA52}',
+            'DataID'     => \HMExtended\GUID::SendRpcToIO,
             'Protocol'   => 0,
             'MethodName' => 'listBidcosInterfaces',
             'WaitTime'   => 5000,

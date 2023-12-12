@@ -14,7 +14,6 @@ declare(strict_types=1);
  * @version       3.12
  */
 require_once __DIR__ . '/HMBase.php';  // HMBase Klasse
-require_once __DIR__ . '/HMTypes.php';  // HMTypes Data
 
 /**
  * HMDeviceBase
@@ -89,7 +88,7 @@ abstract class HMDeviceBase extends HMBase
     public function ApplyChanges()
     {
         parent::ApplyChanges();
-        $Address = $this->ReadPropertyString('Address');
+        $Address = $this->ReadPropertyString(\HMExtended\Device\Property::Address);
         $this->SetReceiveDataFilter($Address == '' ? '.*9999999999.*' : '.*"DeviceID":"' . $Address . '.*');
 
         foreach (\HMExtended\ValuesSet::$Variables[static::DeviceTyp] as $Ident => $VarData) {
@@ -207,7 +206,7 @@ abstract class HMDeviceBase extends HMBase
 
     protected function createVariablesFromValues()
     {
-        $AddressWithChannel = $this->ReadPropertyString('Address') . static::ValuesChannel;
+        $AddressWithChannel = $this->ReadPropertyString(\HMExtended\Device\Property::Address) . static::ValuesChannel;
         $Result = $this->getParamsetDescription('VALUES', $AddressWithChannel);
         foreach ($Result as $Variable) {
             if ($Variable['OPERATIONS'] & 0b101) {
@@ -247,7 +246,7 @@ abstract class HMDeviceBase extends HMBase
     }
     protected function getValuesAndSetVariable()
     {
-        $AddressWithChannel = $this->ReadPropertyString('Address') . static::ValuesChannel;
+        $AddressWithChannel = $this->ReadPropertyString(\HMExtended\Device\Property::Address) . static::ValuesChannel;
         $Result = $this->getParamset('VALUES', $AddressWithChannel);
         foreach ($Result as $Ident => $Value) {
             $this->SetVariable($Ident, $Value);
@@ -255,7 +254,7 @@ abstract class HMDeviceBase extends HMBase
     }
     protected function createVariablesFromParams()
     {
-        $AddressWithChannel = $this->ReadPropertyString('Address') . static::ParamChannel;
+        $AddressWithChannel = $this->ReadPropertyString(\HMExtended\Device\Property::Address) . static::ParamChannel;
         $Result = $this->getParamsetDescription('MASTER', $AddressWithChannel);
         foreach ($Result as $Variable) {
             $Ident = $Variable['ID'];
@@ -302,7 +301,7 @@ abstract class HMDeviceBase extends HMBase
 
     protected function getParamsAndSetVariable()
     {
-        $AddressWithChannel = $this->ReadPropertyString('Address') . static::ParamChannel;
+        $AddressWithChannel = $this->ReadPropertyString(\HMExtended\Device\Property::Address) . static::ParamChannel;
         $Result = $this->getParamset('MASTER', $AddressWithChannel);
         $this->SendDebug(__FUNCTION__, $Result, 0);
         $this->SetParamVariable($Result);
@@ -438,22 +437,22 @@ abstract class HMDeviceBase extends HMBase
 
     protected function PutParamSet(array $Parameter)
     {
-        $Paramset = [$this->ReadPropertyString('Address') . static::ParamChannel, 'MASTER'];
-        $Result = $this->SendRPC('putParamset', $Paramset, $Parameter, $this->ReadPropertyBoolean('EmulateStatus'));
+        $Paramset = [$this->ReadPropertyString(\HMExtended\Device\Property::Address) . static::ParamChannel, 'MASTER'];
+        $Result = $this->SendRPC('putParamset', $Paramset, $Parameter, $this->ReadPropertyBoolean(\HMExtended\Device\Property::EmulateStatus));
         return ($Result) ? true : false;
     }
 
     protected function PutValueSet($Value)
     {
-        $Paramset = [$this->ReadPropertyString('Address') . static::ValuesChannel, 'VALUES'];
-        $Result = $this->SendRPC('putParamset', $Paramset, $Value, $this->ReadPropertyBoolean('EmulateStatus'));
+        $Paramset = [$this->ReadPropertyString(\HMExtended\Device\Property::Address) . static::ValuesChannel, 'VALUES'];
+        $Result = $this->SendRPC('putParamset', $Paramset, $Value, $this->ReadPropertyBoolean(\HMExtended\Device\Property::EmulateStatus));
         return ($Result) ? true : false;
     }
 
     protected function PutValue(string $ValueName, $Value)
     {
-        $Paramset = [$this->ReadPropertyString('Address') . static::ValuesChannel, $ValueName];
-        $Result = $this->SendRPC('setValue', $Paramset, $Value, $this->ReadPropertyBoolean('EmulateStatus'));
+        $Paramset = [$this->ReadPropertyString(\HMExtended\Device\Property::Address) . static::ValuesChannel, $ValueName];
+        $Result = $this->SendRPC('setValue', $Paramset, $Value, $this->ReadPropertyBoolean(\HMExtended\Device\Property::EmulateStatus));
         return ($Result) ? true : false;
     }
 
@@ -464,8 +463,8 @@ abstract class HMDeviceBase extends HMBase
             return false;
         }
         $ParentData = [
-            'DataID'     => '{75B6B237-A7B0-46B9-BBCE-8DF0CFE6FA52}',
-            'Protocol'   => $this->ReadPropertyInteger('Protocol'),
+            'DataID'     => \HMExtended\GUID::SendRpcToIO,
+            'Protocol'   => $this->ReadPropertyInteger(\HMExtended\Device\Property::Protocol),
             'MethodName' => $MethodName,
             'WaitTime'   => ($EmulateStatus ? 1 : 5000),
             'Data'       => $Paramset

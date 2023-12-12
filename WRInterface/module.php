@@ -29,7 +29,7 @@ class HomeMaticWRInterface extends HMBase
         parent::Create();
 
         $this->RegisterHMPropertys('XXX9999993');
-        $this->RegisterPropertyBoolean('EmulateStatus', false);
+        $this->RegisterPropertyBoolean(\HMExtended\Device\Property::EmulateStatus, false);
 
         $this->RegisterPropertyInteger('Interval', 0);
 
@@ -183,7 +183,7 @@ class HomeMaticWRInterface extends HMBase
         }
 
         $ParentData = [
-            'DataID'     => '{75B6B237-A7B0-46B9-BBCE-8DF0CFE6FA52}',
+            'DataID'     => \HMExtended\GUID::SendRpcToIO,
             'Protocol'   => 1,
             'MethodName' => 'getLGWStatus',
             'WaitTime'   => 5000,

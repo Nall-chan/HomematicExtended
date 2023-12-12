@@ -31,9 +31,9 @@ class HomeMaticIPHeatingGroup extends HMDeviceBase
     {
         parent::Create();
 
-        $this->RegisterPropertyBoolean('EmulateStatus', false);
-        $this->RegisterPropertyString('Address', '');
-        $this->RegisterPropertyInteger('Protocol', 3);
+        $this->RegisterPropertyBoolean(\HMExtended\Device\Property::EmulateStatus, false);
+        $this->RegisterPropertyString(\HMExtended\Device\Property::Address, '');
+        $this->RegisterPropertyInteger(\HMExtended\Device\Property::Protocol, 3);
     }
 
     //################# PUBLIC

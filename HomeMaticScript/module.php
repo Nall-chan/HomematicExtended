@@ -29,7 +29,7 @@ class HomeMaticRemoteScript extends HMBase
         parent::Create();
         $this->RegisterHMPropertys('XXX9999993');
         $this->SetReceiveDataFilter('.*9999999999.*');
-        $this->RegisterPropertyBoolean('EmulateStatus', false);
+        $this->RegisterPropertyBoolean(\HMExtended\Device\Property::EmulateStatus, false);
     }
 
     /**

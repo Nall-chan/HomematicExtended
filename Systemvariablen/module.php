@@ -39,7 +39,7 @@ class HomeMaticSystemvariablen extends HMBase
 
         $this->RegisterPropertyInteger('EventID', 0);
         $this->RegisterPropertyInteger('Interval', 0);
-        $this->RegisterPropertyBoolean('EmulateStatus', false);
+        $this->RegisterPropertyBoolean(\HMExtended\Device\Property::EmulateStatus, false);
         $this->RegisterPropertyBoolean('EnableAlarmDP', true);
         $this->RegisterPropertyInteger('AlarmScriptID', 0);
 
@@ -233,7 +233,7 @@ class HomeMaticSystemvariablen extends HMBase
         }
         if (isset($xmlData->State)) {
             if ((int) $xmlData->State === 1) {
-                if ($this->ReadPropertyBoolean('EmulateStatus') === true) {
+                if ($this->ReadPropertyBoolean(\HMExtended\Device\Property::EmulateStatus) === true) {
                     $this->SetValue($Ident, false);
                 }
                 return true;
@@ -317,7 +317,7 @@ class HomeMaticSystemvariablen extends HMBase
         $Result = $this->WriteSysVar($Parameter, $ValueStr);
 
         if ($Result === true) {
-            if ($this->ReadPropertyBoolean('EmulateStatus') === true) {
+            if ($this->ReadPropertyBoolean(\HMExtended\Device\Property::EmulateStatus) === true) {
                 $this->SetValue($Parameter, $Value);
             }
             return true;
@@ -365,7 +365,7 @@ class HomeMaticSystemvariablen extends HMBase
 
         $Result = $this->WriteSysVar($Parameter, (string) $Value);
         if ($Result === true) {
-            if ($this->ReadPropertyBoolean('EmulateStatus') === true) {
+            if ($this->ReadPropertyBoolean(\HMExtended\Device\Property::EmulateStatus) === true) {
                 $this->SetValue($Parameter, $Value);
             }
             return true;
@@ -413,7 +413,7 @@ class HomeMaticSystemvariablen extends HMBase
         $Result = $this->WriteSysVar($Parameter, (string) sprintf('%.6F', $Value));
 
         if ($Result === true) {
-            if ($this->ReadPropertyBoolean('EmulateStatus') === true) {
+            if ($this->ReadPropertyBoolean(\HMExtended\Device\Property::EmulateStatus) === true) {
                 $this->SetValue($Parameter, $Value);
             }
             return true;
@@ -462,7 +462,7 @@ class HomeMaticSystemvariablen extends HMBase
         $Result = $this->WriteSysVar($Parameter, (string) $Value);
 
         if ($Result === true) {
-            if ($this->ReadPropertyBoolean('EmulateStatus') === true) {
+            if ($this->ReadPropertyBoolean(\HMExtended\Device\Property::EmulateStatus) === true) {
                 $this->SetValue($Parameter, $Value);
             }
             return true;
@@ -570,7 +570,7 @@ class HomeMaticSystemvariablen extends HMBase
             $this->HMDeviceDatapoint = '';
             return false;
         }
-        $this->HMDeviceAddress = IPS_GetProperty($parent, 'Address');
+        $this->HMDeviceAddress = IPS_GetProperty($parent, \HMExtended\Device\Property::Address);
         $this->HMDeviceDatapoint = IPS_GetObject($EventID)['ObjectIdent'];
         return true;
     }

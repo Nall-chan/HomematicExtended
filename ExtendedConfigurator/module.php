@@ -32,7 +32,7 @@ class HomeMaticExtendedConfigurator extends HMBase
     {
         parent::Create();
         $this->RegisterHMPropertys('XXX9999994');
-        $this->RegisterPropertyBoolean('EmulateStatus', false);
+        $this->RegisterPropertyBoolean(\HMExtended\Device\Property::EmulateStatus, false);
         $this->RegisterPropertyInteger('Interval', 0);
         //$this->DeviceNames = [];
     }
@@ -86,7 +86,7 @@ class HomeMaticExtendedConfigurator extends HMBase
                 $InstanceIDList = [];
                 foreach ($DevicesIDs as $DeviceID) {
                     if (IPS_GetInstance($DeviceID)['ConnectionID'] == $ParentId) {
-                        $InstanceIDList[$DeviceID] = IPS_GetProperty($DeviceID, 'Address');
+                        $InstanceIDList[$DeviceID] = IPS_GetProperty($DeviceID, \HMExtended\Device\Property::Address);
                     }
                 }
                 $Liste = [];
@@ -128,7 +128,7 @@ class HomeMaticExtendedConfigurator extends HMBase
                         }
                         $AddValue['create'] = [
                             'moduleID'      => '{36549B96-FA11-4651-8662-F310EEEC5C7D}',
-                            'configuration' => ['Address' => $Interface['ADDRESS']]
+                            'configuration' => [\HMExtended\Device\Property::Address => $Interface['ADDRESS']]
                         ];
                         $Liste[] = $AddValue;
                     }
@@ -197,15 +197,15 @@ class HomeMaticExtendedConfigurator extends HMBase
         ];
 
         $Devices = $this->GetDevices($Protocol, \HMExtended\DeviceType::$GuidToType[$GUID]);
-        $IPSDevices = $this->GetInstanceList($GUID, 'Address');
+        $IPSDevices = $this->GetInstanceList($GUID, \HMExtended\Device\Property::Address);
         foreach ($Devices as &$Device) {
             $Device = array_change_key_case($Device);
             unset($Device['parent']);
             $Device['create'] = $CreateParams;
             $Device['create']['configuration'] = [
-                'Address'      => $Device['address'],
-                'Protocol'     => $Protocol,
-                'EmulateStatus'=> false
+                \HMExtended\Device\Property::Address      => $Device['address'],
+                \HMExtended\Device\Property::Protocol     => $Protocol,
+                \HMExtended\Device\Property::EmulateStatus=> false
             ];
 
             $InstanceID = array_search($Device['address'], $IPSDevices);
@@ -308,7 +308,7 @@ class HomeMaticExtendedConfigurator extends HMBase
             return false;
         }
         $ParentData = [
-            'DataID'     => '{75B6B237-A7B0-46B9-BBCE-8DF0CFE6FA52}',
+            'DataID'     => \HMExtended\GUID::SendRpcToIO,
             'Protocol'   => $Protocol,
             'MethodName' => $MethodName,
             'WaitTime'   => 5000,
