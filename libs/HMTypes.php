@@ -23,6 +23,7 @@ namespace HMExtended
         public const SendToRFSplitter = '{2F910A05-3607-4070-A6FF-53539E5D3BBB}';
         public const HmIO = '{A151ECE9-D733-4FB9-AA15-7F7DD10C58AF}';
     }
+
     class CCU
     {
         public const BidCos_RF = 'BidCos-RF';
@@ -37,6 +38,7 @@ namespace HMExtended
             self::Groups
         ];
     }
+
     class DeviceType
     {
         public const HeatingGroup = 'HM-CC-VG-1'; //'CLIMATECONTROL_RT_TRANSCEIVER';
@@ -64,33 +66,172 @@ namespace HMExtended
         public const First = ':1';
         public const Second = ':2';
     }
+
     class ClimacontrolRegulator
     {
+        //Values
         public const SETPOINT = 'SETPOINT';
         public const ADJUSTING_DATA = 'ADJUSTING_DATA';
         public const ADJUSTING_COMMAND = 'ADJUSTING_COMMAND';
         public const STATE = 'STATE';
+        //Params
         public const MODE_TEMPERATUR_REGULATOR = 'MODE_TEMPERATUR_REGULATOR';
         public const DECALCIFICATION_DAY = 'DECALCIFICATION_DAY';
         public const DECALCIFICATION_TIME = 'DECALCIFICATION_TIME';
         public const DECALCIFICATION_HOUR = 'DECALCIFICATION_HOUR';
+        public const DECALCIFICATION_MINUTE = 'DECALCIFICATION_MINUTE';
         public const MODE_TEMPERATUR_VALVE = 'MODE_TEMPERATUR_VALVE';
         public const TEMPERATUR_LOWERING_VALUE = 'TEMPERATUR_LOWERING_VALUE';
         public const TEMPERATUR_COMFORT_VALUE = 'TEMPERATUR_COMFORT_VALUE';
+        public const TEMPERATUR_PARTY_VALUE = 'TEMPERATUR_PARTY_VALUE';
         public const PARTY_END_TIME = 'PARTY_END_TIME';
         public const PARTY_END_DAY = 'PARTY_END_DAY';
         public const PARTY_END_HOUR = 'PARTY_END_HOUR';
         public const PARTY_END_MINUTE = 'PARTY_END_MINUTE';
     }
+
     class HeatingGroupHmIP
     {
+        //Values
+        public const ACTIVE_PROFILE = 'ACTIVE_PROFILE';
+        public const ACTUAL_TEMPERATURE = 'ACTUAL_TEMPERATURE';
+        public const ACTUAL_TEMPERATURE_STATUS = 'ACTUAL_TEMPERATURE_STATUS';
+        public const BOOST_MODE = 'BOOST_MODE';
+        public const BOOST_TIME = 'BOOST_TIME';
+        public const FROST_PROTECTION = 'FROST_PROTECTION';
+        public const HEATING_COOLING = 'HEATING_COOLING';
+        public const HUMIDITY = 'HUMIDITY';
+        public const HUMIDITY_STATUS = 'HUMIDITY_STATUS';
+        public const LEVEL = 'LEVEL';
+        public const LEVEL_STATUS = 'LEVEL_STATUS';
+        public const PARTY_MODE = 'PARTY_MODE';
+        public const PARTY_SET_POINT_TEMPERATURE = 'PARTY_SET_POINT_TEMPERATURE';
+        public const PARTY_TIME_END = 'PARTY_TIME_END';
+        public const PARTY_TIME_START = 'PARTY_TIME_START';
+        public const QUICK_VETO_TIME = 'QUICK_VETO_TIME';
+        public const SET_POINT_MODE = 'SET_POINT_MODE';
+        public const CONTROL_MODE = 'CONTROL_MODE';
+        public const SET_POINT_TEMPERATURE = 'SET_POINT_TEMPERATURE';
+        public const SWITCH_POINT_OCCURED = 'SWITCH_POINT_OCCURED';
+        public const VALVE_ADAPTION = 'VALVE_ADAPTION';
+        public const VALVE_STATE = 'VALVE_STATE';
+        public const WINDOW_STATE = 'WINDOW_STATE';
+        //Params
+        public const DECALCIFICATION_TIME = 'DECALCIFICATION_TIME';
+        public const DECALCIFICATION_WEEKDAY = 'DECALCIFICATION_WEEKDAY';
+        public const BOOST_POSITION = 'BOOST_POSITION';
+        public const BOOST_TIME_PERIOD = 'BOOST_TIME_PERIOD';
+        public const TEMPERATURE_COMFORT = 'TEMPERATURE_COMFORT';
+        public const TEMPERATURE_COMFORT_COOLING = 'TEMPERATURE_COMFORT_COOLING';
+        public const TEMPERATURE_LOWERING = 'TEMPERATURE_LOWERING';
+        public const TEMPERATURE_LOWERING_COOLING = 'TEMPERATURE_LOWERING_COOLING';
+        public const TEMPERATURE_WINDOW_OPEN = 'TEMPERATURE_WINDOW_OPEN';
+        // only Property
+        public const PARTY = 'PARTY';
     }
+
+    class HeatingGroup
+    {
+        //Values
+        public const ACTUAL_HUMIDITY = 'ACTUAL_HUMIDITY';
+        public const ACTUAL_TEMPERATURE = 'ACTUAL_TEMPERATURE';
+        public const AUTO_MODE = 'AUTO_MODE';
+        public const BOOST_MODE = 'BOOST_MODE';
+        public const COMFORT_MODE = 'COMFORT_MODE';
+        public const CONTROL_MODE = 'CONTROL_MODE';
+        public const LOWERING_MODE = 'LOWERING_MODE';
+        public const MANU_MODE = 'MANU_MODE';
+        public const PARTY_MODE_SUBMIT = 'PARTY_MODE_SUBMIT';
+        public const PARTY_START_DAY = 'PARTY_START_DAY';
+        public const PARTY_START_MONTH = 'PARTY_START_MONTH';
+        public const PARTY_START_TIME = 'PARTY_START_TIME';
+        public const PARTY_START_YEAR = 'PARTY_START_YEAR';
+        public const PARTY_STOP_DAY = 'PARTY_STOP_DAY';
+        public const PARTY_STOP_MONTH = 'PARTY_STOP_MONTH';
+        public const PARTY_STOP_TIME = 'PARTY_STOP_TIME';
+        public const PARTY_STOP_YEAR = 'PARTY_STOP_YEAR';
+        public const PARTY_TEMPERATURE = 'PARTY_TEMPERATURE';
+        public const SET_TEMPERATURE = 'SET_TEMPERATURE';
+        //Params
+        public const DECALCIFICATION_TIME = 'DECALCIFICATION_TIME';
+        public const DECALCIFICATION_WEEKDAY = 'DECALCIFICATION_WEEKDAY';
+        public const BOOST_POSITION = 'BOOST_POSITION';
+        public const BOOST_TIME_PERIOD = 'BOOST_TIME_PERIOD';
+        public const BUTTON_LOCK = 'BUTTON_LOCK';
+        public const GLOBAL_BUTTON_LOCK = 'GLOBAL_BUTTON_LOCK';
+        public const MODUS_BUTTON_LOCK = 'MODUS_BUTTON_LOCK';
+        public const BOOST_AFTER_WINDOW_OPEN = 'BOOST_AFTER_WINDOW_OPEN';
+        public const TEMPERATUREFALL_WINDOW_OPEN = 'TEMPERATUREFALL_WINDOW_OPEN';
+        public const TEMPERATUREFALL_WINDOW_OPEN_TIME_PERIOD = 'TEMPERATUREFALL_WINDOW_OPEN_TIME_PERIOD';
+        public const TEMPERATURE_COMFORT = 'TEMPERATURE_COMFORT';
+        public const TEMPERATURE_LOWERING = 'TEMPERATURE_LOWERING';
+        public const WEEK_PROGRAM_POINTER = 'WEEK_PROGRAM_POINTER';
+
+        // only Property
+        public const PARTY = 'PARTY';
+    }
+
+    class Property
+    {
+        public static $Properties = [
+            DeviceType::ClimacontrolRegulator => [
+                ClimacontrolRegulator::TEMPERATUR_PARTY_VALUE    => true,
+                ClimacontrolRegulator::PARTY_END_TIME            => true,
+                ClimacontrolRegulator::TEMPERATUR_COMFORT_VALUE  => false,
+                ClimacontrolRegulator::TEMPERATUR_LOWERING_VALUE => false,
+                ClimacontrolRegulator::DECALCIFICATION_TIME      => false,
+                ClimacontrolRegulator::DECALCIFICATION_DAY       => false,
+                ClimacontrolRegulator::MODE_TEMPERATUR_VALVE     => false
+            ],
+            DeviceType::HeatingGroupHmIP=> [
+                HeatingGroupHmIP::ACTIVE_PROFILE               => true,
+                HeatingGroupHmIP::BOOST_MODE                   => true,
+                HeatingGroupHmIP::BOOST_TIME                   => false,
+                HeatingGroupHmIP::FROST_PROTECTION             => false,
+                HeatingGroupHmIP::HEATING_COOLING              => false,
+                HeatingGroupHmIP::LEVEL                        => true,
+                HeatingGroupHmIP::PARTY                        => true,
+                HeatingGroupHmIP::SWITCH_POINT_OCCURED         => false,
+                HeatingGroupHmIP::VALVE_ADAPTION               => false,
+                HeatingGroupHmIP::VALVE_STATE                  => true,
+                HeatingGroupHmIP::WINDOW_STATE                 => true,
+                HeatingGroupHmIP::DECALCIFICATION_TIME         => false,
+                HeatingGroupHmIP::DECALCIFICATION_WEEKDAY      => false,
+                HeatingGroupHmIP::BOOST_POSITION               => false,
+                HeatingGroupHmIP::BOOST_TIME_PERIOD            => false,
+                HeatingGroupHmIP::TEMPERATURE_COMFORT          => false,
+                HeatingGroupHmIP::TEMPERATURE_COMFORT_COOLING  => false,
+                HeatingGroupHmIP::TEMPERATURE_LOWERING         => false,
+                HeatingGroupHmIP::TEMPERATURE_LOWERING_COOLING => false,
+                HeatingGroupHmIP::TEMPERATURE_WINDOW_OPEN      => true
+            ],
+            DeviceType::HeatingGroup=> [
+                HeatingGroup::COMFORT_MODE                            => true,
+                HeatingGroup::LOWERING_MODE                           => true,
+                HeatingGroup::PARTY                                   => true,
+                HeatingGroup::DECALCIFICATION_TIME                    => false,
+                HeatingGroup::DECALCIFICATION_WEEKDAY                 => false,
+                HeatingGroup::BOOST_POSITION                          => false,
+                HeatingGroup::BOOST_TIME_PERIOD                       => false,
+                HeatingGroup::BUTTON_LOCK                             => false,
+                HeatingGroup::GLOBAL_BUTTON_LOCK                      => false,
+                HeatingGroup::MODUS_BUTTON_LOCK                       => false,
+                HeatingGroup::BOOST_AFTER_WINDOW_OPEN                 => false,
+                HeatingGroup::TEMPERATUREFALL_WINDOW_OPEN             => true,
+                HeatingGroup::TEMPERATUREFALL_WINDOW_OPEN_TIME_PERIOD => false,
+                HeatingGroup::TEMPERATURE_COMFORT                     => false,
+                HeatingGroup::TEMPERATURE_LOWERING                    => false,
+                HeatingGroup::WEEK_PROGRAM_POINTER                    => true,
+            ]
+        ];
+    }
+
     class Variables
     {
         public const VARIABLETYPE_NONE = -1;
 
         public static $Profiles = [
-            'Heating.Control.SetPoint.Temperature.HmIP'=> [
+            'Heating.Control.SetPoint.Temperature.HM'=> [
                 VARIABLETYPE_FLOAT,
                 'Temperature',
                 '',
@@ -109,9 +250,30 @@ namespace HMExtended
                 'Clock',
                 '',
                 '',
-                1,
-                6,
-                1,
+                [
+                    [1, '1', '', -1],
+                    [2, '2', '', -1],
+                    [3, '3', '', -1],
+                    [4, '4', '', -1],
+                    [5, '5', '', -1],
+                    [6, '6', '', -1]
+                ],
+                -1,
+                0,
+                0
+            ],
+            'Heating.Control.Profile.HM'=> [
+                VARIABLETYPE_INTEGER,
+                'Clock',
+                '',
+                '',
+                [
+                    [1, '1', '', -1],
+                    [2, '2', '', -1],
+                    [3, '3', '', -1]
+                ],
+                -1,
+                0,
                 0
             ],
             'DateTime.Time.Seconds.HM'        => [
@@ -138,8 +300,7 @@ namespace HMExtended
                 0,
                 0
             ],
-
-            'Heating.Control.SetPoint.Mode.HM'=> [
+            'Heating.Control.SetPoint.Mode.HmIP'=> [
                 VARIABLETYPE_INTEGER,
                 '',
                 '',
@@ -148,6 +309,21 @@ namespace HMExtended
                     [0, 'Automatic', 'Clock', 0x339966],
                     [1, 'Manually', 'Execute', 0xFF0000],
                     [2, 'Holiday/Party', 'Party', 0x3366FF]
+                ],
+                -1,
+                0,
+                0
+            ],
+            'Heating.Control.SetPoint.Mode.HM'=> [
+                VARIABLETYPE_INTEGER,
+                '',
+                '',
+                '',
+                [
+                    [0, 'Automatic', 'Clock', 0x339966],
+                    [1, 'Manually', 'Execute', 0xFF0000],
+                    [2, 'Holiday/Party', 'Party', 0x3366FF],
+                    [3, 'Boost', 'Flame', 0xFFFF99]
                 ],
                 -1,
                 0,
@@ -274,6 +450,26 @@ namespace HMExtended
                 1,
                 0
             ],
+            'DateTime.Time.Minutes.30.Steps'=> [
+                VARIABLETYPE_INTEGER,
+                'Clock',
+                '',
+                ' minutes',
+                0,
+                30,
+                5,
+                0
+            ],
+            'DateTime.Time.Minutes.60.Steps'=> [
+                VARIABLETYPE_INTEGER,
+                'Clock',
+                '',
+                ' minutes',
+                0,
+                60,
+                5,
+                0
+            ],
             'Temperature.Room.Lowering.HmIP'=> [
                 VARIABLETYPE_FLOAT,
                 'Temperature',
@@ -294,6 +490,18 @@ namespace HMExtended
                 0.5,
                 1
             ],
+            'Execute.HM' => [
+                VARIABLETYPE_INTEGER,
+                '',
+                '',
+                '',
+                [
+                    [0, 'Start', '', -1]
+                ],
+                -1,
+                0,
+                0
+            ]
         ];
     }
 
@@ -303,7 +511,7 @@ namespace HMExtended
             DeviceType::ClimacontrolRegulator => [
                 ClimacontrolRegulator::SETPOINT => [
                     VARIABLETYPE_FLOAT,
-                    'Heating.Control.SetPoint.Temperature.HmIP',
+                    '~Temperature.HM',
                     true,
                     'Setpoint temperature'
                 ],
@@ -318,142 +526,228 @@ namespace HMExtended
                 ],
             ],
             DeviceType::HeatingGroupHmIP => [
-                'ACTIVE_PROFILE' => [
+                HeatingGroupHmIP::ACTIVE_PROFILE => [
                     VARIABLETYPE_INTEGER,
                     'Heating.Control.Profile.HmIP',
                     true,
-                    'Active profile',
-                    true
+                    'Active profile'
                 ],
-                'ACTUAL_TEMPERATURE' => [
+                HeatingGroupHmIP::ACTUAL_TEMPERATURE => [
                     VARIABLETYPE_FLOAT,
                     '~Temperature',
                     false,
                     'Temperature'
                 ],
-                'ACTUAL_TEMPERATURE_STATUS' => [
+                HeatingGroupHmIP::ACTUAL_TEMPERATURE_STATUS => [
                     Variables::VARIABLETYPE_NONE
                 ],
-                'BOOST_MODE' => [
+                HeatingGroupHmIP::BOOST_MODE => [
                     VARIABLETYPE_BOOLEAN,
                     '~Switch',
                     true,
-                    'Boost',
-                    true
+                    'Boost'
                 ],
-                'BOOST_TIME' => [
+                HeatingGroupHmIP::BOOST_TIME => [
                     VARIABLETYPE_INTEGER,
                     'DateTime.Time.Seconds.HM',
                     false,
-                    'Boost remaining time',
-                    false
+                    'Boost remaining time'
                 ],
-                'FROST_PROTECTION' => [
+                HeatingGroupHmIP::FROST_PROTECTION => [
                     VARIABLETYPE_BOOLEAN,
                     '~Switch',
                     false,
-                    'Frost protection',
-                    false
+                    'Frost protection'
                 ],
-                'HEATING_COOLING' => [
+                HeatingGroupHmIP::HEATING_COOLING => [
                     VARIABLETYPE_INTEGER,
                     'Heating.Control.Mode.HM',
                     true,
-                    'Operation mode',
-                    false
+                    'Operation mode'
                 ],
-                'HUMIDITY' => [
+                HeatingGroupHmIP::HUMIDITY => [
                     VARIABLETYPE_INTEGER,
                     '~Humidity',
                     false,
                     'Humidity'
                 ],
-                'HUMIDITY_STATUS' => [
+                HeatingGroupHmIP::HUMIDITY_STATUS => [
                     Variables::VARIABLETYPE_NONE
                 ],
-                'LEVEL' => [
+                HeatingGroupHmIP::LEVEL => [
                     VARIABLETYPE_FLOAT,
                     '~Intensity.1',
                     true,
-                    'Valve opening',
-                    true
+                    'Valve opening'
                 ],
-                'LEVEL_STATUS' => [
+                HeatingGroupHmIP::LEVEL_STATUS => [
                     Variables::VARIABLETYPE_NONE
                 ],
-                'PARTY_MODE' => [
+                HeatingGroupHmIP::PARTY_MODE => [
                     Variables::VARIABLETYPE_NONE
                 ],
-                'PARTY_SET_POINT_TEMPERATURE' => [
+                HeatingGroupHmIP::PARTY_SET_POINT_TEMPERATURE => [
                     VARIABLETYPE_FLOAT,
-                    'Heating.Control.SetPoint.Temperature.HmIP',
+                    '~Temperature.HM',
                     true,
                     'Holiday/Party set point temperature',
-                    true
+                    HeatingGroupHmIP::PARTY
                 ],
-                'PARTY_TIME_END' => [
+                HeatingGroupHmIP::PARTY_TIME_END => [
                     VARIABLETYPE_INTEGER,
                     '~UnixTimestamp',
                     true,
                     'Holiday/Party end',
-                    true
+                    HeatingGroupHmIP::PARTY
                 ],
-                'PARTY_TIME_START' => [
+                HeatingGroupHmIP::PARTY_TIME_START => [
                     VARIABLETYPE_INTEGER,
                     '~UnixTimestamp',
                     true,
                     'Holiday/Party start',
-                    true
+                    HeatingGroupHmIP::PARTY
                 ],
-                'QUICK_VETO_TIME' => [
+                HeatingGroupHmIP::QUICK_VETO_TIME => [
                     Variables::VARIABLETYPE_NONE
                 ],
-                'SET_POINT_MODE' => [
+                HeatingGroupHmIP::SET_POINT_MODE => [
                     VARIABLETYPE_INTEGER,
-                    'Heating.Control.SetPoint.Mode.HM',
-                    'CONTROL_MODE',
-                    'Target temperature mode',
-                    true
+                    'Heating.Control.SetPoint.Mode.HmIP',
+                    HeatingGroupHmIP::CONTROL_MODE,
+                    'Target temperature mode'
                 ],
-                'CONTROL_MODE'=> [
+                HeatingGroupHmIP::CONTROL_MODE=> [
                     Variables::VARIABLETYPE_NONE
                 ],
-                'SET_POINT_TEMPERATURE' => [
+                HeatingGroupHmIP::SET_POINT_TEMPERATURE => [
                     VARIABLETYPE_FLOAT,
-                    'Heating.Control.SetPoint.Temperature.HmIP',
+                    'Heating.Control.SetPoint.Temperature.HM',
                     true,
                     'Setpoint temperature'
                 ],
-                'SWITCH_POINT_OCCURED' => [
+                HeatingGroupHmIP::SWITCH_POINT_OCCURED => [
                     VARIABLETYPE_BOOLEAN,
                     '~Switch',
                     false,
-                    'Switch point occurred',
-                    false
+                    'Switch point occurred'
                 ],
-                'VALVE_ADAPTION' => [
+                HeatingGroupHmIP::VALVE_ADAPTION => [
                     VARIABLETYPE_BOOLEAN,
                     '~Switch',
                     true,
-                    'Valve adaption',
-                    false
+                    'Valve adaption'
                 ],
-                'VALVE_STATE' => [
+                HeatingGroupHmIP::VALVE_STATE => [
                     VARIABLETYPE_INTEGER,
                     'Heating.Valve.State.HmIP',
                     false,
-                    'Valve state',
-                    true
+                    'Valve state'
                 ],
-                'WINDOW_STATE' => [
+                HeatingGroupHmIP::WINDOW_STATE => [
                     VARIABLETYPE_INTEGER,
                     'Window.Open.State.HM.Reversed',
                     true,
-                    'Window state',
-                    true
+                    'Window state'
                 ]
             ],
-            DeviceType::HeatingGroup=> [
+            DeviceType::HeatingGroup => [
+                HeatingGroup::ACTUAL_HUMIDITY => [
+                    VARIABLETYPE_INTEGER,
+                    '~Humidity',
+                    false,
+                    'Humidity'
+                ],
+                HeatingGroup::ACTUAL_TEMPERATURE => [
+                    VARIABLETYPE_FLOAT,
+                    '~Temperature',
+                    false,
+                    'Temperature'
+                ],
+                HeatingGroup::SET_TEMPERATURE => [
+                    VARIABLETYPE_FLOAT,
+                    'Heating.Control.SetPoint.Temperature.HM',
+                    true,
+                    'Setpoint temperature'
+                ],
+                HeatingGroup::MANU_MODE => [
+                    \HMExtended\Variables::VARIABLETYPE_NONE
+                ],
+                HeatingGroup::AUTO_MODE => [
+                    \HMExtended\Variables::VARIABLETYPE_NONE
+                ],
+                HeatingGroup::BOOST_MODE => [
+                    \HMExtended\Variables::VARIABLETYPE_NONE
+                ],
+                HeatingGroup::CONTROL_MODE => [
+                    VARIABLETYPE_INTEGER,
+                    'Heating.Control.SetPoint.Mode.HM',
+                    true,
+                    'Target temperature mode'
+                ],
+                HeatingGroup::PARTY_TEMPERATURE => [
+                    VARIABLETYPE_FLOAT,
+                    '~Temperature.HM',
+                    true,
+                    'Holiday/Party set point temperature',
+                    HeatingGroup::PARTY
+                ],
+
+                HeatingGroup::PARTY_START_TIME => [
+                    VARIABLETYPE_INTEGER,
+                    '~UnixTimestamp',
+                    true,
+                    'Holiday/Party start',
+                    HeatingGroup::PARTY
+                ],
+                HeatingGroup::PARTY_START_DAY => [
+                    \HMExtended\Variables::VARIABLETYPE_NONE,
+                    '',
+                    HeatingGroup::PARTY_START_TIME
+                ],
+                HeatingGroup::PARTY_START_MONTH => [
+                    \HMExtended\Variables::VARIABLETYPE_NONE,
+                    '',
+                    HeatingGroup::PARTY_START_TIME
+                ],
+                HeatingGroup::PARTY_START_YEAR => [
+                    \HMExtended\Variables::VARIABLETYPE_NONE,
+                    '',
+                    HeatingGroup::PARTY_START_TIME
+                ],
+                HeatingGroup::PARTY_STOP_TIME => [
+                    VARIABLETYPE_INTEGER,
+                    '~UnixTimestamp',
+                    true,
+                    'Holiday/Party end',
+                    HeatingGroup::PARTY
+                ],
+                HeatingGroup::PARTY_STOP_DAY => [
+                    \HMExtended\Variables::VARIABLETYPE_NONE,
+                    '',
+                    HeatingGroup::PARTY_STOP_TIME
+                ],
+                HeatingGroup::PARTY_STOP_MONTH => [
+                    \HMExtended\Variables::VARIABLETYPE_NONE,
+                    '',
+                    HeatingGroup::PARTY_STOP_TIME
+                ],
+                HeatingGroup::PARTY_STOP_YEAR => [
+                    \HMExtended\Variables::VARIABLETYPE_NONE,
+                    '',
+                    HeatingGroup::PARTY_STOP_TIME
+                ],
+                HeatingGroup::COMFORT_MODE => [
+                    VARIABLETYPE_INTEGER,
+                    'Execute.HM',
+                    true,
+                    'Set to comfort temperature'
+                ],
+                HeatingGroup::LOWERING_MODE => [
+                    VARIABLETYPE_INTEGER,
+                    'Execute.HM',
+                    true,
+                    'Set to lowering temperature'
+                ],
             ]
         ];
     }
@@ -472,41 +766,36 @@ namespace HMExtended
                     VARIABLETYPE_INTEGER,
                     'DateTime.DoW.Saturday',
                     true,
-                    'Decalcification day',
-                    false
+                    'Decalcification day'
                 ],
                 ClimacontrolRegulator::DECALCIFICATION_TIME => [
                     VARIABLETYPE_INTEGER,
                     '~UnixTimestampTime',
                     true,
-                    'Decalcification time',
-                    false
+                    'Decalcification time'
                 ],
                 ClimacontrolRegulator::DECALCIFICATION_HOUR => [
                     Variables::VARIABLETYPE_NONE,
                     '',
-                    'DECALCIFICATION_TIME'
+                    ClimacontrolRegulator::DECALCIFICATION_TIME
                 ],
                 ClimacontrolRegulator::MODE_TEMPERATUR_VALVE => [
                     VARIABLETYPE_INTEGER,
                     'Heating.Control.Valve.Mode.HM',
                     true,
-                    'Valve mode',
-                    false
+                    'Valve mode'
                 ],
                 ClimacontrolRegulator::TEMPERATUR_LOWERING_VALUE=> [
                     VARIABLETYPE_FLOAT,
                     '~Temperature.HM',
                     true,
-                    'Lowering temperature',
-                    true
+                    'Lowering temperature'
                 ],
                 ClimacontrolRegulator::TEMPERATUR_COMFORT_VALUE => [
                     VARIABLETYPE_FLOAT,
                     '~Temperature.HM',
                     true,
-                    'Comfort temperature',
-                    true
+                    'Comfort temperature'
                 ],
                 ClimacontrolRegulator::PARTY_END_TIME => [
                     VARIABLETYPE_INTEGER,
@@ -515,84 +804,160 @@ namespace HMExtended
                     'Holiday/Party end',
                     true
                 ],
+                ClimacontrolRegulator::TEMPERATUR_PARTY_VALUE => [
+                    VARIABLETYPE_FLOAT,
+                    '~Temperature.HM',
+                    true,
+                    'Holiday/Party set point temperature',
+                    true
+                ],
                 ClimacontrolRegulator::PARTY_END_DAY => [
                     Variables::VARIABLETYPE_NONE,
                     '',
-                    'PARTY_END_TIME'
+                    ClimacontrolRegulator::PARTY_END_TIME
                 ],
                 ClimacontrolRegulator::PARTY_END_HOUR => [
                     Variables::VARIABLETYPE_NONE
                 ],
-                'PARTY_END_MINUTE'         => [
+                ClimacontrolRegulator::PARTY_END_MINUTE => [
                     Variables::VARIABLETYPE_NONE
                 ]
             ],
             DeviceType::HeatingGroupHmIP => [
-                'DECALCIFICATION_TIME'=> [
+                HeatingGroupHmIP::DECALCIFICATION_TIME=> [
                     VARIABLETYPE_INTEGER,
                     '~UnixTimestampTime',
                     true,
-                    'Decalcification time',
-                    false
+                    'Decalcification time'
                 ],
-                'DECALCIFICATION_WEEKDAY'=> [
+                HeatingGroupHmIP::DECALCIFICATION_WEEKDAY=> [
                     VARIABLETYPE_INTEGER,
                     'DateTime.DoW.Sunday',
                     true,
-                    'Decalcification day',
-                    false
+                    'Decalcification day'
                 ],
-                'BOOST_POSITION'=> [
+                HeatingGroupHmIP::BOOST_POSITION=> [
                     VARIABLETYPE_INTEGER,
                     '~Intensity.100',
                     true,
-                    'Boost valve opening',
-                    false
+                    'Boost valve opening'
                 ],
-                'BOOST_TIME_PERIOD' => [
+                HeatingGroupHmIP::BOOST_TIME_PERIOD => [
                     VARIABLETYPE_INTEGER,
                     'DateTime.Time.Minutes.30',
                     true,
-                    'Boost duration',
-                    false
+                    'Boost duration'
                 ],
-                'TEMPERATURE_COMFORT'         => [
+                HeatingGroupHmIP::TEMPERATURE_COMFORT => [
                     VARIABLETYPE_FLOAT,
                     'Temperature.Room.Comfort.HmIP',
                     true,
-                    'Comfort temperature',
-                    true
+                    'Comfort temperature'
                 ],
-                'TEMPERATURE_COMFORT_COOLING' => [
+                HeatingGroupHmIP::TEMPERATURE_COMFORT_COOLING => [
                     VARIABLETYPE_FLOAT,
                     'Temperature.Room.Lowering.HmIP',
                     true,
-                    'Comfort temperature cooling',
-                    false
+                    'Comfort temperature cooling'
                 ],
-                'TEMPERATURE_LOWERING'        => [
+                HeatingGroupHmIP::TEMPERATURE_LOWERING => [
                     VARIABLETYPE_FLOAT,
                     'Temperature.Room.Lowering.HmIP',
                     true,
-                    'Lowering temperature',
-                    true
+                    'Lowering temperature'
                 ],
-                'TEMPERATURE_LOWERING_COOLING'=> [
+                HeatingGroupHmIP::TEMPERATURE_LOWERING_COOLING => [
                     VARIABLETYPE_FLOAT,
                     'Temperature.Room.Comfort.HmIP',
                     true,
-                    'Lowering temperature cooling',
-                    false
+                    'Lowering temperature cooling'
                 ],
-                'TEMPERATURE_WINDOW_OPEN'     => [
+                HeatingGroupHmIP::TEMPERATURE_WINDOW_OPEN => [
                     VARIABLETYPE_FLOAT,
                     '~Temperature.HM',
                     true,
-                    'Window open temperature',
-                    true
+                    'Window open temperature'
                 ]
             ],
-            DeviceType::HeatingGroup=> [
+            DeviceType::HeatingGroup => [
+                HeatingGroup::WEEK_PROGRAM_POINTER => [
+                    VARIABLETYPE_INTEGER,
+                    'Heating.Control.Profile.HM',
+                    true,
+                    'Active profile'
+                ],
+                HeatingGroup::DECALCIFICATION_TIME=> [
+                    VARIABLETYPE_INTEGER,
+                    '~UnixTimestampTime',
+                    true,
+                    'Decalcification time'
+                ],
+                HeatingGroup::DECALCIFICATION_WEEKDAY=> [
+                    VARIABLETYPE_INTEGER,
+                    'DateTime.DoW.Sunday',
+                    true,
+                    'Decalcification day'
+                ],
+                HeatingGroup::BOOST_POSITION=> [
+                    VARIABLETYPE_INTEGER,
+                    '~Intensity.100',
+                    true,
+                    'Boost valve opening'
+                ],
+                HeatingGroup::BOOST_TIME_PERIOD => [
+                    VARIABLETYPE_INTEGER,
+                    'DateTime.Time.Minutes.30.Steps',
+                    true,
+                    'Boost duration'
+                ],
+                HeatingGroup::TEMPERATURE_COMFORT => [
+                    VARIABLETYPE_FLOAT,
+                    'Temperature.Room.Comfort.HmIP',
+                    true,
+                    'Comfort temperature'
+                ],
+                HeatingGroup::TEMPERATURE_LOWERING => [
+                    VARIABLETYPE_FLOAT,
+                    'Temperature.Room.Lowering.HmIP',
+                    true,
+                    'Lowering temperature'
+                ],
+                HeatingGroup::BUTTON_LOCK => [
+                    VARIABLETYPE_BOOLEAN,
+                    '~Switch',
+                    true,
+                    'Button lock'
+                ],
+                HeatingGroup::GLOBAL_BUTTON_LOCK => [
+                    VARIABLETYPE_BOOLEAN,
+                    '~Switch',
+                    true,
+                    'Device lock'
+                ],
+                HeatingGroup::MODUS_BUTTON_LOCK => [
+                    VARIABLETYPE_BOOLEAN,
+                    '~Switch',
+                    true,
+                    'Mode locked'
+                ],
+                HeatingGroup::BOOST_AFTER_WINDOW_OPEN => [
+                    VARIABLETYPE_BOOLEAN,
+                    '~Switch',
+                    true,
+                    'Boost when window closed'
+                ],
+                HeatingGroup::TEMPERATUREFALL_WINDOW_OPEN => [
+                    VARIABLETYPE_FLOAT,
+                    '~Temperature.HM',
+                    true,
+                    'Window open temperature'
+                ],
+                HeatingGroup::TEMPERATUREFALL_WINDOW_OPEN_TIME_PERIOD => [
+                    VARIABLETYPE_INTEGER,
+                    'DateTime.Time.Minutes.60.Steps',
+                    true,
+                    'Window open duration'
+                ]
             ]
         ];
     }
@@ -606,5 +971,4 @@ namespace HMExtended\Device
         public const Address = 'Address';
         public const Protocol = 'Protocol';
     }
-
 }

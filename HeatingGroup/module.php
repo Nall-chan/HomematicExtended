@@ -49,76 +49,166 @@ class HomeMaticHeatingGroup extends HMDeviceBase
         if (array_key_exists($Ident, \HMExtended\ValuesSet::$Variables[static::DeviceTyp])) {
             $Ident = is_string(\HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][2]) ? \HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][2] : $Ident;
             $this->FixValueType(\HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][0], $Value);
-            switch (\HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][0]) {
-                case VARIABLETYPE_BOOLEAN:
-                    $Value = (bool) $Value;
-                    break;
-                case VARIABLETYPE_INTEGER:
-                    $Value = (int) $Value;
-                    break;
-                case VARIABLETYPE_FLOAT:
-                    $Value = (float) $Value;
-                    break;
-                case VARIABLETYPE_STRING:
-                    $Value = (string) $Value;
-                    break;
-            }
+            $SendValue = $Value;
             switch ($Ident) {
-                case 'PARTY_TIME_START':
-                case 'PARTY_TIME_END':
-                    $this->SetValue($Ident, $Value);
-                    return true;
-                case 'PARTY_SET_POINT_TEMPERATURE':
-                    $this->SetValue($Ident, $Value);
-                    return true;
-                case 'CONTROL_MODE':
-                    switch ($Value) {
-                        case 2:
-
-                            $Start = (new DateTime())->setTimestamp((int) $this->GetValue('PARTY_TIME_START'));
-                            $End = (new DateTime())->setTimestamp((int) $this->GetValue('PARTY_TIME_END'));
-
-                            return $this->PutValueSet(
-                                [
-                                    'SET_POINT_MODE'        => 2,
-                                    'SET_POINT_TEMPERATURE' => $this->GetValue('PARTY_SET_POINT_TEMPERATURE'),
-                                    'PARTY_TIME_START'      => $Start->format('Y_m_d H:i'),
-                                    'PARTY_TIME_END'        => $End->format('Y_m_d H:i')
-                                ]
-                            );
+                case \HMExtended\HeatingGroup::PARTY_START_TIME:
+                    $d = (new DateTime())->setTimestamp((int) $Value);
+                    $CalcMin = (int) $d->format('i');
+                    $CalcHour = (int) $d->format('H');
+                    $Time = ($CalcHour * 60) + ($CalcMin > 30 ? 30 : 0);
+                    $d->setTime($CalcHour, ($CalcMin > 30 ? 30 : 0), 0, 0);
+                    if ($this->PutValueSet(
+                        [
+                            \HMExtended\HeatingGroup::PARTY_START_TIME  => $Time,
+                            \HMExtended\HeatingGroup::PARTY_START_DAY   => (int) $d->format('j'),
+                            \HMExtended\HeatingGroup::PARTY_START_MONTH => (int) $d->format('n'),
+                            \HMExtended\HeatingGroup::PARTY_START_YEAR  => (int) $d->format('y'),
+                        ]
+                    )) {
+                        $this->SetValue($Ident, $d->getTimestamp());
+                    }
+                    return;
+                case \HMExtended\HeatingGroup::PARTY_STOP_TIME:
+                    $d = (new DateTime())->setTimestamp((int) $Value);
+                    $CalcMin = (int) $d->format('i');
+                    $CalcHour = (int) $d->format('H');
+                    $Time = ($CalcHour * 60) + ($CalcMin > 30 ? 30 : 0);
+                    $d->setTime($CalcHour, ($CalcMin > 30 ? 30 : 0), 0, 0);
+                    if ($this->PutValueSet(
+                        [
+                            \HMExtended\HeatingGroup::PARTY_STOP_TIME  => $Time,
+                            \HMExtended\HeatingGroup::PARTY_STOP_DAY   => (int) $d->format('j'),
+                            \HMExtended\HeatingGroup::PARTY_STOP_MONTH => (int) $d->format('n'),
+                            \HMExtended\HeatingGroup::PARTY_STOP_YEAR  => (int) $d->format('y'),
+                        ]
+                    )) {
+                        $this->SetValue($Ident, $d->getTimestamp());
+                    }
+                    return;
+                case \HMExtended\HeatingGroup::PARTY_TEMPERATURE:
+                    if ($this->GetValue(\HMExtended\HeatingGroup::CONTROL_MODE) != 2) {
+                        $start = (new DateTime())->setTimestamp((int) $this->GetValue(\HMExtended\HeatingGroup::PARTY_START_TIME));
+                        $StartTime = ((int) $start->format('H') * 60) + ((int) $start->format('i') > 30 ? 30 : 0);
+                        $stop = (new DateTime())->setTimestamp((int) $this->GetValue(\HMExtended\HeatingGroup::PARTY_STOP_TIME));
+                        $StopTime = ((int) $stop->format('H') * 60) + ((int) $stop->format('i') > 30 ? 30 : 0);
+                        $this->PutValueSet(
+                            [
+                                \HMExtended\HeatingGroup::PARTY_START_TIME  => $StartTime,
+                                \HMExtended\HeatingGroup::PARTY_START_DAY   => (int) $start->format('j'),
+                                \HMExtended\HeatingGroup::PARTY_START_MONTH => (int) $start->format('n'),
+                                \HMExtended\HeatingGroup::PARTY_START_YEAR  => (int) $start->format('y'),
+                                \HMExtended\HeatingGroup::PARTY_STOP_TIME   => $StopTime,
+                                \HMExtended\HeatingGroup::PARTY_STOP_DAY    => (int) $stop->format('j'),
+                                \HMExtended\HeatingGroup::PARTY_STOP_MONTH  => (int) $stop->format('n'),
+                                \HMExtended\HeatingGroup::PARTY_STOP_YEAR   => (int) $stop->format('y')
+                            ]
+                        );
                     }
                     break;
+                case \HMExtended\HeatingGroup::SET_TEMPERATURE:
+                    $Mode = $this->GetValue(\HMExtended\HeatingGroup::CONTROL_MODE);
+                    switch ($Mode) {
+                        case 0:
+                        case 3:
+                            $Ident = \HMExtended\HeatingGroup::MANU_MODE;
+                            break;
+                        case 2:
+                            $Ident = \HMExtended\HeatingGroup::PARTY_TEMPERATURE;
+                            break;
+                    }
+                    break;
+                case \HMExtended\HeatingGroup::CONTROL_MODE:
+                    switch ($Value) {
+                        case 0:
+                            $Ident = \HMExtended\HeatingGroup::AUTO_MODE;
+                            $SendValue = true;
+                            break;
+                        case 1:
+                            $Ident = \HMExtended\HeatingGroup::MANU_MODE;
+                            $SendValue = (float) $this->GetValue(\HMExtended\HeatingGroup::SET_TEMPERATURE);
+                            break;
+                        case 2:
+                            if (!$this->ReadPropertyBoolean('enable_PARTY')) {
+                                trigger_error('Party is disabled in config.', E_USER_NOTICE);
+                                return;
+                            }
+                            if ($this->GetValue(\HMExtended\HeatingGroup::CONTROL_MODE) == 2) {
+                                return;
+                            }
+                            $Value = (float) $this->GetValue(\HMExtended\HeatingGroup::SET_TEMPERATURE);
+                            $start = (new DateTime())->setTimestamp((int) $this->GetValue(\HMExtended\HeatingGroup::PARTY_START_TIME));
+                            $StartTime = ((int) $start->format('H') * 60) + ((int) $start->format('i') > 30 ? 30 : 0);
+                            $stop = (new DateTime())->setTimestamp((int) $this->GetValue(\HMExtended\HeatingGroup::PARTY_STOP_TIME));
+                            $StopTime = ((int) $stop->format('H') * 60) + ((int) $stop->format('i') > 30 ? 30 : 0);
+                            $this->PutValueSet(
+                                [
+                                    \HMExtended\HeatingGroup::PARTY_START_TIME  => $StartTime,
+                                    \HMExtended\HeatingGroup::PARTY_START_DAY   => (int) $start->format('j'),
+                                    \HMExtended\HeatingGroup::PARTY_START_MONTH => (int) $start->format('n'),
+                                    \HMExtended\HeatingGroup::PARTY_START_YEAR  => (int) $start->format('y'),
+                                    \HMExtended\HeatingGroup::PARTY_STOP_TIME   => $StopTime,
+                                    \HMExtended\HeatingGroup::PARTY_STOP_DAY    => (int) $stop->format('j'),
+                                    \HMExtended\HeatingGroup::PARTY_STOP_MONTH  => (int) $stop->format('n'),
+                                    \HMExtended\HeatingGroup::PARTY_STOP_YEAR   => (int) $stop->format('y'),
+                                    \HMExtended\HeatingGroup::PARTY_TEMPERATURE => $Value
+                                ]
+                            );
+                            return;
+                        case 3:
+                            $Ident = \HMExtended\HeatingGroup::BOOST_MODE;
+                            $SendValue = true;
+                            break;
+                    }
+                    break;
+                case \HMExtended\HeatingGroup::COMFORT_MODE:
+                case \HMExtended\HeatingGroup::LOWERING_MODE:
+                    $SendValue = true;
+                    break;
             }
-            return $this->PutValue($Ident, $Value);
+            $this->PutValue($Ident, $SendValue);
+            return;
         }
         if (array_key_exists($Ident, \HMExtended\ParamSet::$Variables[static::DeviceTyp])) {
             $Ident = is_string(\HMExtended\ParamSet::$Variables[static::DeviceTyp][$Ident][2]) ? \HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][2] : $Ident;
             $this->FixValueType(\HMExtended\ParamSet::$Variables[static::DeviceTyp][$Ident][0], $Value);
+            $SendValue = $Value;
             switch ($Ident) {
-                case 'DECALCIFICATION_TIME':
+                case \HMExtended\HeatingGroup::DECALCIFICATION_TIME:
                     $d = (new DateTime())->setTimestamp((int) $Value);
                     $CalcMin = (int) $d->format('i');
                     $CalcHour = (int) $d->format('H');
-                    $Value = ($CalcHour * 2) + ($CalcMin > 30 ? 1 : 0);
-                    if ($this->PutParamSet([$Ident=>(int) $Value])) {
-                        $this->SetValue($Ident, $Value);
-                        return true;
-                    }
-                    return false;
+                    $SendValue = ($CalcHour * 60) + ($CalcMin > 30 ? 30 : 0);
+                    $Value = ($d->setTime($CalcHour, ($CalcMin > 30 ? 30 : 0), 0, 0))->getTimestamp();
+                    break;
+                case \HMExtended\HeatingGroup::BOOST_TIME_PERIOD:
+                    $SendValue = intdiv((int) $Value, 5);
+                    break;
+                case \HMExtended\HeatingGroup::WEEK_PROGRAM_POINTER:
+                    $SendValue--;
+                    break;
             }
-            if ($this->PutParamSet([$Ident=>$Value])) {
+            if ($this->PutParamSet([$Ident=>$SendValue], true)) {
                 $this->SetValue($Ident, $Value);
-                return true;
             }
+            return;
         }
-        trigger_error('Invalid Ident.', E_USER_NOTICE);
-        return false;
+        trigger_error($this->Translate('Invalid Ident.') . ' (' . $Ident . ')', E_USER_NOTICE);
+        return;
     }
+
     protected function SetParamVariable(array $Params)
     {
         $d = new DateTime();
-        $d->setTime(intdiv($Params['DECALCIFICATION_TIME'], 2), ($Params['DECALCIFICATION_TIME'] % 2) == 1 ? 30 : 0, 0, 0);
-        $Params['DECALCIFICATION_TIME'] = $d->getTimestamp();
+        $d->setTime(
+            intdiv($Params[\HMExtended\HeatingGroup::DECALCIFICATION_TIME], 60),
+            ($Params[\HMExtended\HeatingGroup::DECALCIFICATION_TIME] % 60),
+            0,
+            0
+        );
+        $Params[\HMExtended\HeatingGroup::DECALCIFICATION_TIME] = $d->getTimestamp();
+        $Params[\HMExtended\HeatingGroup::BOOST_TIME_PERIOD] =
+        $Params[\HMExtended\HeatingGroup::BOOST_TIME_PERIOD] * 5;
+        $Params[\HMExtended\HeatingGroup::WEEK_PROGRAM_POINTER]++;
 
         foreach ($Params as $Ident => $Value) {
             @$this->SetValue($Ident, $Value);
@@ -127,16 +217,49 @@ class HomeMaticHeatingGroup extends HMDeviceBase
 
     protected function SetVariable(string $Ident, $Value)
     {
+        if ($this->ReadPropertyBoolean('enable_PARTY')) {
+            switch ($Ident) {
+                case \HMExtended\HeatingGroup::PARTY_START_DAY:
+                case \HMExtended\HeatingGroup::PARTY_STOP_DAY:
+                    $Ident = \HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][2];
+                    $d = (new DateTime())->setTimestamp((int) $this->GetValue($Ident));
+                    $d->setDate((int) $d->format('Y'), (int) $d->format('n'), $Value);
+                    $Value = $d->getTimestamp();
+                    break;
+                case \HMExtended\HeatingGroup::PARTY_START_MONTH:
+                case \HMExtended\HeatingGroup::PARTY_STOP_MONTH:
+                    $Ident = \HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][2];
+                    $d = (new DateTime())->setTimestamp((int) $this->GetValue($Ident));
+                    $d->setDate((int) $d->format('Y'), $Value, (int) $d->format('j'));
+                    $Value = $d->getTimestamp();
+                    break;
+                case \HMExtended\HeatingGroup::PARTY_START_YEAR:
+                case \HMExtended\HeatingGroup::PARTY_STOP_YEAR:
+                    $Ident = \HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][2];
+                    $d = (new DateTime())->setTimestamp((int) $this->GetValue($Ident));
+                    $d->setDate(2000 + $Value, (int) $d->format('n'), (int) $d->format('j'));
+                    $Value = $d->getTimestamp();
+                    if ($Value < 946767600) {
+                        $d = new DateTime();
+                        $d->setTime((int) $d->format('H'), ((int) $d->format('i') > 30 ? 30 : 0), 0, 0);
+                        $Value = $d->getTimestamp();
+                    }
+                    break;
+                case \HMExtended\HeatingGroup::PARTY_START_TIME:
+                case \HMExtended\HeatingGroup::PARTY_STOP_TIME:
+                    $d = (new DateTime())->setTimestamp((int) $this->GetValue($Ident));
+                    $d->setTime(intdiv($Value, 60), ($Value % 60), 0, 0);
+                    $Value = $d->getTimestamp();
+                    break;
+            }
+        }
         switch ($Ident) {
-            case 'PARTY_TIME_START':
-            case 'PARTY_TIME_END':
-                $d = DateTime::createFromFormat('Y_m_d H:i', $Value);
-                @$this->SetValue($Ident, $d->getTimestamp());
-                break;
-            default:
-                @$this->SetValue($Ident, $Value);
+            case \HMExtended\HeatingGroup::COMFORT_MODE:
+            case \HMExtended\HeatingGroup::LOWERING_MODE:
+                $Value = 0;
                 break;
         }
+        @$this->SetValue($Ident, $Value);
     }
     //################# PRIVATE
 }

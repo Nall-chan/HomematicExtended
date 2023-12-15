@@ -30,22 +30,17 @@ abstract class HMDeviceBase extends HMBase
         'ENUM'    => VARIABLETYPE_INTEGER,
         'FLOAT'   => VARIABLETYPE_FLOAT,
         'STRING'  => VARIABLETYPE_STRING,
+        'ACTION'  => \HMExtended\Variables::VARIABLETYPE_NONE,
     ];
+
     /**
      * Interne Funktion des SDK.
      */
     public function Create()
     {
         parent::Create();
-        foreach (\HMExtended\ValuesSet::$Variables[static::DeviceTyp] as $Ident => $VarData) {
-            if (isset($VarData[4])) {
-                $this->RegisterPropertyBoolean('enable_' . $Ident, $VarData[4]);
-            }
-        }
-        foreach (\HMExtended\ParamSet::$Variables[static::DeviceTyp] as $Ident => $VarData) {
-            if (isset($VarData[4])) {
-                $this->RegisterPropertyBoolean('enable_' . $Ident, $VarData[4]);
-            }
+        foreach (\HMExtended\Property::$Properties[static::DeviceTyp] as $Property => $Value) {
+            $this->RegisterPropertyBoolean('enable_' . $Property, $Value);
         }
         $this->RegisterPropertyBoolean('enable_SCHEDULE', false);
         $this->RegisterPropertyFloat('ScheduleMinTemp', 5);
@@ -69,6 +64,7 @@ abstract class HMDeviceBase extends HMBase
         ];
         $this->RegisterAttributeString('ScheduleColors', json_encode($ScheduleTemps));
     }
+
     /**
      * Interne Funktion des SDK.
      */
@@ -89,18 +85,20 @@ abstract class HMDeviceBase extends HMBase
     {
         parent::ApplyChanges();
         $Address = $this->ReadPropertyString(\HMExtended\Device\Property::Address);
-        $this->SetReceiveDataFilter($Address == '' ? '.*9999999999.*' : '.*"DeviceID":"' . $Address . '.*');
+        $this->SetReceiveDataFilter($Address == '' ? '.*9999999999.*' : '.*"DeviceID":"' . $Address . static::ValuesChannel . '.*');
 
         foreach (\HMExtended\ValuesSet::$Variables[static::DeviceTyp] as $Ident => $VarData) {
-            if (isset($VarData[4])) {
-                if (!$this->ReadPropertyBoolean('enable_' . $Ident)) {
+            $Property = isset($VarData[4]) ? $VarData[4] : $Ident;
+            if (array_key_exists($Property, \HMExtended\Property::$Properties[static::DeviceTyp])) {
+                if (!$this->ReadPropertyBoolean('enable_' . $Property)) {
                     $this->UnregisterVariable($Ident);
                 }
             }
         }
-        foreach (\HMExtended\ParamSet::$Variables[static::DeviceTyp] as $Ident => $VarData) {
-            if (isset($VarData[4])) {
-                if (!$this->ReadPropertyBoolean('enable_' . $Ident)) {
+        foreach (\HMExtended\ParamSet::$Variables[static::DeviceTyp] as $Ident => $ParaData) {
+            $Property = isset($ParaData[4]) ? $ParaData[4] : $Ident;
+            if (array_key_exists($Property, \HMExtended\Property::$Properties[static::DeviceTyp])) {
+                if (!$this->ReadPropertyBoolean('enable_' . $Property)) {
                     $this->UnregisterVariable($Ident);
                 }
             }
@@ -110,14 +108,13 @@ abstract class HMDeviceBase extends HMBase
         if (IPS_GetKernelRunlevel() != KR_READY) {
             return;
         }
-        if ($Address != '') {
+        if (($Address != '') && ($this->HasActiveParent())) {
             $this->createVariablesFromValues();
             $this->getValuesAndSetVariable();
             $this->createVariablesFromParams();
             $this->getParamsAndSetVariable();
         }
     }
-
     /*
     public function ReadParamset(string $Paramset)
     {
@@ -167,6 +164,7 @@ abstract class HMDeviceBase extends HMBase
     /**
      * Interne Funktion des SDK.
      */
+
     /**
      * Interne Funktion des SDK.
      */
@@ -180,26 +178,39 @@ abstract class HMDeviceBase extends HMBase
                 $this->getParamsAndSetVariable();
                 return true;
         }
-
-        if (isset(\HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][4])) {
-            if (!$this->ReadPropertyBoolean('enable_' . $Ident)) {
-                trigger_error('Variable is disabled in config.', E_USER_NOTICE);
-                return true;
-            }
+        $Property = $Ident;
+        if (array_key_exists($Ident, \HMExtended\ValuesSet::$Variables[static::DeviceTyp])) {
+            $Property = isset(\HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][4]) ? \HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][4] : $Ident;
         }
-        if (isset(\HMExtended\ParamSet::$Variables[static::DeviceTyp][$Ident][4])) {
-            if (!$this->ReadPropertyBoolean('enable_' . $Ident)) {
-                trigger_error('Parameter is disabled in config.', E_USER_NOTICE);
+        if (array_key_exists($Ident, \HMExtended\ParamSet::$Variables[static::DeviceTyp])) {
+            $Property = isset(\HMExtended\ParamSet::$Variables[static::DeviceTyp][$Ident][4]) ? \HMExtended\ParamSet::$Variables[static::DeviceTyp][$Ident][4] : $Ident;
+        }
+        if (array_key_exists($Property, \HMExtended\Property::$Properties[static::DeviceTyp])) {
+            if (!$this->ReadPropertyBoolean('enable_' . $Property)) {
+                trigger_error('Variable is disabled in config.', E_USER_NOTICE);
                 return true;
             }
         }
         return false;
     }
+
     public function ReceiveData($JSONString)
     {
         $Event = json_decode($JSONString, true);
         $this->SendDebug('EVENT:' . $Event['VariableName'], $Event['VariableValue'], 0);
         $this->SetVariable($Event['VariableName'], $Event['VariableValue']);
+    }
+    /**
+     * Wird ausgeführt wenn sich der Status vom Parent ändert.
+     */
+    protected function IOChangeState($State)
+    {
+        if ($State == IS_ACTIVE) {
+            if (($this->ReadPropertyString(\HMExtended\Device\Property::Address) != '') && ($this->HasActiveParent())) {
+                $this->getValuesAndSetVariable();
+                $this->getParamsAndSetVariable();
+            }
+        }
     }
 
     //################# PUBLIC
@@ -209,41 +220,45 @@ abstract class HMDeviceBase extends HMBase
         $AddressWithChannel = $this->ReadPropertyString(\HMExtended\Device\Property::Address) . static::ValuesChannel;
         $Result = $this->getParamsetDescription('VALUES', $AddressWithChannel);
         foreach ($Result as $Variable) {
-            if ($Variable['OPERATIONS'] & 0b101) {
-                $Ident = $Variable['ID'];
-                $VarType = self::$VariableTypes[$Variable['TYPE']];
-                $Profile = '';
-                $Name = $Variable['ID'];
-                $Action = '';
-                if (array_key_exists($Ident, \HMExtended\ValuesSet::$Variables[static::DeviceTyp])) {
-                    if (isset(\HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][4])) {
-                        if (!$this->ReadPropertyBoolean('enable_' . $Ident)) {
-                            continue;
-                        }
-                    }
-                    $VarType = \HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][0];
-                    if ($VarType == \HMExtended\Variables::VARIABLETYPE_NONE) {
-                        continue;
-                    }
-                    $Profile = \HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][1];
-                    $Action = \HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][2];
-                    if (isset(\HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][3])) {
-                        $Name = $this->Translate(\HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][3]);
-                    }
-                    $this->CreateProfile($Profile);
-                }
-
-                $this->MaintainVariable($Ident, $Name, $VarType, $Profile, 0, true);
-                if ($Action === '') {
-                    if ($Variable['OPERATIONS'] & 0b10) {
-                        $this->EnableAction($Ident);
-                    }
-                } elseif ($Action) {
-                    $this->EnableAction($Ident);
+            //if ($Variable['OPERATIONS'] & 0b101) {
+            $Ident = $Variable['ID'];
+            //$VarType = self::$VariableTypes[$Variable['TYPE']];
+            //$Profile = '';
+            $Name = $Variable['ID'];
+            $Action = '';
+            if (!array_key_exists($Ident, \HMExtended\ValuesSet::$Variables[static::DeviceTyp])) {
+                continue;
+            }
+            $Property = isset(\HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][4]) ? \HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][4] : $Ident;
+            if (array_key_exists($Property, \HMExtended\Property::$Properties[static::DeviceTyp])) {
+                if (!$this->ReadPropertyBoolean('enable_' . $Property)) {
+                    continue;
                 }
             }
+            $VarType = \HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][0];
+            if ($VarType == \HMExtended\Variables::VARIABLETYPE_NONE) {
+                continue;
+            }
+            $Profile = \HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][1];
+            $Action = \HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][2];
+            if (isset(\HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][3])) {
+                $Name = $this->Translate(\HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][3]);
+            }
+            $this->CreateProfile($Profile);
+            //}
+
+            $this->MaintainVariable($Ident, $Name, $VarType, $Profile, 0, true);
+            if ($Action === '') {
+                if ($Variable['OPERATIONS'] & 0b10) {
+                    $this->EnableAction($Ident);
+                }
+            } elseif ($Action) {
+                $this->EnableAction($Ident);
+            }
+            //}
         }
     }
+
     protected function getValuesAndSetVariable()
     {
         $AddressWithChannel = $this->ReadPropertyString(\HMExtended\Device\Property::Address) . static::ValuesChannel;
@@ -252,6 +267,7 @@ abstract class HMDeviceBase extends HMBase
             $this->SetVariable($Ident, $Value);
         }
     }
+
     protected function createVariablesFromParams()
     {
         $AddressWithChannel = $this->ReadPropertyString(\HMExtended\Device\Property::Address) . static::ParamChannel;
@@ -275,8 +291,10 @@ abstract class HMDeviceBase extends HMBase
                     }
                     $VarType = \HMExtended\ParamSet::$Variables[static::DeviceTyp][$Ident][0];
                 }
-                if (isset(\HMExtended\ParamSet::$Variables[static::DeviceTyp][$Ident][4])) {
-                    if (!$this->ReadPropertyBoolean('enable_' . $Ident)) {
+
+                $Property = isset(\HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][4]) ? \HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][4] : $Ident;
+                if (array_key_exists($Property, \HMExtended\Property::$Properties[static::DeviceTyp])) {
+                    if (!$this->ReadPropertyBoolean('enable_' . $Property)) {
                         continue;
                     }
                 }
@@ -304,7 +322,9 @@ abstract class HMDeviceBase extends HMBase
         $AddressWithChannel = $this->ReadPropertyString(\HMExtended\Device\Property::Address) . static::ParamChannel;
         $Result = $this->getParamset('MASTER', $AddressWithChannel);
         $this->SendDebug(__FUNCTION__, $Result, 0);
-        $this->SetParamVariable($Result);
+        if (count($Result) != 0) {
+            $this->SetParamVariable($Result);
+        }
     }
 
     protected function CreateProfile($Profile)
@@ -397,6 +417,7 @@ abstract class HMDeviceBase extends HMBase
         }
         return $Event;
     }
+
     //################# PRIVATE
     protected function FixValueType($VarType, &$Value)
     {
@@ -415,44 +436,40 @@ abstract class HMDeviceBase extends HMBase
                 break;
         }
     }
-    /**
-     * Liest alle Parameter des Devices aus.
-     *
-     * @return array Ein Array mit den Daten des Interface.
-     */
+
     protected function GetParamset(string $Paramset, string $AddressWithChannel)
     {
-        return $this->SendRPC('getParamset', [$AddressWithChannel, $Paramset]);
+        $Result = $this->SendRPC('getParamset', [$AddressWithChannel, $Paramset]);
+        return is_array($Result) ? $Result : [];
     }
 
-    /**
-     * Liest alle Parameter des Devices aus.
-     *
-     * @return array Ein Array mit den Daten des Interface.
-     */
     protected function GetParamsetDescription(string $Paramset, string $AddressWithChannel)
     {
-        return $this->SendRPC('getParamsetDescription', [$AddressWithChannel, $Paramset]);
+        $Result = $this->SendRPC('getParamsetDescription', [$AddressWithChannel, $Paramset]);
+        return is_array($Result) ? $Result : [];
     }
 
-    protected function PutParamSet(array $Parameter)
+    protected function PutParamSet(array $Parameter, bool $EmulateStatus = false)
     {
         $Paramset = [$this->ReadPropertyString(\HMExtended\Device\Property::Address) . static::ParamChannel, 'MASTER'];
-        $Result = $this->SendRPC('putParamset', $Paramset, $Parameter, $this->ReadPropertyBoolean(\HMExtended\Device\Property::EmulateStatus));
+        $Result = $this->SendRPC('putParamset', $Paramset, $Parameter, $EmulateStatus);
         return ($Result) ? true : false;
     }
 
-    protected function PutValueSet($Value)
+    protected function PutValueSet($Value, bool $EmulateStatus = false)
     {
         $Paramset = [$this->ReadPropertyString(\HMExtended\Device\Property::Address) . static::ValuesChannel, 'VALUES'];
-        $Result = $this->SendRPC('putParamset', $Paramset, $Value, $this->ReadPropertyBoolean(\HMExtended\Device\Property::EmulateStatus));
+        $Result = $this->SendRPC('putParamset', $Paramset, $Value, $EmulateStatus);
         return ($Result) ? true : false;
     }
 
-    protected function PutValue(string $ValueName, $Value)
+    protected function PutValue(string $ValueName, $Value, bool $EmulateStatus = false)
     {
         $Paramset = [$this->ReadPropertyString(\HMExtended\Device\Property::Address) . static::ValuesChannel, $ValueName];
-        $Result = $this->SendRPC('setValue', $Paramset, $Value, $this->ReadPropertyBoolean(\HMExtended\Device\Property::EmulateStatus));
+        $Result = $this->SendRPC('setValue', $Paramset, $Value, $EmulateStatus);
+        if ($Result && $EmulateStatus) {
+            $this->SetVariable($ValueName, $Value);
+        }
         return ($Result) ? true : false;
     }
 
@@ -466,7 +483,7 @@ abstract class HMDeviceBase extends HMBase
             'DataID'     => \HMExtended\GUID::SendRpcToIO,
             'Protocol'   => $this->ReadPropertyInteger(\HMExtended\Device\Property::Protocol),
             'MethodName' => $MethodName,
-            'WaitTime'   => ($EmulateStatus ? 1 : 5000),
+            'WaitTime'   => ($EmulateStatus ? 1 : (int) IPS_GetProperty($this->ParentID, 'WaitTimeDevice')),
             'Data'       => $Paramset
         ];
         if (is_array($Data)) {
@@ -475,7 +492,6 @@ abstract class HMDeviceBase extends HMBase
             $ParentData['Data'][] = $Data;
         }
         $this->SendDebug('Send', $ParentData, 0);
-
         $ResultJSON = @$this->SendDataToParent(json_encode($ParentData, JSON_PRESERVE_ZERO_FRACTION));
         if ($EmulateStatus) {
             return true;
@@ -493,6 +509,7 @@ abstract class HMDeviceBase extends HMBase
         $this->SendDebug('Receive', $Result, 0);
         return $Result;
     }
+
     private function SetColorAttribute(array $Values)
     {
         ksort($Values);
@@ -501,6 +518,7 @@ abstract class HMDeviceBase extends HMBase
         }
         $this->WriteAttributeString('ScheduleColors', json_encode($ScheduleTemps));
     }
+
     private function GetColorAttribute()
     {
         $Values = [];

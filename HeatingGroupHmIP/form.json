@@ -133,12 +133,6 @@
                             "type": "RowLayout",
                             "items": [
                                 {
-                                    "name": "enable_SET_POINT_MODE",
-                                    "type": "CheckBox",
-                                    "caption": "Target temperature mode",
-                                    "width": "250px"
-                                },
-                                {
                                     "name": "enable_HEATING_COOLING",
                                     "type": "CheckBox",
                                     "caption": "Operation mode",
@@ -195,27 +189,10 @@
                     "expanded": true,
                     "items": [
                         {
-                            "name": "enable_PARTY_SET_POINT_TEMPERATURE",
+                            "name": "enable_PARTY",
                             "type": "CheckBox",
-                            "caption": "Holiday/Party set point temperature",
+                            "caption": "Holiday/Party control",
                             "width": "250px"
-                        },
-                        {
-                            "type": "RowLayout",
-                            "items": [
-                                {
-                                    "name": "enable_PARTY_TIME_START",
-                                    "type": "CheckBox",
-                                    "caption": "Holiday/Party start",
-                                    "width": "250px"
-                                },
-                                {
-                                    "name": "enable_PARTY_TIME_END",
-                                    "type": "CheckBox",
-                                    "caption": "Holiday/Party end",
-                                    "width": "250px"
-                                }
-                            ]
                         }
                     ]
                 },

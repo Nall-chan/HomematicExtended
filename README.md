@@ -140,6 +140,26 @@ Erweitert IPS um die native Unterstützung von:
 
 ### 2. Changelog
 
+Version 3.60:
+
+**Profile vor dem Update löschen:**  
+* Heating.Control.Profile.HmIP
+* Heating.Control.SetPoint.Mode.HM
+  
+Fixes für die ClimacontrolRegulator:
+* Prüfung der maximalen Anzahl von Tagen für den Party/Urlaub Modus war defekt.  
+* Veränderungen der Solltemperatur setzen den Modus auf Manuell.  
+  
+Fixes für die HeatingGroupHmIP:
+* Modus Solltemperatur ist nicht mehr optional.  
+* Veränderungen der Solltemperatur während des Modus Automatik setzen den Modus auf Manuell.  
+* Veränderungen der Solltemperatur während des Modus Party/Urlaub sind möglich.  
+* Alle Party/Urlaub Einstellungen als eine Konfig-Einstellung zusammengefasst.  
+* Sind die Start und Endwerte von Party/Urlaub nicht gesetzt, wird initial die aktuelle Zeit übernommen.  
+
+HeatingGroup:
+* Instanz funktional hinzugefügt.  
+ 
 Version 3.50:
 
 * Neu: HomeMatic Paraset Interface Instanz zum lesen und schreiben von Parametern von Geräten.  

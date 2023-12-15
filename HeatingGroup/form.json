@@ -14,7 +14,7 @@
                     "type": "RowLayout",
                     "items": [
                         {
-                            "name": "enable_ACTIVE_PROFILE",
+                            "name": "enable_WEEK_PROGRAM_POINTER",
                             "type": "CheckBox",
                             "caption": "Active profile",
                             "width": "250px"
@@ -133,15 +133,15 @@
                             "type": "RowLayout",
                             "items": [
                                 {
-                                    "name": "enable_SET_POINT_MODE",
+                                    "name": "enable_COMFORT_MODE",
                                     "type": "CheckBox",
-                                    "caption": "Target temperature mode",
+                                    "caption": "Set to comfort temperature",
                                     "width": "250px"
                                 },
                                 {
-                                    "name": "enable_HEATING_COOLING",
+                                    "name": "enable_LOWERING_MODE",
                                     "type": "CheckBox",
-                                    "caption": "Operation mode",
+                                    "caption": "Set to lowering temperature",
                                     "width": "250px"
                                 }
                             ]
@@ -153,23 +153,6 @@
                     "caption": "Boost",
                     "expanded": true,
                     "items": [
-                        {
-                            "type": "RowLayout",
-                            "items": [
-                                {
-                                    "name": "enable_BOOST_MODE",
-                                    "type": "CheckBox",
-                                    "caption": "Boost",
-                                    "width": "250px"
-                                },
-                                {
-                                    "name": "enable_BOOST_TIME",
-                                    "type": "CheckBox",
-                                    "caption": "Boost remaining time",
-                                    "width": "250px"
-                                }
-                            ]
-                        },
                         {
                             "type": "RowLayout",
                             "items": [
@@ -195,27 +178,10 @@
                     "expanded": true,
                     "items": [
                         {
-                            "name": "enable_PARTY_SET_POINT_TEMPERATURE",
+                            "name": "enable_PARTY",
                             "type": "CheckBox",
-                            "caption": "Holiday/Party set point temperature",
+                            "caption": "Holiday/Party control",
                             "width": "250px"
-                        },
-                        {
-                            "type": "RowLayout",
-                            "items": [
-                                {
-                                    "name": "enable_PARTY_TIME_START",
-                                    "type": "CheckBox",
-                                    "caption": "Holiday/Party start",
-                                    "width": "250px"
-                                },
-                                {
-                                    "name": "enable_PARTY_TIME_END",
-                                    "type": "CheckBox",
-                                    "caption": "Holiday/Party end",
-                                    "width": "250px"
-                                }
-                            ]
                         }
                     ]
                 },
@@ -240,40 +206,36 @@
                                     "width": "250px"
                                 }
                             ]
-                        },
+                        }
+                    ]
+                },
+                {
+                    "type": "ExpansionPanel",
+                    "caption": "Window",
+                    "expanded": true,
+                    "items": [
                         {
                             "type": "RowLayout",
                             "items": [
                                 {
-                                    "name": "enable_TEMPERATURE_COMFORT_COOLING",
-                                    "type": "CheckBox",
-                                    "caption": "Comfort temperature cooling",
-                                    "width": "250px"
-                                },
-                                {
-                                    "name": "enable_TEMPERATURE_LOWERING_COOLING",
-                                    "type": "CheckBox",
-                                    "caption": "Lowering temperature cooling",
-                                    "width": "250px"
-                                }
-                            ]
-                        },
-                        {
-                            "type": "RowLayout",
-                            "items": [
-                                {
-                                    "name": "enable_TEMPERATURE_WINDOW_OPEN",
+                                    "name": "enable_TEMPERATUREFALL_WINDOW_OPEN",
                                     "type": "CheckBox",
                                     "caption": "Window open temperature",
                                     "width": "250px"
                                 },
                                 {
-                                    "name": "enable_WINDOW_STATE",
+                                    "name": "enable_TEMPERATUREFALL_WINDOW_OPEN_TIME_PERIOD",
                                     "type": "CheckBox",
-                                    "caption": "Window state",
+                                    "caption": "Window open duration",
                                     "width": "250px"
                                 }
                             ]
+                        },
+                        {
+                            "name": "enable_BOOST_AFTER_WINDOW_OPEN",
+                            "type": "CheckBox",
+                            "caption": "Boost when window was closed",
+                            "width": "500px"
                         }
                     ]
                 },
@@ -303,48 +265,31 @@
                 },
                 {
                     "type": "ExpansionPanel",
-                    "caption": "Valve",
+                    "caption": "Locks",
                     "expanded": true,
                     "items": [
                         {
-                            "type": "RowLayout",
-                            "items": [
-                                {
-                                    "name": "enable_VALVE_ADAPTION",
-                                    "type": "CheckBox",
-                                    "caption": "Valve adaption",
-                                    "width": "250px"
-                                },
-                                {
-                                    "name": "enable_VALVE_STATE",
-                                    "type": "CheckBox",
-                                    "caption": "Valve state",
-                                    "width": "250px"
-                                }
-                            ]
-                        },
-                        {
-                            "type": "RowLayout",
-                            "items": [
-                                {
-                                    "name": "enable_LEVEL",
-                                    "type": "CheckBox",
-                                    "caption": "Valve opening",
-                                    "width": "250px"
-                                },
-                                {
-                                    "name": "enable_FROST_PROTECTION",
-                                    "type": "CheckBox",
-                                    "caption": "Frost protection",
-                                    "width": "250px"
-                                }
-                            ]
-                        },
-                        {
-                            "name": "enable_SWITCH_POINT_OCCURED",
+                            "name": "enable_BUTTON_LOCK",
                             "type": "CheckBox",
-                            "caption": "Switch point occurred",
+                            "caption": "Button lock",
                             "width": "250px"
+                        },
+                        {
+                            "type": "RowLayout",
+                            "items": [
+                                {
+                                    "name": "enable_MODUS_BUTTON_LOCK",
+                                    "type": "CheckBox",
+                                    "caption": "Mode locked",
+                                    "width": "250px"
+                                },
+                                {
+                                    "name": "enable_GLOBAL_BUTTON_LOCK",
+                                    "type": "CheckBox",
+                                    "caption": "Device lock",
+                                    "width": "250px"
+                                }
+                            ]
                         }
                     ]
                 }

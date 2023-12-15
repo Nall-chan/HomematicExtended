@@ -56,6 +56,7 @@ class HomeMaticExtendedConfigurator extends HMBase
     {
         return $this->SendRPC($MethodName, $Protocol, $Data);
     }
+
     /**
      * Interne Funktion des SDK.
      */
@@ -188,6 +189,7 @@ class HomeMaticExtendedConfigurator extends HMBase
     {
         $item1 = IPS_GetProperty($InstanceID, $ConfigParam);
     }
+
     private function GetConfigRows(int $Protocol, string $GUID)
     {
         $CreateParams = [
@@ -231,6 +233,7 @@ class HomeMaticExtendedConfigurator extends HMBase
         }
         return $Devices;
     }
+
     private function GetDeviceData(int $Protocol, array &$Device)
     {
         $InterfaceString = \HMExtended\CCU::$Interfaces[$Protocol];
@@ -249,6 +252,7 @@ class HomeMaticExtendedConfigurator extends HMBase
             $Device['name'] = $Device['type'];
         }
     }
+
     private function GetDevices(int $Protocol, string $Type)
     {
         $Result = $this->SendRPC('listDevices', $Protocol, []);
@@ -301,6 +305,7 @@ class HomeMaticExtendedConfigurator extends HMBase
         }
         return $Values;
     }
+
     private function SendRPC(string $MethodName, int $Protocol, array $Data)
     {
         if (!$this->HasActiveParent()) {

@@ -117,6 +117,12 @@
                     "expanded": true,
                     "items": [
                         {
+                            "name": "enable_TEMPERATUR_PARTY_VALUE",
+                            "type": "CheckBox",
+                            "caption": "Holiday/Party set point temperature",
+                            "width": "250px"
+                        },
+                        {
                             "name": "enable_PARTY_END_TIME",
                             "type": "CheckBox",
                             "caption": "Holiday/Party end",

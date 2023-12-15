@@ -2,6 +2,7 @@
     "translations": {
         "de": {
             "read CCU": "CCU auslesen",
+            "Start": "Ausführen",
             "Instance has no active parent instance!": "Keine aktive Parent Instanz!",
             "Error on read all CCU-Programs.": "Fehler beim lesen aller CCU-Programme.",
             "CCU-Program %s not found!'": "CCU-Programm %s nicht gefunden!",

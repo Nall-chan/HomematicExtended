@@ -50,103 +50,104 @@ class HomeMaticClimateControlRegulator extends HMDeviceBase
         if (array_key_exists($Ident, \HMExtended\ValuesSet::$Variables[static::DeviceTyp])) {
             $Ident = is_string(\HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][2]) ? \HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][2] : $Ident;
             $this->FixValueType(\HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][0], $Value);
+            $SendValue = $Value;
             switch ($Ident) {
-                case \HMExtended\ClimacontrolRegulator\SETPOINT:
-                    $this->SetValue($Ident, $Value);
-                    if ($Value == 4.5) {
-                        $Value = 0;
+                case \HMExtended\ClimacontrolRegulator::SETPOINT:
+                    if ($this->GetValue(\HMExtended\ClimacontrolRegulator::MODE_TEMPERATUR_REGULATOR) != 0) {
+                        $this->PutParamSet([\HMExtended\ClimacontrolRegulator::MODE_TEMPERATUR_REGULATOR => 0], true);
                     }
-                    if ($Value == 30.5) {
-                        $Value = 100;
-                    }
+                    break;
             }
-            $Paramset = [$this->ReadPropertyString(\HMExtended\Device\Property::Address) . static::ValuesChannel, $Ident];
-            return $this->SendRPC('setValue', $Paramset, $Value, true);
+            $this->PutValue($Ident, $SendValue, true);
+            return;
         }
         if (array_key_exists($Ident, \HMExtended\ParamSet::$Variables[static::DeviceTyp])) {
             $Ident = is_string(\HMExtended\ParamSet::$Variables[static::DeviceTyp][$Ident][2]) ? \HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][2] : $Ident;
             $this->FixValueType(\HMExtended\ParamSet::$Variables[static::DeviceTyp][$Ident][0], $Value);
+            $SendValue = $Value;
             switch ($Ident) {
-                case 'DECALCIFICATION_TIME':
+                case \HMExtended\ClimacontrolRegulator::DECALCIFICATION_TIME: // Sonderfall Entkalkung
                     $d = (new DateTime())->setTimestamp((int) $Value);
                     $CalcMin = (int) $d->format('i');
                     $CalcHour = (int) $d->format('H');
                     if ($this->PutParamSet(
                         [
-                            'DECALCIFICATION_MINUTE'=> ($CalcMin > 50) ? 50 : $CalcMin,
-                            'DECALCIFICATION_HOUR'  => $CalcHour
-                        ]
+                            \HMExtended\ClimacontrolRegulator::DECALCIFICATION_MINUTE => ($CalcMin > 50) ? 50 : $CalcMin,
+                            \HMExtended\ClimacontrolRegulator::DECALCIFICATION_HOUR   => $CalcHour
+                        ],
+                        true
                     )) {
                         $this->SetValue($Ident, $Value);
-                        return true;
                     }
-                    return false;
-                case 'PARTY_END_TIME':
+                    return;
+                case \HMExtended\ClimacontrolRegulator::PARTY_END_TIME: // Sonderfall Party Variablen
                     if ($Value < time()) {
                         trigger_error($this->Translate('Time cannot be in the past'));
-                        return false;
+                        return;
                     }
-
                     $d = (new DateTime())->setTimestamp((int) $Value);
                     $CalcMin = (int) $d->format('i');
                     $CalcHour = (int) $d->format('H');
                     $d->setTime(0, 0, 0, 0);
                     $days = ((new DateTime())->setTime(0, 0, 0, 0))->diff($d);
-                    if ($days > 200) {
+                    if ($days->days > 200) {
                         trigger_error($this->Translate('Time too far in the future'));
-                        return false;
+                        return;
                     }
-                    $d->setTime($CalcHour, ($CalcMin >= 30) ? 1 : 0, 0, 0);
-
+                    $d->setTime($CalcHour, ($CalcMin >= 30) ? 30 : 0, 0, 0);
                     if ($this->PutParamSet(
                         [
-                            'MODE_TEMPERATUR_REGULATOR'=> 3,
-                            'PARTY_END_DAY'            => $days->format('%a'),
-                            'PARTY_END_MINUTE'         => ($CalcMin >= 30) ? 1 : 0,
-                            'PARTY_END_HOUR'           => $CalcHour
-                        ]
+                            \HMExtended\ClimacontrolRegulator::MODE_TEMPERATUR_REGULATOR => 3,
+                            \HMExtended\ClimacontrolRegulator::PARTY_END_DAY             => $days->format('%a'),
+                            \HMExtended\ClimacontrolRegulator::PARTY_END_MINUTE          => ($CalcMin >= 30) ? 1 : 0,
+                            \HMExtended\ClimacontrolRegulator::PARTY_END_HOUR            => $CalcHour
+                        ],
+                        true
                     )) {
-                        $this->SetValue('MODE_TEMPERATUR_REGULATOR', 3);
-                        $this->SetValue('PARTY_END_TIME', $d->getTimestamp());
-                        return true;
+                        $this->SetValue(\HMExtended\ClimacontrolRegulator::MODE_TEMPERATUR_REGULATOR, 3);
+                        $this->SetValue(\HMExtended\ClimacontrolRegulator::PARTY_END_TIME, $d->getTimestamp());
                     }
+                    return;
             }
-            if ($this->PutParamSet([$Ident=>$Value])) {
+            if ($this->PutParamSet([$Ident => $SendValue], true)) {
                 $this->SetValue($Ident, $Value);
-                return true;
             }
+            return;
         }
-        trigger_error('Invalid Ident.', E_USER_NOTICE);
-        return false;
+        trigger_error($this->Translate('Invalid Ident.'), E_USER_NOTICE);
+        return;
     }
+
     protected function SetParamVariable(array $Params)
     {
         $d = new DateTime();
-        $d->setTime($Params['DECALCIFICATION_HOUR'], $Params['DECALCIFICATION_MINUTE'], 0, 0);
-        $Params['DECALCIFICATION_TIME'] = $d->getTimestamp();
+        $d->setTime(
+            $Params[\HMExtended\ClimacontrolRegulator::DECALCIFICATION_HOUR],
+            $Params[\HMExtended\ClimacontrolRegulator::DECALCIFICATION_MINUTE],
+            0,
+            0
+        );
+        $Params[\HMExtended\ClimacontrolRegulator::DECALCIFICATION_TIME] = $d->getTimestamp();
         $d = new DateTime();
-        $d->setTime($Params['PARTY_END_HOUR'], ($Params['PARTY_END_MINUTE'] == 0 ? 0 : 30), 0, 0);
-        $i = new DateInterval('P' . $Params['PARTY_END_DAY'] . 'D');
-        $Params['PARTY_END_TIME'] = $d->add($i)->getTimestamp();
+        $d->setTime(
+            $Params[\HMExtended\ClimacontrolRegulator::PARTY_END_HOUR],
+            ($Params[\HMExtended\ClimacontrolRegulator::PARTY_END_MINUTE] == 0 ? 0 : 30),
+            0,
+            0
+        );
+        $i = new DateInterval('P' . $Params[\HMExtended\ClimacontrolRegulator::PARTY_END_DAY] . 'D');
+        $Params[\HMExtended\ClimacontrolRegulator::PARTY_END_TIME] = $d->add($i)->getTimestamp();
         foreach ($Params as $Ident => $Value) {
             @$this->SetValue($Ident, $Value);
         }
     }
+
     protected function SetVariable(string $Ident, $Value)
     {
+        @$this->SetValue($Ident, $Value);
         switch ($Ident) {
-            case \HMExtended\ClimacontrolRegulator\SETPOINT:
-                if ($Value == 0) {
-                    $Value = 4.5;
-                }
-                if ($Value == 100) {
-                    $Value = 30.5;
-                }
-                @$this->SetValue($Ident, $Value);
+            case \HMExtended\ClimacontrolRegulator::SETPOINT:
                 IPS_RunScriptText('IPS_RequestAction(' . $this->InstanceID . ',"getParam",0);');
-                break;
-            default:
-                @$this->SetValue($Ident, $Value);
                 break;
         }
     }
