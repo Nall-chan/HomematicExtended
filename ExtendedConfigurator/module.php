@@ -8,22 +8,22 @@ declare(strict_types=1);
  * @file          module.php
  *
  * @author        Michael Tröger <micha@nall-chan.net>
- * @copyright     2020 Michael Tröger
+ * @copyright     2023 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  *
- * @version       3.12
+ * @version       3.70
  */
 require_once __DIR__ . '/../libs/HMBase.php';  // HMBase Klasse
 require_once __DIR__ . '/../libs/HMTypes.php';  // HMTypes Data
+
 /**
  * HomeMaticExtendedConfigurator ist die Klasse für das IPS-Modul 'HomeMatic Extended Configurator'.
  * Erweitert HMBase.
- *
- * @property array $DeviceNames
  */
 class HomeMaticExtendedConfigurator extends HMBase
 {
     private $DeviceData = [];
+    private $listDevices = [];
     private $DeviceTyp = '';
     /**
      * Interne Funktion des SDK.
@@ -34,7 +34,6 @@ class HomeMaticExtendedConfigurator extends HMBase
         $this->RegisterHMPropertys('XXX9999994');
         $this->RegisterPropertyBoolean(\HMExtended\Device\Property::EmulateStatus, false);
         $this->RegisterPropertyInteger('Interval', 0);
-        //$this->DeviceNames = [];
     }
 
     /**
@@ -45,17 +44,6 @@ class HomeMaticExtendedConfigurator extends HMBase
         parent::ApplyChanges();
     }
     //################# PUBLIC
-
-    /**
-     * IPS-Instanz-Funktion 'HM_ReadRFInterfaces'.
-     * Liest die Daten der RF-Interfaces und versendet sie an die Children.
-     *
-     * @return bool True bei Erfolg, sonst false.
-     */
-    public function Test(string $MethodName, int $Protocol, array $Data)
-    {
-        return $this->SendRPC($MethodName, $Protocol, $Data);
-    }
 
     /**
      * Interne Funktion des SDK.
@@ -82,71 +70,10 @@ class HomeMaticExtendedConfigurator extends HMBase
 
             return json_encode($Form);
         }
-        /*
-                $DevicesIDs = IPS_GetInstanceListByModuleID('{36549B96-FA11-4651-8662-F310EEEC5C7D}');
-                $InstanceIDList = [];
-                foreach ($DevicesIDs as $DeviceID) {
-                    if (IPS_GetInstance($DeviceID)['ConnectionID'] == $ParentId) {
-                        $InstanceIDList[$DeviceID] = IPS_GetProperty($DeviceID, \HMExtended\Device\Property::Address);
-                    }
-                }
-                $Liste = [];
-                $Result = $this->GetInterfaces();
-                foreach ($Result as $ProtocolID => $Protocol) {
-                    if (!is_array($Protocol)) {
-                        continue;
-                    }
-                    foreach ($Protocol as $InterfaceIndex => $Interface) {
-                        switch ($ProtocolID) {
-                            case 0:
-                                $Type = 'Funk';
-                                break;
-                            case 2:
-                                $Type = 'HmIP';
-                                break;
-                            default:
-                                $Type = 'unknown';
-                                break;
-                        }
-                        $InstanceID = array_search($Interface['ADDRESS'], $InstanceIDList);
-                        if ($InstanceID !== false) {
-                            $AddValue = [
-                                'instanceID' => $InstanceID,
-                                'name'       => IPS_GetName($InstanceID),
-                                'type'       => $Type,
-                                'address'    => $Interface['ADDRESS'],
-                                'location'   => stristr(IPS_GetLocation($InstanceID), IPS_GetName($InstanceID), true)
-                            ];
-                            unset($InstanceIDList[$InstanceID]);
-                        } else {
-                            $AddValue = [
-                                'instanceID' => 0,
-                                'name'       => $Interface['TYPE'],
-                                'type'       => $Type,
-                                'address'    => $Interface['ADDRESS'],
-                                'location'   => ''
-                            ];
-                        }
-                        $AddValue['create'] = [
-                            'moduleID'      => '{36549B96-FA11-4651-8662-F310EEEC5C7D}',
-                            'configuration' => [\HMExtended\Device\Property::Address => $Interface['ADDRESS']]
-                        ];
-                        $Liste[] = $AddValue;
-                    }
-                }
-                foreach ($InstanceIDList as $InstanceID => $Address) {
-                    $AddValue = [
-                        'instanceID' => $InstanceID,
-                        'name'       => IPS_GetName($InstanceID),
-                        'type'       => 'unknown',
-                        'address'    => $Address,
-                        'location'   => stristr(IPS_GetLocation($InstanceID), IPS_GetName($InstanceID), true)
-                    ];
-                    $Liste[] = $AddValue;
-                }
-         */
         $this->DeviceData = $this->LoadDeviceData();
         if (IPS_GetProperty($ParentId, 'RFOpen')) {
+            //$Form['actions'][0]['values'] = array_merge($Form['actions'][0]['values'], $this->GetConfigRows(0, \HMExtended\GUID::Powermeter));
+            //$Form['actions'][0]['values'] = array_merge($Form['actions'][0]['values'], $this->GetConfigRows(0, \HMExtended\GUID::Dis_WM55));
             $Form['actions'][0]['values'] = array_merge($Form['actions'][0]['values'], $this->GetConfigRows(0, \HMExtended\GUID::ClimacontrolRegulator));
         }
         if (IPS_GetProperty($ParentId, 'GROpen')) {
@@ -199,6 +126,7 @@ class HomeMaticExtendedConfigurator extends HMBase
         ];
 
         $Devices = $this->GetDevices($Protocol, \HMExtended\DeviceType::$GuidToType[$GUID]);
+        $this->SendDebug('Devices', $Devices, 0);
         $IPSDevices = $this->GetInstanceList($GUID, \HMExtended\Device\Property::Address);
         foreach ($Devices as &$Device) {
             $Device = array_change_key_case($Device);
@@ -253,17 +181,28 @@ class HomeMaticExtendedConfigurator extends HMBase
         }
     }
 
-    private function GetDevices(int $Protocol, string $Type)
+    private function GetDevices(int $Protocol, array $Types)
     {
-        $Result = $this->SendRPC('listDevices', $Protocol, []);
-        if ($Result === false) {
-            return [];
+        if (!array_key_exists($Protocol, $this->listDevices)) {
+            $Devices = $this->SendRPC('listDevices', $Protocol, []);
+            if ($Devices === false) {
+                return [];
+            }
+            $this->listDevices[$Protocol] = $Devices;
+        } else {
+            $Devices = $this->listDevices[$Protocol];
         }
-        $this->DeviceTyp = $Type;
-        $Result = array_filter($Result, function ($Device)
-        {
-            return $Device['TYPE'] == $this->DeviceTyp;
-        });
+        $Result = [];
+        foreach ($Types as $Type) {
+            $this->DeviceTyp = $Type;
+            $Result = array_merge(
+                $Result,
+                array_filter($Devices, function ($Device)
+                {
+                    return $Device['TYPE'] == $this->DeviceTyp;
+                })
+            );
+        }
         return array_values($Result);
     }
 
@@ -316,7 +255,7 @@ class HomeMaticExtendedConfigurator extends HMBase
             'DataID'     => \HMExtended\GUID::SendRpcToIO,
             'Protocol'   => $Protocol,
             'MethodName' => $MethodName,
-            'WaitTime'   => 5000,
+            'WaitTime'   => 3,
             'Data'       => $Data
         ];
         $this->SendDebug('Send', $ParentData, 0);
@@ -326,8 +265,8 @@ class HomeMaticExtendedConfigurator extends HMBase
             $this->SendDebug('Error', '', 0);
             return false;
         }
+        $this->SendDebug('Receive', $ResultJSON, 0);
         $Result = json_decode(utf8_encode($ResultJSON), true);
-        $this->SendDebug('Receive', $Result, 0);
         return $Result;
     }
 }

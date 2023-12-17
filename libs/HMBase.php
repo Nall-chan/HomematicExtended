@@ -8,9 +8,9 @@ declare(strict_types=1);
  * @package       HomematicExtended
  * @file          HMBase.php
  * @author        Michael Tröger <micha@nall-chan.net>
- * @copyright     2019 Michael Tröger
+ * @copyright     2023 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
- * @version       3.0
+ * @version       3.70
  */
 eval('declare(strict_types=1);namespace HMExtended {?>' . file_get_contents(__DIR__ . '/helper/DebugHelper.php') . '}');
 eval('declare(strict_types=1);namespace HMExtended {?>' . file_get_contents(__DIR__ . '/helper/BufferHelper.php') . '}');
@@ -21,7 +21,7 @@ require_once __DIR__ . '/HMTypes.php';  // HMTypes Data
 
 /**
  * HMBase ist die Basis-Klasse für alle Module welche HMScript verwenden.
- * Erweitert ipsmodule.
+ * Erweitert IPSModule.
  *
  * @property int $ParentID Aktueller IO-Parent.
  *

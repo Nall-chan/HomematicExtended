@@ -8,10 +8,10 @@ declare(strict_types=1);
  * @file          module.php
  *
  * @author        Michael Tröger <micha@nall-chan.net>
- * @copyright     2020 Michael Tröger
+ * @copyright     2023 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  *
- * @version       3.12
+ * @version       3.70
  */
 require_once __DIR__ . '/../libs/HMBase.php';  // HMBase Klasse
 
@@ -178,7 +178,7 @@ class HomeMaticRFInterfaceSplitter extends HMBase
             'DataID'     => \HMExtended\GUID::SendRpcToIO,
             'Protocol'   => 0,
             'MethodName' => 'listBidcosInterfaces',
-            'WaitTime'   => 5000,
+            'WaitTime'   => 3,
             'Data'       => $data
         ];
         $ret = [];

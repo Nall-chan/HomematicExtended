@@ -6,7 +6,6 @@
             "caption": "Address"
         },
         {
-            "visible": false,
             "type": "ExpansionPanel",
             "caption": "Schedule",
             "expanded": true,
@@ -16,94 +15,6 @@
                     "type": "CheckBox",
                     "caption": "Schedule",
                     "width": "250px"
-                },
-                {
-                    "type": "RowLayout",
-                    "items": [
-                        {
-                            "name": "ScheduleMinTemp",
-                            "type": "NumberSpinner",
-                            "caption": "lowest temperature",
-                            "digits": 0,
-                            "minimum": 5,
-                            "maximum": 17,
-                            "suffix": " °C",
-                            "width": "250px"
-                        },
-                        {
-                            "name": "ScheduleMaxTemp",
-                            "type": "NumberSpinner",
-                            "caption": "highest temperature",
-                            "digits": 0,
-                            "minimum": 18,
-                            "maximum": 30,
-                            "suffix": " °C",
-                            "width": "250px"
-                        },
-                        {
-                            "name": "ScheduleStepsTemp",
-                            "type": "Select",
-                            "caption": "temperature steps",
-                            "options": [
-                                {
-                                    "caption": "0,5 °C",
-                                    "value": 1
-                                },
-                                {
-                                    "caption": "1,0 °C",
-                                    "value": 2
-                                },
-                                {
-                                    "caption": "2 °C",
-                                    "value": 4
-                                },
-                                {
-                                    "caption": "3 °C",
-                                    "value": 6
-                                },
-                                {
-                                    "caption": "4 °C",
-                                    "value": 8
-                                },
-                                {
-                                    "caption": "5 °C",
-                                    "value": 10
-                                },
-                                {
-                                    "caption": "6 °C",
-                                    "value": 12
-                                },
-                                {
-                                    "caption": "7 °C",
-                                    "value": 14
-                                },
-                                {
-                                    "caption": "8 °C",
-                                    "value": 16
-                                }
-                            ],
-                            "width": "250px"
-                        }
-                    ]
-                },
-                {
-                    "type": "RowLayout",
-                    "items": [
-                        {
-                            "name": "ScheduleMinColor",
-                            "type": "SelectColor",
-                            "caption": "lowest temperature color",
-                            "allowTransparent ": false,
-                            "width": "250px"
-                        },
-                        {
-                            "name": "ScheduleMaxColor",
-                            "type": "SelectColor",
-                            "caption": "highest temperature color",
-                            "allowTransparent ": false,
-                            "width": "250px"
-                        }
-                    ]
                 }
             ]
         },

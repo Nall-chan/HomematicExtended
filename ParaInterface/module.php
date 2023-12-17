@@ -8,10 +8,10 @@ declare(strict_types=1);
  * @file          module.php
  *
  * @author        Michael Tröger <micha@nall-chan.net>
- * @copyright     2020 Michael Tröger
+ * @copyright     2023 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  *
- * @version       3.12
+ * @version       3.70
  */
 require_once __DIR__ . '/../libs/HMBase.php';  // HMBase Klasse
 
@@ -141,8 +141,8 @@ class HomeMaticParasetInterface extends HMBase
             'DataID'     => \HMExtended\GUID::SendRpcToIO,
             'Protocol'   => $this->ReadPropertyInteger(\HMExtended\Device\Property::Protocol),
             'MethodName' => 'getParamset',
-            'WaitTime'   => 5000,
-            'Data'       => [$this->ReadPropertyString(\HMExtended\Device\Property::Address), 'MASTER']
+            'WaitTime'   => 3,
+            'Data'       => [$this->ReadPropertyString(\HMExtended\Device\Property::Address), \HMExtended\CCU::MASTER]
         ];
         $this->SendDebug('Send', $ParentData, 0);
 
@@ -174,8 +174,8 @@ class HomeMaticParasetInterface extends HMBase
             'DataID'     => \HMExtended\GUID::SendRpcToIO,
             'Protocol'   => $this->ReadPropertyInteger(\HMExtended\Device\Property::Protocol),
             'MethodName' => 'PutParamSet',
-            'WaitTime'   => ($EmulateStatus ? 1 : 5000),
-            'Data'       => [$this->ReadPropertyString(\HMExtended\Device\Property::Address), 'MASTER', json_encode($Parameter)]
+            'WaitTime'   => 3,
+            'Data'       => [$this->ReadPropertyString(\HMExtended\Device\Property::Address), \HMExtended\CCU::MASTER, json_encode($Parameter)]
         ];
         $this->SendDebug('Send', $ParentData, 0);
 

@@ -8,22 +8,26 @@ declare(strict_types=1);
  * @file          module.php
  *
  * @author        Michael Tröger <micha@nall-chan.net>
- * @copyright     2020 Michael Tröger
+ * @copyright     2023 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  *
- * @version       3.12
+ * @version       3.70
  */
-require_once __DIR__ . '/../libs/HMDeviceBase.php';  // HMBase Klasse
+require_once __DIR__ . '/../libs/HMHeatingDevice.php';  // HMBase Klasse
 
 /**
  * HomeMaticHeatingGroup
- * Erweitert HMDeviceBase Virtuelles Gerät: HM-CC-VG-1
+ * Erweitert HMHeatingDevice Virtuelles Gerät: HM-CC-VG-1
  */
-class HomeMaticHeatingGroup extends HMDeviceBase
+class HomeMaticHeatingGroup extends HMHeatingDevice
 {
     public const DeviceTyp = \HMExtended\DeviceType::HeatingGroup;
     public const ValuesChannel = \HMExtended\Channels::First;
     public const ParamChannel = \HMExtended\Channels::Device;
+
+    protected const NumberOfWeekSchedules = 3;
+    protected const SelectedWeekScheduleIdent = \HMExtended\HeatingGroup::WEEK_PROGRAM_POINTER;
+
     /**
      * Interne Funktion des SDK.
      */
@@ -190,13 +194,16 @@ class HomeMaticHeatingGroup extends HMDeviceBase
             if ($this->PutParamSet([$Ident=>$SendValue], true)) {
                 $this->SetValue($Ident, $Value);
             }
+            if ($Ident == \HMExtended\HeatingGroup::WEEK_PROGRAM_POINTER) {
+                $this->RefreshScheduleObject();
+            }
             return;
         }
         trigger_error($this->Translate('Invalid Ident.') . ' (' . $Ident . ')', E_USER_NOTICE);
         return;
     }
 
-    protected function SetParamVariable(array $Params)
+    protected function SetParamVariables(array $Params)
     {
         $d = new DateTime();
         $d->setTime(
@@ -210,9 +217,7 @@ class HomeMaticHeatingGroup extends HMDeviceBase
         $Params[\HMExtended\HeatingGroup::BOOST_TIME_PERIOD] * 5;
         $Params[\HMExtended\HeatingGroup::WEEK_PROGRAM_POINTER]++;
 
-        foreach ($Params as $Ident => $Value) {
-            @$this->SetValue($Ident, $Value);
-        }
+        parent::SetParamVariables($Params);
     }
 
     protected function SetVariable(string $Ident, $Value)
@@ -259,7 +264,7 @@ class HomeMaticHeatingGroup extends HMDeviceBase
                 $Value = 0;
                 break;
         }
-        @$this->SetValue($Ident, $Value);
+        parent::SetVariable($Ident, $Value);
     }
     //################# PRIVATE
 }

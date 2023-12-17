@@ -8,23 +8,26 @@ declare(strict_types=1);
  * @file          module.php
  *
  * @author        Michael Tröger <micha@nall-chan.net>
- * @copyright     2020 Michael Tröger
+ * @copyright     2023 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  *
- * @version       3.12
+ * @version       3.70
  */
-require_once __DIR__ . '/../libs/HMDeviceBase.php';  // HMBase Klasse
+require_once __DIR__ . '/../libs/HMHeatingDevice.php';  // HMBase Klasse
 
 /**
  * HomeMaticClimateControlRegulator
- * Erweitert HMDeviceBase. Gerät: HM-CC-TC
- *
+ * Erweitert HMHeatingDevice. Gerät: HM-CC-TC
  */
-class HomeMaticClimateControlRegulator extends HMDeviceBase
+class HomeMaticClimateControlRegulator extends HMHeatingDevice
 {
     public const DeviceTyp = \HMExtended\DeviceType::ClimacontrolRegulator;
     public const ValuesChannel = \HMExtended\Channels::Second;
     public const ParamChannel = \HMExtended\Channels::Second;
+
+    protected const WeekScheduleIndexTemp = 'TEMPERATUR_%2$s_%1$d';
+    protected const WeekScheduleIndexEndTime = 'TIMEOUT_%2$s_%1$d';
+    protected const NumberOfTimeSlot = 24;
     /**
      * Interne Funktion des SDK.
      */
@@ -118,7 +121,7 @@ class HomeMaticClimateControlRegulator extends HMDeviceBase
         return;
     }
 
-    protected function SetParamVariable(array $Params)
+    protected function SetParamVariables(array $Params)
     {
         $d = new DateTime();
         $d->setTime(
@@ -137,14 +140,12 @@ class HomeMaticClimateControlRegulator extends HMDeviceBase
         );
         $i = new DateInterval('P' . $Params[\HMExtended\ClimacontrolRegulator::PARTY_END_DAY] . 'D');
         $Params[\HMExtended\ClimacontrolRegulator::PARTY_END_TIME] = $d->add($i)->getTimestamp();
-        foreach ($Params as $Ident => $Value) {
-            @$this->SetValue($Ident, $Value);
-        }
+        parent::SetParamVariables($Params);
     }
 
     protected function SetVariable(string $Ident, $Value)
     {
-        @$this->SetValue($Ident, $Value);
+        parent::SetVariable($Ident, $Value);
         switch ($Ident) {
             case \HMExtended\ClimacontrolRegulator::SETPOINT:
                 IPS_RunScriptText('IPS_RequestAction(' . $this->InstanceID . ',"getParam",0);');

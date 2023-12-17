@@ -8,22 +8,26 @@ declare(strict_types=1);
  * @file          module.php
  *
  * @author        Michael Tröger <micha@nall-chan.net>
- * @copyright     2020 Michael Tröger
+ * @copyright     2023 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  *
- * @version       3.12
+ * @version       3.70
  */
-require_once __DIR__ . '/../libs/HMDeviceBase.php';  // HMBase Klasse
+require_once __DIR__ . '/../libs/HMHeatingDevice.php';  // HMBase Klasse
 
 /**
  * HomeMaticIPHeatingGroup
- * Erweitert HMDeviceBase Virtuelles Gerät: HmIP-HEATING
+ * Erweitert HMHeatingDevice Virtuelles Gerät: HmIP-HEATING
  */
-class HomeMaticIPHeatingGroup extends HMDeviceBase
+class HomeMaticIPHeatingGroup extends HMHeatingDevice
 {
-    public const DeviceTyp = \HMExtended\DeviceType::HeatingGroupHmIP;
-    public const ValuesChannel = \HMExtended\Channels::First;
-    public const ParamChannel = \HMExtended\Channels::First;
+    protected const DeviceTyp = \HMExtended\DeviceType::HeatingGroupHmIP;
+    protected const ValuesChannel = \HMExtended\Channels::First;
+    protected const ParamChannel = \HMExtended\Channels::First;
+
+    protected const NumberOfWeekSchedules = 6;
+    protected const SelectedWeekScheduleIdent = \HMExtended\HeatingGroupHmIP::ACTIVE_PROFILE;
+
     /**
      * Interne Funktion des SDK.
      */
@@ -118,7 +122,7 @@ class HomeMaticIPHeatingGroup extends HMDeviceBase
         return;
     }
 
-    protected function SetParamVariable(array $Params)
+    protected function SetParamVariables(array $Params)
     {
         $d = new DateTime();
         $d->setTime(
@@ -129,27 +133,30 @@ class HomeMaticIPHeatingGroup extends HMDeviceBase
         );
         $Params[\HMExtended\HeatingGroupHmIP::DECALCIFICATION_TIME] = $d->getTimestamp();
 
-        foreach ($Params as $Ident => $Value) {
-            @$this->SetValue($Ident, $Value);
-        }
+        parent::SetParamVariables($Params);
     }
 
     protected function SetVariable(string $Ident, $Value)
     {
         switch ($Ident) {
+            case \HMExtended\HeatingGroupHmIP::ACTIVE_PROFILE:
+                $OldValue = $this->GetValue($Ident);
+                break;
             case \HMExtended\HeatingGroupHmIP::PARTY_TIME_START:
             case \HMExtended\HeatingGroupHmIP::PARTY_TIME_END:
                 if ($Value == '1999_11_30 00:00') {
-                    $TimeStamp = time();
+                    $Value = time();
                 } else {
                     $d = DateTime::createFromFormat('Y_m_d H:i', $Value);
-                    $TimeStamp = ($d->getTimestamp() < 7200) ? time() : $d->getTimestamp();
+                    $Value = ($d->getTimestamp() < 7200) ? time() : $d->getTimestamp();
                 }
-                @$this->SetValue($Ident, $TimeStamp);
                 break;
-            default:
-                @$this->SetValue($Ident, $Value);
-                break;
+        }
+        parent::SetVariable($Ident, $Value);
+        if ($Ident == \HMExtended\HeatingGroupHmIP::ACTIVE_PROFILE) {
+            if ($OldValue != $Value) {
+                $this->RefreshScheduleObject();
+            }
         }
     }
     //################# PRIVATE

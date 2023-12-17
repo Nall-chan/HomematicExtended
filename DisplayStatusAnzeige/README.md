@@ -44,7 +44,7 @@ Dieses Modul ist Bestandteil der [HomeMaticExtended-Library](../).
    Ebenso ist das Timeout einstellbar, nach wieviel Sekunden wieder auf Seite 1 gesprungen wird.  
 
 ![Instanzen](../docs/HMExtendedInstanzen.png)  
-   Unter Instanz hinzufügen ist das Gerät 'HomeMatic WM55-Dis' unter dem Hersteller 'HomeMatic' zu finden.  
+   Unter Instanz hinzufügen ist das Gerät 'HomeMatic Dis-WM55' unter dem Hersteller 'HomeMatic' zu finden.  
    Nach dem Anlegen der Instanz sollte als übergeordnetes Gerät schon der HomeMatic Socket ausgewählt sein.  
    Existieren in IPS mehrere Homematic Socket, so ist der auszuwählen, an welcher CCU das Statusdisplay angelernt ist.  
 

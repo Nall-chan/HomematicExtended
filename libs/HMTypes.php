@@ -6,8 +6,8 @@ namespace HMExtended
 {
     class GUID
     {
-        public const Systemvariablen = '{400F9193-FE79-4086-8D76-958BF9C1B357}';
-        public const Powermeter = '{AF50C42B-7183-4992-B04A-FAFB07BB1B90}';
+        public const Powermeter = '{400F9193-FE79-4086-8D76-958BF9C1B357}';
+        public const Systemvariablen = '{AF50C42B-7183-4992-B04A-FAFB07BB1B90}';
         public const Programme = '{A5010577-C443-4A85-ABF2-3F2D6CDD2465}';
         public const Dis_WM55 = '{271BCAB1-0658-46D9-A164-985AEB641B48}';
         public const Dis_EP_WM55 = '{E64ED916-FA6C-45B2-B8E3-EDC3191BC4C0}';
@@ -30,7 +30,8 @@ namespace HMExtended
         public const BidCos_WR = 'BidCos-Wired';
         public const HmIP = 'HmIP-RF';
         public const Groups = 'VirtualDevices';
-
+        public const MASTER = 'MASTER';
+        public const VALUES = 'VALUES';
         public static $Interfaces = [
             self::BidCos_RF,
             self::BidCos_WR,
@@ -41,22 +42,30 @@ namespace HMExtended
 
     class DeviceType
     {
+        public const Powermeter = 'POWERMETER'; // HM-ES-PMSw1-Pl
+        public const Powermeter_IEC = 'POWERMETER_IEC2'; // HM-ES-TX-WM
+        public const Dis_WM55 = 'HM-Dis-WM55'; // HM-Dis-WM55
+
         public const HeatingGroup = 'HM-CC-VG-1'; //'CLIMATECONTROL_RT_TRANSCEIVER';
         public const HeatingGroupHmIP = 'HmIP-HEATING'; //'HEATING_CLIMATECONTROL_TRANSCEIVER';
         public const ClimacontrolRegulator = 'HM-CC-TC'; //'CLIMATECONTROL_REGULATOR';
 
         public static $GuidToType = [
-            /*GUID::Systemvariablen                =>
-            GUID::Powermeter                     =>
-            GUID::Programme                      =>
-            GUID::Dis_WM55                       =>
-            GUID::Dis_EP_WM55                    =>
-            GUID::RF_Interface_Splitter          =>
-            GUID::RF_Interface_Konfigurator      =>
-            GUID::WR_Interface                   => */
-            GUID::HeatingGroup                  => self::HeatingGroup,
-            GUID::HeatingGroupHmIP              => self::HeatingGroupHmIP,
-            GUID::ClimacontrolRegulator         => self::ClimacontrolRegulator
+            // Konfigurator muss noch ergänzt werden um:
+            //GUID::Systemvariablen                =>
+            //GUID::Programme                      =>
+            //GUID::WR_Interface                   =>
+            // Vorhandener Konfigurator muss noch migriert werden:
+            //GUID::RF_Interface_Splitter          =>
+            //GUID::RF_Interface_Konfigurator      =>
+            // Konfigurator 'fertig' => Aber die Instanzen sind noch nicht so weit
+            GUID::Powermeter                     => [self::Powermeter, self::Powermeter_IEC],
+            GUID::Dis_WM55                       => [self::Dis_WM55],
+            //GUID::Dis_EP_WM55                    =>
+            // Konfigurator fertig
+            GUID::HeatingGroup                  => [self::HeatingGroup],
+            GUID::HeatingGroupHmIP              => [self::HeatingGroupHmIP],
+            GUID::ClimacontrolRegulator         => [self::ClimacontrolRegulator]
         ];
     }
 
@@ -229,6 +238,8 @@ namespace HMExtended
     class Variables
     {
         public const VARIABLETYPE_NONE = -1;
+        public const SUBMIT_WEEK_PROGRAM = 'SUBMIT_WEEK_PROGRAM';
+        public const SELECT_NEW_WEEK_PROGRAM = 'SELECT_NEW_WEEK_PROGRAM';
 
         public static $Profiles = [
             'Heating.Control.SetPoint.Temperature.HM'=> [
