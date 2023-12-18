@@ -1,5 +1,5 @@
 [![SDK](https://img.shields.io/badge/Symcon-PHPModul-red.svg)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
-[![Version](https://img.shields.io/badge/Modul%20version-3.70-blue.svg)]()
+[![Version](https://img.shields.io/badge/Modul%20version-3.71-blue.svg)]()
 [![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)  
 [![Version](https://img.shields.io/badge/Symcon%20Version-6.1%20%3E-green.svg)](https://community.symcon.de/t/ip-symcon-6-1-stable-changelog/40276)
 [![Check Style](https://github.com/Nall-chan/HomematicExtended/workflows/Check%20Style/badge.svg)](https://github.com/Nall-chan/HomematicExtended/actions) [![Run Tests](https://github.com/Nall-chan/HomematicExtended/workflows/Run%20Tests/badge.svg)](https://github.com/Nall-chan/HomematicExtended/actions)  
@@ -140,6 +140,9 @@ Erweitert IPS um die native Unterstützung von:
 
 ### 2. Changelog
 
+Version 3.71:
+* Neue Eigenschaft in der Konfiguration der Heizgruppen und des HM-CC-TC Instanzen, um das Verhalten des Modus bei manueller Bedienung der Soll-Temperatur einzustellen.  
+
 Version 3.70:
 
 * Zeitprofile der Heizgruppen und des HM-CC-TC werden als Wochenplan in IPS dargestellt und können dort bearbeitet werden.  
@@ -150,11 +153,11 @@ Version 3.60:
 * Heating.Control.Profile.HmIP
 * Heating.Control.SetPoint.Mode.HM
   
-Fixes für die ClimacontrolRegulator:
+Anpassungen für die ClimacontrolRegulator:
 * Prüfung der maximalen Anzahl von Tagen für den Party/Urlaub Modus war defekt.  
 * Veränderungen der Solltemperatur setzen den Modus auf Manuell.  
   
-Fixes für die HeatingGroupHmIP:
+Anpassungen für die HeatingGroupHmIP:
 * Modus Solltemperatur ist nicht mehr optional.  
 * Veränderungen der Solltemperatur während des Modus Automatik setzen den Modus auf Manuell.  
 * Veränderungen der Solltemperatur während des Modus Party/Urlaub sind möglich.  

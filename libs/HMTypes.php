@@ -524,7 +524,7 @@ namespace HMExtended
                     VARIABLETYPE_FLOAT,
                     '~Temperature.HM',
                     true,
-                    'Setpoint temperature'
+                    'Target temperature'
                 ],
                 ClimacontrolRegulator::ADJUSTING_DATA => [
                     \HMExtended\Variables::VARIABLETYPE_NONE
@@ -634,7 +634,7 @@ namespace HMExtended
                     VARIABLETYPE_FLOAT,
                     'Heating.Control.SetPoint.Temperature.HM',
                     true,
-                    'Setpoint temperature'
+                    'Target temperature'
                 ],
                 HeatingGroupHmIP::SWITCH_POINT_OCCURED => [
                     VARIABLETYPE_BOOLEAN,
@@ -678,7 +678,7 @@ namespace HMExtended
                     VARIABLETYPE_FLOAT,
                     'Heating.Control.SetPoint.Temperature.HM',
                     true,
-                    'Setpoint temperature'
+                    'Target temperature'
                 ],
                 HeatingGroup::MANU_MODE => [
                     \HMExtended\Variables::VARIABLETYPE_NONE
@@ -981,5 +981,7 @@ namespace HMExtended\Device
         public const EmulateStatus = 'EmulateStatus';
         public const Address = 'Address';
         public const Protocol = 'Protocol';
+        public const SetPointBehavior = 'SetPointBehavior';
+        public const Schedule = 'enable_SCHEDULE';
     }
 }

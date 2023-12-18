@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 /**
- * @addtogroup homematicextended
+ * @addtogroup HomeMaticExtended
  * @{
  *
  * @file          module.php
@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @copyright     2023 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  *
- * @version       3.70
+ * @version       3.71
  */
 require_once __DIR__ . '/../libs/HMBase.php';  // HMBase Klasse
 
@@ -159,7 +159,6 @@ class HomeMaticProgramme extends HMBase
             $this->SendDebug($SysPrg, (string) $varXml->Name, 0);
             $var = @IPS_GetObjectIDByIdent($SysPrg, $this->InstanceID);
             $Name = (string) $varXml->Name;
-            $Info = (string) $varXml->Name;
             if ($var === false) {
                 $this->MaintainVariable($SysPrg, $Name, 1, 'Execute.HM', 0, true);
                 $this->EnableAction($SysPrg);

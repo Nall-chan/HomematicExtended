@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 /**
- * @addtogroup homematicextended
+ * @addtogroup HomeMaticExtended
  * @{
  *
  * @file          module.php
@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @copyright     2023 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  *
- * @version       3.70
+ * @version       3.71
  */
 require_once __DIR__ . '/../libs/HMBase.php';  // HMBase Klasse
 
@@ -80,7 +80,7 @@ class HomeMaticDisWM55 extends HMBase
      * @param int       $TimeStamp
      * @param int       $SenderID
      * @param int       $Message
-     * @param array|int $Data
+     * @param array $Data
      */
     public function MessageSink($TimeStamp, $SenderID, $Message, $Data)
     {
@@ -127,9 +127,10 @@ class HomeMaticDisWM55 extends HMBase
         $ReceiveData = ['HMDeviceAddress' => (string) $Data->DeviceID, 'HMDeviceDatapoint' => (string) $Data->VariableName];
         $Action = array_search($ReceiveData, $this->HMEventData);
         if ($Action === false) {
-            return;
+            return '';
         }
         $this->RunDisplayScript($Action);
+        return '';
     }
 
     /**
@@ -347,7 +348,7 @@ class HomeMaticDisWM55 extends HMBase
     /**
      * Konvertiert die Daten in ein für das Display benötigte Format.
      *
-     * @param object $Data Enthält die Daten für das Display
+     * @param object[] $Data Enthält die Daten für das Display
      *
      * @return string Die konvertierten Daten als String.
      */

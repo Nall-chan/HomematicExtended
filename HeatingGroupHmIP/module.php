@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 /**
- * @addtogroup homematicextended
+ * @addtogroup HomeMaticExtended
  * @{
  *
  * @file          module.php
@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @copyright     2023 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  *
- * @version       3.70
+ * @version       3.71
  */
 require_once __DIR__ . '/../libs/HMHeatingDevice.php';  // HMBase Klasse
 
@@ -76,8 +76,10 @@ class HomeMaticIPHeatingGroup extends HMHeatingDevice
                     }
                     break;
                 case \HMExtended\HeatingGroupHmIP::SET_POINT_TEMPERATURE:
-                    if ($this->GetValue(\HMExtended\HeatingGroupHmIP::SET_POINT_MODE) == 0) {
-                        $this->PutValue(\HMExtended\HeatingGroupHmIP::CONTROL_MODE, 1);
+                    if ($this->ReadPropertyBoolean(\HMExtended\Device\Property::SetPointBehavior)) {
+                        if ($this->GetValue(\HMExtended\HeatingGroupHmIP::SET_POINT_MODE) == 0) {
+                            $this->PutValue(\HMExtended\HeatingGroupHmIP::CONTROL_MODE, 1);
+                        }
                     }
                     break;
                 case \HMExtended\HeatingGroupHmIP::CONTROL_MODE:

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 /**
- * @addtogroup homematicextended
+ * @addtogroup HomeMaticExtended
  * @{
  *
  * @file          module.php
@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @copyright     2023 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  *
- * @version       3.70
+ * @version       3.71
  */
 require_once __DIR__ . '/../libs/HMBase.php';  // HMBase Klasse
 
@@ -45,7 +45,7 @@ class HomeMaticPowermeter extends HMBase
      * @param int       $TimeStamp
      * @param int       $SenderID
      * @param int       $Message
-     * @param array|int $Data
+     * @param array $Data
      */
     public function MessageSink($TimeStamp, $SenderID, $Message, $Data)
     {
@@ -78,6 +78,7 @@ class HomeMaticPowermeter extends HMBase
     public function ReceiveData($JSONString)
     {
         $this->ReadPowerSysVar();
+        return '';
     }
 
     //################# protected
@@ -119,7 +120,6 @@ class HomeMaticPowermeter extends HMBase
         if ($this->CheckConfig()) {
             $HMDeviceDatapoint = $this->HMDeviceDatapoint;
             $this->SetReceiveDataFilter('.*"DeviceID":"' . $this->HMDeviceAddress . '","VariableName":"' . $HMDeviceDatapoint . '".*');
-
             switch ($HMDeviceDatapoint) {
                 case 'GAS_ENERGY_COUNTER':
                     $Profil = '~Gas';
@@ -248,6 +248,7 @@ class HomeMaticPowermeter extends HMBase
         $this->SendDebug($this->HMDeviceDatapoint, (string) $xml->Value, 0);
         $Value = ((float) $xml->Value) / $this->HMFactor;
         $this->SetValue($this->HMDeviceDatapoint . '_TOTAL', $Value);
+        return true;
     }
 }
 

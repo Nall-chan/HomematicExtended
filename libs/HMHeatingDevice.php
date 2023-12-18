@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 /**
- * @addtogroup homematicextended
+ * @addtogroup HomeMaticExtended
  * @{
  *
  * @file          module.php
@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @copyright     2023 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  *
- * @version       3.70
+ * @version       3.71
  */
 require_once __DIR__ . '/HMBase.php';  // HMBase Klasse
 
@@ -64,7 +64,9 @@ class HMHeatingDevice extends HMBase
         foreach (\HMExtended\Property::$Properties[static::DeviceTyp] as $Property => $Value) {
             $this->RegisterPropertyBoolean('enable_' . $Property, $Value);
         }
-        $this->RegisterPropertyBoolean('enable_SCHEDULE', false);
+        $this->RegisterPropertyBoolean(\HMExtended\Device\Property::Schedule, true);
+        $this->RegisterPropertyBoolean(\HMExtended\Device\Property::SetPointBehavior, true);
+
         $ScheduleTempsInit = [
             [5, 0x000080],
             [16, 0x333399],
@@ -80,6 +82,7 @@ class HMHeatingDevice extends HMBase
             [30, 0xFF0000],
         ];
         $this->RegisterAttributeString('ScheduleColors', json_encode($ScheduleTempsInit));
+
         $this->WeekSchedules = [];
     }
 
@@ -121,7 +124,7 @@ class HMHeatingDevice extends HMBase
                 }
             }
         }
-        if ($this->ReadPropertyBoolean('enable_SCHEDULE')) {
+        if ($this->ReadPropertyBoolean(\HMExtended\Device\Property::Schedule)) {
             $this->CreateWeekPlan();
             $ProfileSubmitPlan = false;
             switch (static::SelectedWeekScheduleIdent) { //Nur Speichern Button
@@ -225,8 +228,8 @@ class HMHeatingDevice extends HMBase
     public function ReceiveData($JSONString)
     {
         $Event = json_decode($JSONString, true);
-        //$this->SendDebug('EVENT:' . $Event['VariableName'], $Event['VariableValue'], 0);
         $this->SetVariable($Event['VariableName'], $Event['VariableValue']);
+        return '';
     }
 
     //################# protected
@@ -313,10 +316,10 @@ class HMHeatingDevice extends HMBase
         return ($Result !== null) ? true : false;
     }
 
-    protected function PutValueSet($Value, bool $EmulateStatus = false)
+    protected function PutValueSet(array $Values, bool $EmulateStatus = false)
     {
         $Paramset = [$this->ReadPropertyString(\HMExtended\Device\Property::Address) . static::ValuesChannel, \HMExtended\CCU::VALUES];
-        $Result = $this->SendRPC('putParamset', $Paramset, $Value, $EmulateStatus);
+        $Result = $this->SendRPC('putParamset', $Paramset, $Values, $EmulateStatus);
         return ($Result !== null) ? true : false;
     }
 
@@ -332,7 +335,7 @@ class HMHeatingDevice extends HMBase
 
     protected function RefreshScheduleObject(bool $ScheduleActionHasChanged = false)
     {
-        if (!$this->ReadPropertyBoolean('enable_SCHEDULE')) {
+        if (!$this->ReadPropertyBoolean(\HMExtended\Device\Property::Schedule)) {
             return;
         }
         if (!count($this->WeekSchedules)) {
@@ -387,7 +390,6 @@ class HMHeatingDevice extends HMBase
         foreach ($Event['ScheduleGroups'] as $Group) {
             $Day = static::$Weekdays[$Group['Days']];
             $Slot = 1;
-
             for ($i = 1; $i <= count($Group['Points']); $i++) {
                 $TimeIndex = sprintf(static::WeekScheduleIndexEndTime, $Slot, $Day, $Plan);
                 $TempIndex = sprintf(static::WeekScheduleIndexTemp, $Slot, $Day, $Plan);

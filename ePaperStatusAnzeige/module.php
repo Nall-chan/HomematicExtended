@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 /**
- * @addtogroup homematicextended
+ * @addtogroup HomeMaticExtended
  * @{
  *
  * @file          module.php
@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @copyright     2023 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  *
- * @version       3.70
+ * @version       3.71
  */
 require_once __DIR__ . '/../libs/HMBase.php';  // HMBase Klasse
 
@@ -90,7 +90,6 @@ class HomeMaticDisEPWM55 extends HMBase
                 $Data[] = '0x0A';
             }
         }
-
         return $this->SendData($Data);
     }
 
@@ -151,7 +150,6 @@ class HomeMaticDisEPWM55 extends HMBase
             return false;
         }
         $Data = array_merge($Data, $Line1);
-
         $Line2 = $this->GetLine($Text2, $Icon2);
         if ($Line2 === false) {
             return false;
@@ -162,7 +160,6 @@ class HomeMaticDisEPWM55 extends HMBase
             return false;
         }
         $Data = array_merge($Data, $Line3);
-
         return $this->SendData($Data);
     }
 
@@ -219,8 +216,6 @@ class HomeMaticDisEPWM55 extends HMBase
      * @param array $Submit Das Array mit allen Werten, welche an das Display gesendet werden sollen.
      *
      * @return bool True bei Erfolg, sonst false.
-     *
-     * @todo Rückgabewerte fehlen!
      */
     private function SendData($Submit)
     {
@@ -258,7 +253,7 @@ class HomeMaticDisEPWM55 extends HMBase
      * @param int $Wait   Wartezeit in 10 Sekunden zwischen den Wiederholungen.
      * @param int $Color  Farbe der LED 0-3
      *
-     * @return bool|array Das Array mit den Daten, oder im Fehlerfall false.
+     * @return false|array Das Array mit den Daten, oder im Fehlerfall false.
      */
     private function GetSignal(int $Chime, int $Repeat, int $Wait, int $Color)
     {
@@ -308,7 +303,7 @@ class HomeMaticDisEPWM55 extends HMBase
      * @param string $Text Der darzustellenden Text (0-12 Zeichen)
      * @param int    $Icon Das anzuzeigende Icon (0-9)
      *
-     * @return array Das Daten-Array für eine Zeile.
+     * @return false|array Das Daten-Array für eine Zeile.
      */
     private function GetLine(string $Text, int $Icon)
     {

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 /**
- * @addtogroup homematicextended
+ * @addtogroup HomeMaticExtended
  * @{
  *
  * @package       HomematicExtended
@@ -10,7 +10,7 @@ declare(strict_types=1);
  * @author        Michael Tröger <micha@nall-chan.net>
  * @copyright     2023 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
- * @version       3.70
+ * @version       3.71
  */
 eval('declare(strict_types=1);namespace HMExtended {?>' . file_get_contents(__DIR__ . '/helper/DebugHelper.php') . '}');
 eval('declare(strict_types=1);namespace HMExtended {?>' . file_get_contents(__DIR__ . '/helper/BufferHelper.php') . '}');
@@ -77,7 +77,7 @@ abstract class HMBase extends IPSModule
      * @param int       $TimeStamp
      * @param int       $SenderID
      * @param int       $Message
-     * @param array|int $Data
+     * @param array $Data
      */
     public function MessageSink($TimeStamp, $SenderID, $Message, $Data)
     {
@@ -116,7 +116,7 @@ abstract class HMBase extends IPSModule
     /**
      * Setzte alle Eigenschaften, welche Instanzen die mit einem Homematic-Socket verbunden sind, haben müssen.
      *
-     * @param string $Address Die zu verwendene HM-Device Adresse.
+     * @param string $Address Die zu nutzende HM-Device Adresse.
      */
     protected function RegisterHMPropertys(string $Address)
     {
@@ -148,7 +148,7 @@ abstract class HMBase extends IPSModule
      *
      * @throws Exception Wenn die CCU nicht erreicht wurde.
      *
-     * @return string Das Ergebnis von der CCU.
+     * @return false|string Das Ergebnis von der CCU.
      */
     protected function LoadHMScript(string $HMScript)
     {

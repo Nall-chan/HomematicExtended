@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 /**
- * @addtogroup homematicextended
+ * @addtogroup HomeMaticExtended
  * @{
  *
  * @file          module.php
@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @copyright     2023 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  *
- * @version       3.70
+ * @version       3.71
  */
 require_once __DIR__ . '/../libs/HMBase.php';  // HMBase Klasse
 
@@ -48,14 +48,14 @@ class HomeMaticParasetInterface extends HMBase
     //################# PUBLIC
 
     /**
-     * IPS-Instanz-Funktion 'HM_ReadParamset'.
+     * IPS-Instanz-Funktion 'HM_ReadParamSet'.
      * Liest die Daten des WR-Interface.
      *
      * @return bool True bei Erfolg, sonst false.
      */
-    public function ReadParamset()
+    public function ReadParamSet()
     {
-        $Result = $this->GetParamset();
+        $Result = $this->GetParamSet();
         return $Result;
     }
 
@@ -108,14 +108,14 @@ class HomeMaticParasetInterface extends HMBase
     }
 
     /**
-     * IPS-Instanz-Funktion 'HM_WriteParamset'.
+     * IPS-Instanz-Funktion 'HM_WriteParamSet'.
      * Liest die Daten des WR-Interface.
      *
      * @return bool True bei Erfolg, sonst false.
      */
-    public function WriteParamset(string $Paramset)
+    public function WriteParamSet(string $ParamSet)
     {
-        $Data = @json_decode($Paramset, true);
+        $Data = @json_decode($ParamSet, true);
         if ($Data === false) {
             trigger_error('Error in Parameter', E_USER_NOTICE);
             return false;
@@ -131,7 +131,7 @@ class HomeMaticParasetInterface extends HMBase
      *
      * @return array Ein Array mit den Daten des Interface.
      */
-    private function GetParamset()
+    private function GetParamSet()
     {
         if (!$this->HasActiveParent()) {
             trigger_error($this->Translate('Instance has no active Parent Instance!'), E_USER_NOTICE);
@@ -159,9 +159,9 @@ class HomeMaticParasetInterface extends HMBase
     }
 
     /**
-     * Liest alle Parameter des Devices aus.
+     * Schreibt Parameter zu einem Devices.
      *
-     * @return array Ein Array mit den Daten des Interface.
+     * @return bool
      */
     private function PutParamSet(array $Parameter)
     {
