@@ -572,7 +572,7 @@ class HMHeatingDevice extends HMBase
         return is_array($Result) ? $Result : [];
     }
 
-    private function SendRPC(string $MethodName, array $Paramset, $Data = null, bool $EmulateStatus = false): null|true|array
+    private function SendRPC(string $MethodName, array $Paramset, $Data = null, bool $EmulateStatus = false): null|bool|array
     {
         if (!$this->HasActiveParent()) {
             trigger_error($this->Translate('Instance has no active Parent Instance!'), E_USER_NOTICE);
