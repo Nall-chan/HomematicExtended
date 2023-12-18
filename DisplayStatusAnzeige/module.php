@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 /**
- * @addtogroup homematicextended
+ * @addtogroup HomeMaticExtended
  * @{
  *
  * @file          module.php
@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @copyright     2023 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  *
- * @version       3.70
+ * @version       3.71
  */
 require_once __DIR__ . '/../libs/HMBase.php';  // HMBase Klasse
 
@@ -41,11 +41,11 @@ class HomeMaticDisWM55 extends HMBase
     /**
      * Interne Funktion des SDK.
      */
-    public function Create()
+    public function Create(): void
     {
         parent::Create();
 
-        $this->RegisterHMPropertys('XXX9999995');
+        $this->RegisterHMProperties('XXX9999995');
         $this->RegisterPropertyBoolean(\HMExtended\Device\Property::EmulateStatus, false);
         $this->RegisterPropertyInteger('PageUpID', 0);
         $this->RegisterPropertyInteger('PageDownID', 0);
@@ -77,12 +77,12 @@ class HomeMaticDisWM55 extends HMBase
     /**
      * Nachrichten aus der Nachrichtenschlange verarbeiten.
      *
-     * @param int       $TimeStamp
-     * @param int       $SenderID
-     * @param int       $Message
-     * @param array|int $Data
+     * @param int $TimeStamp
+     * @param int $SenderID
+     * @param int $Message
+     * @param array $Data
      */
-    public function MessageSink($TimeStamp, $SenderID, $Message, $Data)
+    public function MessageSink(int $TimeStamp, int $SenderID, int $Message, array $Data): void
     {
         parent::MessageSink($TimeStamp, $SenderID, $Message, $Data);
         switch ($Message) {
@@ -107,7 +107,7 @@ class HomeMaticDisWM55 extends HMBase
     /**
      * Interne Funktion des SDK.
      */
-    public function ApplyChanges()
+    public function ApplyChanges(): void
     {
         parent::ApplyChanges();
         $this->SetNewConfig();
@@ -118,7 +118,7 @@ class HomeMaticDisWM55 extends HMBase
     /**
      * Interne Funktion des SDK.
      */
-    public function ReceiveData($JSONString)
+    public function ReceiveData(string $JSONString): string
     {
         $Data = json_decode($JSONString);
         unset($Data->DataID);
@@ -127,15 +127,16 @@ class HomeMaticDisWM55 extends HMBase
         $ReceiveData = ['HMDeviceAddress' => (string) $Data->DeviceID, 'HMDeviceDatapoint' => (string) $Data->VariableName];
         $Action = array_search($ReceiveData, $this->HMEventData);
         if ($Action === false) {
-            return;
+            return '';
         }
         $this->RunDisplayScript($Action);
+        return '';
     }
 
     /**
      *  Wird bei einem timeout ausgeführt und setzt die aktuelle Seite wieder auf Null.
      */
-    public function ResetTimer()
+    public function ResetTimer(): void
     {
         $this->Page = 0;
         $this->SetTimerInterval('DisplayTimeout', 0);
@@ -146,7 +147,7 @@ class HomeMaticDisWM55 extends HMBase
     /**
      * Wird ausgeführt wenn der Kernel hochgefahren wurde.
      */
-    protected function KernelReady()
+    protected function KernelReady(): void
     {
         $this->ApplyChanges();
     }
@@ -154,7 +155,7 @@ class HomeMaticDisWM55 extends HMBase
     /**
      * Wird ausgeführt wenn sich der Status vom Parent ändert.
      */
-    protected function IOChangeState($State)
+    protected function IOChangeState(int $State): void
     {
         if ($State == IS_ACTIVE) {
             $this->ApplyChanges();
@@ -165,7 +166,7 @@ class HomeMaticDisWM55 extends HMBase
     /**
      * Überführt die Config in die Filter.
      */
-    private function SetNewConfig()
+    private function SetNewConfig(): void
     {
         if (IPS_GetKernelRunlevel() == KR_READY) {
             if ($this->CheckConfig()) {
@@ -198,7 +199,7 @@ class HomeMaticDisWM55 extends HMBase
      *
      * @return bool True wenn Konfig ok, sonst false.
      */
-    private function CheckConfig()
+    private function CheckConfig(): bool
     {
         $Result = true;
         $OldHMEventDatas = $this->HMEventData;
@@ -277,7 +278,7 @@ class HomeMaticDisWM55 extends HMBase
      *
      * @return array|bool Array mit den Daten zum Datenpunkt. False im Fehlerfall.
      */
-    private function GetDisplayAddress(int $EventID)
+    private function GetDisplayAddress(int $EventID): false|array
     {
         if (!IPS_VariableExists($EventID)) {
             return false;
@@ -299,7 +300,7 @@ class HomeMaticDisWM55 extends HMBase
      *
      * @throws Exception Wenn CCU nicht erreicht wurde.
      */
-    private function RunDisplayScript($Action)
+    private function RunDisplayScript(string $Action): void
     {
         $Page = $this->Page;
         $MaxPage = $this->ReadPropertyInteger('MaxPage');
@@ -347,11 +348,11 @@ class HomeMaticDisWM55 extends HMBase
     /**
      * Konvertiert die Daten in ein für das Display benötigte Format.
      *
-     * @param object $Data Enthält die Daten für das Display
+     * @param object[] $Data Enthält die Daten für das Display
      *
      * @return string Die konvertierten Daten als String.
      */
-    private function ConvertDisplayData($Data)
+    private function ConvertDisplayData(array $Data): string
     {
         $SendData = '0x02';
         foreach ($Data as $Line) {
@@ -380,7 +381,7 @@ class HomeMaticDisWM55 extends HMBase
      *
      * @return string
      */
-    private function CreateDisplayScript()
+    private function CreateDisplayScript(): string
     {
         return file_get_contents(__DIR__ . '/Display-Taster-Script-Vorlage.php');
     }

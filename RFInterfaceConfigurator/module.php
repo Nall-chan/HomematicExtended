@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 /**
- * @addtogroup homematicextended
+ * @addtogroup HomeMaticExtended
  * @{
  *
  * @file          module.php
@@ -11,22 +11,22 @@ declare(strict_types=1);
  * @copyright     2023 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  *
- * @version       3.70
+ * @version       3.71
  */
 require_once __DIR__ . '/../libs/HMBase.php';  // HMBase Klasse
 
 /**
  * HomeMaticRFInterfaceConfigurator ist die Klasse für das IPS-Modul 'HomeMatic RF-Interface Konfigurator'.
- * Erweitert IPSModule.
+ * Erweitert IPSModuleStrict.
  */
-class HomeMaticRFInterfaceConfigurator extends IPSModule
+class HomeMaticRFInterfaceConfigurator extends IPSModuleStrict
 {
     use HMExtended\DebugHelper;
 
     /**
      * Interne Funktion des SDK.
      */
-    public function Create()
+    public function Create(): void
     {
         parent::Create();
         $this->ConnectParent('{6EE35B5B-9DD9-4B23-89F6-37589134852F}');
@@ -35,7 +35,7 @@ class HomeMaticRFInterfaceConfigurator extends IPSModule
     /**
      * Interne Funktion des SDK.
      */
-    public function ApplyChanges()
+    public function ApplyChanges(): void
     {
         parent::ApplyChanges();
         $this->SetReceiveDataFilter('.*9999999999.*');
@@ -44,7 +44,7 @@ class HomeMaticRFInterfaceConfigurator extends IPSModule
     /**
      * Interne Funktion des SDK.
      */
-    public function GetConfigurationForm()
+    public function GetConfigurationForm(): string
     {
         $Form = json_decode(file_get_contents(__DIR__ . '/form.json'), true);
         if ($this->GetStatus() == IS_CREATING) {
@@ -135,7 +135,7 @@ class HomeMaticRFInterfaceConfigurator extends IPSModule
     }
 
     //################# Datenaustausch
-    private function GetInterfaces()
+    private function GetInterfaces(): array
     {
         $Data['DataID'] = \HMExtended\GUID::SendToRFSplitter;
         $this->SendDebug('Request', 'GetInterfaces', 0);

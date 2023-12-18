@@ -7,6 +7,18 @@
         },
         {
             "type": "ExpansionPanel",
+            "caption": "General",
+            "expanded": true,
+            "items": [
+                {
+                    "name": "SetPointBehavior",
+                    "type": "CheckBox",
+                    "caption": "Changing the target temperature sets the mode to manual"
+                }
+            ]
+        },
+        {
+            "type": "ExpansionPanel",
             "caption": "Schedule",
             "expanded": true,
             "items": [

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 /**
- * @addtogroup homematicextended
+ * @addtogroup HomeMaticExtended
  * @{
  *
  * @file          module.php
@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @copyright     2023 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  *
- * @version       3.70
+ * @version       3.71
  */
 require_once __DIR__ . '/../libs/HMBase.php';  // HMBase Klasse
 
@@ -24,7 +24,7 @@ class HomeMaticDisEPWM55 extends HMBase
     /**
      * Interne Funktion des SDK.
      */
-    public function Create()
+    public function Create(): void
     {
         parent::Create();
 
@@ -36,7 +36,7 @@ class HomeMaticDisEPWM55 extends HMBase
     /**
      * Interne Funktion des SDK.
      */
-    public function ApplyChanges()
+    public function ApplyChanges(): void
     {
         parent::ApplyChanges();
         $Address = $this->ReadPropertyString(\HMExtended\Device\Property::Address);
@@ -57,7 +57,7 @@ class HomeMaticDisEPWM55 extends HMBase
      *
      * @return bool True bei Erfolg, sonst false.
      */
-    public function WriteValueDisplayNotify(int $Chime, int $Repeat, int $Wait, int $Color)
+    public function WriteValueDisplayNotify(int $Chime, int $Repeat, int $Wait, int $Color): bool
     {
         $Data = $this->GetSignal($Chime, $Repeat, $Wait, $Color);
         if ($Data === false) {
@@ -76,7 +76,7 @@ class HomeMaticDisEPWM55 extends HMBase
      *
      * @return bool True bei Erfolg, sonst false.
      */
-    public function WriteValueDisplayLine(int $Line, string $Text, int $Icon)
+    public function WriteValueDisplayLine(int $Line, string $Text, int $Icon): bool
     {
         $Data[] = '0x0A';
         for ($index = 1; $index <= 3; $index++) {
@@ -90,7 +90,6 @@ class HomeMaticDisEPWM55 extends HMBase
                 $Data[] = '0x0A';
             }
         }
-
         return $this->SendData($Data);
     }
 
@@ -108,7 +107,7 @@ class HomeMaticDisEPWM55 extends HMBase
      *
      * @return bool True bei Erfolg, sonst false.
      */
-    public function WriteValueDisplayLineEx(int $Line, string $Text, int $Icon, int $Chime, int $Repeat, int $Wait, int $Color)
+    public function WriteValueDisplayLineEx(int $Line, string $Text, int $Icon, int $Chime, int $Repeat, int $Wait, int $Color): bool
     {
         $Data[] = '0x0A';
         for ($index = 1; $index <= 3; $index++) {
@@ -143,7 +142,7 @@ class HomeMaticDisEPWM55 extends HMBase
      *
      * @return bool True bei Erfolg, sonst false.
      */
-    public function WriteValueDisplay(string $Text1, int $Icon1, string $Text2, int $Icon2, string $Text3, int $Icon3)
+    public function WriteValueDisplay(string $Text1, int $Icon1, string $Text2, int $Icon2, string $Text3, int $Icon3): bool
     {
         $Data[] = '0x0A';
         $Line1 = $this->GetLine($Text1, $Icon1);
@@ -151,7 +150,6 @@ class HomeMaticDisEPWM55 extends HMBase
             return false;
         }
         $Data = array_merge($Data, $Line1);
-
         $Line2 = $this->GetLine($Text2, $Icon2);
         if ($Line2 === false) {
             return false;
@@ -162,7 +160,6 @@ class HomeMaticDisEPWM55 extends HMBase
             return false;
         }
         $Data = array_merge($Data, $Line3);
-
         return $this->SendData($Data);
     }
 
@@ -183,7 +180,7 @@ class HomeMaticDisEPWM55 extends HMBase
      *
      * @return bool True bei Erfolg, sonst false.
      */
-    public function WriteValueDisplayEx(string $Text1, int $Icon1, string $Text2, int $Icon2, string $Text3, int $Icon3, int $Chime, int $Repeat, int $Wait, int $Color)
+    public function WriteValueDisplayEx(string $Text1, int $Icon1, string $Text2, int $Icon2, string $Text3, int $Icon3, int $Chime, int $Repeat, int $Wait, int $Color): bool
     {
         $Data[] = '0x0A';
         $Line1 = $this->GetLine($Text1, $Icon1);
@@ -219,10 +216,8 @@ class HomeMaticDisEPWM55 extends HMBase
      * @param array $Submit Das Array mit allen Werten, welche an das Display gesendet werden sollen.
      *
      * @return bool True bei Erfolg, sonst false.
-     *
-     * @todo Rückgabewerte fehlen!
      */
-    private function SendData($Submit)
+    private function SendData(array $Submit): bool
     {
         $ParentData = [
             'DataID'     => \HMExtended\GUID::SendRpcToIO,
@@ -258,9 +253,9 @@ class HomeMaticDisEPWM55 extends HMBase
      * @param int $Wait   Wartezeit in 10 Sekunden zwischen den Wiederholungen.
      * @param int $Color  Farbe der LED 0-3
      *
-     * @return bool|array Das Array mit den Daten, oder im Fehlerfall false.
+     * @return false|array Das Array mit den Daten, oder im Fehlerfall false.
      */
-    private function GetSignal(int $Chime, int $Repeat, int $Wait, int $Color)
+    private function GetSignal(int $Chime, int $Repeat, int $Wait, int $Color): false|array
     {
         try {
             if (!is_int($Chime)) {
@@ -308,9 +303,9 @@ class HomeMaticDisEPWM55 extends HMBase
      * @param string $Text Der darzustellenden Text (0-12 Zeichen)
      * @param int    $Icon Das anzuzeigende Icon (0-9)
      *
-     * @return array Das Daten-Array für eine Zeile.
+     * @return false|array Das Daten-Array für eine Zeile.
      */
-    private function GetLine(string $Text, int $Icon)
+    private function GetLine(string $Text, int $Icon): false|array
     {
         try {
             if (!is_string($Text)) {
@@ -355,7 +350,7 @@ class HomeMaticDisEPWM55 extends HMBase
      *
      * @return string Der veränderte String.
      */
-    private function hex_encode(string $string)
+    private function hex_encode(string $string): string
     {
         $umlaut = ['Ä', 'Ö', 'Ü', 'ä', 'ö', 'ü', 'ß', ':'];
         $hex_neu = [chr(0x5b), chr(0x23), chr(0x24), chr(0x7b), chr(0x7c), chr(0x7d), chr(0x5f), chr(0x3a)];

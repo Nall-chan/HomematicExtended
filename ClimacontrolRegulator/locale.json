@@ -2,11 +2,13 @@
     "translations": {
         "de": {
             "Address": "Adresse",
+            "General": "Allgemein",
+            "Changing the target temperature sets the mode to manual": "Verändern der Solltemperatur setzt Modus auf Manuell",
             "Optional status variables": "Optionale Statusvariablen",
             "Schedule": "Zeitplan",
             "Schedule save": "Zeitplan speichern",
             "Temperature": "Temperatur",
-            "Setpoint temperature": "Solltemperatur",
+            "Target temperature": "Solltemperatur",
             "Operation mode": "Betriebsart",
             "Automatic": "Automatik",
             "Manually": "Manuell",

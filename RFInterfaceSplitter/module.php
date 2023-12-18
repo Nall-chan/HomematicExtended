@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 /**
- * @addtogroup homematicextended
+ * @addtogroup HomeMaticExtended
  * @{
  *
  * @file          module.php
@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @copyright     2023 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  *
- * @version       3.70
+ * @version       3.71
  */
 require_once __DIR__ . '/../libs/HMBase.php';  // HMBase Klasse
 
@@ -24,10 +24,10 @@ class HomeMaticRFInterfaceSplitter extends HMBase
     /**
      * Interne Funktion des SDK.
      */
-    public function Create()
+    public function Create(): void
     {
         parent::Create();
-        $this->RegisterHMPropertys('XXX9999994');
+        $this->RegisterHMProperties('XXX9999994');
         $this->RegisterPropertyBoolean(\HMExtended\Device\Property::EmulateStatus, false);
         $this->RegisterPropertyInteger('Interval', 0);
         $this->RegisterTimer('ReadRFInterfaces', 0, '@HM_ReadRFInterfaces($_IPS[\'TARGET\']);');
@@ -36,7 +36,7 @@ class HomeMaticRFInterfaceSplitter extends HMBase
     /**
      * Interne Funktion des SDK.
      */
-    public function ApplyChanges()
+    public function ApplyChanges(): void
     {
         parent::ApplyChanges();
         $this->SetReceiveDataFilter('.*9999999999.*');
@@ -71,7 +71,7 @@ class HomeMaticRFInterfaceSplitter extends HMBase
      *
      * @return string Die Antwort an den anfragenden Child
      */
-    public function ForwardData($JSONString)
+    public function ForwardData(string $JSONString): string
     {
         return serialize($this->GetInterfaces());
     }
@@ -84,7 +84,7 @@ class HomeMaticRFInterfaceSplitter extends HMBase
      *
      * @return bool True bei Erfolg, sonst false.
      */
-    public function ReadRFInterfaces()
+    public function ReadRFInterfaces(): bool
     {
         $Result = $this->GetInterfaces();
         $ret = false;
@@ -108,7 +108,7 @@ class HomeMaticRFInterfaceSplitter extends HMBase
     /**
      * Wird ausgeführt wenn der Kernel hochgefahren wurde.
      */
-    protected function KernelReady()
+    protected function KernelReady(): void
     {
         $this->ApplyChanges();
     }
@@ -116,7 +116,7 @@ class HomeMaticRFInterfaceSplitter extends HMBase
     /**
      * Wird ausgeführt wenn sich der Status vom Parent ändert.
      */
-    protected function IOChangeState($State)
+    protected function IOChangeState(int $State): void
     {
         if ($State == IS_ACTIVE) {
             $this->ApplyChanges();
@@ -132,7 +132,7 @@ class HomeMaticRFInterfaceSplitter extends HMBase
      *
      * @return bool True wenn Konfig ok, sonst false.
      */
-    private function CheckConfig()
+    private function CheckConfig(): bool
     {
         $Interval = $this->ReadPropertyInteger('Interval');
         if ($Interval < 0) {
@@ -158,7 +158,7 @@ class HomeMaticRFInterfaceSplitter extends HMBase
      *
      * @return array Ein Array mit den Daten der Interfaces.
      */
-    private function GetInterfaces()
+    private function GetInterfaces(): array
     {
         if (!$this->HasActiveParent()) {
             trigger_error($this->Translate('Instance has no active parent instance!'), E_USER_NOTICE);

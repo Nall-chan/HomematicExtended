@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 /**
- * @addtogroup homematicextended
+ * @addtogroup HomeMaticExtended
  * @{
  *
  * @file          module.php
@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @copyright     2023 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  *
- * @version       3.70
+ * @version       3.71
  */
 require_once __DIR__ . '/../libs/HMBase.php';  // HMBase Klasse
 
@@ -31,10 +31,10 @@ class HomeMaticPowermeter extends HMBase
     /**
      * Interne Funktion des SDK.
      */
-    public function Create()
+    public function Create(): void
     {
         parent::Create();
-        $this->RegisterHMPropertys('XXX9999997');
+        $this->RegisterHMProperties('XXX9999997');
         $this->RegisterPropertyBoolean(\HMExtended\Device\Property::EmulateStatus, false);
         $this->RegisterPropertyInteger('EventID', 0);
     }
@@ -45,9 +45,9 @@ class HomeMaticPowermeter extends HMBase
      * @param int       $TimeStamp
      * @param int       $SenderID
      * @param int       $Message
-     * @param array|int $Data
+     * @param array $Data
      */
-    public function MessageSink($TimeStamp, $SenderID, $Message, $Data)
+    public function MessageSink(int $TimeStamp, int $SenderID, int $Message, array $Data): void
     {
         parent::MessageSink($TimeStamp, $SenderID, $Message, $Data);
         switch ($Message) {
@@ -64,7 +64,7 @@ class HomeMaticPowermeter extends HMBase
     /**
      * Interne Funktion des SDK.
      */
-    public function ApplyChanges()
+    public function ApplyChanges(): void
     {
         parent::ApplyChanges();
         $this->SetNewConfig();
@@ -75,9 +75,10 @@ class HomeMaticPowermeter extends HMBase
     /**
      * Interne Funktion des SDK.
      */
-    public function ReceiveData($JSONString)
+    public function ReceiveData(string $JSONString): string
     {
         $this->ReadPowerSysVar();
+        return '';
     }
 
     //################# protected
@@ -85,7 +86,7 @@ class HomeMaticPowermeter extends HMBase
     /**
      * Wird ausgeführt wenn der Kernel hochgefahren wurde.
      */
-    protected function KernelReady()
+    protected function KernelReady(): void
     {
         $this->ApplyChanges();
     }
@@ -93,7 +94,7 @@ class HomeMaticPowermeter extends HMBase
     /**
      * Wird ausgeführt wenn sich der Status vom Parent ändert.
      */
-    protected function IOChangeState($State)
+    protected function IOChangeState(int $State): void
     {
         $this->ApplyChanges();
     }
@@ -103,7 +104,7 @@ class HomeMaticPowermeter extends HMBase
     /**
      * Übernimmt die neue Konfiguration.
      */
-    private function SetNewConfig()
+    private function SetNewConfig(): void
     {
         if (IPS_GetKernelRunlevel() != KR_READY) {
             $this->HMDeviceAddress = '';
@@ -119,7 +120,6 @@ class HomeMaticPowermeter extends HMBase
         if ($this->CheckConfig()) {
             $HMDeviceDatapoint = $this->HMDeviceDatapoint;
             $this->SetReceiveDataFilter('.*"DeviceID":"' . $this->HMDeviceAddress . '","VariableName":"' . $HMDeviceDatapoint . '".*');
-
             switch ($HMDeviceDatapoint) {
                 case 'GAS_ENERGY_COUNTER':
                     $Profil = '~Gas';
@@ -159,7 +159,7 @@ class HomeMaticPowermeter extends HMBase
      *
      * @return bool True wenn Konfig ok, sonst false.
      */
-    private function CheckConfig()
+    private function CheckConfig(): bool
     {
         $OldEvent = $this->Event;
         if ($OldEvent > 0) {
@@ -190,7 +190,7 @@ class HomeMaticPowermeter extends HMBase
      *
      * @return bool True wenn Quelle gültig ist, sonst false.
      */
-    private function GetPowerAddress(int $EventID)
+    private function GetPowerAddress(int $EventID): bool
     {
         if (($EventID == 0) || (!IPS_VariableExists($EventID))) {
             $this->HMDeviceAddress = '';
@@ -234,7 +234,7 @@ class HomeMaticPowermeter extends HMBase
      *
      * @throws Exception Wenn CCU nicht erreicht wurde.
      */
-    private function ReadPowerSysVar()
+    private function ReadPowerSysVar(): bool
     {
         $HMScript = 'object oitemID;' . PHP_EOL
                 . 'oitemID = dom.GetObject("svEnergyCounter' . $this->HMSuffix . '_" # dom.GetObject("' . $this->HMProtocol . '.' . $this->HMDeviceAddress . '.' . $this->HMDeviceDatapoint . '").Channel() # "_' . $this->HMDeviceAddress . '");' . PHP_EOL
@@ -248,6 +248,7 @@ class HomeMaticPowermeter extends HMBase
         $this->SendDebug($this->HMDeviceDatapoint, (string) $xml->Value, 0);
         $Value = ((float) $xml->Value) / $this->HMFactor;
         $this->SetValue($this->HMDeviceDatapoint . '_TOTAL', $Value);
+        return true;
     }
 }
 

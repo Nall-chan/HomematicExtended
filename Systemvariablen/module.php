@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 /**
- * @addtogroup homematicextended
+ * @addtogroup HomeMaticExtended
  * @{
  *
  * @file          module.php
@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @copyright     2023 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  *
- * @version       3.70
+ * @version       3.71
  */
 require_once __DIR__ . '/../libs/HMBase.php';  // HMBase Klasse
 
@@ -32,10 +32,10 @@ class HomeMaticSystemvariablen extends HMBase
     /**
      * Interne Funktion des SDK.
      */
-    public function Create()
+    public function Create(): void
     {
         parent::Create();
-        $this->RegisterHMPropertys('XXX9999999');
+        $this->RegisterHMProperties('XXX9999999');
 
         $this->RegisterPropertyInteger('EventID', 0);
         $this->RegisterPropertyInteger('Interval', 0);
@@ -55,7 +55,7 @@ class HomeMaticSystemvariablen extends HMBase
     /**
      * Interne Funktion des SDK.
      */
-    public function Destroy()
+    public function Destroy(): void
     {
         if (!IPS_InstanceExists($this->InstanceID)) {
             $this->UnregisterProfile('HM.AlReceipt');
@@ -77,14 +77,11 @@ class HomeMaticSystemvariablen extends HMBase
      * @param int       $TimeStamp
      * @param int       $SenderID
      * @param int       $Message
-     * @param array|int $Data
+     * @param array $Data
      */
-    public function MessageSink($TimeStamp, $SenderID, $Message, $Data)
+    public function MessageSink(int $TimeStamp, int $SenderID, int $Message, array $Data): void
     {
         $OldVars = $this->SystemVars;
-        /* if (!IPS_InstanceExists($this->InstanceID)) {
-          return;
-          } */
         parent::MessageSink($TimeStamp, $SenderID, $Message, $Data);
         switch ($Message) {
             case VM_DELETE:
@@ -109,7 +106,7 @@ class HomeMaticSystemvariablen extends HMBase
     /**
      * Interne Funktion des SDK.
      */
-    public function ApplyChanges()
+    public function ApplyChanges(): void
     {
         parent::ApplyChanges();
 
@@ -155,9 +152,10 @@ class HomeMaticSystemvariablen extends HMBase
     /**
      * Interne Funktion des SDK.
      */
-    public function RequestAction($Ident, $Value)
+    public function RequestAction(string $Ident, mixed $Value, bool &$done = false): void
     {
-        if (parent::RequestAction($Ident, $Value)) {
+        parent::RequestAction($Ident, $Value, $done);
+        if ($done) {
             return;
         }
         if (strpos($Ident, 'AlDP') !== false) {
@@ -192,9 +190,10 @@ class HomeMaticSystemvariablen extends HMBase
     /**
      * Interne Funktion des SDK.
      */
-    public function ReceiveData($JSONString)
+    public function ReceiveData(string $JSONString): string
     {
         $this->ReadSysVars();
+        return '';
     }
 
     //################# PUBLIC
@@ -207,7 +206,7 @@ class HomeMaticSystemvariablen extends HMBase
      *
      * @return bool True bei erfolg, sonst false.
      */
-    public function AlarmReceipt(string $Ident)
+    public function AlarmReceipt(string $Ident): bool
     {
         if (IPS_GetKernelRunlevel() != KR_READY) {
             return false;
@@ -252,7 +251,7 @@ class HomeMaticSystemvariablen extends HMBase
      * IPS-Instanz-Funktion 'HM_SystemVariablesTimer'.
      * Wird durch den Timer ausgeführt und liest alle Systemvariablen von der CCU.
      */
-    public function SystemVariablesTimer()
+    public function SystemVariablesTimer(): void
     {
         if (!$this->HasActiveParent()) {
             return;
@@ -477,7 +476,7 @@ class HomeMaticSystemvariablen extends HMBase
     /**
      * Interne Funktion des SDK.
      */
-    protected function KernelReady()
+    protected function KernelReady(): void
     {
         $this->ApplyChanges();
     }
@@ -485,7 +484,7 @@ class HomeMaticSystemvariablen extends HMBase
     /**
      * Wird ausgeführt wenn sich der Status vom Parent ändert.
      */
-    protected function IOChangeState($State)
+    protected function IOChangeState(int $State): void
     {
         $this->ApplyChanges();
     }
@@ -495,7 +494,7 @@ class HomeMaticSystemvariablen extends HMBase
      *
      * @return bool True wenn Konfig ok, sonst false.
      */
-    private function SetNewConfig()
+    private function SetNewConfig(): bool
     {
         $this->UnregisterReference($this->AlarmScriptID);
         $this->AlarmScriptID = $this->ReadPropertyInteger('AlarmScriptID');
@@ -556,7 +555,7 @@ class HomeMaticSystemvariablen extends HMBase
      *
      * @return bool True wenn Quelle gültig ist, sonst false.
      */
-    private function GetTriggerVar()
+    private function GetTriggerVar(): bool
     {
         $EventID = $this->ReadPropertyInteger('EventID');
         if (($EventID == 0) || (!IPS_VariableExists($EventID))) {
@@ -582,7 +581,7 @@ class HomeMaticSystemvariablen extends HMBase
      *
      * @return bool True bei Erfolg, sonst false.
      */
-    private function ReadSysVars()
+    private function ReadSysVars(): bool
     {
         // Systemvariablen
         $HMScript = 'SysVars=dom.GetObject(ID_SYSTEM_VARIABLES).EnumUsedIDs();';
@@ -757,7 +756,7 @@ class HomeMaticSystemvariablen extends HMBase
      *
      * @return bool True bei Erfolg, sonst false.
      */
-    private function ProcessAlarmVariable(string $VarIdent, string $SysVar, string $CCUTimeZone)
+    private function ProcessAlarmVariable(string $VarIdent, string $SysVar, string $CCUTimeZone): bool
     {
         $HMScript = 'Value = dom.GetObject(' . $SysVar . ').Value();
                         string FirstTime = dom.GetObject(' . $SysVar . ').AlOccurrenceTime();
@@ -854,7 +853,7 @@ class HomeMaticSystemvariablen extends HMBase
      *
      * @return bool True bei Erfolg, sonst false.
      */
-    private function WriteSysVar(string $Parameter, string $ValueStr)
+    private function WriteSysVar(string $Parameter, string $ValueStr): bool
     {
         if (IPS_GetKernelRunlevel() != KR_READY) {
             return false;
@@ -889,7 +888,7 @@ class HomeMaticSystemvariablen extends HMBase
      *
      * @return int IPS-ID der neuen Variable.
      */
-    private function RegisterSubVariable($ParentID, $Ident, $Name, $Type, $Profile = '', $Position = 0)
+    private function RegisterSubVariable($ParentID, $Ident, $Name, $Type, $Profile = '', $Position = 0): int
     {
         if ($Profile != '') {
             if (IPS_VariableProfileExists('~' . $Profile)) {

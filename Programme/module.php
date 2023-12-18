@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 /**
- * @addtogroup homematicextended
+ * @addtogroup HomeMaticExtended
  * @{
  *
  * @file          module.php
@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @copyright     2023 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  *
- * @version       3.70
+ * @version       3.71
  */
 require_once __DIR__ . '/../libs/HMBase.php';  // HMBase Klasse
 
@@ -24,17 +24,17 @@ class HomeMaticProgramme extends HMBase
     /**
      * Interne Funktion des SDK.
      */
-    public function Create()
+    public function Create(): void
     {
         parent::Create();
-        $this->RegisterHMPropertys('XXX9999998');
+        $this->RegisterHMProperties('XXX9999998');
         $this->RegisterPropertyBoolean(\HMExtended\Device\Property::EmulateStatus, false);
     }
 
     /**
      * Interne Funktion des SDK.
      */
-    public function Destroy()
+    public function Destroy(): void
     {
         if (!IPS_InstanceExists($this->InstanceID)) {
             $this->UnregisterProfile('Execute.HM');
@@ -46,7 +46,7 @@ class HomeMaticProgramme extends HMBase
     /**
      * Interne Funktion des SDK.
      */
-    public function ApplyChanges()
+    public function ApplyChanges(): void
     {
         parent::ApplyChanges();
         $this->SetReceiveDataFilter('.*9999999999.*');
@@ -70,9 +70,10 @@ class HomeMaticProgramme extends HMBase
     /**
      * Interne Funktion des SDK.
      */
-    public function RequestAction($Ident, $Value)
+    public function RequestAction(string $Ident, mixed $Value, bool &$done = false): void
     {
-        if (parent::RequestAction($Ident, $Value)) {
+        parent::RequestAction($Ident, $Value, $done);
+        if ($done) {
             return;
         }
 
@@ -87,7 +88,7 @@ class HomeMaticProgramme extends HMBase
      *
      * @return bool True bei erfolg, sonst false.
      */
-    public function ReadPrograms()
+    public function ReadPrograms(): bool
     {
         return $this->ReadCCUPrograms();
     }
@@ -98,7 +99,7 @@ class HomeMaticProgramme extends HMBase
      *
      * @return bool True bei erfolg, sonst false.
      */
-    public function StartProgram(string $Parameter)
+    public function StartProgram(string $Parameter): bool
     {
         return $this->StartCCUProgram($Parameter);
     }
@@ -108,7 +109,7 @@ class HomeMaticProgramme extends HMBase
     /**
      * Wird ausgeführt wenn der Kernel hochgefahren wurde.
      */
-    protected function KernelReady()
+    protected function KernelReady(): void
     {
         $this->ApplyChanges();
     }
@@ -116,7 +117,7 @@ class HomeMaticProgramme extends HMBase
     /**
      * Wird ausgeführt wenn sich der Status vom Parent ändert.
      */
-    protected function IOChangeState($State)
+    protected function IOChangeState(int $State): void
     {
         if ($State != IS_ACTIVE) {
             return;
@@ -133,7 +134,7 @@ class HomeMaticProgramme extends HMBase
      *
      * @return bool True bei Erfolg, sonst false.
      */
-    private function ReadCCUPrograms()
+    private function ReadCCUPrograms(): bool
     {
         $HMScript = 'SysPrgs=dom.GetObject(ID_PROGRAMS).EnumUsedIDs();';
         $HMScriptResult = $this->LoadHMScript($HMScript);
@@ -159,7 +160,6 @@ class HomeMaticProgramme extends HMBase
             $this->SendDebug($SysPrg, (string) $varXml->Name, 0);
             $var = @IPS_GetObjectIDByIdent($SysPrg, $this->InstanceID);
             $Name = (string) $varXml->Name;
-            $Info = (string) $varXml->Name;
             if ($var === false) {
                 $this->MaintainVariable($SysPrg, $Name, 1, 'Execute.HM', 0, true);
                 $this->EnableAction($SysPrg);
@@ -178,7 +178,7 @@ class HomeMaticProgramme extends HMBase
      *
      * @return bool True bei Erfolg sonst Exception.
      */
-    private function StartCCUProgram($Ident)
+    private function StartCCUProgram(string $Ident): bool
     {
         $HMScript = 'State=dom.GetObject(' . $Ident . ').ProgramExecute();';
 

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 /**
- * @addtogroup homematicextended
+ * @addtogroup HomeMaticExtended
  * @{
  *
  * @file          module.php
@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @copyright     2023 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  *
- * @version       3.70
+ * @version       3.71
  */
 require_once __DIR__ . '/../libs/HMHeatingDevice.php';  // HMBase Klasse
 
@@ -31,7 +31,7 @@ class HomeMaticIPHeatingGroup extends HMHeatingDevice
     /**
      * Interne Funktion des SDK.
      */
-    public function Create()
+    public function Create(): void
     {
         parent::Create();
 
@@ -45,9 +45,10 @@ class HomeMaticIPHeatingGroup extends HMHeatingDevice
     /**
      * Interne Funktion des SDK.
      */
-    public function RequestAction($Ident, $Value)
+    public function RequestAction(string $Ident, mixed $Value, bool &$done = false): void
     {
-        if (parent::RequestAction($Ident, $Value)) {
+        parent::RequestAction($Ident, $Value, $done);
+        if ($done) {
             return;
         }
         if (array_key_exists($Ident, \HMExtended\ValuesSet::$Variables[static::DeviceTyp])) {
@@ -76,8 +77,10 @@ class HomeMaticIPHeatingGroup extends HMHeatingDevice
                     }
                     break;
                 case \HMExtended\HeatingGroupHmIP::SET_POINT_TEMPERATURE:
-                    if ($this->GetValue(\HMExtended\HeatingGroupHmIP::SET_POINT_MODE) == 0) {
-                        $this->PutValue(\HMExtended\HeatingGroupHmIP::CONTROL_MODE, 1);
+                    if ($this->ReadPropertyBoolean(\HMExtended\Device\Property::SetPointBehavior)) {
+                        if ($this->GetValue(\HMExtended\HeatingGroupHmIP::SET_POINT_MODE) == 0) {
+                            $this->PutValue(\HMExtended\HeatingGroupHmIP::CONTROL_MODE, 1);
+                        }
                     }
                     break;
                 case \HMExtended\HeatingGroupHmIP::CONTROL_MODE:
@@ -122,7 +125,7 @@ class HomeMaticIPHeatingGroup extends HMHeatingDevice
         return;
     }
 
-    protected function SetParamVariables(array $Params)
+    protected function SetParamVariables(array $Params): void
     {
         $d = new DateTime();
         $d->setTime(
@@ -136,7 +139,7 @@ class HomeMaticIPHeatingGroup extends HMHeatingDevice
         parent::SetParamVariables($Params);
     }
 
-    protected function SetVariable(string $Ident, $Value)
+    protected function SetVariable(string $Ident, mixed $Value): void
     {
         switch ($Ident) {
             case \HMExtended\HeatingGroupHmIP::ACTIVE_PROFILE:

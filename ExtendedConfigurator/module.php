@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 /**
- * @addtogroup homematicextended
+ * @addtogroup HomeMaticExtended
  * @{
  *
  * @file          module.php
@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @copyright     2023 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  *
- * @version       3.70
+ * @version       3.71
  */
 require_once __DIR__ . '/../libs/HMBase.php';  // HMBase Klasse
 require_once __DIR__ . '/../libs/HMTypes.php';  // HMTypes Data
@@ -28,10 +28,10 @@ class HomeMaticExtendedConfigurator extends HMBase
     /**
      * Interne Funktion des SDK.
      */
-    public function Create()
+    public function Create(): void
     {
         parent::Create();
-        $this->RegisterHMPropertys('XXX9999994');
+        $this->RegisterHMProperties('XXX9999994');
         $this->RegisterPropertyBoolean(\HMExtended\Device\Property::EmulateStatus, false);
         $this->RegisterPropertyInteger('Interval', 0);
     }
@@ -39,7 +39,7 @@ class HomeMaticExtendedConfigurator extends HMBase
     /**
      * Interne Funktion des SDK.
      */
-    public function ApplyChanges()
+    public function ApplyChanges(): void
     {
         parent::ApplyChanges();
     }
@@ -48,7 +48,7 @@ class HomeMaticExtendedConfigurator extends HMBase
     /**
      * Interne Funktion des SDK.
      */
-    public function GetConfigurationForm()
+    public function GetConfigurationForm(): string
     {
         $Form = json_decode(file_get_contents(__DIR__ . '/form.json'), true);
         if ($this->GetStatus() == IS_CREATING) {
@@ -97,7 +97,7 @@ class HomeMaticExtendedConfigurator extends HMBase
     }
 
     //################# protected
-    protected function GetInstanceList(string $GUID, string $ConfigParam = null)
+    protected function GetInstanceList(string $GUID, string $ConfigParam = null): array
     {
         $InstanceIDList = array_filter(IPS_GetInstanceListByModuleID($GUID), [$this, 'FilterInstances']);
         if ($ConfigParam != null) {
@@ -107,17 +107,17 @@ class HomeMaticExtendedConfigurator extends HMBase
         return $InstanceIDList;
     }
 
-    protected function FilterInstances(int $InstanceID)
+    protected function FilterInstances(int $InstanceID): bool
     {
         return IPS_GetInstance($InstanceID)['ConnectionID'] == $this->ParentID;
     }
 
-    protected function GetConfigParam(&$item1, $InstanceID, $ConfigParam)
+    protected function GetConfigParam(mixed &$item1, int $InstanceID, string $ConfigParam): void
     {
         $item1 = IPS_GetProperty($InstanceID, $ConfigParam);
     }
 
-    private function GetConfigRows(int $Protocol, string $GUID)
+    private function GetConfigRows(int $Protocol, string $GUID): array
     {
         $CreateParams = [
             'moduleID'      => $GUID,
@@ -162,7 +162,7 @@ class HomeMaticExtendedConfigurator extends HMBase
         return $Devices;
     }
 
-    private function GetDeviceData(int $Protocol, array &$Device)
+    private function GetDeviceData(int $Protocol, array &$Device): void
     {
         $InterfaceString = \HMExtended\CCU::$Interfaces[$Protocol];
         if (isset($this->DeviceData[$InterfaceString][$Device['address']])) {
@@ -181,7 +181,7 @@ class HomeMaticExtendedConfigurator extends HMBase
         }
     }
 
-    private function GetDevices(int $Protocol, array $Types)
+    private function GetDevices(int $Protocol, array $Types): array
     {
         if (!array_key_exists($Protocol, $this->listDevices)) {
             $Devices = $this->SendRPC('listDevices', $Protocol, []);
@@ -206,7 +206,7 @@ class HomeMaticExtendedConfigurator extends HMBase
         return array_values($Result);
     }
 
-    private function LoadDeviceData()
+    private function LoadDeviceData(): array
     {
         $Values = [];
         $Script = 'string did; string cid; string rid;
@@ -245,7 +245,7 @@ class HomeMaticExtendedConfigurator extends HMBase
         return $Values;
     }
 
-    private function SendRPC(string $MethodName, int $Protocol, array $Data)
+    private function SendRPC(string $MethodName, int $Protocol, array $Data): false|array
     {
         if (!$this->HasActiveParent()) {
             trigger_error($this->Translate('Instance has no active Parent Instance!'), E_USER_NOTICE);

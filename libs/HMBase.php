@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 /**
- * @addtogroup homematicextended
+ * @addtogroup HomeMaticExtended
  * @{
  *
  * @package       HomematicExtended
@@ -10,7 +10,7 @@ declare(strict_types=1);
  * @author        Michael Tröger <micha@nall-chan.net>
  * @copyright     2023 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
- * @version       3.70
+ * @version       3.71
  */
 eval('declare(strict_types=1);namespace HMExtended {?>' . file_get_contents(__DIR__ . '/helper/DebugHelper.php') . '}');
 eval('declare(strict_types=1);namespace HMExtended {?>' . file_get_contents(__DIR__ . '/helper/BufferHelper.php') . '}');
@@ -21,7 +21,7 @@ require_once __DIR__ . '/HMTypes.php';  // HMTypes Data
 
 /**
  * HMBase ist die Basis-Klasse für alle Module welche HMScript verwenden.
- * Erweitert IPSModule.
+ * Erweitert IPSModuleStrictStrict.
  *
  * @property int $ParentID Aktueller IO-Parent.
  *
@@ -32,7 +32,7 @@ require_once __DIR__ . '/HMTypes.php';  // HMTypes Data
  * @method void UnregisterProfile(string $Profile)
  *
  */
-abstract class HMBase extends IPSModule
+abstract class HMBase extends IPSModuleStrict
 {
     use \HMExtended\DebugHelper,
         \HMExtended\VariableHelper,
@@ -47,7 +47,7 @@ abstract class HMBase extends IPSModule
     /**
      * Interne Funktion des SDK.
      */
-    public function Create()
+    public function Create(): void
     {
         parent::Create();
         $this->ParentID = 0;
@@ -58,7 +58,7 @@ abstract class HMBase extends IPSModule
     /**
      * Interne Funktion des SDK.
      */
-    public function ApplyChanges()
+    public function ApplyChanges(): void
     {
         parent::ApplyChanges();
         $this->RegisterMessage($this->InstanceID, FM_CONNECT);
@@ -77,9 +77,9 @@ abstract class HMBase extends IPSModule
      * @param int       $TimeStamp
      * @param int       $SenderID
      * @param int       $Message
-     * @param array|int $Data
+     * @param array $Data
      */
-    public function MessageSink($TimeStamp, $SenderID, $Message, $Data)
+    public function MessageSink(int $TimeStamp, int $SenderID, int $Message, array $Data): void
     {
         $this->IOMessageSink($TimeStamp, $SenderID, $Message, $Data);
         switch ($Message) {
@@ -90,9 +90,9 @@ abstract class HMBase extends IPSModule
     }
 
     //################# ActionHandler
-    public function RequestAction($Ident, $Value)
+    public function RequestAction(string $Ident, mixed $Value, bool &$done = false): void
     {
-        return $this->IORequestAction($Ident, $Value);
+        $done = $this->IORequestAction($Ident, $Value);
     }
 
     //################# protected
@@ -100,14 +100,14 @@ abstract class HMBase extends IPSModule
     /**
      * Wird ausgeführt wenn sich der Status vom Parent ändert.
      */
-    protected function IOChangeState($State)
+    protected function IOChangeState(int $State): void
     {
     }
 
     /**
      * Wird ausgeführt wenn der Kernel hochgefahren wurde.
      */
-    protected function KernelReady()
+    protected function KernelReady(): void
     {
         $this->UnregisterMessage(0, IPS_KERNELSTARTED);
         $this->RegisterParent();
@@ -116,9 +116,9 @@ abstract class HMBase extends IPSModule
     /**
      * Setzte alle Eigenschaften, welche Instanzen die mit einem Homematic-Socket verbunden sind, haben müssen.
      *
-     * @param string $Address Die zu verwendene HM-Device Adresse.
+     * @param string $Address Die zu nutzende HM-Device Adresse.
      */
-    protected function RegisterHMPropertys(string $Address)
+    protected function RegisterHMProperties(string $Address): void
     {
         $this->RegisterPropertyInteger(\HMExtended\Device\Property::Protocol, 0);
         if (IPS_GetKernelRunlevel() == KR_READY) {
@@ -136,7 +136,7 @@ abstract class HMBase extends IPSModule
      *
      * @return int ID des Parent.
      */
-    protected function RegisterParent()
+    protected function RegisterParent(): int
     {
         return $this->IORegisterParent();
     }
@@ -148,9 +148,9 @@ abstract class HMBase extends IPSModule
      *
      * @throws Exception Wenn die CCU nicht erreicht wurde.
      *
-     * @return string Das Ergebnis von der CCU.
+     * @return false|string Das Ergebnis von der CCU.
      */
-    protected function LoadHMScript(string $HMScript)
+    protected function LoadHMScript(string $HMScript): false|string
     {
         if (!$this->HasActiveParent()) {
             trigger_error($this->Translate('Instance has no active Parent Instance!'), E_USER_NOTICE);
@@ -166,7 +166,7 @@ abstract class HMBase extends IPSModule
         return utf8_encode($Result);
     }
 
-    protected function GetScriptXML($Content)
+    protected function GetScriptXML(string $Content): SimpleXMLElement
     {
         try {
             $xml = @new SimpleXMLElement(utf8_encode($Content), LIBXML_NOBLANKS + LIBXML_NONET);

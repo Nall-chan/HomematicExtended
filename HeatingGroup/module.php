@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 /**
- * @addtogroup homematicextended
+ * @addtogroup HomeMaticExtended
  * @{
  *
  * @file          module.php
@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @copyright     2023 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  *
- * @version       3.70
+ * @version       3.71
  */
 require_once __DIR__ . '/../libs/HMHeatingDevice.php';  // HMBase Klasse
 
@@ -31,7 +31,7 @@ class HomeMaticHeatingGroup extends HMHeatingDevice
     /**
      * Interne Funktion des SDK.
      */
-    public function Create()
+    public function Create(): void
     {
         parent::Create();
 
@@ -45,9 +45,10 @@ class HomeMaticHeatingGroup extends HMHeatingDevice
     /**
      * Interne Funktion des SDK.
      */
-    public function RequestAction($Ident, $Value)
+    public function RequestAction(string $Ident, mixed $Value, bool &$done = false): void
     {
-        if (parent::RequestAction($Ident, $Value)) {
+        parent::RequestAction($Ident, $Value, $done);
+        if ($done) {
             return;
         }
         if (array_key_exists($Ident, \HMExtended\ValuesSet::$Variables[static::DeviceTyp])) {
@@ -113,7 +114,12 @@ class HomeMaticHeatingGroup extends HMHeatingDevice
                     $Mode = $this->GetValue(\HMExtended\HeatingGroup::CONTROL_MODE);
                     switch ($Mode) {
                         case 0:
-                        case 3:
+                            if (!$this->ReadPropertyBoolean(\HMExtended\Device\Property::SetPointBehavior)) {
+                                break;
+                            }
+                            // SetPoint change from Auto to Manually
+                            // No break. Add additional comment above this line if intentional
+                        case 3: //Abort Boost, change to Manually
                             $Ident = \HMExtended\HeatingGroup::MANU_MODE;
                             break;
                         case 2:
@@ -203,7 +209,7 @@ class HomeMaticHeatingGroup extends HMHeatingDevice
         return;
     }
 
-    protected function SetParamVariables(array $Params)
+    protected function SetParamVariables(array $Params): void
     {
         $d = new DateTime();
         $d->setTime(
@@ -220,7 +226,7 @@ class HomeMaticHeatingGroup extends HMHeatingDevice
         parent::SetParamVariables($Params);
     }
 
-    protected function SetVariable(string $Ident, $Value)
+    protected function SetVariable(string $Ident, mixed $Value): void
     {
         if ($this->ReadPropertyBoolean('enable_PARTY')) {
             switch ($Ident) {

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 /**
- * @addtogroup homematicextended
+ * @addtogroup HomeMaticExtended
  * @{
  *
  * @file          module.php
@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @copyright     2023 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  *
- * @version       3.70
+ * @version       3.71
  */
 require_once __DIR__ . '/HMBase.php';  // HMBase Klasse
 
@@ -58,13 +58,15 @@ class HMHeatingDevice extends HMBase
     /**
      * Interne Funktion des SDK.
      */
-    public function Create()
+    public function Create(): void
     {
         parent::Create();
         foreach (\HMExtended\Property::$Properties[static::DeviceTyp] as $Property => $Value) {
             $this->RegisterPropertyBoolean('enable_' . $Property, $Value);
         }
-        $this->RegisterPropertyBoolean('enable_SCHEDULE', false);
+        $this->RegisterPropertyBoolean(\HMExtended\Device\Property::Schedule, true);
+        $this->RegisterPropertyBoolean(\HMExtended\Device\Property::SetPointBehavior, true);
+
         $ScheduleTempsInit = [
             [5, 0x000080],
             [16, 0x333399],
@@ -80,13 +82,14 @@ class HMHeatingDevice extends HMBase
             [30, 0xFF0000],
         ];
         $this->RegisterAttributeString('ScheduleColors', json_encode($ScheduleTempsInit));
+
         $this->WeekSchedules = [];
     }
 
     /**
      * Interne Funktion des SDK.
      */
-    public function Destroy()
+    public function Destroy(): void
     {
         if (!IPS_InstanceExists($this->InstanceID)) {
             foreach (\HMExtended\Variables::$Profiles as $ProfileName => $ProfileData) {
@@ -99,7 +102,7 @@ class HMHeatingDevice extends HMBase
     /**
      * Interne Funktion des SDK.
      */
-    public function ApplyChanges()
+    public function ApplyChanges(): void
     {
         parent::ApplyChanges();
         $Address = $this->ReadPropertyString(\HMExtended\Device\Property::Address);
@@ -121,7 +124,7 @@ class HMHeatingDevice extends HMBase
                 }
             }
         }
-        if ($this->ReadPropertyBoolean('enable_SCHEDULE')) {
+        if ($this->ReadPropertyBoolean(\HMExtended\Device\Property::Schedule)) {
             $this->CreateWeekPlan();
             $ProfileSubmitPlan = false;
             switch (static::SelectedWeekScheduleIdent) { //Nur Speichern Button
@@ -166,25 +169,29 @@ class HMHeatingDevice extends HMBase
     /**
      * Interne Funktion des SDK.
      */
-    public function RequestAction($Ident, $Value)
+    public function RequestAction(string $Ident, mixed $Value, bool &$done = false): void
     {
-        if (parent::RequestAction($Ident, $Value)) {
-            return true;
+        parent::RequestAction($Ident, $Value, $done);
+        if ($done) {
+            return;
         }
         switch ($Ident) {
             case 'getParam':
                 $this->GetParamsAndSetVariable();
-                return true;
+                $done = true;
+                return;
             case \HMExtended\Variables::SUBMIT_WEEK_PROGRAM:
                 if (static::SelectedWeekScheduleIdent) {
                     $this->SaveSchedule((int) $this->GetValue(\HMExtended\Variables::SELECT_NEW_WEEK_PROGRAM));
                 } else {
                     $this->SaveSchedule(1);
                 }
-                return true;
+                $done = true;
+                return;
             case \HMExtended\Variables::SELECT_NEW_WEEK_PROGRAM:
                 $this->SetValue($Ident, $Value);
-                return true;
+                $done = true;
+                return;
         }
         $Property = $Ident;
         if (array_key_exists($Ident, \HMExtended\ValuesSet::$Variables[static::DeviceTyp])) {
@@ -196,13 +203,14 @@ class HMHeatingDevice extends HMBase
         if (array_key_exists($Property, \HMExtended\Property::$Properties[static::DeviceTyp])) {
             if (!$this->ReadPropertyBoolean('enable_' . $Property)) {
                 trigger_error('Variable is disabled in config.', E_USER_NOTICE);
-                return true;
+                $done = true;
+                return;
             }
         }
-        return false;
+        return;
     }
 
-    public function RequestState(string $Ident)
+    public function RequestState(string $Ident): bool
     {
         if (!array_key_exists($Ident, \HMExtended\ValuesSet::$Variables[static::DeviceTyp])) {
             trigger_error($this->Translate('Invalid Ident for VALUE.'), E_USER_NOTICE);
@@ -217,16 +225,16 @@ class HMHeatingDevice extends HMBase
         return true;
     }
 
-    public function RequestParams()
+    public function RequestParams(): bool
     {
         return $this->GetParamsAndSetVariable();
     }
 
-    public function ReceiveData($JSONString)
+    public function ReceiveData(string $JSONString): string
     {
         $Event = json_decode($JSONString, true);
-        //$this->SendDebug('EVENT:' . $Event['VariableName'], $Event['VariableValue'], 0);
         $this->SetVariable($Event['VariableName'], $Event['VariableValue']);
+        return '';
     }
 
     //################# protected
@@ -234,7 +242,7 @@ class HMHeatingDevice extends HMBase
     /**
      * Wird ausgeführt wenn sich der Status vom Parent ändert.
      */
-    protected function IOChangeState($State)
+    protected function IOChangeState(int $State): void
     {
         if ($State == IS_ACTIVE) {
             if (($this->ReadPropertyString(\HMExtended\Device\Property::Address) != '') && ($this->HasActiveParent())) {
@@ -244,12 +252,12 @@ class HMHeatingDevice extends HMBase
         }
     }
 
-    protected function SetVariable(string $Ident, $Value)
+    protected function SetVariable(string $Ident, mixed $Value): void
     {
         @$this->SetValue($Ident, $Value);
     }
 
-    protected function SetParamVariables(array $Params)
+    protected function SetParamVariables(array $Params): void
     {
         $ScheduleData = [];
         $ScheduleTemps = $this->GetTempColorsAttribute();
@@ -288,7 +296,7 @@ class HMHeatingDevice extends HMBase
         $this->RefreshScheduleObject($ScheduleActionHasChanged);
     }
 
-    protected function FixValueType($VarType, &$Value)
+    protected function FixValueType(int $VarType, mixed &$Value): void
     {
         switch ($VarType) {
             case VARIABLETYPE_BOOLEAN:
@@ -306,21 +314,21 @@ class HMHeatingDevice extends HMBase
         }
     }
 
-    protected function PutParamSet(array $Parameter, bool $EmulateStatus = false)
+    protected function PutParamSet(array $Parameter, bool $EmulateStatus = false): bool
     {
         $Paramset = [$this->ReadPropertyString(\HMExtended\Device\Property::Address) . static::ParamChannel, \HMExtended\CCU::MASTER];
         $Result = $this->SendRPC('putParamset', $Paramset, $Parameter, $EmulateStatus);
         return ($Result !== null) ? true : false;
     }
 
-    protected function PutValueSet($Value, bool $EmulateStatus = false)
+    protected function PutValueSet(array $Values, bool $EmulateStatus = false): bool
     {
         $Paramset = [$this->ReadPropertyString(\HMExtended\Device\Property::Address) . static::ValuesChannel, \HMExtended\CCU::VALUES];
-        $Result = $this->SendRPC('putParamset', $Paramset, $Value, $EmulateStatus);
+        $Result = $this->SendRPC('putParamset', $Paramset, $Values, $EmulateStatus);
         return ($Result !== null) ? true : false;
     }
 
-    protected function PutValue(string $ValueName, $Value, bool $EmulateStatus = false)
+    protected function PutValue(string $ValueName, $Value, bool $EmulateStatus = false): bool
     {
         $Paramset = [$this->ReadPropertyString(\HMExtended\Device\Property::Address) . static::ValuesChannel, $ValueName];
         $Result = $this->SendRPC('setValue', $Paramset, $Value, $EmulateStatus);
@@ -330,9 +338,9 @@ class HMHeatingDevice extends HMBase
         return ($Result !== null) ? true : false;
     }
 
-    protected function RefreshScheduleObject(bool $ScheduleActionHasChanged = false)
+    protected function RefreshScheduleObject(bool $ScheduleActionHasChanged = false): void
     {
-        if (!$this->ReadPropertyBoolean('enable_SCHEDULE')) {
+        if (!$this->ReadPropertyBoolean(\HMExtended\Device\Property::Schedule)) {
             return;
         }
         if (!count($this->WeekSchedules)) {
@@ -370,7 +378,7 @@ class HMHeatingDevice extends HMBase
         }
     }
 
-    protected function SaveSchedule(int $Plan)
+    protected function SaveSchedule(int $Plan): void
     {
         $EventId = @IPS_GetObjectIDByIdent(self::EVENT, $this->InstanceID);
         if ($EventId === false) {
@@ -387,7 +395,6 @@ class HMHeatingDevice extends HMBase
         foreach ($Event['ScheduleGroups'] as $Group) {
             $Day = static::$Weekdays[$Group['Days']];
             $Slot = 1;
-
             for ($i = 1; $i <= count($Group['Points']); $i++) {
                 $TimeIndex = sprintf(static::WeekScheduleIndexEndTime, $Slot, $Day, $Plan);
                 $TempIndex = sprintf(static::WeekScheduleIndexTemp, $Slot, $Day, $Plan);
@@ -421,7 +428,7 @@ class HMHeatingDevice extends HMBase
 
     //################# PRIVATE
 
-    private function CreateVariablesFromValues()
+    private function CreateVariablesFromValues(): void
     {
         $AddressWithChannel = $this->ReadPropertyString(\HMExtended\Device\Property::Address) . static::ValuesChannel;
         $Result = $this->GetParamsetDescription(\HMExtended\CCU::VALUES, $AddressWithChannel);
@@ -472,7 +479,7 @@ class HMHeatingDevice extends HMBase
         return false;
     }
 
-    private function CreateVariablesFromParams()
+    private function CreateVariablesFromParams(): void
     {
         $AddressWithChannel = $this->ReadPropertyString(\HMExtended\Device\Property::Address) . static::ParamChannel;
         $Result = $this->GetParamsetDescription(\HMExtended\CCU::MASTER, $AddressWithChannel);
@@ -532,7 +539,7 @@ class HMHeatingDevice extends HMBase
         return false;
     }
 
-    private function CreateProfile($Profile)
+    private function CreateProfile($Profile): void
     {
         if ($Profile) {
             if (substr($Profile, 0, 1) != '~') {
@@ -553,19 +560,19 @@ class HMHeatingDevice extends HMBase
         }
     }
 
-    private function GetParamset(string $Paramset, string $AddressWithChannel)
+    private function GetParamset(string $Paramset, string $AddressWithChannel): array
     {
         $Result = $this->SendRPC('getParamset', [$AddressWithChannel, $Paramset]);
         return is_array($Result) ? $Result : [];
     }
 
-    private function GetParamsetDescription(string $Paramset, string $AddressWithChannel)
+    private function GetParamsetDescription(string $Paramset, string $AddressWithChannel): array
     {
         $Result = $this->SendRPC('getParamsetDescription', [$AddressWithChannel, $Paramset]);
         return is_array($Result) ? $Result : [];
     }
 
-    private function SendRPC(string $MethodName, array $Paramset, $Data = null, bool $EmulateStatus = false)
+    private function SendRPC(string $MethodName, array $Paramset, $Data = null, bool $EmulateStatus = false): null|true|array
     {
         if (!$this->HasActiveParent()) {
             trigger_error($this->Translate('Instance has no active Parent Instance!'), E_USER_NOTICE);
@@ -619,7 +626,7 @@ class HMHeatingDevice extends HMBase
         return array_keys($ScheduleActionColors);
     }
 
-    private function CreateWeekPlan()
+    private function CreateWeekPlan(): void
     {
         $this->WeekSchedules = [];
         $EventId = @IPS_GetObjectIDByIdent(self::EVENT, $this->InstanceID);
@@ -637,7 +644,7 @@ class HMHeatingDevice extends HMBase
         }
     }
 
-    private function SetTempColorsAttribute(array $Values)
+    private function SetTempColorsAttribute(array $Values): void
     {
         ksort($Values);
         foreach ($Values as $Temp => $Color) {
@@ -646,7 +653,7 @@ class HMHeatingDevice extends HMBase
         $this->WriteAttributeString('ScheduleColors', json_encode($ScheduleTemps));
     }
 
-    private function GetTempColorsAttribute()
+    private function GetTempColorsAttribute(): array
     {
         $Values = [];
         $ScheduleTemps = json_decode($this->ReadAttributeString('ScheduleColors'), true);
@@ -657,7 +664,7 @@ class HMHeatingDevice extends HMBase
         return $Values;
     }
 
-    private function GetNextColor(float $Temp, $Colors)
+    private function GetNextColor(float $Temp, array $Colors): int
     {
         $Found = 0x000080;
         foreach ($Colors as $TempColor => $Color) {

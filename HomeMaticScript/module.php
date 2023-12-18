@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 /**
- * @addtogroup homematicextended
+ * @addtogroup HomeMaticExtended
  * @{
  *
  * @file          module.php
@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @copyright     2023 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  *
- * @version       3.70
+ * @version       3.71
  */
 require_once __DIR__ . '/../libs/HMBase.php';
 
@@ -24,10 +24,10 @@ class HomeMaticRemoteScript extends HMBase
     /**
      * Interne Funktion des SDK.
      */
-    public function Create()
+    public function Create(): void
     {
         parent::Create();
-        $this->RegisterHMPropertys('XXX9999993');
+        $this->RegisterHMProperties('XXX9999993');
         $this->SetReceiveDataFilter('.*9999999999.*');
         $this->RegisterPropertyBoolean(\HMExtended\Device\Property::EmulateStatus, false);
     }
@@ -35,7 +35,7 @@ class HomeMaticRemoteScript extends HMBase
     /**
      * Interne Funktion des SDK.
      */
-    public function ApplyChanges()
+    public function ApplyChanges(): void
     {
         parent::ApplyChanges();
     }
@@ -50,7 +50,7 @@ class HomeMaticRemoteScript extends HMBase
      *
      * @return string|bool Das Ergebnis als JSON-String oder FALSE im Fehlerfall.
      */
-    public function RunScript(string $Script)
+    public function RunScript(string $Script): false|string
     {
         return  $this->LoadHMScript($Script);
         $xml = $this->SendScript($Script);
@@ -69,9 +69,9 @@ class HomeMaticRemoteScript extends HMBase
      *
      * @throws Exception Wenn die CCU nicht erreicht wurde.
      *
-     * @return string das Ergebnis von der CCU als JSON-String.
+     * @return SimpleXMLElement das Ergebnis von der CCU als JSON-String.
      */
-    private function SendScript(string $Script)
+    private function SendScript(string $Script): SimpleXMLElement
     {
         $HMScriptResult = $this->LoadHMScript($Script);
         if ($HMScriptResult === false) {
