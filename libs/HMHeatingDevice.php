@@ -266,10 +266,11 @@ class HMHeatingDevice extends HMBase
                     $Temp = $Params[$TempIndex];
                     $this->SendDebug($TimeIndex, $Time, 0);
                     $this->SendDebug($TempIndex, $Temp, 0);
+                    $this->SendDebug($TempIndex, gettype($Temp), 0);
                     $ScheduleData[$Plan][$Index][$Slot][self::TIME] = $Time;
                     $ScheduleData[$Plan][$Index][$Slot][self::TEMP] = $Temp;
-                    if (!array_key_exists($Temp, $ScheduleTemps)) {
-                        $Color = $this->GetNextColor($Temp, $ScheduleData);
+                    if (!array_key_exists((int)$Temp, $ScheduleTemps)) {
+                        $Color = $this->GetNextColor((float)$Temp, $ScheduleData);
                         $ScheduleTemps[$Params[$TempIndex]] = $Color;
                         $ScheduleActionHasChanged = true;
                     }
