@@ -233,21 +233,21 @@ class HomeMaticHeatingGroup extends HMHeatingDevice
                 case \HMExtended\HeatingGroup::PARTY_STOP_DAY:
                     $Ident = \HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][2];
                     $d = (new DateTime())->setTimestamp((int) $this->GetValue($Ident));
-                    $d->setDate((int) $d->format('Y'), (int) $d->format('n'), $Value);
+                    $d->setDate((int) $d->format('Y'), (int) $d->format('n'), (int) $Value);
                     $Value = $d->getTimestamp();
                     break;
                 case \HMExtended\HeatingGroup::PARTY_START_MONTH:
                 case \HMExtended\HeatingGroup::PARTY_STOP_MONTH:
                     $Ident = \HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][2];
                     $d = (new DateTime())->setTimestamp((int) $this->GetValue($Ident));
-                    $d->setDate((int) $d->format('Y'), $Value, (int) $d->format('j'));
+                    $d->setDate((int) $d->format('Y'), (int) $Value, (int) $d->format('j'));
                     $Value = $d->getTimestamp();
                     break;
                 case \HMExtended\HeatingGroup::PARTY_START_YEAR:
                 case \HMExtended\HeatingGroup::PARTY_STOP_YEAR:
                     $Ident = \HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][2];
                     $d = (new DateTime())->setTimestamp((int) $this->GetValue($Ident));
-                    $d->setDate(2000 + $Value, (int) $d->format('n'), (int) $d->format('j'));
+                    $d->setDate(2000 + (int) $Value, (int) $d->format('n'), (int) $d->format('j'));
                     $Value = $d->getTimestamp();
                     if ($Value < 946767600) {
                         $d = new DateTime();
@@ -258,7 +258,7 @@ class HomeMaticHeatingGroup extends HMHeatingDevice
                 case \HMExtended\HeatingGroup::PARTY_START_TIME:
                 case \HMExtended\HeatingGroup::PARTY_STOP_TIME:
                     $d = (new DateTime())->setTimestamp((int) $this->GetValue($Ident));
-                    $d->setTime(intdiv($Value, 60), ($Value % 60), 0, 0);
+                    $d->setTime(intdiv((int) $Value, 60), ((int) $Value % 60), 0, 0);
                     $Value = $d->getTimestamp();
                     break;
             }

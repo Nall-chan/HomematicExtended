@@ -128,16 +128,16 @@ class HomeMaticClimateControlRegulator extends HMHeatingDevice
     {
         $d = new DateTime();
         $d->setTime(
-            $Params[\HMExtended\ClimacontrolRegulator::DECALCIFICATION_HOUR],
-            $Params[\HMExtended\ClimacontrolRegulator::DECALCIFICATION_MINUTE],
+            (int) $Params[\HMExtended\ClimacontrolRegulator::DECALCIFICATION_HOUR],
+            (int) $Params[\HMExtended\ClimacontrolRegulator::DECALCIFICATION_MINUTE],
             0,
             0
         );
         $Params[\HMExtended\ClimacontrolRegulator::DECALCIFICATION_TIME] = $d->getTimestamp();
         $d = new DateTime();
         $d->setTime(
-            $Params[\HMExtended\ClimacontrolRegulator::PARTY_END_HOUR],
-            ($Params[\HMExtended\ClimacontrolRegulator::PARTY_END_MINUTE] == 0 ? 0 : 30),
+            (int) $Params[\HMExtended\ClimacontrolRegulator::PARTY_END_HOUR],
+            ((int) $Params[\HMExtended\ClimacontrolRegulator::PARTY_END_MINUTE] == 0 ? 0 : 30),
             0,
             0
         );

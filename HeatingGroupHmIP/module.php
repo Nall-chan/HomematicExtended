@@ -128,8 +128,8 @@ class HomeMaticIPHeatingGroup extends HMHeatingDevice
     {
         $d = new DateTime();
         $d->setTime(
-            intdiv($Params[\HMExtended\HeatingGroupHmIP::DECALCIFICATION_TIME], 2),
-            (($Params[\HMExtended\HeatingGroupHmIP::DECALCIFICATION_TIME] % 2) == 1 ? 30 : 0),
+            intdiv((int) $Params[\HMExtended\HeatingGroupHmIP::DECALCIFICATION_TIME], 2),
+            (((int) $Params[\HMExtended\HeatingGroupHmIP::DECALCIFICATION_TIME] % 2) == 1 ? 30 : 0),
             0,
             0
         );
