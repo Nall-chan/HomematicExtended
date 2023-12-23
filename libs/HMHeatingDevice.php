@@ -267,10 +267,10 @@ class HMHeatingDevice extends HMBase
                     $this->SendDebug($TimeIndex, $Time, 0);
                     $this->SendDebug($TempIndex, $Temp, 0);
                     $this->SendDebug($TempIndex, gettype($Temp), 0);
-                    $ScheduleData[$Plan][$Index][$Slot][self::TIME] = $Time;
-                    $ScheduleData[$Plan][$Index][$Slot][self::TEMP] = $Temp;
-                    if (!array_key_exists((int)$Temp, $ScheduleTemps)) {
-                        $Color = $this->GetNextColor((float)$Temp, $ScheduleData);
+                    $ScheduleData[$Plan][$Index][$Slot][self::TIME] = (int) $Time;
+                    $ScheduleData[$Plan][$Index][$Slot][self::TEMP] = (float) $Temp;
+                    if (!array_key_exists((int) $Temp, $ScheduleTemps)) {
+                        $Color = $this->GetNextColor((float) $Temp, $ScheduleData);
                         $ScheduleTemps[$Params[$TempIndex]] = $Color;
                         $ScheduleActionHasChanged = true;
                     }
@@ -613,7 +613,7 @@ class HMHeatingDevice extends HMBase
             }
             $i = 0;
             foreach ($ScheduleActionColors as $Temp => $Color) {
-                IPS_SetEventScheduleAction($Event['EventID'], $i++, sprintf('%0.1f °C', $Temp), $Color, 'HM_RequestParams($_IPS[\'TARGET\']);');
+                IPS_SetEventScheduleAction($Event['EventID'], $i++, sprintf('%0.1f °C', $Temp), $Color, "/** Do not edit this code,\r\n    It will be automatically overwritten.\r\n*/\r\n\r\n" . 'HM_RequestParams($_IPS[\'TARGET\']);');
                 if ($i == 32) {
                     break;
                 }

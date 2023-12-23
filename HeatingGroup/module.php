@@ -212,8 +212,8 @@ class HomeMaticHeatingGroup extends HMHeatingDevice
     {
         $d = new DateTime();
         $d->setTime(
-            intdiv($Params[\HMExtended\HeatingGroup::DECALCIFICATION_TIME], 60),
-            ($Params[\HMExtended\HeatingGroup::DECALCIFICATION_TIME] % 60),
+            intdiv((int) $Params[\HMExtended\HeatingGroup::DECALCIFICATION_TIME], 60),
+            ((int) $Params[\HMExtended\HeatingGroup::DECALCIFICATION_TIME] % 60),
             0,
             0
         );
