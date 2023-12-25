@@ -142,6 +142,8 @@ Erweitert IPS um die native Unterstützung von:
 
 Version 3.71:
 * Neue Eigenschaft in der Konfiguration der Heizgruppen und des HM-CC-TC Instanzen, um das Verhalten des Modus bei manueller Bedienung der Soll-Temperatur einzustellen.  
+* Fehlermeldungen wenn Aktives Zeitprofil in der Konfiguration abgeschaltet und Zeitplan eingeschaltet war.  
+* Zeitplan schaltet sofort um, wenn sich aktive Zeitprofil ändert.   
 
 Version 3.70:
 

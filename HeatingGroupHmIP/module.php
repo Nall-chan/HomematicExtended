@@ -18,6 +18,7 @@ require_once __DIR__ . '/../libs/HMHeatingDevice.php';  // HMBase Klasse
 /**
  * HomeMaticIPHeatingGroup
  * Erweitert HMHeatingDevice Virtuelles Gerät: HmIP-HEATING
+ *
  */
 class HomeMaticIPHeatingGroup extends HMHeatingDevice
 {
@@ -141,9 +142,6 @@ class HomeMaticIPHeatingGroup extends HMHeatingDevice
     protected function SetVariable(string $Ident, $Value)
     {
         switch ($Ident) {
-            case \HMExtended\HeatingGroupHmIP::ACTIVE_PROFILE:
-                $OldValue = $this->GetValue($Ident);
-                break;
             case \HMExtended\HeatingGroupHmIP::PARTY_TIME_START:
             case \HMExtended\HeatingGroupHmIP::PARTY_TIME_END:
                 if ($Value == '1999_11_30 00:00') {
@@ -155,11 +153,6 @@ class HomeMaticIPHeatingGroup extends HMHeatingDevice
                 break;
         }
         parent::SetVariable($Ident, $Value);
-        if ($Ident == \HMExtended\HeatingGroupHmIP::ACTIVE_PROFILE) {
-            if ($OldValue != $Value) {
-                $this->RefreshScheduleObject();
-            }
-        }
     }
     //################# PRIVATE
 }

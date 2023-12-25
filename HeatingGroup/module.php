@@ -199,9 +199,6 @@ class HomeMaticHeatingGroup extends HMHeatingDevice
             if ($this->PutParamSet([$Ident=>$SendValue], true)) {
                 $this->SetValue($Ident, $Value);
             }
-            if ($Ident == \HMExtended\HeatingGroup::WEEK_PROGRAM_POINTER) {
-                $this->RefreshScheduleObject();
-            }
             return;
         }
         trigger_error($this->Translate('Invalid Ident.') . ' (' . $Ident . ')', E_USER_NOTICE);

@@ -19,6 +19,7 @@ require_once __DIR__ . '/HMBase.php';  // HMBase Klasse
  * HMHeatingDevice
  *
  * @property array $WeekSchedules
+ * @property int $WeekProfile
  */
 class HMHeatingDevice extends HMBase
 {
@@ -84,6 +85,7 @@ class HMHeatingDevice extends HMBase
         $this->RegisterAttributeString('ScheduleColors', json_encode($ScheduleTempsInit));
 
         $this->WeekSchedules = [];
+        $this->WeekProfile = 1;
     }
 
     /**
@@ -105,6 +107,7 @@ class HMHeatingDevice extends HMBase
     public function ApplyChanges()
     {
         parent::ApplyChanges();
+        $this->WeekProfile = 1;
         $Address = $this->ReadPropertyString(\HMExtended\Device\Property::Address);
         $this->SetReceiveDataFilter($Address == '' ? '.*9999999999.*' : '.*"DeviceID":"' . $Address . static::ValuesChannel . '.*');
 
@@ -188,6 +191,14 @@ class HMHeatingDevice extends HMBase
             case \HMExtended\Variables::SELECT_NEW_WEEK_PROGRAM:
                 $this->SetValue($Ident, $Value);
                 return true;
+            case static::SelectedWeekScheduleIdent:
+                if ($this->WeekProfile != (int) $Value) {
+                    $this->WeekProfile = (int) $Value;
+                    $this->SendDebug(__FUNCTION__, '', 0);
+                    $this->SendDebug('ActivePlan', $Value, 0);
+                    $this->RefreshScheduleObject();
+                }
+                break;
         }
         $Property = $Ident;
         if (array_key_exists($Ident, \HMExtended\ValuesSet::$Variables[static::DeviceTyp])) {
@@ -228,6 +239,7 @@ class HMHeatingDevice extends HMBase
     public function ReceiveData($JSONString)
     {
         $Event = json_decode($JSONString, true);
+        $this->SendDebug('EVENT:' . $Event['VariableName'], $Event['VariableValue'], 0);
         $this->SetVariable($Event['VariableName'], $Event['VariableValue']);
         return '';
     }
@@ -249,6 +261,14 @@ class HMHeatingDevice extends HMBase
 
     protected function SetVariable(string $Ident, $Value)
     {
+        if ($Ident == static::SelectedWeekScheduleIdent) {
+            if ($this->WeekProfile != (int) $Value) {
+                $this->WeekProfile = (int) $Value;
+                $this->SendDebug(__FUNCTION__, '', 0);
+                $this->SendDebug('ActivePlan', $Value, 0);
+                $this->RefreshScheduleObject();
+            }
+        }
         @$this->SetValue($Ident, $Value);
     }
 
@@ -334,8 +354,11 @@ class HMHeatingDevice extends HMBase
         return ($Result !== null) ? true : false;
     }
 
-    protected function RefreshScheduleObject(bool $ScheduleActionHasChanged = false)
+    //################# PRIVATE
+
+    private function RefreshScheduleObject(bool $ScheduleActionHasChanged = false)
     {
+        $this->SendDebug(__FUNCTION__, '', 0);
         if (!$this->ReadPropertyBoolean(\HMExtended\Device\Property::Schedule)) {
             return;
         }
@@ -354,10 +377,11 @@ class HMHeatingDevice extends HMBase
         }
         $Actions = $this->UpdateScheduleActions($Event, $ScheduleActionHasChanged);
         if (static::SelectedWeekScheduleIdent) {
-            $ActivePlan = $this->GetValue(static::SelectedWeekScheduleIdent);
+            $ActivePlan = $this->WeekProfile;
         } else {
             $ActivePlan = 1;
         }
+        $this->SendDebug('ActivePlan', $ActivePlan, 0);
         $ScheduleData = $this->WeekSchedules[$ActivePlan];
         foreach ($Event['ScheduleGroups'] as $Group) {
             $StartHour = 0;
@@ -374,8 +398,9 @@ class HMHeatingDevice extends HMBase
         }
     }
 
-    protected function SaveSchedule(int $Plan)
+    private function SaveSchedule(int $Plan)
     {
+        $this->SendDebug(__FUNCTION__, '', 0);
         $EventId = @IPS_GetObjectIDByIdent(self::EVENT, $this->InstanceID);
         if ($EventId === false) {
             return;
@@ -413,16 +438,15 @@ class HMHeatingDevice extends HMBase
         $this->PutParamSet($Params);
 
         if (static::SelectedWeekScheduleIdent) {
-            $ActivePlan = $this->GetValue(static::SelectedWeekScheduleIdent);
+            $ActivePlan = $this->WeekProfile;
         } else {
             $ActivePlan = 1;
         }
+        $this->SendDebug('ActivePlan', $ActivePlan, 0);
         if ($ActivePlan != $Plan) {
             $this->RefreshScheduleObject();
         }
     }
-
-    //################# PRIVATE
 
     private function CreateVariablesFromValues()
     {
@@ -606,6 +630,7 @@ class HMHeatingDevice extends HMBase
 
     private function UpdateScheduleActions(array $Event, bool $ScheduleActionHasChanged): array
     {
+        $this->SendDebug(__FUNCTION__, '', 0);
         $ScheduleActionColors = $this->GetTempColorsAttribute();
         if ($ScheduleActionHasChanged) {
             foreach ($Event['ScheduleActions'] as $Action) {
