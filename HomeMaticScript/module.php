@@ -48,16 +48,15 @@ class HomeMaticRemoteScript extends HMBase
      *
      * @param string $Script
      *
-     * @return string|bool Das Ergebnis als JSON-String oder FALSE im Fehlerfall.
+     * @return array|false Das Ergebnis als array oder FALSE im Fehlerfall.
      */
     public function RunScript(string $Script)
     {
-        return  $this->LoadHMScript($Script);
         $xml = $this->SendScript($Script);
         if ($xml === false) {
             return false;
         }
-        return json_encode($xml);
+        return json_decode(json_encode($xml), true);
     }
 
     //################# private

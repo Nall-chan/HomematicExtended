@@ -52,7 +52,7 @@ class HomeMaticProgramme extends HMBase
         $this->SetReceiveDataFilter('.*9999999999.*');
 
         $this->RegisterProfileIntegerEx('Execute.HM', '', '', '', [
-            0, 'Start', '', -1
+            [0, 'Start', '', -1]
         ]);
 
         if (IPS_GetKernelRunlevel() != KR_READY) {
@@ -110,6 +110,7 @@ class HomeMaticProgramme extends HMBase
      */
     protected function KernelReady()
     {
+        parent::KernelReady();
         $this->ApplyChanges();
     }
 
@@ -150,19 +151,20 @@ class HomeMaticProgramme extends HMBase
                     . 'Info=dom.GetObject(' . $SysPrg . ').PrgInfo();' . PHP_EOL;
             $HMScriptResult = $this->LoadHMScript($HMScript);
             if ($HMScriptResult === false) {
-                return false;
+                $Result = false;
+                continue;
             }
             $varXml = $this->GetScriptXML($HMScriptResult);
             if ($varXml === false) {
+                $Result = false;
                 continue;
             }
             $this->SendDebug($SysPrg, (string) $varXml->Name, 0);
-            $var = @IPS_GetObjectIDByIdent($SysPrg, $this->InstanceID);
+            $var = @$this->GetIDForIdent($SysPrg);
             $Name = (string) $varXml->Name;
             if ($var === false) {
                 $this->MaintainVariable($SysPrg, $Name, 1, 'Execute.HM', 0, true);
                 $this->EnableAction($SysPrg);
-                $var = IPS_GetObjectIDByIdent($SysPrg, $this->InstanceID);
             }
         }
         return $Result;

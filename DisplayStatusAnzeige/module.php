@@ -149,6 +149,7 @@ class HomeMaticDisWM55 extends HMBase
      */
     protected function KernelReady()
     {
+        parent::KernelReady();
         $this->ApplyChanges();
     }
 

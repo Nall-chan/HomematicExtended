@@ -28,18 +28,7 @@ class HomeMaticIPHeatingGroup extends HMHeatingDevice
 
     protected const NumberOfWeekSchedules = 6;
     protected const SelectedWeekScheduleIdent = \HMExtended\HeatingGroupHmIP::ACTIVE_PROFILE;
-
-    /**
-     * Interne Funktion des SDK.
-     */
-    public function Create()
-    {
-        parent::Create();
-
-        $this->RegisterPropertyBoolean(\HMExtended\Device\Property::EmulateStatus, false);
-        $this->RegisterPropertyString(\HMExtended\Device\Property::Address, '');
-        $this->RegisterPropertyInteger(\HMExtended\Device\Property::Protocol, 3);
-    }
+    protected const ProtocolId = 3;
 
     //################# PUBLIC
 

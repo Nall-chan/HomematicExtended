@@ -122,6 +122,7 @@ class HomeMaticWRInterface extends HMBase
      */
     protected function KernelReady()
     {
+        parent::KernelReady();
         $this->ApplyChanges();
     }
 

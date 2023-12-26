@@ -21,24 +21,13 @@ require_once __DIR__ . '/../libs/HMHeatingDevice.php';  // HMBase Klasse
  */
 class HomeMaticHeatingGroup extends HMHeatingDevice
 {
-    public const DeviceTyp = \HMExtended\DeviceType::HeatingGroup;
-    public const ValuesChannel = \HMExtended\Channels::First;
-    public const ParamChannel = \HMExtended\Channels::Device;
+    protected const DeviceTyp = \HMExtended\DeviceType::HeatingGroup;
+    protected const ValuesChannel = \HMExtended\Channels::First;
+    protected const ParamChannel = \HMExtended\Channels::Device;
 
     protected const NumberOfWeekSchedules = 3;
     protected const SelectedWeekScheduleIdent = \HMExtended\HeatingGroup::WEEK_PROGRAM_POINTER;
-
-    /**
-     * Interne Funktion des SDK.
-     */
-    public function Create()
-    {
-        parent::Create();
-
-        $this->RegisterPropertyBoolean(\HMExtended\Device\Property::EmulateStatus, false);
-        $this->RegisterPropertyString(\HMExtended\Device\Property::Address, '');
-        $this->RegisterPropertyInteger(\HMExtended\Device\Property::Protocol, 3);
-    }
+    protected const ProtocolId = 3;
 
     //################# PUBLIC
 
@@ -217,7 +206,9 @@ class HomeMaticHeatingGroup extends HMHeatingDevice
         $Params[\HMExtended\HeatingGroup::DECALCIFICATION_TIME] = $d->getTimestamp();
         $Params[\HMExtended\HeatingGroup::BOOST_TIME_PERIOD] =
         $Params[\HMExtended\HeatingGroup::BOOST_TIME_PERIOD] * 5;
-        $Params[\HMExtended\HeatingGroup::WEEK_PROGRAM_POINTER]++;
+        if (array_key_exists(\HMExtended\HeatingGroup::WEEK_PROGRAM_POINTER, $Params)) {
+            $Params[\HMExtended\HeatingGroup::WEEK_PROGRAM_POINTER]++;
+        }
 
         parent::SetParamVariables($Params);
     }

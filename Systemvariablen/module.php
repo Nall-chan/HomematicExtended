@@ -477,6 +477,7 @@ class HomeMaticSystemvariablen extends HMBase
      */
     protected function KernelReady()
     {
+        parent::KernelReady();
         $this->ApplyChanges();
     }
 
@@ -629,7 +630,7 @@ class HomeMaticSystemvariablen extends HMBase
             }
             $lines = explode("\r\n", $HMScriptResult);
             try {
-                $xmlVar = @new SimpleXMLElement(utf8_encode(array_pop($lines)), LIBXML_NOBLANKS + LIBXML_NONET);
+                $xmlVar = @new SimpleXMLElement(array_pop($lines), LIBXML_NOBLANKS + LIBXML_NONET);
             } catch (Throwable $exc) {
                 $this->SendDebug($SysVar, $exc->getMessage(), 0);
                 trigger_error($this->Translate($exc->getMessage()), E_USER_NOTICE);

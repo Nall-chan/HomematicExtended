@@ -144,6 +144,11 @@ Version 3.71:
 * Neue Eigenschaft in der Konfiguration der Heizgruppen und des HM-CC-TC Instanzen, um das Verhalten des Modus bei manueller Bedienung der Soll-Temperatur einzustellen.  
 * Fehlermeldungen wenn Aktives Zeitprofil in der Konfiguration abgeschaltet und Zeitplan eingeschaltet war.  
 * Zeitplan schaltet sofort um, wenn sich aktive Zeitprofil ändert.   
+* HeatingDevice (Heizkörperthermostat) HM-CC-RT-DN ergänzt.  
+* Fehlerhafte Umlaute in CCU Programmen und Systemvariablen behoben.  
+* Fehler bei Profilen verhinderte das neu anlegen der Instanz `Homematic Programme`.  
+* Homematic Script Instanz liefert jetzt ein Array anstatt JSON als Rückgabewert.  
+* Homematic Script Instanz liefert im Index `['Output']` des Rückgabewertes alle Write/WriteLine Scriptausgaben.  
 
 Version 3.70:
 

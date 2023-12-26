@@ -28,19 +28,8 @@ class HomeMaticClimateControlRegulator extends HMHeatingDevice
     protected const WeekScheduleIndexTemp = 'TEMPERATUR_%2$s_%1$d';
     protected const WeekScheduleIndexEndTime = 'TIMEOUT_%2$s_%1$d';
     protected const NumberOfTimeSlot = 24;
-
-    /**
-     * Interne Funktion des SDK.
-     */
-    public function Create()
-    {
-        parent::Create();
-
-        $this->RegisterPropertyBoolean(\HMExtended\Device\Property::EmulateStatus, false);
-        $this->RegisterPropertyString(\HMExtended\Device\Property::Address, '');
-        $this->RegisterPropertyInteger(\HMExtended\Device\Property::Protocol, 0);
-    }
-
+    protected const ProtocolId = 0;
+    
     //################# PUBLIC
 
     /**

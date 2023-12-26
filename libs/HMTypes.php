@@ -15,6 +15,7 @@ namespace HMExtended
         public const RF_Interface_Konfigurator = '{91624C6F-E67E-47DA-ADFE-9A5A1A89AAC3}';
         public const WR_Interface = '{01C66202-7E94-49C4-8D8F-6A75CE944E87}';
         public const HeatingGroup = '{F179857C-DF5A-2CED-F553-CDB4D42815ED}';
+        public const HeatingDevice = '{E2674369-5272-44FE-905A-DCBF0E5126C6}';
         public const HeatingGroupHmIP = '{05CD9BAE-5A3B-E10B-79D6-48CB45A02C6A}';
         public const ClimacontrolRegulator = '{AA29D32D-A00D-EC8F-4987-5EB071F77011}';
         public const SendRpcToIO = '{75B6B237-A7B0-46B9-BBCE-8DF0CFE6FA52}';
@@ -27,7 +28,7 @@ namespace HMExtended
     class CCU
     {
         public const BidCos_RF = 'BidCos-RF';
-        public const BidCos_WR = 'BidCos-Wired';
+        public const BidCos_WR = 'BidCos-WR';
         public const HmIP = 'HmIP-RF';
         public const Groups = 'VirtualDevices';
         public const MASTER = 'MASTER';
@@ -46,6 +47,7 @@ namespace HMExtended
         public const Powermeter_IEC = 'POWERMETER_IEC2'; // HM-ES-TX-WM
         public const Dis_WM55 = 'HM-Dis-WM55'; // HM-Dis-WM55
 
+        public const HeatingDevice = 'HM-CC-RT-DN';
         public const HeatingGroup = 'HM-CC-VG-1'; //'CLIMATECONTROL_RT_TRANSCEIVER';
         public const HeatingGroupHmIP = 'HmIP-HEATING'; //'HEATING_CLIMATECONTROL_TRANSCEIVER';
         public const ClimacontrolRegulator = 'HM-CC-TC'; //'CLIMATECONTROL_REGULATOR';
@@ -63,9 +65,10 @@ namespace HMExtended
             GUID::Dis_WM55                       => [self::Dis_WM55],
             //GUID::Dis_EP_WM55                    =>
             // Konfigurator fertig
-            GUID::HeatingGroup                  => [self::HeatingGroup],
-            GUID::HeatingGroupHmIP              => [self::HeatingGroupHmIP],
-            GUID::ClimacontrolRegulator         => [self::ClimacontrolRegulator]
+            GUID::HeatingDevice                  => [self::HeatingDevice],
+            GUID::HeatingGroup                   => [self::HeatingGroup],
+            GUID::HeatingGroupHmIP               => [self::HeatingGroupHmIP],
+            GUID::ClimacontrolRegulator          => [self::ClimacontrolRegulator]
         ];
     }
 
@@ -74,6 +77,8 @@ namespace HMExtended
         public const Device = '';
         public const First = ':1';
         public const Second = ':2';
+        public const Third = ':3';
+        public const Fourth = ':4';
     }
 
     class ClimacontrolRegulator
@@ -955,7 +960,7 @@ namespace HMExtended
                     VARIABLETYPE_BOOLEAN,
                     '~Switch',
                     true,
-                    'Boost when window closed'
+                    'Boost when window was closed'
                 ],
                 HeatingGroup::TEMPERATUREFALL_WINDOW_OPEN => [
                     VARIABLETYPE_FLOAT,

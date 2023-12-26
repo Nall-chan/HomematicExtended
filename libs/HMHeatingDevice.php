@@ -62,6 +62,11 @@ class HMHeatingDevice extends HMBase
     public function Create()
     {
         parent::Create();
+
+        $this->RegisterPropertyString(\HMExtended\Device\Property::Address, '');
+        $this->RegisterPropertyInteger(\HMExtended\Device\Property::Protocol, static::ProtocolId);
+        $this->RegisterPropertyBoolean(\HMExtended\Device\Property::EmulateStatus, false);
+
         foreach (\HMExtended\Property::$Properties[static::DeviceTyp] as $Property => $Value) {
             $this->RegisterPropertyBoolean('enable_' . $Property, $Value);
         }
@@ -223,7 +228,7 @@ class HMHeatingDevice extends HMBase
             return false;
         }
         $AddressWithChannel = $this->ReadPropertyString(\HMExtended\Device\Property::Address) . static::ValuesChannel;
-        $Result = $this->SendRPC('getValue', [$AddressWithChannel, $Ident]);
+        $Result = $this->SendRPC('getValue', $this->ReadPropertyInteger(\HMExtended\Device\Property::Protocol), [$AddressWithChannel, $Ident]);
         if ($Result === null) {
             return false;
         }
@@ -234,14 +239,6 @@ class HMHeatingDevice extends HMBase
     public function RequestParams()
     {
         return $this->GetParamsAndSetVariable();
-    }
-
-    public function ReceiveData($JSONString)
-    {
-        $Event = json_decode($JSONString, true);
-        $this->SendDebug('EVENT:' . $Event['VariableName'], $Event['VariableValue'], 0);
-        $this->SetVariable($Event['VariableName'], $Event['VariableValue']);
-        return '';
     }
 
     //################# protected
@@ -269,7 +266,7 @@ class HMHeatingDevice extends HMBase
                 $this->RefreshScheduleObject();
             }
         }
-        @$this->SetValue($Ident, $Value);
+        parent::SetVariable($Ident, $Value);
     }
 
     protected function SetParamVariables(array $Params)
@@ -333,21 +330,21 @@ class HMHeatingDevice extends HMBase
     protected function PutParamSet(array $Parameter, bool $EmulateStatus = false)
     {
         $Paramset = [$this->ReadPropertyString(\HMExtended\Device\Property::Address) . static::ParamChannel, \HMExtended\CCU::MASTER];
-        $Result = $this->SendRPC('putParamset', $Paramset, $Parameter, $EmulateStatus);
+        $Result = $this->SendRPC('putParamset', $this->ReadPropertyInteger(\HMExtended\Device\Property::Protocol), $Paramset, $Parameter, $EmulateStatus);
         return ($Result !== null) ? true : false;
     }
 
     protected function PutValueSet(array $Values, bool $EmulateStatus = false)
     {
         $Paramset = [$this->ReadPropertyString(\HMExtended\Device\Property::Address) . static::ValuesChannel, \HMExtended\CCU::VALUES];
-        $Result = $this->SendRPC('putParamset', $Paramset, $Values, $EmulateStatus);
+        $Result = $this->SendRPC('putParamset', $this->ReadPropertyInteger(\HMExtended\Device\Property::Protocol), $Paramset, $Values, $EmulateStatus);
         return ($Result !== null) ? true : false;
     }
 
     protected function PutValue(string $ValueName, $Value, bool $EmulateStatus = false)
     {
         $Paramset = [$this->ReadPropertyString(\HMExtended\Device\Property::Address) . static::ValuesChannel, $ValueName];
-        $Result = $this->SendRPC('setValue', $Paramset, $Value, $EmulateStatus);
+        $Result = $this->SendRPC('setValue', $this->ReadPropertyInteger(\HMExtended\Device\Property::Protocol), $Paramset, $Value, $EmulateStatus);
         if (($Result !== null) && $EmulateStatus) {
             $this->SetVariable($ValueName, $Value);
         }
@@ -580,54 +577,6 @@ class HMHeatingDevice extends HMBase
         }
     }
 
-    private function GetParamset(string $Paramset, string $AddressWithChannel)
-    {
-        $Result = $this->SendRPC('getParamset', [$AddressWithChannel, $Paramset]);
-        return is_array($Result) ? $Result : [];
-    }
-
-    private function GetParamsetDescription(string $Paramset, string $AddressWithChannel)
-    {
-        $Result = $this->SendRPC('getParamsetDescription', [$AddressWithChannel, $Paramset]);
-        return is_array($Result) ? $Result : [];
-    }
-
-    private function SendRPC(string $MethodName, array $Paramset, $Data = null, bool $EmulateStatus = false)
-    {
-        if (!$this->HasActiveParent()) {
-            trigger_error($this->Translate('Instance has no active Parent Instance!'), E_USER_NOTICE);
-            return null;
-        }
-        $ParentData = [
-            'DataID'     => \HMExtended\GUID::SendRpcToIO,
-            'Protocol'   => $this->ReadPropertyInteger(\HMExtended\Device\Property::Protocol),
-            'MethodName' => $MethodName,
-            'WaitTime'   => 3,
-            'Data'       => $Paramset
-        ];
-        if (is_array($Data)) {
-            $ParentData['Data'][] = json_encode($Data, JSON_PRESERVE_ZERO_FRACTION);
-        } elseif (!is_null($Data)) {
-            $ParentData['Data'][] = $Data;
-        }
-        $this->SendDebug('Send', $ParentData, 0);
-        $ResultJSON = @$this->SendDataToParent(json_encode($ParentData, JSON_PRESERVE_ZERO_FRACTION));
-        if ($EmulateStatus) {
-            return true;
-        }
-        if ($ResultJSON === false) {
-            trigger_error('Error on ' . $MethodName, E_USER_NOTICE);
-            $this->SendDebug('Error', '', 0);
-            return null;
-        }
-        $this->SendDebug('Receive JSON', $ResultJSON, 0);
-        if ($ResultJSON === '') {
-            return true;
-        }
-        $Result = json_decode($ResultJSON, true);
-        return $Result;
-    }
-
     private function UpdateScheduleActions(array $Event, bool $ScheduleActionHasChanged): array
     {
         $this->SendDebug(__FUNCTION__, '', 0);
@@ -690,7 +639,9 @@ class HMHeatingDevice extends HMBase
         $Found = 0x000080;
         foreach ($Colors as $TempColor => $Color) {
             if ($TempColor < $Temp) {
-                $Found = $Color;
+                if ($Color > 0x010101) {
+                    $Found = $Color - 0x010101;
+                }
             } else {
                 break;
             }

@@ -55,8 +55,7 @@ class HomeMaticParasetInterface extends HMBase
      */
     public function ReadParamSet()
     {
-        $Result = $this->GetParamSet();
-        return $Result;
+        return  $this->GetParamSet($this->ReadPropertyString(\HMExtended\Device\Property::Address), \HMExtended\CCU::MASTER);
     }
 
     /**
@@ -125,38 +124,6 @@ class HomeMaticParasetInterface extends HMBase
     }
 
     //################# PRIVATE
-
-    /**
-     * Liest alle Parameter des Devices aus.
-     *
-     * @return array Ein Array mit den Daten des Interface.
-     */
-    private function GetParamSet()
-    {
-        if (!$this->HasActiveParent()) {
-            trigger_error($this->Translate('Instance has no active Parent Instance!'), E_USER_NOTICE);
-            return false;
-        }
-        $ParentData = [
-            'DataID'     => \HMExtended\GUID::SendRpcToIO,
-            'Protocol'   => $this->ReadPropertyInteger(\HMExtended\Device\Property::Protocol),
-            'MethodName' => 'getParamset',
-            'WaitTime'   => 3,
-            'Data'       => [$this->ReadPropertyString(\HMExtended\Device\Property::Address), \HMExtended\CCU::MASTER]
-        ];
-        $this->SendDebug('Send', $ParentData, 0);
-
-        $JSON = json_encode($ParentData);
-        $ResultJSON = @$this->SendDataToParent($JSON);
-        if ($ResultJSON === false) {
-            trigger_error('Error on Read Paramset', E_USER_NOTICE);
-            $this->SendDebug('Error', '', 0);
-            return false;
-        }
-        $Result = json_decode(utf8_encode($ResultJSON), true);
-        $this->SendDebug('Receive', $Result, 0);
-        return $Result;
-    }
 
     /**
      * Schreibt Parameter zu einem Devices.

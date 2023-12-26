@@ -44,6 +44,8 @@ abstract class HMBase extends IPSModule
             \HMExtended\InstanceStatus::RequestAction as IORequestAction;
         }
 
+    protected const ProtocolId = 0;
+
     /**
      * Interne Funktion des SDK.
      */
@@ -89,12 +91,29 @@ abstract class HMBase extends IPSModule
         }
     }
 
-    //################# ActionHandler
+    /**
+     * Interne Funktion des SDK.
+     */
     public function RequestAction($Ident, $Value)
     {
         return $this->IORequestAction($Ident, $Value);
     }
 
+    /**
+     * Interne Funktion des SDK.
+     */
+    public function ReceiveData($JSONString)
+    {
+        $Event = json_decode($JSONString, true);
+        $this->SendDebug('EVENT:' . $Event['VariableName'], $Event['VariableValue'], 0);
+        $this->SetVariable($Event['VariableName'], $Event['VariableValue']);
+        return '';
+    }
+
+    public function RequestState(string $Ident)
+    {
+        return false;
+    }
     //################# protected
 
     /**
@@ -120,7 +139,7 @@ abstract class HMBase extends IPSModule
      */
     protected function RegisterHMPropertys(string $Address)
     {
-        $this->RegisterPropertyInteger(\HMExtended\Device\Property::Protocol, 0);
+        $this->RegisterPropertyInteger(\HMExtended\Device\Property::Protocol, static::ProtocolId);
         if (IPS_GetKernelRunlevel() == KR_READY) {
             $count = IPS_GetInstanceListByModuleID(IPS_GetInstance($this->InstanceID)['ModuleInfo']['ModuleID']);
             if (is_array($count)) {
@@ -140,7 +159,10 @@ abstract class HMBase extends IPSModule
     {
         return $this->IORegisterParent();
     }
-
+    protected function SetVariable(string $Ident, $Value)
+    {
+        @$this->SetValue($Ident, $Value);
+    }
     /**
      * Überträgt das übergeben HM-Script an die CCU und liefert das Ergebnis.
      *
@@ -168,8 +190,9 @@ abstract class HMBase extends IPSModule
 
     protected function GetScriptXML($Content)
     {
+        $XMLContent = strstr($Content, '<xml><exec>');
         try {
-            $xml = @new SimpleXMLElement(utf8_encode($Content), LIBXML_NOBLANKS + LIBXML_NONET);
+            $xml = @new SimpleXMLElement($XMLContent, LIBXML_NOBLANKS + LIBXML_NONET);
         } catch (Throwable $exc) {
             $this->SendDebug('Error', $exc->getMessage(), 0);
             trigger_error($exc->getMessage(), E_USER_NOTICE);
@@ -178,7 +201,62 @@ abstract class HMBase extends IPSModule
         unset($xml->exec);
         unset($xml->sessionId);
         unset($xml->httpUserAgent);
+        $xml->addChild('Output', strstr($Content, '<xml><exec>', true));
         return $xml;
+    }
+
+    protected function GetParamset(string $Paramset, string $AddressWithChannel, int $Protocol = -1)
+    {
+        if ($Protocol == -1) {
+            $Protocol = $this->ReadPropertyInteger(\HMExtended\Device\Property::Protocol);
+        }
+        $Result = $this->SendRPC('getParamset', $Protocol, [$AddressWithChannel, $Paramset]);
+        return is_array($Result) ? $Result : [];
+    }
+
+    protected function GetParamsetDescription(string $Paramset, string $AddressWithChannel, int $Protocol = -1)
+    {
+        if ($Protocol == -1) {
+            $Protocol = $this->ReadPropertyInteger(\HMExtended\Device\Property::Protocol);
+        }
+        $Result = $this->SendRPC('getParamsetDescription', $Protocol, [$AddressWithChannel, $Paramset]);
+        return is_array($Result) ? $Result : [];
+    }
+
+    protected function SendRPC(string $MethodName, int $Protocol, array $Paramset, $Values = null, bool $EmulateStatus = false)
+    {
+        if (!$this->HasActiveParent()) {
+            trigger_error($this->Translate('Instance has no active Parent Instance!'), E_USER_NOTICE);
+            return null;
+        }
+        $ParentData = [
+            'DataID'     => \HMExtended\GUID::SendRpcToIO,
+            'Protocol'   => $Protocol,
+            'MethodName' => $MethodName,
+            'WaitTime'   => 3,
+            'Data'       => $Paramset
+        ];
+        if (is_array($Values)) {
+            $ParentData['Data'][] = json_encode($Values, JSON_PRESERVE_ZERO_FRACTION);
+        } elseif (!is_null($Values)) {
+            $ParentData['Data'][] = $Values;
+        }
+        $this->SendDebug('Send', $ParentData, 0);
+        $ResultJSON = @$this->SendDataToParent(json_encode($ParentData, JSON_PRESERVE_ZERO_FRACTION));
+        if ($EmulateStatus) {
+            return true;
+        }
+        if ($ResultJSON === false) {
+            trigger_error('Error on ' . $MethodName, E_USER_NOTICE);
+            $this->SendDebug('Error', '', 0);
+            return null;
+        }
+        $this->SendDebug('Receive JSON', $ResultJSON, 0);
+        if ($ResultJSON === '') {
+            return true;
+        }
+        $Result = json_decode($ResultJSON, true);
+        return $Result;
     }
 }
 
