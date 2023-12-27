@@ -29,7 +29,7 @@ class HomeMaticClimateControlRegulator extends HMHeatingDevice
     protected const WeekScheduleIndexEndTime = 'TIMEOUT_%2$s_%1$d';
     protected const NumberOfTimeSlot = 24;
     protected const ProtocolId = 0;
-    
+
     //################# PUBLIC
 
     /**

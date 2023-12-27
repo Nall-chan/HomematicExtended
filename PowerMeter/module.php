@@ -110,7 +110,7 @@ class HomeMaticPowermeter extends HMBase
             $this->HMDeviceDatapoint = '';
             $this->HMProtocol = \HMExtended\CCU::BidCos_RF;
             $this->Event = 0;
-             $this->SetReceiveDataFilter('.*9999999999.*');
+            $this->SetReceiveDataFilter('.*9999999999.*');
             $this->SetSummary('');
             return;
         }
@@ -118,7 +118,7 @@ class HomeMaticPowermeter extends HMBase
             $HMDeviceDatapoint = $this->HMDeviceDatapoint;
             $this->SetReceiveDataFilter('.*"DeviceID":"' . $this->HMDeviceAddress . '","VariableName":"' . $HMDeviceDatapoint . '".*');
 
-                    switch ($HMDeviceDatapoint) {
+            switch ($HMDeviceDatapoint) {
                         case 'GAS_ENERGY_COUNTER':
                             $Profil = '~Gas';
 
@@ -232,8 +232,8 @@ class HomeMaticPowermeter extends HMBase
      */
     private function ReadPowerSysVar()
     {
-            $HMDeviceDatapoint = $this->HMDeviceDatapoint;
-                    switch ($HMDeviceDatapoint) {
+        $HMDeviceDatapoint = $this->HMDeviceDatapoint;
+        switch ($HMDeviceDatapoint) {
                 case 'GAS_ENERGY_COUNTER':
                     $Suffix = 'Gas';
                     $Factor = 1;

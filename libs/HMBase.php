@@ -17,6 +17,7 @@ eval('declare(strict_types=1);namespace HMExtended {?>' . file_get_contents(__DI
 eval('declare(strict_types=1);namespace HMExtended {?>' . file_get_contents(__DIR__ . '/helper/ParentIOHelper.php') . '}');
 eval('declare(strict_types=1);namespace HMExtended {?>' . file_get_contents(__DIR__ . '/helper/VariableHelper.php') . '}');
 eval('declare(strict_types=1);namespace HMExtended {?>' . file_get_contents(__DIR__ . '/helper/VariableProfileHelper.php') . '}');
+eval('declare(strict_types=1);namespace HMExtended {?>' . file_get_contents(__DIR__ . '/helper/AttributeArrayHelper.php') . '}');
 require_once __DIR__ . '/HMTypes.php';  // HMTypes Data
 
 /**
@@ -28,9 +29,10 @@ require_once __DIR__ . '/HMTypes.php';  // HMTypes Data
  * @method bool SendDebug(string $Message, mixed $Data, int $Format)
  * @method void RegisterProfileEx(int $VarTyp, string $Name, string $Icon, string $Prefix, string $Suffix, array $Associations, float $MaxValue = -1, float $StepSize = 0, int $Digits = 0)
  * @method void RegisterProfileIntegerEx(string $Name, string $Icon, string $Prefix, string $Suffix, array $Associations, float $MaxValue = -1, float $StepSize = 0)
- *
  * @method void UnregisterProfile(string $Profile)
- *
+ * @method void RegisterAttributeArray(string $name, array $Value, int $Size = 0)
+ * @method array ReadAttributeArray(string $name)
+ * @method void WriteAttributeArray(string $name, array $value)
  */
 abstract class HMBase extends IPSModule
 {
@@ -38,6 +40,7 @@ abstract class HMBase extends IPSModule
         \HMExtended\VariableHelper,
         \HMExtended\VariableProfileHelper,
         \HMExtended\BufferHelper,
+        \HMExtended\AttributeArrayHelper,
         \HMExtended\InstanceStatus {
             \HMExtended\InstanceStatus::RegisterParent as IORegisterParent;
             \HMExtended\InstanceStatus::MessageSink as IOMessageSink;

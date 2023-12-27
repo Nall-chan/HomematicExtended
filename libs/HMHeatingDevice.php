@@ -87,7 +87,7 @@ class HMHeatingDevice extends HMBase
             [25, 0xE60000],
             [30, 0xFF0000],
         ];
-        $this->RegisterAttributeString('ScheduleColors', json_encode($ScheduleTempsInit));
+        $this->RegisterAttributeArray('ScheduleColors', $ScheduleTempsInit);
 
         $this->WeekSchedules = [];
         $this->WeekProfile = 1;
@@ -201,7 +201,7 @@ class HMHeatingDevice extends HMBase
                     $this->WeekProfile = (int) $Value;
                     $this->SendDebug(__FUNCTION__, '', 0);
                     $this->SendDebug('ActivePlan', $Value, 0);
-                    $this->RefreshScheduleObject();
+                    $this->RefreshScheduleObject(true);
                 }
                 break;
         }
@@ -263,7 +263,7 @@ class HMHeatingDevice extends HMBase
                 $this->WeekProfile = (int) $Value;
                 $this->SendDebug(__FUNCTION__, '', 0);
                 $this->SendDebug('ActivePlan', $Value, 0);
-                $this->RefreshScheduleObject();
+                $this->RefreshScheduleObject(true);
             }
         }
         parent::SetVariable($Ident, $Value);
@@ -279,16 +279,13 @@ class HMHeatingDevice extends HMBase
                 for ($Slot = 1; $Slot <= static::NumberOfTimeSlot; $Slot++) {
                     $TimeIndex = sprintf(static::WeekScheduleIndexEndTime, $Slot, $Day, $Plan);
                     $TempIndex = sprintf(static::WeekScheduleIndexTemp, $Slot, $Day, $Plan);
-                    $Time = $Params[$TimeIndex];
-                    $Temp = $Params[$TempIndex];
-                    $this->SendDebug($TimeIndex, $Time, 0);
-                    $this->SendDebug($TempIndex, $Temp, 0);
-                    $this->SendDebug($TempIndex, gettype($Temp), 0);
-                    $ScheduleData[$Plan][$Index][$Slot][self::TIME] = (int) $Time;
-                    $ScheduleData[$Plan][$Index][$Slot][self::TEMP] = (float) $Temp;
-                    if (!array_key_exists((int) $Temp, $ScheduleTemps)) {
-                        $Color = $this->GetNextColor((float) $Temp, $ScheduleData);
-                        $ScheduleTemps[$Params[$TempIndex]] = $Color;
+                    $Time = (int) $Params[$TimeIndex];
+                    $Temp = (float) $Params[$TempIndex];
+                    $ScheduleData[$Plan][$Index][$Slot][self::TIME] = $Time;
+                    $ScheduleData[$Plan][$Index][$Slot][self::TEMP] = $Temp;
+                    if (!in_array($Temp, $ScheduleTemps)) {
+                        $Color = $this->GetNextColor($Temp, $ScheduleTemps);
+                        $ScheduleTemps[$Color] = $Temp;
                         $ScheduleActionHasChanged = true;
                     }
                     unset($Params[$TimeIndex]);
@@ -298,7 +295,7 @@ class HMHeatingDevice extends HMBase
         }
         if ($ScheduleActionHasChanged) {
             // todo wenn array zu groß war, Meldung ausgeben.
-            ksort($ScheduleTemps);
+            asort($ScheduleTemps);
             $ScheduleTemps = array_slice($ScheduleTemps, 0, 32, true);
             $this->SetTempColorsAttribute($ScheduleTemps);
         }
@@ -373,6 +370,7 @@ class HMHeatingDevice extends HMBase
             }
         }
         $Actions = $this->UpdateScheduleActions($Event, $ScheduleActionHasChanged);
+        $this->SendDebug('Actions', $Actions, 0);
         if (static::SelectedWeekScheduleIdent) {
             $ActivePlan = $this->WeekProfile;
         } else {
@@ -385,6 +383,9 @@ class HMHeatingDevice extends HMBase
             $StartMinute = 0;
             foreach ($ScheduleData[$Group['Days']] as $PointId => $Slot) {
                 $ActionId = array_search($Slot[self::TEMP], $Actions);
+                if ($ActionId === false) {
+                    $this->SendDebug('not found', $Slot[self::TEMP], 0);
+                }
                 IPS_SetEventScheduleGroupPoint($EventId, $Group['ID'], $PointId, $StartHour, $StartMinute, 0, $ActionId);
                 if ($Slot[self::TIME] == 1440) {
                     break;
@@ -441,7 +442,7 @@ class HMHeatingDevice extends HMBase
         }
         $this->SendDebug('ActivePlan', $ActivePlan, 0);
         if ($ActivePlan != $Plan) {
-            $this->RefreshScheduleObject();
+            $this->RefreshScheduleObject(true);
         }
     }
 
@@ -586,14 +587,15 @@ class HMHeatingDevice extends HMBase
                 IPS_SetEventScheduleAction($Event['EventID'], $Action['ID'], '', 0, '');
             }
             $i = 0;
-            foreach ($ScheduleActionColors as $Temp => $Color) {
+            foreach ($ScheduleActionColors as $Color => $Temp) {
                 IPS_SetEventScheduleAction($Event['EventID'], $i++, sprintf('%0.1f °C', $Temp), $Color, "/** Do not edit this code,\r\n    It will be automatically overwritten.\r\n*/\r\n\r\n" . 'HM_RequestParams($_IPS[\'TARGET\']);');
                 if ($i == 32) {
                     break;
                 }
             }
         }
-        return array_keys($ScheduleActionColors);
+        $this->SendDebug(__FUNCTION__, $ScheduleActionColors, 0);
+        return array_values($ScheduleActionColors);
     }
 
     private function CreateWeekPlan()
@@ -616,28 +618,27 @@ class HMHeatingDevice extends HMBase
 
     private function SetTempColorsAttribute(array $Values)
     {
-        ksort($Values);
-        foreach ($Values as $Temp => $Color) {
+        foreach ($Values as $Color => $Temp) {
             $ScheduleTemps[] = [$Temp, $Color];
         }
-        $this->WriteAttributeString('ScheduleColors', json_encode($ScheduleTemps));
+        $this->WriteAttributeArray('ScheduleColors', $ScheduleTemps);
     }
 
     private function GetTempColorsAttribute()
     {
         $Values = [];
-        $ScheduleTemps = json_decode($this->ReadAttributeString('ScheduleColors'), true);
+        $ScheduleTemps = $this->ReadAttributeArray('ScheduleColors');
         foreach ($ScheduleTemps as $TempColor) {
-            $Values[$TempColor[0]] = $TempColor[1];
+            $Values[$TempColor[1]] = $TempColor[0];
         }
-        ksort($Values);
+        asort($Values);
         return $Values;
     }
 
-    private function GetNextColor(float $Temp, $Colors)
+    private function GetNextColor(float $Temp, array $Colors)
     {
         $Found = 0x000080;
-        foreach ($Colors as $TempColor => $Color) {
+        foreach ($Colors as $Color => $TempColor) {
             if ($TempColor < $Temp) {
                 if ($Color > 0x010101) {
                     $Found = $Color - 0x010101;
