@@ -55,7 +55,7 @@ class HomeMaticParasetInterface extends HMBase
      */
     public function ReadParamSet()
     {
-        return  $this->GetParamSet($this->ReadPropertyString(\HMExtended\Device\Property::Address), \HMExtended\CCU::MASTER);
+        return $this->GetParamSet($this->ReadPropertyString(\HMExtended\Device\Property::Address), \HMExtended\CCU::MASTER);
     }
 
     /**

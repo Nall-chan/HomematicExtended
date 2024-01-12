@@ -119,20 +119,20 @@ class HomeMaticPowermeter extends HMBase
             $this->SetReceiveDataFilter('.*"DeviceID":"' . $this->HMDeviceAddress . '","VariableName":"' . $HMDeviceDatapoint . '".*');
 
             switch ($HMDeviceDatapoint) {
-                        case 'GAS_ENERGY_COUNTER':
-                            $Profil = '~Gas';
+                case 'GAS_ENERGY_COUNTER':
+                    $Profil = '~Gas';
 
-                            break;
-                        case 'IEC_ENERGY_COUNTER':
+                    break;
+                case 'IEC_ENERGY_COUNTER':
 
-                            $Profil = '~Electricity';
+                    $Profil = '~Electricity';
 
-                            break;
-                        case 'ENERGY_COUNTER':
-                            $Profil = '~Electricity';
+                    break;
+                case 'ENERGY_COUNTER':
+                    $Profil = '~Electricity';
 
-                            break;
-                    }
+                    break;
+            }
 
             $this->RegisterVariableFloat($HMDeviceDatapoint . '_TOTAL', $HMDeviceDatapoint . '_TOTAL', $Profil);
             $this->SetSummary($this->HMDeviceAddress);
@@ -234,19 +234,19 @@ class HomeMaticPowermeter extends HMBase
     {
         $HMDeviceDatapoint = $this->HMDeviceDatapoint;
         switch ($HMDeviceDatapoint) {
-                case 'GAS_ENERGY_COUNTER':
-                    $Suffix = 'Gas';
-                    $Factor = 1;
-                    break;
-                case 'IEC_ENERGY_COUNTER':
-                    $Suffix = 'IEC';
-                    $Factor = 1000;
-                    break;
-                case 'ENERGY_COUNTER':
-                    $Suffix = '';
-                    $Factor = 1000;
-                    break;
-            }
+            case 'GAS_ENERGY_COUNTER':
+                $Suffix = 'Gas';
+                $Factor = 1;
+                break;
+            case 'IEC_ENERGY_COUNTER':
+                $Suffix = 'IEC';
+                $Factor = 1000;
+                break;
+            case 'ENERGY_COUNTER':
+                $Suffix = '';
+                $Factor = 1000;
+                break;
+        }
         $HMScript = 'object oitemID;' . PHP_EOL
                 . 'oitemID = dom.GetObject("svEnergyCounter' . $Suffix . '_" # dom.GetObject("' . $this->HMProtocol . '.' . $this->HMDeviceAddress . '.' . $this->HMDeviceDatapoint . '").Channel() # "_' . $this->HMDeviceAddress . '");' . PHP_EOL
                 . 'Value=oitemID.Value();' . PHP_EOL;
