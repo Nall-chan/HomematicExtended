@@ -30,6 +30,42 @@
                             "type": "CheckBox",
                             "caption": "Schedule",
                             "width": "250px"
+                        },
+                        {
+                            "type": "PopupButton",
+                            "caption": "Edit temperatures",
+                            "popup": {
+                                "caption": "Temperatures always displayed in the weekly schedule",
+                                "items": [
+                                    {
+                                        "type": "List",
+                                        "name": "ScheduleTemps",
+                                        "caption": "Temperatures",
+                                        "rowCount": 10,
+                                        "add": true,
+                                        "delete": true,
+                                        "sort": {
+                                            "column": "TemperatureValue",
+                                            "direction": "ascending"
+                                        },
+                                        "columns": [
+                                            {
+                                                "caption": "Temperature",
+                                                "name": "TemperatureValue",
+                                                "width": "auto",
+                                                "add": 21,
+                                                "edit": {
+                                                    "type": "NumberSpinner",
+                                                    "digits": 1,
+                                                    "minimum": 5,
+                                                    "maximum": 30,
+                                                    "suffix": " °C"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
                         }
                     ]
                 }

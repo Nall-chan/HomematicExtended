@@ -36,6 +36,42 @@
                             "type": "CheckBox",
                             "caption": "Schedule",
                             "width": "250px"
+                        },
+                        {
+                            "type": "PopupButton",
+                            "caption": "Edit temperatures",
+                            "popup": {
+                                "caption": "Temperatures always displayed in the weekly schedule",
+                                "items": [
+                                    {
+                                        "type": "List",
+                                        "name": "ScheduleTemps",
+                                        "caption": "Temperatures",
+                                        "rowCount": 10,
+                                        "add": true,
+                                        "delete": true,
+                                        "sort": {
+                                            "column": "TemperatureValue",
+                                            "direction": "ascending"
+                                        },
+                                        "columns": [
+                                            {
+                                                "caption": "Temperature",
+                                                "name": "TemperatureValue",
+                                                "width": "auto",
+                                                "add": 21,
+                                                "edit": {
+                                                    "type": "NumberSpinner",
+                                                    "digits": 1,
+                                                    "minimum": 5,
+                                                    "maximum": 30,
+                                                    "suffix": " °C"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
                         }
                     ]
                 }
@@ -250,52 +286,6 @@
         }
     ],
     "actions": [
-        {
-            "type": "ExpansionPanel",
-            "caption": "Schedule",
-            "expanded": true,
-            "visible": false,
-            "items": [
-                {
-                    "type": "List",
-                    "add": true,
-                    "caption": "temperature steps",
-                    "name": "ScheduleColor",
-                    "onAdd": [
-                        "var_dump($ScheduleColor);"
-                    ],
-                    "onDelete": [
-                        "var_dump($ScheduleColor);"
-                    ],
-                    "columns": [
-                        {
-                            "caption": "Temperature",
-                            "name": "temperature",
-                            "width": "200px",
-                            "add": 5,
-                            "edit": {
-                                "type": "NumberSpinner",
-                                "digits": 1,
-                                "minimum": 5,
-                                "maximum": 30,
-                                "suffix": " °C"
-                            }
-                        },
-                        {
-                            "caption": "Color",
-                            "name": "color",
-                            "width": "200px",
-                            "add": 0,
-                            "edit": {
-                                "type": "SelectColor",
-                                "allowTransparent ": false
-                            }
-                        }
-                    ],
-                    "values": []
-                }
-            ]
-        },
         {
             "type": "TestCenter"
         },

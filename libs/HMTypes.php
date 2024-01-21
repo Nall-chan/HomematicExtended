@@ -988,5 +988,6 @@ namespace HMExtended\Device
         public const Protocol = 'Protocol';
         public const SetPointBehavior = 'SetPointBehavior';
         public const Schedule = 'enable_SCHEDULE';
+        public const ScheduleTemps = 'ScheduleTemps';
     }
 }
