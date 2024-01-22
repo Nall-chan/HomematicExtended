@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @copyright     2023 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  *
- * @version       3.73
+ * @version       3.74
  */
 require_once __DIR__ . '/HMBase.php';  // HMBase Klasse
 
@@ -134,9 +134,6 @@ class HMHeatingDevice extends HMBase
     {
         parent::ApplyChanges();
 
-        if ($this->FixScheduleTempsProperty()) {
-            return;
-        }
         $this->WeekProfile = 1;
         $Address = $this->ReadPropertyString(\HMExtended\Device\Property::Address);
         $this->SetReceiveDataFilter($Address == '' ? '.*9999999999.*' : '.*"DeviceID":"' . $Address . static::ValuesChannel . '.*');
@@ -208,6 +205,10 @@ class HMHeatingDevice extends HMBase
             return true;
         }
         switch ($Ident) {
+            case 'EditScheduleTemps':
+                $ScheduleTemps = json_decode($Value, true);
+                $this->FixScheduleTemps($ScheduleTemps);
+                return true;
             case 'getParam':
                 $this->GetParamsAndSetVariable();
                 return true;
@@ -314,12 +315,6 @@ class HMHeatingDevice extends HMBase
                 }
             }
         }
-        /*if ($ScheduleActionHasChanged) {
-            // todo wenn array zu groß war, Meldung ausgeben.
-            asort($ScheduleTemps);
-            $ScheduleTemps = array_slice($ScheduleTemps, 0, 32, true);
-            $this->SetTempColorsAttribute($ScheduleTemps);
-        }*/
         $this->WeekSchedules = $ScheduleData;
         foreach ($Params as $Ident => $Value) {
             @$this->SetValue($Ident, $Value);
@@ -407,6 +402,7 @@ class HMHeatingDevice extends HMBase
                 $ActionId = array_search($Slot[self::TEMP], $Actions);
                 if ($ActionId === false) {
                     $this->SendDebug('not found', $Slot[self::TEMP], 0);
+                    continue;
                 }
                 IPS_SetEventScheduleGroupPoint($EventId, $Group['ID'], $PointId, $StartHour, $StartMinute, 0, $ActionId);
                 if ($Slot[self::TIME] == 1440) {
@@ -601,25 +597,23 @@ class HMHeatingDevice extends HMBase
     }
 
     /**
-     * FixScheduleTempsProperty
+     * FixScheduleTemps
      *
      * Cleanup illegal Temps.
      * NumberSpinner hat keine StepSize :(
      *
      * @return bool
      */
-    private function FixScheduleTempsProperty(): bool
+    private function FixScheduleTemps(array $ScheduleTemps)
     {
-        $ScheduleTemps = json_decode($this->ReadPropertyString(\HMExtended\Device\Property::ScheduleTemps), true);
         $HasFixed = false;
-        foreach ($ScheduleTemps as &$Temp) {
+        $NewScheduleTemps = [];
+        foreach ($ScheduleTemps as $Temp) {
             if ($Temp['TemperatureValue'] < 5) {
-                unset($Temp);
                 $HasFixed = true;
                 continue;
             }
             if ($Temp['TemperatureValue'] > 30) {
-                unset($Temp);
                 $HasFixed = true;
                 continue;
             }
@@ -630,14 +624,17 @@ class HMHeatingDevice extends HMBase
                     $Temp['TemperatureValue'] = floor($Temp['TemperatureValue']) + 0.5;
                 }
                 $HasFixed = true;
+            }
+            if (in_array($Temp, $NewScheduleTemps)) {
+                $HasFixed = true;
                 continue;
             }
+
+            $NewScheduleTemps[] = $Temp;
         }
         if ($HasFixed) {
-            IPS_SetProperty($this->InstanceID, \HMExtended\Device\Property::ScheduleTemps, json_encode($ScheduleTemps));
-            IPS_ApplyChanges($this->InstanceID);
+            $this->UpdateFormField('ScheduleTemps', 'values', json_encode($NewScheduleTemps));
         }
-        return $HasFixed;
     }
 
     private function UpdateScheduleActions(array $Event, array $ScheduleData): array
@@ -647,8 +644,17 @@ class HMHeatingDevice extends HMBase
         foreach (static::$Weekdays as $Index => $Day) {
             $ScheduleTemps = array_merge($ScheduleTemps, array_column($ScheduleData[$Index], self::TEMP));
         }
+        $ScheduleTemps = array_unique($ScheduleTemps);
+        if (count($ScheduleTemps) > 31) {
+            $this->LogMessage($this->Translate('Too many temperatures on schedule. Crop to 31 actions.'), KL_WARNING);
+            $ScheduleTemps = array_slice($ScheduleTemps, 0, 32);
+        }
         $ScheduleTempsProperty = array_column(json_decode($this->ReadPropertyString(\HMExtended\Device\Property::ScheduleTemps), true), 'TemperatureValue');
         $ScheduleTemps = array_unique(array_merge($ScheduleTemps, $ScheduleTempsProperty), SORT_NUMERIC);
+        if (count($ScheduleTemps) > 31) {
+            $this->LogMessage($this->Translate('Too many temperatures on schedule. Crop to 31 actions.'), KL_WARNING);
+            $ScheduleTemps = array_slice($ScheduleTemps, 0, 32);
+        }
         sort($ScheduleTemps);
         $StepSize = 260 / count($ScheduleTemps);
 

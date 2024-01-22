@@ -53,6 +53,7 @@
             "Button lock": "Tastensperre",
             "Device lock": "Gerätesperre",
             "Mode locked": "Modus gesperrt",
+            "Too many temperatures on schedule. Crop to 31 actions.": "Zu viele Temperaturen im Zeitplan. Auf 31 Aktionen reduziert.",
             "This module is free for non-commercial use,\r\nDonations in support of the author are accepted here:": "Dieses Modul ist für die nicht kommerzielle Nutzung kostenlos,\r\nSchenkungen als Unterstützung für den Autor werden hier akzeptiert:"
         }
     }

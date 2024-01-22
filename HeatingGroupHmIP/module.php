@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @copyright     2023 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  *
- * @version       3.73
+ * @version       3.74
  */
 require_once __DIR__ . '/../libs/HMHeatingDevice.php';  // HMBase Klasse
 

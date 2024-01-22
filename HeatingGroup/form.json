@@ -50,6 +50,8 @@
                                         "rowCount": 10,
                                         "add": true,
                                         "delete": true,
+                                        "onEdit": "foreach ($ScheduleTemps as $Temp){$Data[]=$Temp;} IPS_RequestAction($id,'EditScheduleTemps',json_encode($Data));",
+                                        "onAdd": "foreach ($ScheduleTemps as $Temp){$Data[]=$Temp;} IPS_RequestAction($id,'EditScheduleTemps',json_encode($Data));",
                                         "sort": {
                                             "column": "TemperatureValue",
                                             "direction": "ascending"

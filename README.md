@@ -1,5 +1,5 @@
 [![SDK](https://img.shields.io/badge/Symcon-PHPModul-red.svg)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
-[![Version](https://img.shields.io/badge/Modul%20version-3.73-blue.svg)]()
+[![Version](https://img.shields.io/badge/Modul%20version-3.74-blue.svg)]()
 [![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)  
 [![Version](https://img.shields.io/badge/Symcon%20Version-6.1%20%3E-green.svg)](https://community.symcon.de/t/ip-symcon-6-1-stable-changelog/40276)
 [![Check Style](https://github.com/Nall-chan/HomematicExtended/workflows/Check%20Style/badge.svg)](https://github.com/Nall-chan/HomematicExtended/actions) [![Run Tests](https://github.com/Nall-chan/HomematicExtended/workflows/Run%20Tests/badge.svg)](https://github.com/Nall-chan/HomematicExtended/actions)  
@@ -140,11 +140,15 @@ Erweitert IPS um die native Unterstützung von:
 
 ### 2. Changelog
 
+Version 3.74:
+* Konfiguration der festen Temperaturen lässt beim Bearbeiten keine ungültigen oder doppelten Werte mehr zu.  
+* Übersteigt die Summe der festen Temperaturen mit denen aus den Geräten ausgelesenen Temperaturen die Anzahl von 31, so wird eine Warnung in das Log geschrieben und die Anzahl auf 31 begrenzt (maximale Anzahl der Aktionen von einem Wochenplan).  
+
 Version 3.73:
-* Neue Eigenschaft in der Konfiguration der Heizgruppen und des HM-CC-TC Instanzen, um feste Temperaturen als Auswahl für den Wochenplan einzustellen.  
+* Neue Eigenschaft in der Konfiguration der Heizgruppen und der HM-CC-TC Instanzen, um feste Temperaturen als Auswahl für den Wochenplan einzustellen.  
   
 Version 3.71:
-* Neue Eigenschaft in der Konfiguration der Heizgruppen und des HM-CC-TC Instanzen, um das Verhalten des Modus bei manueller Bedienung der Soll-Temperatur einzustellen.  
+* Neue Eigenschaft in der Konfiguration der Heizgruppen und der HM-CC-TC Instanzen, um das Verhalten des Modus bei manueller Bedienung der Soll-Temperatur einzustellen.  
 * Fehlermeldungen wenn Aktives Zeitprofil in der Konfiguration abgeschaltet und Zeitplan eingeschaltet war.  
 * Zeitplan schaltet sofort um, wenn sich aktive Zeitprofil ändert.   
 * HeatingDevice (Heizkörperthermostat) HM-CC-RT-DN ergänzt.  
