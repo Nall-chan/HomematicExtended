@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @copyright     2023 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  *
- * @version       3.71
+ * @version       3.74
  */
 require_once __DIR__ . '/../libs/HMBase.php';  // HMBase Klasse
 require_once __DIR__ . '/../libs/HMTypes.php';  // HMTypes Data
@@ -31,7 +31,7 @@ class HomeMaticExtendedConfigurator extends HMBase
     public function Create(): void
     {
         parent::Create();
-        $this->RegisterHMProperties('XXX9999994');
+        $this->RegisterHMPropertys('XXX9999994');
         $this->RegisterPropertyBoolean(\HMExtended\Device\Property::EmulateStatus, false);
         $this->RegisterPropertyInteger('Interval', 0);
     }
@@ -44,6 +44,16 @@ class HomeMaticExtendedConfigurator extends HMBase
         parent::ApplyChanges();
     }
     //################# PUBLIC
+
+    /**
+     * @todo Testing only
+     *
+     * @return mixed
+     */
+    public function Test(string $MethodName, int $Protocol, array $Data)
+    {
+        return $this->SendRPC($MethodName, $Protocol, $Data);
+    }
 
     /**
      * Interne Funktion des SDK.
@@ -74,6 +84,7 @@ class HomeMaticExtendedConfigurator extends HMBase
         if (IPS_GetProperty($ParentId, 'RFOpen')) {
             //$Form['actions'][0]['values'] = array_merge($Form['actions'][0]['values'], $this->GetConfigRows(0, \HMExtended\GUID::Powermeter));
             //$Form['actions'][0]['values'] = array_merge($Form['actions'][0]['values'], $this->GetConfigRows(0, \HMExtended\GUID::Dis_WM55));
+            $Form['actions'][0]['values'] = array_merge($Form['actions'][0]['values'], $this->GetConfigRows(0, \HMExtended\GUID::HeatingDevice));
             $Form['actions'][0]['values'] = array_merge($Form['actions'][0]['values'], $this->GetConfigRows(0, \HMExtended\GUID::ClimacontrolRegulator));
         }
         if (IPS_GetProperty($ParentId, 'GROpen')) {
@@ -243,31 +254,6 @@ class HomeMaticExtendedConfigurator extends HMBase
             ];
         }
         return $Values;
-    }
-
-    private function SendRPC(string $MethodName, int $Protocol, array $Data): false|array
-    {
-        if (!$this->HasActiveParent()) {
-            trigger_error($this->Translate('Instance has no active Parent Instance!'), E_USER_NOTICE);
-            return false;
-        }
-        $ParentData = [
-            'DataID'     => \HMExtended\GUID::SendRpcToIO,
-            'Protocol'   => $Protocol,
-            'MethodName' => $MethodName,
-            'WaitTime'   => 3,
-            'Data'       => $Data
-        ];
-        $this->SendDebug('Send', $ParentData, 0);
-
-        $ResultJSON = $this->SendDataToParent(json_encode($ParentData, JSON_PRESERVE_ZERO_FRACTION));
-        if (!$ResultJSON) {
-            $this->SendDebug('Error', '', 0);
-            return false;
-        }
-        $this->SendDebug('Receive', $ResultJSON, 0);
-        $Result = json_decode(utf8_encode($ResultJSON), true);
-        return $Result;
     }
 }
 

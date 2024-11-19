@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @copyright     2023 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  *
- * @version       3.71
+ * @version       3.74
  */
 require_once __DIR__ . '/../libs/HMHeatingDevice.php';  // HMBase Klasse
 
@@ -21,24 +21,13 @@ require_once __DIR__ . '/../libs/HMHeatingDevice.php';  // HMBase Klasse
  */
 class HomeMaticHeatingGroup extends HMHeatingDevice
 {
-    public const DeviceTyp = \HMExtended\DeviceType::HeatingGroup;
-    public const ValuesChannel = \HMExtended\Channels::First;
-    public const ParamChannel = \HMExtended\Channels::Device;
+    protected const DeviceTyp = \HMExtended\DeviceType::HeatingGroup;
+    protected const ValuesChannel = \HMExtended\Channels::First;
+    protected const ParamChannel = \HMExtended\Channels::Device;
 
     protected const NumberOfWeekSchedules = 3;
     protected const SelectedWeekScheduleIdent = \HMExtended\HeatingGroup::WEEK_PROGRAM_POINTER;
-
-    /**
-     * Interne Funktion des SDK.
-     */
-    public function Create(): void
-    {
-        parent::Create();
-
-        $this->RegisterPropertyBoolean(\HMExtended\Device\Property::EmulateStatus, false);
-        $this->RegisterPropertyString(\HMExtended\Device\Property::Address, '');
-        $this->RegisterPropertyInteger(\HMExtended\Device\Property::Protocol, 3);
-    }
+    protected const ProtocolId = 3;
 
     //################# PUBLIC
 
@@ -200,9 +189,6 @@ class HomeMaticHeatingGroup extends HMHeatingDevice
             if ($this->PutParamSet([$Ident=>$SendValue], true)) {
                 $this->SetValue($Ident, $Value);
             }
-            if ($Ident == \HMExtended\HeatingGroup::WEEK_PROGRAM_POINTER) {
-                $this->RefreshScheduleObject();
-            }
             return;
         }
         trigger_error($this->Translate('Invalid Ident.') . ' (' . $Ident . ')', E_USER_NOTICE);
@@ -213,15 +199,17 @@ class HomeMaticHeatingGroup extends HMHeatingDevice
     {
         $d = new DateTime();
         $d->setTime(
-            intdiv($Params[\HMExtended\HeatingGroup::DECALCIFICATION_TIME], 60),
-            ($Params[\HMExtended\HeatingGroup::DECALCIFICATION_TIME] % 60),
+            intdiv((int) $Params[\HMExtended\HeatingGroup::DECALCIFICATION_TIME], 60),
+            ((int) $Params[\HMExtended\HeatingGroup::DECALCIFICATION_TIME] % 60),
             0,
             0
         );
         $Params[\HMExtended\HeatingGroup::DECALCIFICATION_TIME] = $d->getTimestamp();
         $Params[\HMExtended\HeatingGroup::BOOST_TIME_PERIOD] =
         $Params[\HMExtended\HeatingGroup::BOOST_TIME_PERIOD] * 5;
-        $Params[\HMExtended\HeatingGroup::WEEK_PROGRAM_POINTER]++;
+        if (array_key_exists(\HMExtended\HeatingGroup::WEEK_PROGRAM_POINTER, $Params)) {
+            $Params[\HMExtended\HeatingGroup::WEEK_PROGRAM_POINTER]++;
+        }
 
         parent::SetParamVariables($Params);
     }
@@ -234,21 +222,21 @@ class HomeMaticHeatingGroup extends HMHeatingDevice
                 case \HMExtended\HeatingGroup::PARTY_STOP_DAY:
                     $Ident = \HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][2];
                     $d = (new DateTime())->setTimestamp((int) $this->GetValue($Ident));
-                    $d->setDate((int) $d->format('Y'), (int) $d->format('n'), $Value);
+                    $d->setDate((int) $d->format('Y'), (int) $d->format('n'), (int) $Value);
                     $Value = $d->getTimestamp();
                     break;
                 case \HMExtended\HeatingGroup::PARTY_START_MONTH:
                 case \HMExtended\HeatingGroup::PARTY_STOP_MONTH:
                     $Ident = \HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][2];
                     $d = (new DateTime())->setTimestamp((int) $this->GetValue($Ident));
-                    $d->setDate((int) $d->format('Y'), $Value, (int) $d->format('j'));
+                    $d->setDate((int) $d->format('Y'), (int) $Value, (int) $d->format('j'));
                     $Value = $d->getTimestamp();
                     break;
                 case \HMExtended\HeatingGroup::PARTY_START_YEAR:
                 case \HMExtended\HeatingGroup::PARTY_STOP_YEAR:
                     $Ident = \HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][2];
                     $d = (new DateTime())->setTimestamp((int) $this->GetValue($Ident));
-                    $d->setDate(2000 + $Value, (int) $d->format('n'), (int) $d->format('j'));
+                    $d->setDate(2000 + (int) $Value, (int) $d->format('n'), (int) $d->format('j'));
                     $Value = $d->getTimestamp();
                     if ($Value < 946767600) {
                         $d = new DateTime();
@@ -259,7 +247,7 @@ class HomeMaticHeatingGroup extends HMHeatingDevice
                 case \HMExtended\HeatingGroup::PARTY_START_TIME:
                 case \HMExtended\HeatingGroup::PARTY_STOP_TIME:
                     $d = (new DateTime())->setTimestamp((int) $this->GetValue($Ident));
-                    $d->setTime(intdiv($Value, 60), ($Value % 60), 0, 0);
+                    $d->setTime(intdiv((int) $Value, 60), ((int) $Value % 60), 0, 0);
                     $Value = $d->getTimestamp();
                     break;
             }

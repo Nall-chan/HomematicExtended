@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @copyright     2023 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  *
- * @version       3.71
+ * @version       3.74
  */
 require_once __DIR__ . '/../libs/HMBase.php';  // HMBase Klasse
 
@@ -28,7 +28,7 @@ class HomeMaticWRInterface extends HMBase
     {
         parent::Create();
 
-        $this->RegisterHMProperties('XXX9999993');
+        $this->RegisterHMPropertys('XXX9999993');
         $this->RegisterPropertyBoolean(\HMExtended\Device\Property::EmulateStatus, false);
 
         $this->RegisterPropertyInteger('Interval', 0);
@@ -122,6 +122,7 @@ class HomeMaticWRInterface extends HMBase
      */
     protected function KernelReady(): void
     {
+        parent::KernelReady();
         $this->ApplyChanges();
     }
 

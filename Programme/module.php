@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @copyright     2023 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  *
- * @version       3.71
+ * @version       3.74
  */
 require_once __DIR__ . '/../libs/HMBase.php';  // HMBase Klasse
 
@@ -27,7 +27,7 @@ class HomeMaticProgramme extends HMBase
     public function Create(): void
     {
         parent::Create();
-        $this->RegisterHMProperties('XXX9999998');
+        $this->RegisterHMPropertys('XXX9999998');
         $this->RegisterPropertyBoolean(\HMExtended\Device\Property::EmulateStatus, false);
     }
 
@@ -52,7 +52,7 @@ class HomeMaticProgramme extends HMBase
         $this->SetReceiveDataFilter('.*9999999999.*');
 
         $this->RegisterProfileIntegerEx('Execute.HM', '', '', '', [
-            0, 'Start', '', -1
+            [0, 'Start', '', -1]
         ]);
 
         if (IPS_GetKernelRunlevel() != KR_READY) {
@@ -111,6 +111,7 @@ class HomeMaticProgramme extends HMBase
      */
     protected function KernelReady(): void
     {
+        parent::KernelReady();
         $this->ApplyChanges();
     }
 
@@ -151,19 +152,20 @@ class HomeMaticProgramme extends HMBase
                     . 'Info=dom.GetObject(' . $SysPrg . ').PrgInfo();' . PHP_EOL;
             $HMScriptResult = $this->LoadHMScript($HMScript);
             if ($HMScriptResult === false) {
-                return false;
+                $Result = false;
+                continue;
             }
             $varXml = $this->GetScriptXML($HMScriptResult);
             if ($varXml === false) {
+                $Result = false;
                 continue;
             }
             $this->SendDebug($SysPrg, (string) $varXml->Name, 0);
-            $var = @IPS_GetObjectIDByIdent($SysPrg, $this->InstanceID);
+            $var = @$this->GetIDForIdent($SysPrg);
             $Name = (string) $varXml->Name;
             if ($var === false) {
                 $this->MaintainVariable($SysPrg, $Name, 1, 'Execute.HM', 0, true);
                 $this->EnableAction($SysPrg);
-                $var = IPS_GetObjectIDByIdent($SysPrg, $this->InstanceID);
             }
         }
         return $Result;

@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @copyright     2023 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  *
- * @version       3.71
+ * @version       3.74
  */
 require_once __DIR__ . '/HMBase.php';  // HMBase Klasse
 
@@ -19,6 +19,7 @@ require_once __DIR__ . '/HMBase.php';  // HMBase Klasse
  * HMHeatingDevice
  *
  * @property array $WeekSchedules
+ * @property int $WeekProfile
  */
 class HMHeatingDevice extends HMBase
 {
@@ -61,12 +62,22 @@ class HMHeatingDevice extends HMBase
     public function Create(): void
     {
         parent::Create();
+
+        $this->RegisterPropertyString(\HMExtended\Device\Property::Address, '');
+        $this->RegisterPropertyInteger(\HMExtended\Device\Property::Protocol, static::ProtocolId);
+        $this->RegisterPropertyBoolean(\HMExtended\Device\Property::EmulateStatus, false);
+
         foreach (\HMExtended\Property::$Properties[static::DeviceTyp] as $Property => $Value) {
             $this->RegisterPropertyBoolean('enable_' . $Property, $Value);
         }
         $this->RegisterPropertyBoolean(\HMExtended\Device\Property::Schedule, true);
         $this->RegisterPropertyBoolean(\HMExtended\Device\Property::SetPointBehavior, true);
-
+        $InitTemps = [5, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 30];
+        foreach ($InitTemps as &$Temp) {
+            $Temp = ['TemperatureValue'=> $Temp];
+        }
+        $this->RegisterPropertyString(\HMExtended\Device\Property::ScheduleTemps, json_encode($InitTemps));
+        /*
         $ScheduleTempsInit = [
             [5, 0x000080],
             [16, 0x333399],
@@ -81,9 +92,26 @@ class HMHeatingDevice extends HMBase
             [25, 0xE60000],
             [30, 0xFF0000],
         ];
-        $this->RegisterAttributeString('ScheduleColors', json_encode($ScheduleTempsInit));
 
+        $ScheduleTempColors = [
+            [5, 0x000080],
+            [15, 0x222289],
+            [16, 0x333399],
+            [17, 0x005EC6],
+            [18, 0x008080],
+            [19, 0x339966],
+            [20, 0x58B306],
+            [21, 0xFFCC00],
+            [22, 0xFF9900],
+            [23, 0xFB7720],
+            [24, 0xD20000],
+            [25, 0xE60000],
+            [30, 0xFF0000],
+        ];
+        $this->RegisterAttributeArray('ScheduleColors', $ScheduleTempsInit);
+         */
         $this->WeekSchedules = [];
+        $this->WeekProfile = 1;
     }
 
     /**
@@ -105,6 +133,8 @@ class HMHeatingDevice extends HMBase
     public function ApplyChanges(): void
     {
         parent::ApplyChanges();
+
+        $this->WeekProfile = 1;
         $Address = $this->ReadPropertyString(\HMExtended\Device\Property::Address);
         $this->SetReceiveDataFilter($Address == '' ? '.*9999999999.*' : '.*"DeviceID":"' . $Address . static::ValuesChannel . '.*');
 
@@ -176,6 +206,11 @@ class HMHeatingDevice extends HMBase
             return;
         }
         switch ($Ident) {
+            case 'EditScheduleTemps':
+                $ScheduleTemps = json_decode($Value, true);
+                $this->FixScheduleTemps($ScheduleTemps);
+                $done = true;
+                return;
             case 'getParam':
                 $this->GetParamsAndSetVariable();
                 $done = true;
@@ -192,6 +227,14 @@ class HMHeatingDevice extends HMBase
                 $this->SetValue($Ident, $Value);
                 $done = true;
                 return;
+            case static::SelectedWeekScheduleIdent:
+                if ($this->WeekProfile != (int) $Value) {
+                    $this->WeekProfile = (int) $Value;
+                    $this->SendDebug(__FUNCTION__, '', 0);
+                    $this->SendDebug('ActivePlan', $Value, 0);
+                    $this->RefreshScheduleObject();
+                }
+                break;
         }
         $Property = $Ident;
         if (array_key_exists($Ident, \HMExtended\ValuesSet::$Variables[static::DeviceTyp])) {
@@ -217,7 +260,7 @@ class HMHeatingDevice extends HMBase
             return false;
         }
         $AddressWithChannel = $this->ReadPropertyString(\HMExtended\Device\Property::Address) . static::ValuesChannel;
-        $Result = $this->SendRPC('getValue', [$AddressWithChannel, $Ident]);
+        $Result = $this->SendRPC('getValue', $this->ReadPropertyInteger(\HMExtended\Device\Property::Protocol), [$AddressWithChannel, $Ident]);
         if ($Result === null) {
             return false;
         }
@@ -228,13 +271,6 @@ class HMHeatingDevice extends HMBase
     public function RequestParams(): bool
     {
         return $this->GetParamsAndSetVariable();
-    }
-
-    public function ReceiveData(string $JSONString): string
-    {
-        $Event = json_decode($JSONString, true);
-        $this->SetVariable($Event['VariableName'], $Event['VariableValue']);
-        return '';
     }
 
     //################# protected
@@ -254,47 +290,42 @@ class HMHeatingDevice extends HMBase
 
     protected function SetVariable(string $Ident, mixed $Value): void
     {
-        @$this->SetValue($Ident, $Value);
+        if ($Ident == static::SelectedWeekScheduleIdent) {
+            if ($this->WeekProfile != (int) $Value) {
+                $this->WeekProfile = (int) $Value;
+                $this->SendDebug(__FUNCTION__, '', 0);
+                $this->SendDebug('ActivePlan', $Value, 0);
+                $this->RefreshScheduleObject();
+            }
+        }
+        parent::SetVariable($Ident, $Value);
     }
 
     protected function SetParamVariables(array $Params): void
     {
         $ScheduleData = [];
-        $ScheduleTemps = $this->GetTempColorsAttribute();
-        $ScheduleActionHasChanged = false;
+
         for ($Plan = 1; $Plan <= static::NumberOfWeekSchedules; $Plan++) {
             foreach (static::$Weekdays as $Index => $Day) {
                 for ($Slot = 1; $Slot <= static::NumberOfTimeSlot; $Slot++) {
                     $TimeIndex = sprintf(static::WeekScheduleIndexEndTime, $Slot, $Day, $Plan);
                     $TempIndex = sprintf(static::WeekScheduleIndexTemp, $Slot, $Day, $Plan);
-                    $Time = $Params[$TimeIndex];
-                    $Temp = $Params[$TempIndex];
-                    $this->SendDebug($TimeIndex, $Time, 0);
-                    $this->SendDebug($TempIndex, $Temp, 0);
-                    $this->SendDebug($TempIndex, gettype($Temp), 0);
+                    $Time = (int) $Params[$TimeIndex];
+                    $Temp = (float) $Params[$TempIndex];
+
                     $ScheduleData[$Plan][$Index][$Slot][self::TIME] = $Time;
                     $ScheduleData[$Plan][$Index][$Slot][self::TEMP] = $Temp;
-                    if (!array_key_exists((int)$Temp, $ScheduleTemps)) {
-                        $Color = $this->GetNextColor((float)$Temp, $ScheduleData);
-                        $ScheduleTemps[$Params[$TempIndex]] = $Color;
-                        $ScheduleActionHasChanged = true;
-                    }
+
                     unset($Params[$TimeIndex]);
                     unset($Params[$TempIndex]);
                 }
             }
         }
-        if ($ScheduleActionHasChanged) {
-            // todo wenn array zu groß war, Meldung ausgeben.
-            ksort($ScheduleTemps);
-            $ScheduleTemps = array_slice($ScheduleTemps, 0, 32, true);
-            $this->SetTempColorsAttribute($ScheduleTemps);
-        }
         $this->WeekSchedules = $ScheduleData;
         foreach ($Params as $Ident => $Value) {
             @$this->SetValue($Ident, $Value);
         }
-        $this->RefreshScheduleObject($ScheduleActionHasChanged);
+        $this->RefreshScheduleObject();
     }
 
     protected function FixValueType(int $VarType, mixed &$Value): void
@@ -318,29 +349,32 @@ class HMHeatingDevice extends HMBase
     protected function PutParamSet(array $Parameter, bool $EmulateStatus = false): bool
     {
         $Paramset = [$this->ReadPropertyString(\HMExtended\Device\Property::Address) . static::ParamChannel, \HMExtended\CCU::MASTER];
-        $Result = $this->SendRPC('putParamset', $Paramset, $Parameter, $EmulateStatus);
+        $Result = $this->SendRPC('putParamset', $this->ReadPropertyInteger(\HMExtended\Device\Property::Protocol), $Paramset, $Parameter, $EmulateStatus);
         return ($Result !== null) ? true : false;
     }
 
     protected function PutValueSet(array $Values, bool $EmulateStatus = false): bool
     {
         $Paramset = [$this->ReadPropertyString(\HMExtended\Device\Property::Address) . static::ValuesChannel, \HMExtended\CCU::VALUES];
-        $Result = $this->SendRPC('putParamset', $Paramset, $Values, $EmulateStatus);
+        $Result = $this->SendRPC('putParamset', $this->ReadPropertyInteger(\HMExtended\Device\Property::Protocol), $Paramset, $Values, $EmulateStatus);
         return ($Result !== null) ? true : false;
     }
 
     protected function PutValue(string $ValueName, $Value, bool $EmulateStatus = false): bool
     {
         $Paramset = [$this->ReadPropertyString(\HMExtended\Device\Property::Address) . static::ValuesChannel, $ValueName];
-        $Result = $this->SendRPC('setValue', $Paramset, $Value, $EmulateStatus);
+        $Result = $this->SendRPC('setValue', $this->ReadPropertyInteger(\HMExtended\Device\Property::Protocol), $Paramset, $Value, $EmulateStatus);
         if (($Result !== null) && $EmulateStatus) {
             $this->SetVariable($ValueName, $Value);
         }
         return ($Result !== null) ? true : false;
     }
 
-    protected function RefreshScheduleObject(bool $ScheduleActionHasChanged = false): void
+    //################# PRIVATE
+
+    private function RefreshScheduleObject(): void
     {
+        $this->SendDebug(__FUNCTION__, '', 0);
         if (!$this->ReadPropertyBoolean(\HMExtended\Device\Property::Schedule)) {
             return;
         }
@@ -357,18 +391,25 @@ class HMHeatingDevice extends HMBase
                 IPS_SetEventScheduleGroupPoint($EventId, $Group['ID'], $Point['ID'], -1, -1, -1, 0);
             }
         }
-        $Actions = $this->UpdateScheduleActions($Event, $ScheduleActionHasChanged);
+
         if (static::SelectedWeekScheduleIdent) {
-            $ActivePlan = $this->GetValue(static::SelectedWeekScheduleIdent);
+            $ActivePlan = $this->WeekProfile;
         } else {
             $ActivePlan = 1;
         }
+        $this->SendDebug('ActivePlan', $ActivePlan, 0);
         $ScheduleData = $this->WeekSchedules[$ActivePlan];
+        $Actions = $this->UpdateScheduleActions($Event, $ScheduleData);
+        $this->SendDebug('Actions', $Actions, 0);
         foreach ($Event['ScheduleGroups'] as $Group) {
             $StartHour = 0;
             $StartMinute = 0;
             foreach ($ScheduleData[$Group['Days']] as $PointId => $Slot) {
                 $ActionId = array_search($Slot[self::TEMP], $Actions);
+                if ($ActionId === false) {
+                    $this->SendDebug('not found', $Slot[self::TEMP], 0);
+                    continue;
+                }
                 IPS_SetEventScheduleGroupPoint($EventId, $Group['ID'], $PointId, $StartHour, $StartMinute, 0, $ActionId);
                 if ($Slot[self::TIME] == 1440) {
                     break;
@@ -379,8 +420,9 @@ class HMHeatingDevice extends HMBase
         }
     }
 
-    protected function SaveSchedule(int $Plan): void
+    private function SaveSchedule(int $Plan): void
     {
+        $this->SendDebug(__FUNCTION__, '', 0);
         $EventId = @IPS_GetObjectIDByIdent(self::EVENT, $this->InstanceID);
         if ($EventId === false) {
             return;
@@ -418,16 +460,15 @@ class HMHeatingDevice extends HMBase
         $this->PutParamSet($Params);
 
         if (static::SelectedWeekScheduleIdent) {
-            $ActivePlan = $this->GetValue(static::SelectedWeekScheduleIdent);
+            $ActivePlan = $this->WeekProfile;
         } else {
             $ActivePlan = 1;
         }
+        $this->SendDebug('ActivePlan', $ActivePlan, 0);
         if ($ActivePlan != $Plan) {
             $this->RefreshScheduleObject();
         }
     }
-
-    //################# PRIVATE
 
     private function CreateVariablesFromValues(): void
     {
@@ -561,70 +602,82 @@ class HMHeatingDevice extends HMBase
         }
     }
 
-    private function GetParamset(string $Paramset, string $AddressWithChannel): array
+    /**
+     * FixScheduleTemps
+     *
+     * Cleanup illegal Temps.
+     * NumberSpinner hat keine StepSize :(
+     *
+     * @return bool
+     */
+    private function FixScheduleTemps(array $ScheduleTemps)
     {
-        $Result = $this->SendRPC('getParamset', [$AddressWithChannel, $Paramset]);
-        return is_array($Result) ? $Result : [];
-    }
-
-    private function GetParamsetDescription(string $Paramset, string $AddressWithChannel): array
-    {
-        $Result = $this->SendRPC('getParamsetDescription', [$AddressWithChannel, $Paramset]);
-        return is_array($Result) ? $Result : [];
-    }
-
-    private function SendRPC(string $MethodName, array $Paramset, $Data = null, bool $EmulateStatus = false): null|bool|array
-    {
-        if (!$this->HasActiveParent()) {
-            trigger_error($this->Translate('Instance has no active Parent Instance!'), E_USER_NOTICE);
-            return null;
-        }
-        $ParentData = [
-            'DataID'     => \HMExtended\GUID::SendRpcToIO,
-            'Protocol'   => $this->ReadPropertyInteger(\HMExtended\Device\Property::Protocol),
-            'MethodName' => $MethodName,
-            'WaitTime'   => 3,
-            'Data'       => $Paramset
-        ];
-        if (is_array($Data)) {
-            $ParentData['Data'][] = json_encode($Data, JSON_PRESERVE_ZERO_FRACTION);
-        } elseif (!is_null($Data)) {
-            $ParentData['Data'][] = $Data;
-        }
-        $this->SendDebug('Send', $ParentData, 0);
-        $ResultJSON = @$this->SendDataToParent(json_encode($ParentData, JSON_PRESERVE_ZERO_FRACTION));
-        if ($EmulateStatus) {
-            return true;
-        }
-        if ($ResultJSON === false) {
-            trigger_error('Error on ' . $MethodName, E_USER_NOTICE);
-            $this->SendDebug('Error', '', 0);
-            return null;
-        }
-        $this->SendDebug('Receive JSON', $ResultJSON, 0);
-        if ($ResultJSON === '') {
-            return true;
-        }
-        $Result = json_decode($ResultJSON, true);
-        return $Result;
-    }
-
-    private function UpdateScheduleActions(array $Event, bool $ScheduleActionHasChanged): array
-    {
-        $ScheduleActionColors = $this->GetTempColorsAttribute();
-        if ($ScheduleActionHasChanged) {
-            foreach ($Event['ScheduleActions'] as $Action) {
-                IPS_SetEventScheduleAction($Event['EventID'], $Action['ID'], '', 0, '');
+        $HasFixed = false;
+        $NewScheduleTemps = [];
+        foreach ($ScheduleTemps as $Temp) {
+            if ($Temp['TemperatureValue'] < 5) {
+                $HasFixed = true;
+                continue;
             }
-            $i = 0;
-            foreach ($ScheduleActionColors as $Temp => $Color) {
-                IPS_SetEventScheduleAction($Event['EventID'], $i++, sprintf('%0.1f °C', $Temp), $Color, 'HM_RequestParams($_IPS[\'TARGET\']);');
-                if ($i == 32) {
-                    break;
+            if ($Temp['TemperatureValue'] > 30) {
+                $HasFixed = true;
+                continue;
+            }
+            if (fmod($Temp['TemperatureValue'], 0.5) > 0) {
+                if (($Temp['TemperatureValue'] - floor($Temp['TemperatureValue'])) < 0.5) {
+                    $Temp['TemperatureValue'] = floor($Temp['TemperatureValue']);
+                } else {
+                    $Temp['TemperatureValue'] = floor($Temp['TemperatureValue']) + 0.5;
                 }
+                $HasFixed = true;
+            }
+            if (in_array($Temp, $NewScheduleTemps)) {
+                $HasFixed = true;
+                continue;
+            }
+
+            $NewScheduleTemps[] = $Temp;
+        }
+        if ($HasFixed) {
+            $this->UpdateFormField('ScheduleTemps', 'values', json_encode($NewScheduleTemps));
+        }
+    }
+
+    private function UpdateScheduleActions(array $Event, array $ScheduleData): array
+    {
+        $this->SendDebug(__FUNCTION__, '', 0);
+        $ScheduleTemps = [];
+        foreach (static::$Weekdays as $Index => $Day) {
+            $ScheduleTemps = array_merge($ScheduleTemps, array_column($ScheduleData[$Index], self::TEMP));
+        }
+        $ScheduleTemps = array_unique($ScheduleTemps);
+        if (count($ScheduleTemps) > 31) {
+            $this->LogMessage($this->Translate('Too many temperatures on schedule. Crop to 31 actions.'), KL_WARNING);
+            $ScheduleTemps = array_slice($ScheduleTemps, 0, 32);
+        }
+        $ScheduleTempsProperty = array_column(json_decode($this->ReadPropertyString(\HMExtended\Device\Property::ScheduleTemps), true), 'TemperatureValue');
+        $ScheduleTemps = array_unique(array_merge($ScheduleTemps, $ScheduleTempsProperty), SORT_NUMERIC);
+        if (count($ScheduleTemps) > 31) {
+            $this->LogMessage($this->Translate('Too many temperatures on schedule. Crop to 31 actions.'), KL_WARNING);
+            $ScheduleTemps = array_slice($ScheduleTemps, 0, 32);
+        }
+        sort($ScheduleTemps);
+        $StepSize = 260 / count($ScheduleTemps);
+
+        foreach ($Event['ScheduleActions'] as $Action) {
+            IPS_SetEventScheduleAction($Event['EventID'], $Action['ID'], '', 0, '');
+        }
+        $i = 0;
+        foreach ($ScheduleTemps as $Temp) {
+            $Color = self::TempToRGB($i, $StepSize);
+            $this->SendDebug($Temp, $Color, 0);
+            IPS_SetEventScheduleAction($Event['EventID'], $i++, sprintf('%0.1f °C', $Temp), $Color, "<?php\r\n/** Do not edit this code,\r\n    It will be automatically overwritten.\r\n*/\r\n\r\n" . 'HM_RequestParams($_IPS[\'TARGET\']);');
+            if ($i == 32) {
+                break;
             }
         }
-        return array_keys($ScheduleActionColors);
+        $this->SendDebug(__FUNCTION__, $ScheduleTemps, 0);
+        return $ScheduleTemps;
     }
 
     private function CreateWeekPlan(): void
@@ -636,46 +689,149 @@ class HMHeatingDevice extends HMBase
             IPS_SetParent($EventId, $this->InstanceID);
             IPS_SetIdent($EventId, self::EVENT);
             IPS_SetName($EventId, $this->Translate('Schedule'));
-            $Event = IPS_GetEvent($EventId);
-            $this->UpdateScheduleActions($Event, true);
+            //$Event = IPS_GetEvent($EventId);
+            //$this->UpdateScheduleActions($Event, /*true*/);
             for ($i = 0; $i < 7; $i++) {
                 IPS_SetEventScheduleGroup($EventId, $i, (1 << $i));
             }
             IPS_SetEventActive($EventId, true);
         }
     }
-
-    private function SetTempColorsAttribute(array $Values): void
+    /*
+        private function SetTempColorsAttribute(array $Values)
     {
-        ksort($Values);
-        foreach ($Values as $Temp => $Color) {
+            foreach ($Values as $Color => $Temp) {
             $ScheduleTemps[] = [$Temp, $Color];
         }
-        $this->WriteAttributeString('ScheduleColors', json_encode($ScheduleTemps));
+            $this->WriteAttributeArray('ScheduleColors', $ScheduleTemps);
     }
 
-    private function GetTempColorsAttribute(): array
+        private function GetTempColorsAttribute()
     {
         $Values = [];
-        $ScheduleTemps = json_decode($this->ReadAttributeString('ScheduleColors'), true);
+            $ScheduleTemps = $this->ReadAttributeArray('ScheduleColors');
         foreach ($ScheduleTemps as $TempColor) {
-            $Values[$TempColor[0]] = $TempColor[1];
+                $Values[$TempColor[1]] = $TempColor[0];
         }
-        ksort($Values);
+            asort($Values);
         return $Values;
     }
-
-    private function GetNextColor(float $Temp, array $Colors): int
+     */
+    /*
+    private function GetNextColor(float $Temp, array $Colors)
     {
         $Found = 0x000080;
-        foreach ($Colors as $TempColor => $Color) {
+        foreach ($Colors as $Color => $TempColor) {
             if ($TempColor < $Temp) {
-                $Found = $Color;
+                if ($Color > 0x010101) {
+                    $Found = $Color - 0x010101;
+                }
             } else {
                 break;
             }
         }
         return $Found;
+    }
+    private function GetColors(array $Temps)
+    {
+        $Temps = static::$ScheduleTempsInit;
+        //$Temps = array_unique($Temps, SORT_NUMERIC);
+        $Colors = [];
+        $TempMax = 30; //end($Temps);
+        $TempMin = 5; //reset($Temps);
+        $rgb1 = 0x000080; //$this->ReadPropertyInteger('ScheduleMinColor');
+        $rgb2 = 0xff0000; //$this->ReadPropertyInteger('ScheduleMaxColor');
+        $r1 = $rgb1 >> 16;
+        $g1 = ($rgb1 & 0x00FF00) >> 8;
+        $b1 = $rgb1 & 0x0000FF;
+        $r2 = $rgb2 >> 16;
+        $g2 = ($rgb2 & 0x00FF00) >> 8;
+        $b2 = $rgb2 & 0x0000FF;
+        $Counts = (($TempMax - $TempMin) / 0.5) + 1;
+        $dr = ($r2 - $r1) / $Counts;
+        $dg = ($g2 - $g1) / $Counts;
+        $db = ($b2 - $b1) / $Counts;
+        for ($i = 0; $i < $Counts; $i++) {
+            $rgb =
+                (round($r1 + $dr * $i) << 16) |
+                (round($g1 + $dg * $i) << 8) |
+                (round($b1 + $db * $i));
+            $Temp = ($TempMin + ($i * 0.5));
+            if (in_array($Temp, $Temps)) {
+                $Colors[] = [
+                    'Temp' => $Temp,
+                    'Color'=> $rgb
+                ];
+            }
+        }
+        return $Colors;
+    }
+     */
+
+    /**
+     * HSVtoRGB
+     *
+     * not static, falls wir doch auf Statusvariablen zurückgreifen müssen
+     *
+     * @param  array $Values
+     * @return int
+     */
+    private static function TempToRGB(int $Index, float $StepSize): int
+    {
+        $Index++;
+        $hue = (260 - ($Index * $StepSize)) / 360;
+        $saturation = 0.75;
+        $value = 1;
+        if ($saturation == 0) {
+            $red = $value * 255;
+            $green = $value * 255;
+            $blue = $value * 255;
+        } else {
+            $var_h = $hue * 6;
+            $var_i = floor($var_h);
+            $var_1 = $value * (1 - $saturation);
+            $var_2 = $value * (1 - $saturation * ($var_h - $var_i));
+            $var_3 = $value * (1 - $saturation * (1 - ($var_h - $var_i)));
+
+            switch ($var_i) {
+                case 0:
+                    $var_r = $value;
+                    $var_g = $var_3;
+                    $var_b = $var_1;
+                    break;
+                case 1:
+                    $var_r = $var_2;
+                    $var_g = $value;
+                    $var_b = $var_1;
+                    break;
+                case 2:
+                    $var_r = $var_1;
+                    $var_g = $value;
+                    $var_b = $var_3;
+                    break;
+                case 3:
+                    $var_r = $var_1;
+                    $var_g = $var_2;
+                    $var_b = $value;
+                    break;
+                case 4:
+                    $var_r = $var_3;
+                    $var_g = $var_1;
+                    $var_b = $value;
+                    break;
+                default:
+                    $var_r = $value;
+                    $var_g = $var_1;
+                    $var_b = $var_2;
+                    break;
+            }
+
+            $red = (int) round($var_r * 255);
+            $green = (int) round($var_g * 255);
+            $blue = (int) round($var_b * 255);
+        }
+
+        return ($red << 16) ^ ($green << 8) ^ $blue;
     }
 }
 

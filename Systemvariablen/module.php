@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @copyright     2023 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  *
- * @version       3.71
+ * @version       3.74
  */
 require_once __DIR__ . '/../libs/HMBase.php';  // HMBase Klasse
 
@@ -35,7 +35,7 @@ class HomeMaticSystemvariablen extends HMBase
     public function Create(): void
     {
         parent::Create();
-        $this->RegisterHMProperties('XXX9999999');
+        $this->RegisterHMPropertys('XXX9999999');
 
         $this->RegisterPropertyInteger('EventID', 0);
         $this->RegisterPropertyInteger('Interval', 0);
@@ -478,6 +478,7 @@ class HomeMaticSystemvariablen extends HMBase
      */
     protected function KernelReady(): void
     {
+        parent::KernelReady();
         $this->ApplyChanges();
     }
 
@@ -630,7 +631,7 @@ class HomeMaticSystemvariablen extends HMBase
             }
             $lines = explode("\r\n", $HMScriptResult);
             try {
-                $xmlVar = @new SimpleXMLElement(utf8_encode(array_pop($lines)), LIBXML_NOBLANKS + LIBXML_NONET);
+                $xmlVar = @new SimpleXMLElement(array_pop($lines), LIBXML_NOBLANKS + LIBXML_NONET);
             } catch (Throwable $exc) {
                 $this->SendDebug($SysVar, $exc->getMessage(), 0);
                 trigger_error($this->Translate($exc->getMessage()), E_USER_NOTICE);

@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @copyright     2023 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  *
- * @version       3.71
+ * @version       3.74
  */
 require_once __DIR__ . '/../libs/HMBase.php';
 
@@ -27,7 +27,7 @@ class HomeMaticRemoteScript extends HMBase
     public function Create(): void
     {
         parent::Create();
-        $this->RegisterHMProperties('XXX9999993');
+        $this->RegisterHMPropertys('XXX9999993');
         $this->SetReceiveDataFilter('.*9999999999.*');
         $this->RegisterPropertyBoolean(\HMExtended\Device\Property::EmulateStatus, false);
     }
@@ -48,16 +48,15 @@ class HomeMaticRemoteScript extends HMBase
      *
      * @param string $Script
      *
-     * @return string|bool Das Ergebnis als JSON-String oder FALSE im Fehlerfall.
+     * @return array|false Das Ergebnis als array oder FALSE im Fehlerfall.
      */
-    public function RunScript(string $Script): false|string
+    public function RunScript(string $Script): false|array
     {
-        return  $this->LoadHMScript($Script);
         $xml = $this->SendScript($Script);
         if ($xml === false) {
             return false;
         }
-        return json_encode($xml);
+        return json_decode(json_encode($xml), true);
     }
 
     //################# private

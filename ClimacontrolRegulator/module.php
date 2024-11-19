@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @copyright     2023 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  *
- * @version       3.71
+ * @version       3.74
  */
 require_once __DIR__ . '/../libs/HMHeatingDevice.php';  // HMBase Klasse
 
@@ -28,18 +28,7 @@ class HomeMaticClimateControlRegulator extends HMHeatingDevice
     protected const WeekScheduleIndexTemp = 'TEMPERATUR_%2$s_%1$d';
     protected const WeekScheduleIndexEndTime = 'TIMEOUT_%2$s_%1$d';
     protected const NumberOfTimeSlot = 24;
-
-    /**
-     * Interne Funktion des SDK.
-     */
-    public function Create(): void
-    {
-        parent::Create();
-
-        $this->RegisterPropertyBoolean(\HMExtended\Device\Property::EmulateStatus, false);
-        $this->RegisterPropertyString(\HMExtended\Device\Property::Address, '');
-        $this->RegisterPropertyInteger(\HMExtended\Device\Property::Protocol, 0);
-    }
+    protected const ProtocolId = 0;
 
     //################# PUBLIC
 
@@ -129,16 +118,16 @@ class HomeMaticClimateControlRegulator extends HMHeatingDevice
     {
         $d = new DateTime();
         $d->setTime(
-            $Params[\HMExtended\ClimacontrolRegulator::DECALCIFICATION_HOUR],
-            $Params[\HMExtended\ClimacontrolRegulator::DECALCIFICATION_MINUTE],
+            (int) $Params[\HMExtended\ClimacontrolRegulator::DECALCIFICATION_HOUR],
+            (int) $Params[\HMExtended\ClimacontrolRegulator::DECALCIFICATION_MINUTE],
             0,
             0
         );
         $Params[\HMExtended\ClimacontrolRegulator::DECALCIFICATION_TIME] = $d->getTimestamp();
         $d = new DateTime();
         $d->setTime(
-            $Params[\HMExtended\ClimacontrolRegulator::PARTY_END_HOUR],
-            ($Params[\HMExtended\ClimacontrolRegulator::PARTY_END_MINUTE] == 0 ? 0 : 30),
+            (int) $Params[\HMExtended\ClimacontrolRegulator::PARTY_END_HOUR],
+            ((int) $Params[\HMExtended\ClimacontrolRegulator::PARTY_END_MINUTE] == 0 ? 0 : 30),
             0,
             0
         );

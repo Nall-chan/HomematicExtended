@@ -27,7 +27,7 @@ class HomeMaticRFInterfaceSplitter extends HMBase
     public function Create(): void
     {
         parent::Create();
-        $this->RegisterHMProperties('XXX9999994');
+        $this->RegisterHMPropertys('XXX9999994');
         $this->RegisterPropertyBoolean(\HMExtended\Device\Property::EmulateStatus, false);
         $this->RegisterPropertyInteger('Interval', 0);
         $this->RegisterTimer('ReadRFInterfaces', 0, '@HM_ReadRFInterfaces($_IPS[\'TARGET\']);');
@@ -110,6 +110,7 @@ class HomeMaticRFInterfaceSplitter extends HMBase
      */
     protected function KernelReady(): void
     {
+        parent::KernelReady();
         $this->ApplyChanges();
     }
 

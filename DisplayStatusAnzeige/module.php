@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @copyright     2023 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  *
- * @version       3.71
+ * @version       3.74
  */
 require_once __DIR__ . '/../libs/HMBase.php';  // HMBase Klasse
 
@@ -45,7 +45,7 @@ class HomeMaticDisWM55 extends HMBase
     {
         parent::Create();
 
-        $this->RegisterHMProperties('XXX9999995');
+        $this->RegisterHMPropertys('XXX9999995');
         $this->RegisterPropertyBoolean(\HMExtended\Device\Property::EmulateStatus, false);
         $this->RegisterPropertyInteger('PageUpID', 0);
         $this->RegisterPropertyInteger('PageDownID', 0);
@@ -77,9 +77,9 @@ class HomeMaticDisWM55 extends HMBase
     /**
      * Nachrichten aus der Nachrichtenschlange verarbeiten.
      *
-     * @param int $TimeStamp
-     * @param int $SenderID
-     * @param int $Message
+     * @param int       $TimeStamp
+     * @param int       $SenderID
+     * @param int       $Message
      * @param array $Data
      */
     public function MessageSink(int $TimeStamp, int $SenderID, int $Message, array $Data): void
@@ -149,6 +149,7 @@ class HomeMaticDisWM55 extends HMBase
      */
     protected function KernelReady(): void
     {
+        parent::KernelReady();
         $this->ApplyChanges();
     }
 

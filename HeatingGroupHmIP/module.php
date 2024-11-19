@@ -11,13 +11,14 @@ declare(strict_types=1);
  * @copyright     2023 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  *
- * @version       3.71
+ * @version       3.74
  */
 require_once __DIR__ . '/../libs/HMHeatingDevice.php';  // HMBase Klasse
 
 /**
  * HomeMaticIPHeatingGroup
  * Erweitert HMHeatingDevice Virtuelles Gerät: HmIP-HEATING
+ *
  */
 class HomeMaticIPHeatingGroup extends HMHeatingDevice
 {
@@ -27,18 +28,7 @@ class HomeMaticIPHeatingGroup extends HMHeatingDevice
 
     protected const NumberOfWeekSchedules = 6;
     protected const SelectedWeekScheduleIdent = \HMExtended\HeatingGroupHmIP::ACTIVE_PROFILE;
-
-    /**
-     * Interne Funktion des SDK.
-     */
-    public function Create(): void
-    {
-        parent::Create();
-
-        $this->RegisterPropertyBoolean(\HMExtended\Device\Property::EmulateStatus, false);
-        $this->RegisterPropertyString(\HMExtended\Device\Property::Address, '');
-        $this->RegisterPropertyInteger(\HMExtended\Device\Property::Protocol, 3);
-    }
+    protected const ProtocolId = 3;
 
     //################# PUBLIC
 
@@ -129,8 +119,8 @@ class HomeMaticIPHeatingGroup extends HMHeatingDevice
     {
         $d = new DateTime();
         $d->setTime(
-            intdiv($Params[\HMExtended\HeatingGroupHmIP::DECALCIFICATION_TIME], 2),
-            (($Params[\HMExtended\HeatingGroupHmIP::DECALCIFICATION_TIME] % 2) == 1 ? 30 : 0),
+            intdiv((int) $Params[\HMExtended\HeatingGroupHmIP::DECALCIFICATION_TIME], 2),
+            (((int) $Params[\HMExtended\HeatingGroupHmIP::DECALCIFICATION_TIME] % 2) == 1 ? 30 : 0),
             0,
             0
         );
@@ -142,9 +132,6 @@ class HomeMaticIPHeatingGroup extends HMHeatingDevice
     protected function SetVariable(string $Ident, mixed $Value): void
     {
         switch ($Ident) {
-            case \HMExtended\HeatingGroupHmIP::ACTIVE_PROFILE:
-                $OldValue = $this->GetValue($Ident);
-                break;
             case \HMExtended\HeatingGroupHmIP::PARTY_TIME_START:
             case \HMExtended\HeatingGroupHmIP::PARTY_TIME_END:
                 if ($Value == '1999_11_30 00:00') {
@@ -156,11 +143,6 @@ class HomeMaticIPHeatingGroup extends HMHeatingDevice
                 break;
         }
         parent::SetVariable($Ident, $Value);
-        if ($Ident == \HMExtended\HeatingGroupHmIP::ACTIVE_PROFILE) {
-            if ($OldValue != $Value) {
-                $this->RefreshScheduleObject();
-            }
-        }
     }
     //################# PRIVATE
 }
