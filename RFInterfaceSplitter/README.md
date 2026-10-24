@@ -60,7 +60,7 @@ Dieses Modul ist Bestandteil der [HomeMaticExtended-Library](../).
 
 | Eigenschaft |   Typ   | Standardwert |                 Funktion                 |
 | :---------: | :-----: | :----------: | :--------------------------------------: |
-|  Interval   | integer |      0       | Intervall in Sekunden für den Datenabruf |
+|  Interval   | integer |      60      | Intervall in Sekunden für den Datenabruf |
  
 
 ## 5. Statusvariablen

@@ -30,7 +30,7 @@ class HomeMaticRFInterfaceSplitter extends HMBase
         $this->RegisterPropertyString(\HMExtended\Device\Property::Address, \HMExtended\Device\Address::RFINTERFACE);
         $this->RegisterPropertyInteger(\HMExtended\Device\Property::Protocol, static::ProtocolId);
         $this->RegisterPropertyBoolean(\HMExtended\Device\Property::EmulateStatus, false);
-        $this->RegisterPropertyInteger(\HMExtended\Device\Property::Interval, 0);
+        $this->RegisterPropertyInteger(\HMExtended\Device\Property::Interval, 60);
         $this->RegisterTimer(\HMExtended\Device\Timer::ReadRFInterfaces, 0, 'HM_ReadRFInterfaces($_IPS[\'TARGET\']);');
     }
 

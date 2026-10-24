@@ -175,6 +175,7 @@ Version 3.75 (Test):
 * HomeMatic Dis-WM55: Neue Schaltfläche `Display-Script wiederherstellen` legt das Display-Script neu an, wenn es gelöscht wurde. Die Schaltfläche ist nur aktiv, solange das Script fehlt.
 
 **Geändertes Verhalten**
+* HomeMatic RF-Interface Splitter: Neue Instanzen haben das Intervall 60 Sekunden (bisher 0, also aus). Bestehende Instanzen behalten ihr Intervall.
 * Konfigurator: Instanzen, zu denen kein Gerät auf der CCU gefunden wurde oder die keine Adresse besitzen (Migration), werden mit einem Hinweis angezeigt. Sind Protokolle im Homematic Socket nicht aktiviert, werden diese in einer Meldung mit Schaltfläche zum Homematic Socket aufgelistet.
 * HomeMatic Dis-WM55: Die Tasten werden direkt über den Datenfluss des Homematic Sockets empfangen. Dem Display-Script wird nie die Seite 0 übergeben, die gewählte Seite bleibt bei Änderungen der Konfiguration erhalten. Lehnt die CCU eine Übertragung ab (das Display ist nach einem Tastendruck nur kurz empfangsbereit), wird sofort einmal wiederholt. Neuer Status, wenn die Adresse keinen Kanal enthält.
 * HomeMatic Dis-EP-WM55: Die Adresse mit dem Kanal 3 wird geprüft (neue Status), die Zeile der Befehle `HM_WriteValueDisplayLine` und `HM_WriteValueDisplayLineEx` wird auf 1-3 geprüft.

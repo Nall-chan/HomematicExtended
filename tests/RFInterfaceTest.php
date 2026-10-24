@@ -27,6 +27,12 @@ class RFInterfaceTest extends HomematicModuleTestCase
         $this->setInterfaces([$this->gateway('GW1', true, 3)]);
     }
 
+    public function testNewSplitterPollsEvery60Seconds(): void
+    {
+        $Id = IPS_CreateInstance(\HMExtended\GUID::RF_Interface_Splitter);
+        $this->assertSame(60, IPS_GetProperty($Id, \HMExtended\Device\Property::Interval));
+    }
+
     public function testInterfaceValuesAreStored(): void
     {
         $Interface = $this->createInterface('GW1');
