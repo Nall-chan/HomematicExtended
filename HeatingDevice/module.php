@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @copyright     2015 Michael Tröger
  * @license       Custom Non-Commercial Share-Alike License (see LICENSE)
  *
- * @version       3.74
+ * @version       3.75
  */
 require_once __DIR__ . '/../HeatingGroup/module.php';  // HMBase Klasse
 

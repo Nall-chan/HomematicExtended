@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @copyright     2015 Michael Tröger
  * @license       Custom Non-Commercial Share-Alike License (see LICENSE)
  *
- * @version       3.71
+ * @version       3.75
  */
 require_once __DIR__ . '/../libs/HMBase.php';  // HMBase Klasse
 
@@ -46,10 +46,9 @@ class HomeMaticRFInterfaceSplitter extends HMBase
         }
 
         $this->CheckConfig();
-        if ($this->GetStatus() == IS_ACTIVE)
-        {
-            $this->SetTimerInterval(\HMExtended\Device\Timer::ReadRFInterfaces, $this->ReadPropertyInteger(\HMExtended\Device\Property::Interval) * 1000);            
-            if ( $this->HasActiveParent()) {
+        if ($this->GetStatus() == IS_ACTIVE) {
+            $this->SetTimerInterval(\HMExtended\Device\Timer::ReadRFInterfaces, $this->ReadPropertyInteger(\HMExtended\Device\Property::Interval) * 1000);
+            if ($this->HasActiveParent()) {
                 @$this->ReadRFInterfaces();
             }
         } else {
@@ -59,7 +58,7 @@ class HomeMaticRFInterfaceSplitter extends HMBase
     /**
      * Interne Funktion des SDK.
      *
-     * @param type $JSONString Der IPS-Datenstring
+     * @param string $JSONString Der IPS-Datenstring
      *
      * @return string Die Antwort an den anfragenden Child
      */
@@ -80,17 +79,27 @@ class HomeMaticRFInterfaceSplitter extends HMBase
     {
         $Result = $this->GetInterfaces();
         $ret = false;
+        $Present = [];
         foreach ($Result as $ProtocolID => $Protocol) {
             if (!is_array($Protocol)) {
                 continue;
             }
             foreach ($Protocol as $InterfaceIndex => $Interface) {
                 $this->SendDebug('Proto' . $ProtocolID . ' If' . $InterfaceIndex, $Interface, 0);
+                $Present[] = $Interface['ADDRESS'] ?? '';
                 $Interface['DataID'] = \HMExtended\GUID::SendToRFInterfaceDevice;
                 $Data = json_encode($Interface);
                 $this->SendDataToChildren($Data);
                 $ret = true;
             }
+        }
+        if (count($Result) > 0) {
+            // Ein Interface, das offline ist, fehlt in der Antwort der CCU. Die Instanzen erfahren so, welche Interfaces gemeldet wurden.
+            $this->SendDataToChildren(json_encode([
+                'DataID'  => \HMExtended\GUID::SendToRFInterfaceDevice,
+                'ADDRESS' => \HMExtended\Device\Address::AllInterfaces,
+                'PRESENT' => $Present
+            ]));
         }
         return $ret;
     }
@@ -136,7 +145,7 @@ class HomeMaticRFInterfaceSplitter extends HMBase
         }
         $this->SetStatus(IS_ACTIVE);
     }
-    
+
     /**
      * Liest alle Daten der RF-Interfaces aus der CCU aus.
      *
@@ -150,11 +159,11 @@ class HomeMaticRFInterfaceSplitter extends HMBase
         }
         $ParentId = $this->ParentID;
         $Protocol = [];
-        if (IPS_GetProperty($ParentId, 'RFOpen') === true) {
-            $Protocol[] = 0;
+        if ((bool) IPS_GetProperty($ParentId, 'RFOpen')) {
+            $Protocol[] = \HMExtended\CCU::ProtocolBidCosRF;
         }
-        if (IPS_GetProperty($ParentId, 'IPOpen') === true) {
-            $Protocol[] = 2;
+        if ((bool) IPS_GetProperty($ParentId, 'IPOpen')) {
+            $Protocol[] = \HMExtended\CCU::ProtocolHmIP;
         }
 
         $data = [];
@@ -172,12 +181,12 @@ class HomeMaticRFInterfaceSplitter extends HMBase
             $ResultJSON = @$this->SendDataToParent($JSON);
             if ($ResultJSON === false) {
                 trigger_error($this->Translate('Error on read interfaces:') . $ProtocolId, E_USER_NOTICE);
-                $this->SendDebug('Error JSON', $ResultJSON, 0);
+                $this->SendDebug('Error JSON', 'false', 0);
                 continue;
             }
-            $Result = json_decode(utf8_encode($ResultJSON), true);
+            $Result = json_decode(mb_convert_encoding($ResultJSON, 'UTF-8', 'ISO-8859-1'), true);
             if (($Result === false) || is_null($Result)) {
-                $this->SendDebug('Error decode', $Result, 0);
+                $this->SendDebug('Error decode', $ResultJSON, 0);
                 trigger_error($this->Translate('Error on read interfaces:') . $ProtocolId, E_USER_NOTICE);
             } else {
                 $ret[$ProtocolId] = $Result;

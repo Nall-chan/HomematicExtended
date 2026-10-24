@@ -8,7 +8,10 @@
             "read WR-Interfaces": "WR-Interfaces auslesen",
             "Instance has no active parent instance!": "Keine aktive Parent Instanz!",
             "Error on read WR-Interface.": "Fehler beim lesen des WR-Interface",
-            "This module is free for non-commercial use,\r\nDonations in support of the author are accepted here:": "Dieses Modul ist für die nicht kommerzielle Nutzung kostenlos,\r\nSchenkungen als Unterstützung für den Autor werden hier akzeptiert:"
+            "This module is free for non-commercial use,\r\nDonations in support of the author are accepted here:": "Dieses Modul ist für die nicht kommerzielle Nutzung kostenlos,\r\nSchenkungen als Unterstützung für den Autor werden hier akzeptiert:",
+            "Error on %s": "Fehler bei %s",
+            "Invalid response from CCU.": "Ungültige Antwort der CCU.",
+            "Use of the HomeMatic Wired interface must be activated in the IO.": "Die Nutzung des HomeMatic Wired Interface muss im IO aktiviert sein."
         }
     }
 }

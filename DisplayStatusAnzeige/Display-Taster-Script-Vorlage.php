@@ -113,7 +113,8 @@ define('Color_blue', 0x85);
   Ebenso ist es möglich (z.B. durch langen und kurzen Tastendruck) zwischen UP/DOWN
   und ActionUP/ActionDOWN zu unterscheiden und so Aktionen wie das Schalten von Licht ausführen zu lassen.
 
-  Natürlich kann man auch nur kurze Tastendrücke verwenden und z.B. Kanal:2 als ActionUP und Kanal:1 als DOWN zu definieren.
+  Die beiden Tasten des Displays lösen UP (Kanal 2, kurz), DOWN (Kanal 1, kurz), ActionUP (Kanal 2, lang) und ActionDOWN (Kanal 1, lang) aus.
+  Weitere Auslöser (z.B. Tasten anderer Geräte) können in den Experteneinstellungen der Instanz einer dieser Funktionen zugeordnet werden.
 
  */
 

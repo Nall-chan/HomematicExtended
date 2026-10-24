@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @copyright     2015 Michael Tröger
  * @license       Custom Non-Commercial Share-Alike License (see LICENSE)
  *
- * @version       3.74
+ * @version       3.75
  */
 require_once __DIR__ . '/../libs/HMBase.php';  // HMBase Klasse
 
@@ -37,7 +37,8 @@ class HomeMaticProgramme extends HMBase
      */
     public function Destroy(): void
     {
-        if (!IPS_InstanceExists($this->InstanceID)) {
+        // Das Profil wird auch von den Heizungsmodulen genutzt.
+        if ((!IPS_InstanceExists($this->InstanceID)) && (!$this->ExistInstancesOf(\HMExtended\DeviceType::$HeatingGuids))) {
             $this->UnregisterProfile('Execute.HM');
         }
 
@@ -66,21 +67,6 @@ class HomeMaticProgramme extends HMBase
         $this->ReadCCUPrograms();
     }
 
-    //################# ActionHandler
-
-    /**
-     * Interne Funktion des SDK.
-     */
-    public function RequestAction(string $Ident, mixed $Value, bool &$done = false): void
-    {
-        parent::RequestAction($Ident, $Value, $done);
-        if ($done) {
-            return;
-        }
-
-        $this->StartCCUProgram($Ident);
-    }
-
     //################# PUBLIC
 
     /**
@@ -103,6 +89,21 @@ class HomeMaticProgramme extends HMBase
     public function StartProgram(string $Parameter): bool
     {
         return $this->StartCCUProgram($Parameter);
+    }
+
+    //################# ActionHandler
+
+    /**
+     * Interne Funktion des SDK.
+     */
+    protected function ProcessRequestAction(string $Ident, mixed $Value, bool &$done = false): void
+    {
+        parent::ProcessRequestAction($Ident, $Value, $done);
+        if ($done) {
+            return;
+        }
+
+        $this->StartCCUProgram($Ident);
     }
 
     //################# protected
@@ -147,13 +148,13 @@ class HomeMaticProgramme extends HMBase
         if ($ret === false) {
             return false;
         }
-        $ret = explode('<xml>', $ret);
-        $ret = explode("\r\n", array_shift($ret));
-        array_pop($ret);
-        foreach ($ret as $line) {
-            $data = explode("\t", $line);
+        // Spalten: ID des Programmes, Name
+        foreach (\HMExtended\ScriptParser::ParseTable(\HMExtended\ScriptParser::SplitOutput($ret)[0]) as $data) {
+            if ((count($data) < 2) || !ctype_digit($data[0])) {
+                continue;
+            }
             $this->SendDebug($data[0], $data[1], 0);
-            $this->MaintainVariable($data[0], $data[1], 1, 'Execute.HM', 0, true);
+            $this->MaintainVariable($data[0], $data[1], VARIABLETYPE_INTEGER, 'Execute.HM', 0, true);
             $this->EnableAction($data[0]);
         }
         return true;
@@ -170,6 +171,11 @@ class HomeMaticProgramme extends HMBase
      */
     private function StartCCUProgram(string $Ident): bool
     {
+        // Der Ident ist die ID des Programmes und wird in das HM-Script eingesetzt.
+        if (!ctype_digit($Ident)) {
+            trigger_error($this->Translate('Invalid Ident.'), E_USER_NOTICE);
+            return false;
+        }
         $HMScript = 'State=dom.GetObject(' . $Ident . ').ProgramExecute();';
 
         $HMScriptResult = $this->LoadHMScript($HMScript);
@@ -185,6 +191,8 @@ class HomeMaticProgramme extends HMBase
             $this->SetValue($Ident, 0);
             return true;
         }
+        trigger_error($this->Translate('Error on start program.'), E_USER_NOTICE);
+        return false;
     }
 }
 

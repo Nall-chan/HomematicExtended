@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @copyright     2015 Michael Tröger
  * @license       Custom Non-Commercial Share-Alike License (see LICENSE)
  *
- * @version       3.74
+ * @version       3.75
  */
 require_once __DIR__ . '/../libs/HMBase.php';  // HMBase Klasse
 
@@ -145,44 +145,6 @@ class HomeMaticSystemvariablen extends HMBase
         }
 
         $this->ReadSysVars();
-    }
-
-    //################# ActionHandler
-
-    /**
-     * Interne Funktion des SDK.
-     */
-    public function RequestAction(string $Ident, mixed $Value, bool &$done = false): void
-    {
-        parent::RequestAction($Ident, $Value, $done);
-        if ($done) {
-            return;
-        }
-        if (strpos($Ident, 'AlDP') !== false) {
-            if ((bool) $Value === false) {
-                $this->AlarmReceipt($Ident);
-            }
-            return;
-        }
-        $VarID = @$this->GetIDForIdent($Ident);
-        if ($VarID === false) {
-            trigger_error(sprintf($this->Translate('Ident %s do not exist.'), (string) $Ident), E_USER_NOTICE);
-            return;
-        }
-        switch (IPS_GetVariable($VarID)['VariableType']) {
-            case VARIABLETYPE_BOOLEAN:
-                $this->WriteValueBoolean($Ident, (bool) $Value);
-                break;
-            case VARIABLETYPE_INTEGER:
-                $this->WriteValueInteger($Ident, (int) $Value);
-                break;
-            case VARIABLETYPE_FLOAT:
-                $this->WriteValueFloat($Ident, (float) $Value);
-                break;
-            case VARIABLETYPE_STRING:
-                $this->WriteValueString($Ident, (string) $Value);
-                break;
-        }
     }
 
     //################# Datenaustausch
@@ -469,6 +431,44 @@ class HomeMaticSystemvariablen extends HMBase
 
         trigger_error($this->Translate('Error on write Data ') . $Parameter, E_USER_NOTICE);
         return false;
+    }
+
+    //################# ActionHandler
+
+    /**
+     * Interne Funktion des SDK.
+     */
+    protected function ProcessRequestAction(string $Ident, mixed $Value, bool &$done = false): void
+    {
+        parent::ProcessRequestAction($Ident, $Value, $done);
+        if ($done) {
+            return;
+        }
+        if (strpos($Ident, 'AlDP') !== false) {
+            if ((bool) $Value === false) {
+                $this->AlarmReceipt($Ident);
+            }
+            return;
+        }
+        $VarID = @$this->GetIDForIdent($Ident);
+        if ($VarID === false) {
+            trigger_error(sprintf($this->Translate('Ident %s do not exist.'), (string) $Ident), E_USER_NOTICE);
+            return;
+        }
+        switch (IPS_GetVariable($VarID)['VariableType']) {
+            case VARIABLETYPE_BOOLEAN:
+                $this->WriteValueBoolean($Ident, (bool) $Value);
+                break;
+            case VARIABLETYPE_INTEGER:
+                $this->WriteValueInteger($Ident, (int) $Value);
+                break;
+            case VARIABLETYPE_FLOAT:
+                $this->WriteValueFloat($Ident, (float) $Value);
+                break;
+            case VARIABLETYPE_STRING:
+                $this->WriteValueString($Ident, (string) $Value);
+                break;
+        }
     }
 
     //################# protected

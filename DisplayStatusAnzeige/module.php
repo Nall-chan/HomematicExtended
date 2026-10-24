@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @copyright     2015 Michael Tröger
  * @license       Custom Non-Commercial Share-Alike License (see LICENSE)
  *
- * @version       3.74
+ * @version       3.75
  */
 require_once __DIR__ . '/../libs/HMBase.php';  // HMBase Klasse
 
@@ -19,23 +19,53 @@ require_once __DIR__ . '/../libs/HMBase.php';  // HMBase Klasse
  * HomeMaticDisWM55 ist die Klasse für das IPS-Modul 'HomeMatic Dis-WM55'.
  * Erweitert HMBase.
  *
- * @property int $Page Die aktuelle Seite.
- * @property array $HMEventData [self::$PropertysName]
- * ['HMDeviceAddress'] => string $HMDeviceAddress Die Geräte-Adresse des Trigger.
- * ['HMDeviceDatapoint'] => string $HMDeviceDatapoint  Der zu überwachende Datenpunkt vom $HMDeviceAddress
- * @property array $Events [self::$PropertysName]  Die IPS-ID der Variable des Datenpunkt welcher eine Aktualisierung auslöst.
+ * Die Tasten des Displays (Kanal :1 und :2 der Geräteadresse) werden direkt über den Datenfluss des Homematic Sockets empfangen.
+ * Die Ausgabe (SUBMIT) geht immer an die konfigurierte Adresse (inklusive Kanal).
+ * Zusätzliche Auslöser (Variablen fremder Instanzen) können in den Experteneinstellungen eingetragen werden.
+ *
+ * @property int $Page Die aktuelle Seite (0 = noch keine Seite gewählt, sonst 1 bis MaxPage).
+ * @property array $Triggers Auslöser: Schlüssel 'Adresse|Datenpunkt' => ['Action' => int, 'Target' => string].
+ * @property int[] $ExpertVariables IDs der Variablen aus den Experteneinstellungen (für VM_DELETE).
  */
 class HomeMaticDisWM55 extends HMBase
 {
-    private static $EmptyHMEventData = [
-        'HMDeviceAddress'   => '',
-        'HMDeviceDatapoint' => ''
-    ];
-    private static $PropertysName = [
-        'PageUpID'     => 0,
-        'PageDownID'   => 0,
-        'ActionUpID'   => 0,
-        'ActionDownID' => 0
+    // Aktionen
+    public const ActionPageUp = 0;
+    public const ActionPageDown = 1;
+    public const ActionUp = 2;
+    public const ActionDown = 3;
+
+    private const PropertyMaxPage = 'MaxPage';
+    private const PropertyTimeout = 'Timeout';
+    private const PropertyScriptID = 'ScriptID';
+    private const PropertyExpertTriggers = 'ExpertTriggers';
+    private const TimerTimeout = 'DisplayTimeout';
+    private const ScriptIdent = 'DisplayScript';
+    private const ButtonRestoreScript = 'RestoreScript';
+    private const ActionRestoreScript = 'RestoreDisplayScript';
+    private const PressShort = 'PRESS_SHORT';
+    private const PressLong = 'PRESS_LONG';
+    private const Placeholder = 'XXX';
+    private const SubmitAttempts = 2; // erster Versuch und genau eine Wiederholung ohne Pause
+
+    // Status
+    private const StatusNoAddress = IS_INACTIVE;
+    private const StatusInvalidTrigger = IS_EBASE + 2;
+    private const StatusNoScript = IS_EBASE + 3;
+    private const StatusTimeout = IS_EBASE + 4;
+    private const StatusMaxPage = IS_EBASE + 5;
+    private const StatusNoChannel = IS_EBASE + 6;
+
+    /**
+     * Wert für $_IPS['ACTION'] im Display-Script.
+     *
+     * @var string[]
+     */
+    private static array $ActionNames = [
+        self::ActionPageUp   => 'UP',
+        self::ActionPageDown => 'DOWN',
+        self::ActionUp       => 'ActionUP',
+        self::ActionDown     => 'ActionDOWN'
     ];
 
     /**
@@ -44,34 +74,102 @@ class HomeMaticDisWM55 extends HMBase
     public function Create(): void
     {
         parent::Create();
-
-        $this->RegisterHMPropertys('XXX9999995');
+        // Adresse (Gerät mit Kanal, an diese Adresse wird ausgegeben) und Protokoll. Der Platzhalter verhindert Fehler im Symcon Homematic Konfigurator.
+        $this->RegisterHMPropertys(self::Placeholder . '9999995');
         $this->RegisterPropertyBoolean(\HMExtended\Device\Property::EmulateStatus, false);
-        $this->RegisterPropertyInteger('PageUpID', 0);
-        $this->RegisterPropertyInteger('PageDownID', 0);
-        $this->RegisterPropertyInteger('ActionUpID', 0);
-        $this->RegisterPropertyInteger('ActionDownID', 0);
-        $this->RegisterPropertyInteger('MaxPage', 1);
-        $this->RegisterPropertyInteger('Timeout', 0);
+        $this->RegisterPropertyInteger(self::PropertyMaxPage, 1);
+        $this->RegisterPropertyInteger(self::PropertyTimeout, 0);
+        $this->RegisterPropertyString(self::PropertyExpertTriggers, '[]');
 
-        $ID = @$this->GetIDForIdent('DisplayScript');
-        if ($ID === false) {
-            $ID = $this->RegisterScript('DisplayScript', 'Display Script', $this->CreateDisplayScript(), -1);
+        $ID = $this->FindIDForIdent(self::ScriptIdent);
+        if ($ID == 0) {
+            $this->RegisterScript(self::ScriptIdent, 'Display Script', $this->CreateDisplayScript(), -1);
+            $ID = $this->FindIDForIdent(self::ScriptIdent);
             IPS_SetHidden($ID, true);
         }
-        $this->RegisterPropertyInteger('ScriptID', $ID);
+        $this->RegisterPropertyInteger(self::PropertyScriptID, $ID);
 
         $this->UnregisterVariable('PAGE');
         $this->Page = 0;
-        $this->Events = self::$PropertysName;
-        $this->HMEventData = [
-            'PageUpID'     => self::$EmptyHMEventData,
-            'PageDownID'   => self::$EmptyHMEventData,
-            'ActionUpID'   => self::$EmptyHMEventData,
-            'ActionDownID' => self::$EmptyHMEventData
-        ];
+        $this->Triggers = [];
+        $this->ExpertVariables = [];
+        $this->RegisterTimer(self::TimerTimeout, 0, 'HM_ResetTimer($_IPS[\'TARGET\']);');
+    }
 
-        $this->RegisterTimer('DisplayTimeout', 0, 'HM_ResetTimer($_IPS[\'TARGET\']);');
+    /**
+     * Interne Funktion des SDK.
+     * Übernimmt die Adresse und Zusatzauslöser aus den alten Eigenschaften (PageUpID, PageDownID, ActionUpID, ActionDownID).
+     * Auslöser des gleichen Gerätes mit Standardzuordnung entfallen, alle anderen kommen in die Experteneinstellungen.
+     */
+    public function Migrate(string $JSONData): string
+    {
+        $Data = json_decode($JSONData);
+        if (!is_object($Data) || !property_exists($Data, 'configuration')) {
+            return $JSONData;
+        }
+        $Old = [
+            'PageUpID'     => [self::ActionPageUp, self::PressShort, ':2'],
+            'PageDownID'   => [self::ActionPageDown, self::PressShort, ':1'],
+            'ActionUpID'   => [self::ActionUp, self::PressLong, ':2'],
+            'ActionDownID' => [self::ActionDown, self::PressLong, ':1']
+        ];
+        // Sind die alten Einstellungen nicht mehr vorhanden (bereits migriert oder neue Instanz), gibt es nichts zu übernehmen.
+        if (!array_intersect(array_keys($Old), array_keys(get_object_vars($Data->configuration)))) {
+            return $JSONData;
+        }
+        $Entries = [];
+        foreach ($Old as $Property => $Default) {
+            if (!property_exists($Data->configuration, $Property)) {
+                continue;
+            }
+            $VariableId = (int) $Data->configuration->{$Property};
+            if (($VariableId <= 0) || (!IPS_VariableExists($VariableId))) {
+                continue;
+            }
+            $Source = $this->GetTriggerSource($VariableId);
+            if ($Source === false) {
+                $Entries[] = [$VariableId, $Default, '', '', 0];
+                continue;
+            }
+            $Entries[] = [$VariableId, $Default, $Source['Address'], $Source['Datapoint'], $Source['Protocol']];
+        }
+        $Address = '';
+        $Expert = [];
+        foreach ($Entries as $Entry) {
+            if ($Entry[2] != '') {
+                $Address = $Entry[2];
+                $Data->configuration->{\HMExtended\Device\Property::Protocol} = $Entry[4];
+                break;
+            }
+        }
+        foreach ($Entries as [$VariableId, $Default, $EntryAddress, $Datapoint]) {
+            $IsStandard = ($Address != '') && ($EntryAddress == $this->GetBaseAddress($Address) . $Default[2]) && ($Datapoint == $Default[1]);
+            if (!$IsStandard) {
+                $Expert[] = ['VariableID' => $VariableId, 'Action' => $Default[0]];
+            }
+        }
+        if ($Address != '') {
+            $Data->configuration->{\HMExtended\Device\Property::Address} = $Address;
+        }
+        $Data->configuration->{self::PropertyExpertTriggers} = json_encode($Expert);
+        $this->SendDebug('Migrate', json_encode($Data), 0);
+        $this->LogMessage('Migrated settings:' . json_encode($Data->configuration), KL_MESSAGE);
+        return json_encode($Data);
+    }
+
+    /**
+     * Interne Funktion des SDK.
+     * Die Schaltfläche zum Wiederherstellen des Display-Scriptes ist nur aktiv, solange das Script fehlt.
+     */
+    public function GetConfigurationForm(): string
+    {
+        $Form = json_decode(file_get_contents(__DIR__ . '/form.json'), true);
+        foreach ($Form['actions'] as &$Action) {
+            if (($Action['name'] ?? '') == self::ButtonRestoreScript) {
+                $Action['enabled'] = ($this->FindIDForIdent(self::ScriptIdent) == 0);
+            }
+        }
+        return json_encode($Form);
     }
 
     /**
@@ -85,22 +183,10 @@ class HomeMaticDisWM55 extends HMBase
     public function MessageSink(int $TimeStamp, int $SenderID, int $Message, array $Data): void
     {
         parent::MessageSink($TimeStamp, $SenderID, $Message, $Data);
-        switch ($Message) {
-            case VM_DELETE:
-                $this->UnregisterMessage($SenderID, VM_DELETE);
-                $this->UnregisterReference($SenderID);
-                foreach (array_keys(self::$PropertysName) as $Name) {
-                    if ($SenderID == $this->ReadPropertyInteger($Name)) {
-                        $Events = $this->Events;
-                        $Events[$Name] = 0;
-                        $this->Events = $Events;
-                        $HMEventData = $this->HMEventData;
-                        $HMEventData[$Name] = self::$EmptyHMEventData;
-                        $this->HMEventData = $HMEventData;
-                        $this->SetNewConfig();
-                    }
-                }
-                break;
+        if ($Message == VM_DELETE) {
+            $this->UnregisterMessage($SenderID, VM_DELETE);
+            $this->UnregisterReference($SenderID);
+            $this->ApplyChanges();
         }
     }
 
@@ -109,7 +195,25 @@ class HomeMaticDisWM55 extends HMBase
      */
     public function ApplyChanges(): void
     {
+        $this->Triggers = [];
+        foreach ($this->ExpertVariables as $VariableId) {
+            $this->UnregisterMessage($VariableId, VM_DELETE);
+        }
+        foreach ($this->GetReferenceList() as $ReferenceId) {
+            $this->UnregisterReference($ReferenceId);
+        }
+        $this->ExpertVariables = [];
         parent::ApplyChanges();
+        $this->SetReceiveDataFilter('.*9999999999.*');
+        $this->SetSummary('');
+        // Die Konsole warnt beim Löschen des Display-Scriptes.
+        $ScriptID = $this->ReadPropertyInteger(self::PropertyScriptID);
+        if ($ScriptID > 0) {
+            $this->RegisterReference($ScriptID);
+        }
+        if (IPS_GetKernelRunlevel() != KR_READY) {
+            return;
+        }
         $this->SetNewConfig();
     }
 
@@ -120,16 +224,16 @@ class HomeMaticDisWM55 extends HMBase
      */
     public function ReceiveData(string $JSONString): string
     {
-        $Data = json_decode($JSONString);
-        unset($Data->DataID);
-        unset($Data->VariableValue);
-        $this->SendDebug('Receive', $Data, 0);
-        $ReceiveData = ['HMDeviceAddress' => (string) $Data->DeviceID, 'HMDeviceDatapoint' => (string) $Data->VariableName];
-        $Action = array_search($ReceiveData, $this->HMEventData);
-        if ($Action === false) {
+        $Data = json_decode($JSONString, true);
+        if (!is_array($Data) || !isset($Data['DeviceID'], $Data['VariableName'])) {
             return '';
         }
-        $this->RunDisplayScript($Action);
+        $this->SendDebug('Receive', $Data['DeviceID'] . ' ' . $Data['VariableName'], 0);
+        $Trigger = $this->Triggers[$Data['DeviceID'] . '|' . $Data['VariableName']] ?? false;
+        if ($Trigger === false) {
+            return '';
+        }
+        $this->RunDisplayScript($Trigger['Action'], $Trigger['Target']);
         return '';
     }
 
@@ -139,7 +243,24 @@ class HomeMaticDisWM55 extends HMBase
     public function ResetTimer(): void
     {
         $this->Page = 0;
-        $this->SetTimerInterval('DisplayTimeout', 0);
+        $this->SetTimerInterval(self::TimerTimeout, 0);
+    }
+
+    /**
+     * Verarbeitet Bedienaktionen (aufgerufen von RequestAction der Basisklasse).
+     *
+     * @param string $Ident Ident der Aktion, `RestoreDisplayScript` legt das Display-Script neu an.
+     * @param mixed  $Value Der Wert.
+     * @param bool   $done  Wird true, wenn die Aktion verarbeitet wurde.
+     */
+    protected function ProcessRequestAction(string $Ident, mixed $Value, bool &$done = false): void
+    {
+        if ($Ident == self::ActionRestoreScript) {
+            $this->RestoreDisplayScript();
+            $done = true;
+            return;
+        }
+        parent::ProcessRequestAction($Ident, $Value, $done);
     }
 
     //################# protected
@@ -162,212 +283,30 @@ class HomeMaticDisWM55 extends HMBase
             $this->ApplyChanges();
         }
     }
-    //################# PRIVATE
 
     /**
-     * Überführt die Config in die Filter.
-     */
-    private function SetNewConfig(): void
-    {
-        if (IPS_GetKernelRunlevel() == KR_READY) {
-            if ($this->CheckConfig()) {
-                $Lines = [];
-                $Events = $this->Events;
-                foreach ($this->HMEventData as $Event => $Trigger) {
-                    if ($Events[$Event] != 0) {
-                        $Lines[] = '.*"DeviceID":"' . $Trigger['HMDeviceAddress'] . '","VariableName":"' . $Trigger['HMDeviceDatapoint'] . '".*';
-                    }
-                }
-                $Line = implode('|', $Lines);
-                $this->SetReceiveDataFilter('(' . $Line . ')');
-                $this->SetSummary($Trigger['HMDeviceAddress']);
-                return;
-            }
-        }
-        $this->HMEventData = [
-            'PageUpID'     => self::$EmptyHMEventData,
-            'PageDownID'   => self::$EmptyHMEventData,
-            'ActionUpID'   => self::$EmptyHMEventData,
-            'ActionDownID' => self::$EmptyHMEventData
-        ];
-        $this->Page = 0;
-        $this->SetReceiveDataFilter('.*9999999999.*');
-        $this->SetSummary('');
-    }
-
-    /**
-     * Prüft die Konfiguration und setzt den Status der Instanz.
+     * Konvertiert die Daten in ein für das Display benötigtes Format.
      *
-     * @return bool True wenn Konfig ok, sonst false.
-     */
-    private function CheckConfig(): bool
-    {
-        $Result = true;
-        $OldHMEventDatas = $this->HMEventData;
-        $OldEvents = $this->Events;
-        $Events = [];
-        foreach (array_keys(self::$PropertysName) as $Name) {
-            $Event = $this->ReadPropertyInteger($Name);
-            if ($Event != $OldEvents[$Name]) {
-                if ($OldEvents[$Name] > 0) {
-                    $this->UnregisterMessage($OldEvents[$Name], VM_DELETE);
-                    $this->UnregisterReference($OldEvents[$Name]);
-                    $OldEvents[$Name] = 0;
-                }
-
-                if ($Event > 0) {
-                    if (in_array($Event, $Events)) { //doppelt ?
-                        $OldHMEventDatas[$Name] = self::$EmptyHMEventData;
-                        $OldEvents[$Name] = 0;
-                        $Result = false;
-                        continue;
-                    }
-                    $HMEventData = $this->GetDisplayAddress($Event);
-                    if ($HMEventData === false) {
-                        $OldHMEventDatas[$Name] = self::$EmptyHMEventData;
-                        $OldEvents[$Name] = 0;
-                        $Result = false;
-                        continue;
-                    }
-                    $OldHMEventDatas[$Name] = $HMEventData;
-                    $OldEvents[$Name] = $Event;
-                    $this->RegisterMessage($Event, VM_DELETE);
-                    $this->RegisterReference($Event);
-                }
-            }
-            if ($Event > 0) {
-                $Events[] = $Event;
-            }
-        }
-
-        $this->HMEventData = $OldHMEventDatas;
-        $this->Events = $OldEvents;
-
-        if ($Result === false) {
-            $this->SetStatus(IS_EBASE + 2);
-            return false;
-        }
-
-        if (count($Events) == 0) {
-            $this->SetStatus(IS_INACTIVE);
-            return false;
-        }
-
-        if ($this->ReadPropertyInteger('ScriptID') == 0) {
-            $this->SetStatus(IS_EBASE + 3);
-            return false;
-        }
-
-        if ($this->ReadPropertyInteger('Timeout') < 0) {
-            $this->SetStatus(IS_EBASE + 4);
-            return false;
-        }
-
-        if ($this->ReadPropertyInteger('MaxPage') < 0) {
-            $this->SetStatus(IS_EBASE + 5);
-            return false;
-        }
-
-        $this->SetStatus(IS_ACTIVE);
-        return true;
-    }
-
-    /**
-     * Prüft und holt alle Daten zu den Quell-Variablen und Instanzen.
-     *
-     * @param int $EventID IPD-VarID des Datenpunktes, welcher als Event dient.
-     *
-     * @return array|bool Array mit den Daten zum Datenpunkt. False im Fehlerfall.
-     */
-    private function GetDisplayAddress(int $EventID): false|array
-    {
-        if (!IPS_VariableExists($EventID)) {
-            return false;
-        }
-        $parent = IPS_GetParent($EventID);
-        if (IPS_GetInstance($parent)['ModuleInfo']['ModuleID'] != \HMExtended\GUID::HmDevice) {
-            return false;
-        }
-        return [
-            'HMDeviceAddress'   => IPS_GetProperty($parent, \HMExtended\Device\Property::Address),
-            'HMDeviceDatapoint' => IPS_GetObject($EventID)['ObjectIdent']
-        ];
-    }
-
-    /**
-     * Führt das User-Script aus und überträgt das Ergebnis an die CCU.
-     *
-     * @param string $Action Die auszuführende Aktion.
-     *
-     * @throws Exception Wenn CCU nicht erreicht wurde.
-     */
-    private function RunDisplayScript(string $Action): void
-    {
-        $Page = $this->Page;
-        $MaxPage = $this->ReadPropertyInteger('MaxPage');
-        switch ($Action) {
-            case 'PageUpID':
-                $Page = ($Page == $MaxPage ? 1 : $Page + 1);
-                $ActionString = 'UP';
-                $this->Page = $Page;
-                break;
-            case 'PageDownID':
-                $Page = ($Page <= 1 ? $MaxPage : $Page - 1);
-                $ActionString = 'DOWN';
-                $this->Page = $Page;
-                break;
-            case 'ActionUpID':
-                $ActionString = 'ActionUP';
-                break;
-            case 'ActionDownID':
-                $ActionString = 'ActionDOWN';
-                break;
-        }
-        $this->SendDebug('Action', $ActionString, 0);
-        $ScriptID = $this->ReadPropertyInteger('ScriptID');
-        if ($ScriptID != 0) {
-            $Result = IPS_RunScriptWaitEx($ScriptID, ['SENDER' => 'HMDisWM55', 'ACTION' => $ActionString, 'PAGE' => $Page, 'EVENT' => $this->InstanceID]);
-            $ResultData = json_decode($Result);
-            if (is_null($ResultData)) {
-                throw new Exception('Error in display-script.', E_USER_NOTICE);
-            }
-            $this->SendDebug('DisplayScript', $ResultData, 0);
-            $Data = $this->ConvertDisplayData($ResultData);
-            $HMScript = 'string DisplayKeySubmit;' . PHP_EOL;
-            $HMScript .= 'DisplayKeySubmit=dom.GetObject("BidCos-RF.' . (string) $this->HMEventData[$Action]['HMDeviceAddress'] . '.SUBMIT").ID();' . PHP_EOL;
-            $HMScript .= 'State=dom.GetObject(DisplayKeySubmit).State("' . $Data . '");' . PHP_EOL;
-
-            $this->LoadHMScript($HMScript);
-        }
-        $Timeout = $this->ReadPropertyInteger('Timeout');
-        if ($Timeout > 0) {
-            $this->SetTimerInterval('DisplayTimeout', 0);
-            $this->SetTimerInterval('DisplayTimeout', $Timeout * 1000);
-        }
-    }
-
-    /**
-     * Konvertiert die Daten in ein für das Display benötigte Format.
-     *
-     * @param object[] $Data Enthält die Daten für das Display
+     * @param array $Data Enthält die Daten für das Display (je Zeile 'Text', 'Icon', 'Color').
      *
      * @return string Die konvertierten Daten als String.
      */
-    private function ConvertDisplayData(array $Data): string
+    protected function ConvertDisplayData(array $Data): string
     {
         $SendData = '0x02';
         foreach ($Data as $Line) {
-            if ((string) $Line->Text != '') {
+            $Text = (string) ($Line['Text'] ?? '');
+            if ($Text != '') {
                 $SendData .= ',0x12';
-                for ($i = 0; $i < strlen((string) $Line->Text); $i++) {
-                    $SendData .= ',0x' . dechex(ord((string) $Line->Text[$i]));
+                for ($i = 0; $i < strlen($Text); $i++) {
+                    $SendData .= ',0x' . dechex(ord($Text[$i]));
                 }
                 $SendData .= ',0x11';
-                $SendData .= ',0x' . dechex((int) $Line->Color);
+                $SendData .= ',0x' . dechex((int) ($Line['Color'] ?? 0));
             }
-            if ((int) $Line->Icon != 0) {
+            if ((int) ($Line['Icon'] ?? 0) != 0) {
                 $SendData .= ',0x13';
-                $SendData .= ',0x' . dechex((int) $Line->Icon);
+                $SendData .= ',0x' . dechex((int) $Line['Icon']);
             }
             $SendData .= ',0x0A';
         }
@@ -376,9 +315,253 @@ class HomeMaticDisWM55 extends HMBase
     }
 
     /**
-     * Liefert das Script welches im Objektbaum als Vorlage für das DisplayScript angelegt wird.
+     * Überträgt die Daten per HM-Script an das SUBMIT des Displays.
+     * Lehnt die CCU die Übertragung ab (State false, das Display ist nur kurz empfangsbereit), wird einmal sofort erneut gesendet.
      *
-     * @param type $ID Die IPS-ID des HM_OLED Scripts mit den Konstanten für das Display-Script.
+     * @param string $Datapoint Der Datenpunkt SUBMIT mit Interface und Adresse, z.B. 'BidCos-RF.NEQ1234567:1.SUBMIT'.
+     * @param string $Data      Die konvertierten Display-Daten.
+     */
+    private function SendSubmit(string $Datapoint, string $Data): void
+    {
+        $HMScript = 'string DisplayKeySubmit;' . PHP_EOL;
+        $HMScript .= 'DisplayKeySubmit=dom.GetObject("' . $Datapoint . '").ID();' . PHP_EOL;
+        $HMScript .= 'State=dom.GetObject(DisplayKeySubmit).State("' . $Data . '");' . PHP_EOL;
+        for ($Attempt = 1; $Attempt <= self::SubmitAttempts; $Attempt++) {
+            $Result = $this->LoadHMScript($HMScript);
+            if ($Result === false) {
+                return;
+            }
+            $Xml = $this->GetScriptXML($Result);
+            if (($Xml === false) || ((string) $Xml->State != 'false')) {
+                return;
+            }
+            $this->SendDebug('Submit rejected by CCU', 'Attempt ' . $Attempt . ' of ' . self::SubmitAttempts, 0);
+        }
+        $this->SendDebug('Submit failed', $Datapoint, 0);
+    }
+    //################# PRIVATE
+
+    /**
+     * Liefert die Geräte-Adresse ohne Kanal.
+     */
+    private function GetBaseAddress(string $Address): string
+    {
+        $Pos = strpos($Address, ':');
+        return ($Pos === false) ? $Address : substr($Address, 0, $Pos);
+    }
+
+    /**
+     * Maskiert Sonderzeichen für den Filter des Datenflusses. Doppelpunkt und Bindestrich bleiben unmaskiert.
+     */
+    private function QuoteFilter(string $Text): string
+    {
+        return str_replace(['\:', '\-'], [':', '-'], preg_quote($Text, '/'));
+    }
+
+    /**
+     * Prüft die Konfiguration, baut die Auslöser auf und setzt den Filter für den Datenfluss.
+     */
+    private function SetNewConfig(): void
+    {
+        $Status = $this->CheckConfig();
+        $this->SetStatus($Status);
+        if ($Status != IS_ACTIVE) {
+            $this->Page = 0;
+            $this->Triggers = [];
+            $this->SetReceiveDataFilter('.*9999999999.*');
+            return;
+        }
+        $Triggers = $this->BuildTriggers();
+        if ($Triggers === false) {
+            $this->SetStatus(self::StatusInvalidTrigger);
+            $this->Page = 0;
+            $this->Triggers = [];
+            $this->SetReceiveDataFilter('.*9999999999.*');
+            return;
+        }
+        $Lines = [];
+        foreach (array_keys($Triggers) as $Key) {
+            [$DeviceId, $Datapoint] = explode('|', $Key);
+            $Lines[] = '.*"DeviceID":"' . $this->QuoteFilter($DeviceId) . '","VariableName":"' . $this->QuoteFilter($Datapoint) . '".*';
+        }
+        $this->Triggers = $Triggers;
+        $this->SetReceiveDataFilter('(' . implode('|', $Lines) . ')');
+        $this->SetSummary($this->ReadPropertyString(\HMExtended\Device\Property::Address));
+    }
+
+    /**
+     * Prüft die Konfiguration.
+     *
+     * @return int Status der Instanz.
+     */
+    private function CheckConfig(): int
+    {
+        $Address = $this->ReadPropertyString(\HMExtended\Device\Property::Address);
+        if (($Address == '') || str_starts_with($Address, self::Placeholder)) {
+            return self::StatusNoAddress;
+        }
+        if (!str_contains($Address, ':')) {
+            return self::StatusNoChannel;
+        }
+        if ($this->ReadPropertyInteger(self::PropertyScriptID) == 0) {
+            return self::StatusNoScript;
+        }
+        if ($this->ReadPropertyInteger(self::PropertyTimeout) < 0) {
+            return self::StatusTimeout;
+        }
+        if ($this->ReadPropertyInteger(self::PropertyMaxPage) < 1) {
+            return self::StatusMaxPage;
+        }
+        return IS_ACTIVE;
+    }
+
+    /**
+     * Liefert die Auslöser der Experteneinstellungen.
+     *
+     * @return array<int, array{VariableID: int, Action: int}>
+     */
+    private function GetExpertTriggers(): array
+    {
+        $List = json_decode($this->ReadPropertyString(self::PropertyExpertTriggers), true);
+        if (!is_array($List)) {
+            return [];
+        }
+        return array_values(array_filter($List, function ($Entry)
+        {
+            return is_array($Entry) && isset($Entry['VariableID'], $Entry['Action']) && ((int) $Entry['VariableID'] > 0);
+        }));
+    }
+
+    /**
+     * Baut die Tabelle der Auslöser auf.
+     *
+     * @return array|false Array 'Adresse|Datenpunkt' => ['Action', 'Target'], false bei ungültigem Auslöser.
+     */
+    private function BuildTriggers(): array|false
+    {
+        $Triggers = [];
+        $Target = $this->ReadPropertyString(\HMExtended\Device\Property::Address);
+        $Base = $this->GetBaseAddress($Target);
+        $Standard = [
+            [':2', self::PressShort, self::ActionPageUp],
+            [':1', self::PressShort, self::ActionPageDown],
+            [':2', self::PressLong, self::ActionUp],
+            [':1', self::PressLong, self::ActionDown]
+        ];
+        foreach ($Standard as [$Channel, $Datapoint, $Action]) {
+            $Triggers[$Base . $Channel . '|' . $Datapoint] = ['Action' => $Action, 'Target' => $Target];
+        }
+        $ExpertVariables = [];
+        foreach ($this->GetExpertTriggers() as $Entry) {
+            $VariableId = (int) $Entry['VariableID'];
+            $Action = (int) $Entry['Action'];
+            $Source = $this->GetTriggerSource($VariableId);
+            if (($Source === false) || (!array_key_exists($Action, self::$ActionNames))) {
+                return false;
+            }
+            $Triggers[$Source['Address'] . '|' . $Source['Datapoint']] = ['Action' => $Action, 'Target' => $Target];
+            $ExpertVariables[] = $VariableId;
+            $this->RegisterMessage($VariableId, VM_DELETE);
+            $this->RegisterReference($VariableId);
+        }
+        $this->ExpertVariables = $ExpertVariables;
+        return $Triggers;
+    }
+
+    /**
+     * Ermittelt Adresse, Datenpunkt und Protokoll einer Variable einer Homematic-Geräteinstanz.
+     *
+     * @param int $VariableId IPS-VarID des Datenpunktes, welcher als Auslöser dient.
+     *
+     * @return array|false Array mit 'Address', 'Datapoint' und 'Protocol'. False im Fehlerfall.
+     */
+    private function GetTriggerSource(int $VariableId): false|array
+    {
+        if (!IPS_VariableExists($VariableId)) {
+            return false;
+        }
+        $Parent = IPS_GetParent($VariableId);
+        if (!IPS_InstanceExists($Parent) || (IPS_GetInstance($Parent)['ModuleInfo']['ModuleID'] != \HMExtended\GUID::HmDevice)) {
+            return false;
+        }
+        return [
+            'Address'   => IPS_GetProperty($Parent, \HMExtended\Device\Property::Address),
+            'Datapoint' => IPS_GetObject($VariableId)['ObjectIdent'],
+            'Protocol'  => IPS_GetProperty($Parent, \HMExtended\Device\Property::Protocol)
+        ];
+    }
+
+    /**
+     * Führt das User-Script aus und überträgt das Ergebnis an die CCU.
+     *
+     * @param int    $Action Die auszuführende Aktion (self::Action...).
+     * @param string $Target Die konfigurierte Adresse (mit Kanal) des Displays, an die das Ergebnis gesendet wird.
+     */
+    private function RunDisplayScript(int $Action, string $Target): void
+    {
+        $Page = $this->Page;
+        $MaxPage = $this->ReadPropertyInteger(self::PropertyMaxPage);
+        switch ($Action) {
+            case self::ActionPageUp: // Seite hoch = zurück blättern
+                $Page = ($Page <= 1 ? $MaxPage : $Page - 1);
+                $this->Page = $Page;
+                break;
+            case self::ActionPageDown: // Seite runter = weiter blättern
+                $Page = ($Page >= $MaxPage ? 1 : $Page + 1);
+                $this->Page = $Page;
+                break;
+            case self::ActionUp:
+            case self::ActionDown:
+                break;
+            default:
+                return;
+        }
+        $ActionString = self::$ActionNames[$Action];
+        $this->SendDebug('Action', $ActionString, 0);
+        $ScriptID = $this->ReadPropertyInteger(self::PropertyScriptID);
+        if ($ScriptID != 0) {
+            // Dem Script wird nie Seite 0 übergeben (0 = Ruhezustand, das Display zeigt dann Seite 1).
+            $Result = IPS_RunScriptWaitEx($ScriptID, ['SENDER' => 'HMDisWM55', 'ACTION' => $ActionString, 'PAGE' => max(1, $Page), 'EVENT' => $this->InstanceID]);
+            $ResultData = json_decode($Result, true);
+            if (!is_array($ResultData)) {
+                trigger_error($this->Translate('Error in display-script.'), E_USER_NOTICE);
+                return;
+            }
+            $this->SendDebug('DisplayScript', $ResultData, 0);
+            $Data = $this->ConvertDisplayData($ResultData);
+            $Interface = \HMExtended\CCU::$Interfaces[$this->ReadPropertyInteger(\HMExtended\Device\Property::Protocol)];
+            $this->SendSubmit($Interface . '.' . $Target . '.SUBMIT', $Data);
+        }
+        $Timeout = $this->ReadPropertyInteger(self::PropertyTimeout);
+        if ($Timeout > 0) {
+            $this->SetTimerInterval(self::TimerTimeout, 0);
+            $this->SetTimerInterval(self::TimerTimeout, $Timeout * 1000);
+        }
+    }
+
+    /**
+     * Legt das Display-Script mit der Vorlage neu an, wenn es gelöscht wurde, und trägt es in die Instanz ein.
+     *
+     * @return bool true, wenn das Script angelegt wurde.
+     */
+    private function RestoreDisplayScript(): bool
+    {
+        if ($this->FindIDForIdent(self::ScriptIdent) != 0) {
+            trigger_error($this->Translate('Display script already exists.'), E_USER_NOTICE);
+            return false;
+        }
+        $this->RegisterScript(self::ScriptIdent, 'Display Script', $this->CreateDisplayScript(), -1);
+        $ID = $this->FindIDForIdent(self::ScriptIdent);
+        IPS_SetHidden($ID, true);
+        IPS_SetProperty($this->InstanceID, self::PropertyScriptID, $ID);
+        IPS_ApplyChanges($this->InstanceID);
+        $this->UpdateFormField(self::ButtonRestoreScript, 'enabled', false);
+        $this->UpdateFormField(self::PropertyScriptID, 'value', $ID);
+        return true;
+    }
+
+    /**
+     * Liefert das Script welches im Objektbaum als Vorlage für das DisplayScript angelegt wird.
      *
      * @return string
      */

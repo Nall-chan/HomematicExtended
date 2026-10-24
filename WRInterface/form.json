@@ -4,7 +4,9 @@
             "name": "Interval",
             "type": "NumberSpinner",
             "caption": "Interval",
-            "suffix": "seconds"
+            "suffix": "seconds",
+            "minimum": 0,
+            "maximum": 86400
         }
     ],
     "status": [

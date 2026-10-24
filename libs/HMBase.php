@@ -10,7 +10,7 @@ declare(strict_types=1);
  * @author        Michael Tröger <nall4chan@gmail.com>
  * @copyright     2015 Michael Tröger
  * @license       Custom Non-Commercial Share-Alike License (see LICENSE)
- * @version       3.74
+ * @version       3.75
  */
 eval('declare(strict_types=1);namespace HMExtended {?>' . file_get_contents(__DIR__ . '/helper/DebugHelper.php') . '}');
 eval('declare(strict_types=1);namespace HMExtended {?>' . file_get_contents(__DIR__ . '/helper/BufferHelper.php') . '}');
@@ -19,10 +19,11 @@ eval('declare(strict_types=1);namespace HMExtended {?>' . file_get_contents(__DI
 eval('declare(strict_types=1);namespace HMExtended {?>' . file_get_contents(__DIR__ . '/helper/VariableProfileHelper.php') . '}');
 eval('declare(strict_types=1);namespace HMExtended {?>' . file_get_contents(__DIR__ . '/helper/AttributeArrayHelper.php') . '}');
 require_once __DIR__ . '/HMTypes.php';  // HMTypes Data
+require_once __DIR__ . '/HMScriptParser.php';  // Parser für die Antworten der CCU
 
 /**
  * HMBase ist die Basis-Klasse für alle Module welche HMScript verwenden.
- * Erweitert IPSModuleStrictStrict.
+ * Erweitert IPSModuleStrict.
  *
  * @property int $ParentID Aktueller IO-Parent.
  *
@@ -61,7 +62,18 @@ abstract class HMBase extends IPSModuleStrict
         parent::Create();
         $this->ParentID = 0;
         $this->SetReceiveDataFilter('.*9999999999.*');
-        $this->ConnectParent(\HMExtended\GUID::HmIO);
+    }
+
+    /**
+     * Interne Funktion des SDK.
+     * Alle Instanzen mit Datenfluss zur CCU werden mit einem Homematic Socket verbunden. Mehrere Instanzen teilen sich dabei einen Socket.
+     */
+    public function GetCompatibleParents(): string
+    {
+        return json_encode([
+            'type'      => 'connect',
+            'moduleIDs' => [\HMExtended\GUID::HmIO]
+        ]);
     }
 
     /**
@@ -100,10 +112,30 @@ abstract class HMBase extends IPSModuleStrict
 
     /**
      * Interne Funktion des SDK.
+     * Meldungen (trigger_error) werden bei Bedienaktionen an das Frontend ausgegeben.
      */
     public function RequestAction(string $Ident, mixed $Value, bool &$done = false): void
     {
-        $done = $this->IORequestAction($Ident, $Value);
+        set_error_handler([$this, 'ModulErrorHandler'], E_USER_NOTICE | E_USER_WARNING);
+        try {
+            $this->ProcessRequestAction($Ident, $Value, $done);
+        } finally {
+            restore_error_handler();
+        }
+    }
+
+    /**
+     * Gibt Fehlermeldungen per echo aus, damit sie dem Nutzer im Frontend angezeigt werden.
+     *
+     * @param int    $ErrLevel
+     * @param string $ErrMsg
+     *
+     * @return bool Immer true, die Meldung gilt damit als behandelt.
+     */
+    public function ModulErrorHandler(int $ErrLevel, string $ErrMsg): bool
+    {
+        echo $ErrMsg;
+        return true;
     }
 
     /**
@@ -112,16 +144,40 @@ abstract class HMBase extends IPSModuleStrict
     public function ReceiveData(string $JSONString): string
     {
         $Event = json_decode($JSONString, true);
+        if (!is_array($Event) || !isset($Event['VariableName']) || !array_key_exists('VariableValue', $Event)) {
+            $this->SendDebug('Invalid event', $JSONString, 0);
+            return '';
+        }
         $this->SendDebug('EVENT:' . $Event['VariableName'], $Event['VariableValue'], 0);
         $this->SetVariable($Event['VariableName'], $Event['VariableValue']);
         return '';
     }
 
-    public function RequestState(string $Ident)
+    /**
+     * Liest einen Wert von der CCU und schreibt ihn in die Statusvariable. Die Basisklasse bietet das nicht an.
+     *
+     * @param string $Ident Ident der Statusvariable.
+     *
+     * @return bool Immer false, abgeleitete Klassen überschreiben die Methode.
+     */
+    public function RequestState(string $Ident): bool
     {
         return false;
     }
     //################# protected
+
+    /**
+     * Verarbeitet Bedienaktionen. Abgeleitete Klassen überschreiben diese Methode und rufen zuerst die Basis auf.
+     * Fehler werden dort mit trigger_error gemeldet und von RequestAction an das Frontend ausgegeben.
+     *
+     * @param string $Ident Ident der Variable bzw. Aktion.
+     * @param mixed  $Value Der Wert.
+     * @param bool   $done  Wird true, wenn die Aktion vollständig verarbeitet wurde.
+     */
+    protected function ProcessRequestAction(string $Ident, mixed $Value, bool &$done = false): void
+    {
+        $done = $this->IORequestAction($Ident, $Value);
+    }
 
     /**
      * Wird ausgeführt wenn sich der Status vom Parent ändert.
@@ -167,6 +223,28 @@ abstract class HMBase extends IPSModuleStrict
         return $this->IORegisterParent();
     }
 
+    /**
+     * Prüft, ob Instanzen der übergebenen Module existieren (z.B. um gemeinsam genutzte Profile nicht zu löschen).
+     *
+     * @param string[] $ModuleGuids Die GUIDs der Module.
+     *
+     * @return bool True wenn mindestens eine Instanz existiert.
+     */
+    protected function ExistInstancesOf(array $ModuleGuids): bool
+    {
+        foreach ($ModuleGuids as $ModuleGuid) {
+            if (count(IPS_GetInstanceListByModuleID($ModuleGuid)) > 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Liest das Paramset VALUES des Gerätes (Adresse und Kanal der Instanz) und schreibt alle Werte in die Statusvariablen.
+     *
+     * @return bool true, wenn die CCU Werte geliefert hat.
+     */
     protected function GetValuesAndSetVariable(): bool
     {
         $AddressWithChannel = $this->ReadPropertyString(\HMExtended\Device\Property::Address) . static::ValuesChannel;
@@ -180,9 +258,19 @@ abstract class HMBase extends IPSModuleStrict
         return false;
     }
 
-    protected function SetVariable(string $Ident, $Value)
+    /**
+     * Schreibt einen Wert in die Statusvariable. Unbekannte Idents werden ignoriert (nur Debug-Ausgabe).
+     *
+     * @param string $Ident Ident der Statusvariable.
+     * @param mixed $Value Der Wert.
+     */
+    protected function SetVariable(string $Ident, mixed $Value): void
     {
-        @$this->SetValue($Ident, $Value);
+        if ($this->FindIDForIdent($Ident) == 0) {
+            $this->SendDebug('Unknown variable', $Ident, 0);
+            return;
+        }
+        $this->SetValue($Ident, $Value);
     }
     /**
      * Überträgt das übergeben HM-Script an die CCU und liefert das Ergebnis.
@@ -196,7 +284,7 @@ abstract class HMBase extends IPSModuleStrict
     protected function LoadHMScript(string $HMScript): false|string
     {
         if (!$this->HasActiveParent()) {
-            trigger_error($this->Translate('Instance has no active Parent Instance!'), E_USER_NOTICE);
+            trigger_error($this->Translate('Instance has no active parent instance!'), E_USER_NOTICE);
             return false;
         }
         $ParentData = [
@@ -208,28 +296,47 @@ abstract class HMBase extends IPSModuleStrict
         if ($Result === false || $Result === null) {
             return false;
         }
-        $this->SendDebug('Receive', utf8_encode($Result), 0);
-        return utf8_encode($Result);
+        // Die CCU liefert ISO-8859-1.
+        $Result = mb_convert_encoding($Result, 'UTF-8', 'ISO-8859-1');
+        $this->SendDebug('Receive', $Result, 0);
+        return $Result;
     }
 
+    /**
+     * Zerlegt die Antwort eines HM-Scriptes in die Ausgabe und das XML der CCU.
+     * Die Ausgabe des Scriptes steht im Element `Output`.
+     *
+     * @param string $Content Antwort der CCU.
+     *
+     * @return SimpleXMLElement|false Das XML, bei ungültiger Antwort false (Meldung per trigger_error).
+     */
     protected function GetScriptXML(string $Content): SimpleXMLElement|false
     {
-        $XMLContent = strstr($Content, '<xml><exec>');
+        [$Output, $XMLContent] = \HMExtended\ScriptParser::SplitOutput($Content);
         try {
             $xml = @new SimpleXMLElement($XMLContent, LIBXML_NOBLANKS + LIBXML_NONET);
         } catch (Throwable $exc) {
             $this->SendDebug('Error', $exc->getMessage(), 0);
-            trigger_error($exc->getMessage(), E_USER_NOTICE);
+            trigger_error($this->Translate('Invalid response from CCU.'), E_USER_NOTICE);
             return false;
         }
         unset($xml->exec);
         unset($xml->sessionId);
         unset($xml->httpUserAgent);
-        $xml->addChild('Output', strstr($Content, '<xml><exec>', true));
+        $xml->addChild('Output', $Output);
         return $xml;
     }
 
-    protected function GetParamset(string $Paramset, string $AddressWithChannel, int $Protocol = -1)
+    /**
+     * Liest ein Paramset (z.B. VALUES oder MASTER) eines Gerätes von der CCU.
+     *
+     * @param string $Paramset Name des Paramsets.
+     * @param string $AddressWithChannel Adresse des Gerätes, bei Bedarf mit Kanal.
+     * @param int $Protocol Das System der CCU (-1 = Protokoll der Instanz).
+     *
+     * @return array Die Werte, bei einem Fehler ein leeres Array.
+     */
+    protected function GetParamset(string $Paramset, string $AddressWithChannel, int $Protocol = -1): array
     {
         if ($Protocol == -1) {
             $Protocol = $this->ReadPropertyInteger(\HMExtended\Device\Property::Protocol);
@@ -238,7 +345,16 @@ abstract class HMBase extends IPSModuleStrict
         return is_array($Result) ? $Result : [];
     }
 
-    protected function GetParamsetDescription(string $Paramset, string $AddressWithChannel, int $Protocol = -1)
+    /**
+     * Liest die Beschreibung der Datenpunkte eines Paramsets von der CCU.
+     *
+     * @param string $Paramset Name des Paramsets.
+     * @param string $AddressWithChannel Adresse des Gerätes, bei Bedarf mit Kanal.
+     * @param int $Protocol Das System der CCU (-1 = Protokoll der Instanz).
+     *
+     * @return array Die Beschreibung je Datenpunkt, bei einem Fehler ein leeres Array.
+     */
+    protected function GetParamsetDescription(string $Paramset, string $AddressWithChannel, int $Protocol = -1): array
     {
         if ($Protocol == -1) {
             $Protocol = $this->ReadPropertyInteger(\HMExtended\Device\Property::Protocol);
@@ -247,10 +363,22 @@ abstract class HMBase extends IPSModuleStrict
         return is_array($Result) ? $Result : [];
     }
 
-    protected function SendRPC(string $MethodName, int $Protocol, array $Paramset, $Values = null, bool $EmulateStatus = false)
+    /**
+     * Sendet eine XML-RPC Anfrage über den Datenfluss an den Homematic Socket.
+     * Texte der CCU, die als ISO-8859-1 geliefert werden, werden nach UTF-8 gewandelt.
+     *
+     * @param string $MethodName Name der RPC-Methode.
+     * @param int $Protocol Das System der CCU.
+     * @param array $Paramset Parameter der Methode.
+     * @param mixed $Values Daten (Arrays werden als JSON übertragen), null = keine Daten.
+     * @param bool $EmulateStatus Bei true wird die Antwort der CCU nicht abgewartet.
+     *
+     * @return mixed Die Antwort der CCU, true ohne Antwortdaten, bei einem Fehler null (Meldung per trigger_error).
+     */
+    protected function SendRPC(string $MethodName, int $Protocol, array $Paramset, mixed $Values = null, bool $EmulateStatus = false): mixed
     {
         if (!$this->HasActiveParent()) {
-            trigger_error($this->Translate('Instance has no active Parent Instance!'), E_USER_NOTICE);
+            trigger_error($this->Translate('Instance has no active parent instance!'), E_USER_NOTICE);
             return null;
         }
         $ParentData = [
@@ -271,7 +399,7 @@ abstract class HMBase extends IPSModuleStrict
             return true;
         }
         if ($ResultJSON === false) {
-            trigger_error('Error on ' . $MethodName, E_USER_NOTICE);
+            trigger_error(sprintf($this->Translate('Error on %s'), $MethodName), E_USER_NOTICE);
             $this->SendDebug('Error', '', 0);
             return null;
         }
@@ -280,6 +408,10 @@ abstract class HMBase extends IPSModuleStrict
             return true;
         }
         $Result = json_decode($ResultJSON, true);
+        if (($Result === null) && (json_last_error() === JSON_ERROR_UTF8)) {
+            // Die CCU liefert Texte (z.B. die Einheit °C) teilweise als ISO-8859-1.
+            $Result = json_decode(mb_convert_encoding($ResultJSON, 'UTF-8', 'ISO-8859-1'), true);
+        }
         return $Result;
     }
 }

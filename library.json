@@ -4,9 +4,9 @@
     "name": "Homematic Erweiterung",
     "url": "https://github.com/Nall-chan/HomematicExtended",
     "compatibility": {
-        "version": "6.1"
+        "version": "9.0"
     },
-    "version": "3.74",
-    "build": 374,
-    "date": 1705949629
+    "version": "3.75",
+    "build": 375,
+    "date": 1792847272
 }

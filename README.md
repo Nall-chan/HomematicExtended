@@ -1,10 +1,11 @@
 [![SDK](https://img.shields.io/badge/Symcon-PHPModul-red.svg)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
-[![Version](https://img.shields.io/badge/Modul%20version-3.74-blue.svg)]()
-[![License](https://img.shields.io/badge/License-Custom--NC--SA-green.svg)](#7-lizenz)  
-[![Version](https://img.shields.io/badge/Symcon%20Version-6.1%20%3E-green.svg)](https://community.symcon.de/t/ip-symcon-6-1-stable-changelog/40276)
-[![Check Style](https://github.com/Nall-chan/HomematicExtended/workflows/Check%20Style/badge.svg)](https://github.com/Nall-chan/HomematicExtended/actions) [![Run Tests](https://github.com/Nall-chan/HomematicExtended/workflows/Run%20Tests/badge.svg)](https://github.com/Nall-chan/HomematicExtended/actions)  
-[![Spenden](https://www.paypalobjects.com/de_DE/DE/i/btn/btn_donate_SM.gif)](#6-spenden)
-[![Wunschliste](https://img.shields.io/badge/Wunschliste-Amazon-ff69fb.svg)](#6-spenden)  
+[![Module Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FNall-chan%2FHomematicExtended%2Frefs%2Fheads%2Fmaster%2Flibrary.json&query=%24.version&label=Modul%20Version&color=blue)](https://community.symcon.de/t/modul-homematic-extended-systemvariablen-programme-powermeter-u-v-m/38340)
+[![Symcon Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FNall-chan%2FHomematicExtended%2Frefs%2Fheads%2Fmaster%2Flibrary.json&query=%24.compatibility.version&suffix=%3E&label=Symcon%20Version&color=green)](https://www.symcon.de/de/service/dokumentation/installation/migrationen/v81-v90-q1-2026/)  
+[![License](https://img.shields.io/badge/License-Custom--NC--SA-green.svg)](#7-lizenz)
+[![Check Style](https://github.com/Nall-chan/HomematicExtended/workflows/Check%20Style/badge.svg)](https://github.com/Nall-chan/HomematicExtended/actions)
+[![Run Tests](https://github.com/Nall-chan/HomematicExtended/workflows/Run%20Tests/badge.svg)](https://github.com/Nall-chan/HomematicExtended/actions)  
+[![PayPal.Me](https://img.shields.io/badge/PayPal-Me-lightblue.svg)](#6-spenden)
+[![Wunschliste](https://img.shields.io/badge/Wunschliste-Amazon-ff69fb.svg)](#6-spenden)
 
 # Symcon-Modul: HomeMaticExtended <!-- omit in toc -->  
 
@@ -15,9 +16,11 @@ Erweitert IPS um die native Unterstützung von:
 * Summenzähler aller Typen von Verbrauchsmessern
 * Display Status-Anzeige (Dis-WM55)
 * ePaper Status-Anzeige (Dis-EP-WM55)
+* Heizungsgeräte: Heizkörperthermostat, Heizgruppen und Wandthermostat mit Wochenplan und weiteren Parametern
 * HomeMaticScript
 * Status der Funk-Interfaces
 * Status des Wired-Interface
+* Konfigurator zum Anlegen der Instanzen
 
 ## Inhaltsverzeichnis  <!-- omit in toc -->  
 
@@ -28,8 +31,9 @@ Erweitert IPS um die native Unterstützung von:
   - [HomeMatic RemoteScript Interface:](#homematic-remotescript-interface)
   - [HomeMatic Dis-WM55:](#homematic-dis-wm55)
   - [HomeMatic Dis-EP-WM55:](#homematic-dis-ep-wm55)
+  - [HomeMatic Heizungsgeräte:](#homematic-heizungsgeräte)
+  - [HomeMatic Extended Konfigurator:](#homematic-extended-konfigurator)
   - [HomeMatic RF-Interface Splitter:](#homematic-rf-interface-splitter)
-  - [HomeMatic RF-Interface Konfigurator:](#homematic-rf-interface-konfigurator)
   - [HomeMatic RF-Interface:](#homematic-rf-interface)
   - [HomeMatic WR-Interface:](#homematic-wr-interface)
 - [2. Voraussetzungen](#2-voraussetzungen)
@@ -75,13 +79,27 @@ Erweitert IPS um die native Unterstützung von:
    Hier handelt es sich um eine Instanz, welche die Verwendung des ePaper Statusdisplays im 55er-Rahmen vereinfachen soll.  
    Über spezielle PHP-Befehle ist es möglich das Display anzusteuern.  
 
-### [HomeMatic RF-Interface Splitter:](RFInterfaceSplitter/)  
+### HomeMatic Heizungsgeräte:
+
+   Erweiterte Bedienung der Heizungsgeräte der CCU:
+
+* [HomeMatic Heating Device](HeatingDevice/) (Heizkörperthermostat `HM-CC-RT-DN`)
+* [HomeMatic Heating Group](HeatingGroup/) (Heizgruppe `HM-CC-VG-1`)
+* [HomeMatic IP Heating Group](HeatingGroupHmIP/) (Heizgruppe `HmIP-HEATING`)
+* [HomeMatic Climate Control Regulator](ClimacontrolRegulator/) (Wandthermostat `HM-CC-TC`)
+
+   Die Zeitprofile werden als Wochenplan in IPS dargestellt und können dort bearbeitet und zum Gerät übertragen werden.
+   Party-/Urlaubsmodus, der Modus der Soll-Temperatur, die Entkalkung und weitere Parameter der Geräte stehen als Variablen zur Verfügung.
+   Welche Variablen angelegt werden, lässt sich in der Konfiguration der Instanz einstellen.
+
+### [HomeMatic Extended Konfigurator:](ExtendedConfigurator/)
+
+   Legt die Instanzen der Geräte dieser Library an (Powermeter, Displays, Heizungsgeräte, Programme, RemoteScript und WR-Interface).
+   Bereits angelegte Instanzen werden erkannt. Instanzen, zu denen kein Gerät auf der CCU gefunden wird, werden mit einem Hinweis angezeigt.
+
+### [HomeMatic RF-Interface Splitter:](RFInterfaceSplitter/)
 
    Auslesen der Informationen zu jedem Funk-Interface der CCU.
-
-### [HomeMatic RF-Interface Konfigurator:](RFInterfaceConfigurator/)  
-
-   Konfigurator zum erstellen der 'Homematic RF-Interface'-Instanzen.  
 
 ### [HomeMatic RF-Interface:](RFInterface/)  
 
@@ -103,7 +121,7 @@ Erweitert IPS um die native Unterstützung von:
    (z.B. 192.168.178.0/24 => /24 ist die Subnet-Maske für das Netzwerk. Bei 255.255.255.0 ist das 24 bei 255.255.0.0. ist es 16.  
    Oder es kann direkt eine einzelne Adresse eingetragen werden. z.B. 192.168.0.2  
 
-![CCUFirewall.png](docs/CCUFirewall.png)  
+![CCUFirewall.png](imgs/CCUFirewall.png)  
 
 ## 3. Software-Installation
 
@@ -117,7 +135,7 @@ Erweitert IPS um die native Unterstützung von:
   Ist direkt in der Dokumentation der jeweiligen Module beschrieben.  
   Die Module der Geräte sind im Dialog 'Instanz hinzufügen' unter dem Hersteller 'HomeMatic' zu finden.  
 
-![Instanzen](docs/HMExtendedInstanzen.png)  
+![Instanzen](imgs/HMExtendedInstanzen.png)  
 
 ## 5. Anhang
 
@@ -125,18 +143,54 @@ Erweitert IPS um die native Unterstützung von:
 
 |                Modul                |     Typ      |                  GUID                  |
 | :---------------------------------: | :----------: | :------------------------------------: |
-|      HomeMatic Systemvariablen      |    Device    | {400F9193-FE79-4086-8D76-958BF9C1B357} |
-|        HomeMatic Powermeter         |    Device    | {AF50C42B-7183-4992-B04A-FAFB07BB1B90} |
+|      HomeMatic Systemvariablen      |    Device    | {AF50C42B-7183-4992-B04A-FAFB07BB1B90} |
+|        HomeMatic Powermeter         |    Device    | {400F9193-FE79-4086-8D76-958BF9C1B357} |
 |         HomeMatic Programme         |    Device    | {A5010577-C443-4A85-ABF2-3F2D6CDD2465} |
 |  HomeMatic RemoteScript Interface   |    Device    | {246EDB89-70BC-403B-A1FA-3B3B1B540401} |
 |         HomeMatic Dis-WM55          |    Device    | {271BCAB1-0658-46D9-A164-985AEB641B48} |
 |        HomeMatic Dis-EP-WM55        |    Device    | {E64ED916-FA6C-45B2-B8E3-EDC3191BC4C0} |
 |   HomeMatic RF-Interface Splitter   |   Splitter   | {6EE35B5B-9DD9-4B23-89F6-37589134852F} |
-| HomeMatic RF-Interface Konfigurator | Configurator | {91624C6F-E67E-47DA-ADFE-9A5A1A89AAC3} |
 |       HomeMatic RF-Interface        |    Device    | {36549B96-FA11-4651-8662-F310EEEC5C7D} |
 |       HomeMatic WR-Interface        |    Device    | {01C66202-7E94-49C4-8D8F-6A75CE944E87} |
+|      HomeMatic Heating Device       |    Device    | {E2674369-5272-44FE-905A-DCBF0E5126C6} |
+|      HomeMatic Heating Group        |    Device    | {F179857C-DF5A-2CED-F553-CDB4D42815ED} |
+|     HomeMatic IP Heating Group      |    Device    | {05CD9BAE-5A3B-E10B-79D6-48CB45A02C6A} |
+|  HomeMatic Climate Control Regulator |    Device    | {AA29D32D-A00D-EC8F-4987-5EB071F77011} |
+|    HomeMatic Extended Configurator  | Configurator | {7B8F83C6-E3BC-AC8C-3FFC-D81CAC96D93B} |
 
 ### 2. Changelog
+
+Version 3.75 (Test):
+
+> [!IMPORTANT]
+> * Mindestens IP-Symcon 9.0 erforderlich.
+> * Das Modul `HomeMatic Paraset Interface` wurde entfernt. Vorhandene Instanzen müssen vor dem Update gelöscht werden.
+> * Das Modul `HomeMatic RF-Interface Konfigurator` wurde entfernt. Die RF-Interfaces (Gateways) legt der `HomeMatic Extended Konfigurator` an. Eine vorhandene Instanz des RF-Interface Konfigurators muss gelöscht werden, die Instanzen `HomeMatic RF-Interface` und `HomeMatic RF-Interface Splitter` bleiben erhalten.
+> * `HomeMatic Dis-WM55`: Die Eigenschaften `PageUpID`, `PageDownID`, `ActionUpID` und `ActionDownID` entfallen. Stattdessen wird die Adresse des Displays mit Kanal eingetragen (z.B. `NEQ1234567:1`), an diese Adresse wird immer ausgegeben. Bestehende Instanzen werden beim Update übernommen, Auslöser von anderen Geräten stehen danach in den Experteneinstellungen.
+> * `HomeMatic Dis-WM55`: Die Taste 'Seite hoch' blättert jetzt zurück und 'Seite runter' weiter (bisher war die Richtung vertauscht).
+
+**Neue Funktionen und Aktionen**
+* Konfigurator: Kann jetzt auch die Displays `HM-Dis-WM55` und `HM-Dis-EP-WM55`, die Instanz `HomeMatic RemoteScript` sowie die RF-Interfaces (Gateways) der CCU anlegen. Für ein RF-Interface wird die Kette aus RF-Interface, RF-Interface Splitter und Homematic Socket erzeugt, jedes Gateway erhält eine eigene Zeile. Auch Gateways, die gerade offline sind, werden mit Name, Typ und IP-Adresse angezeigt (gelesen aus der Konfigurationsdatei der CCU, der Sicherheitsschlüssel wird nie gelesen).
+* HomeMatic Dis-WM55: Experteneinstellungen für zusätzliche Auslöser von Variablen anderer Homematic Geräte.
+* HomeMatic Dis-WM55: Neue Schaltfläche `Display-Script wiederherstellen` legt das Display-Script neu an, wenn es gelöscht wurde. Die Schaltfläche ist nur aktiv, solange das Script fehlt.
+
+**Geändertes Verhalten**
+* Konfigurator: Instanzen, zu denen kein Gerät auf der CCU gefunden wurde oder die keine Adresse besitzen (Migration), werden mit einem Hinweis angezeigt. Sind Protokolle im Homematic Socket nicht aktiviert, werden diese in einer Meldung mit Schaltfläche zum Homematic Socket aufgelistet.
+* HomeMatic Dis-WM55: Die Tasten werden direkt über den Datenfluss des Homematic Sockets empfangen. Dem Display-Script wird nie die Seite 0 übergeben, die gewählte Seite bleibt bei Änderungen der Konfiguration erhalten. Lehnt die CCU eine Übertragung ab (das Display ist nach einem Tastendruck nur kurz empfangsbereit), wird sofort einmal wiederholt. Neuer Status, wenn die Adresse keinen Kanal enthält.
+* HomeMatic Dis-EP-WM55: Die Adresse mit dem Kanal 3 wird geprüft (neue Status), die Zeile der Befehle `HM_WriteValueDisplayLine` und `HM_WriteValueDisplayLineEx` wird auf 1-3 geprüft.
+* HomeMatic Powermeter: Adresse und Protokoll werden aus der bisherigen Variable übernommen. Die Variablen für Strom, Spannung und Frequenz erhalten wieder Profile mit Einheit.
+* Konfigurationsformulare: Adressen und Zahlenwerte (Timeout, Intervall, Anzahl der Seiten) können nur noch mit gültigen Werten eingegeben werden.
+* Fehlermeldungen bei der Bedienung von Variablen werden im Frontend angezeigt (z.B. 'Party ist in der Konfiguration deaktiviert').
+
+**Fehlerbehebungen**
+* Heizgruppen und HM-CC-TC: Die Fehlermeldung `Wochenplan-Aktions-ID muss größer als 0 sein` ist behoben. Fehler beim Zuordnen von Variablen der Parameter behoben.
+* Powermeter: Der Summenzähler wurde bei Ereignissen nicht aktualisiert. Unbekannte Datenpunkte oder Einheiten führen nicht mehr zu Fehlern.
+* HomeMatic RF-Interface: Die Variable `CONNECTED` blieb auf dem alten Wert, wenn das Funk-Interface offline war und von der CCU nicht mehr gemeldet wurde ([Issue #13](https://github.com/Nall-chan/HomematicExtended/issues/13)). Ist ein Interface nicht mehr erreichbar, wird `CONNECTED` jetzt auf `false` gesetzt.  
+* Heizgruppen (`HM-CC-VG-1`, `HmIP-HEATING`): Zeiten wurden bei exakt 30 Minuten auf die volle Stunde abgerundet (z.B. 09:30 auf 09:00 bei Party Start/Ende und Entkalkung).  
+* HomeMatic Programme: Programme mit ungültiger ID werden nicht mehr an die CCU gesendet. Startet die CCU ein Programm nicht, wird eine Fehlermeldung ausgegeben.  
+* HomeMatic WR-Interface: Falsche Fehlermeldung, wenn das Wired-Interface im Homematic Socket deaktiviert ist.
+* Heizungsgeräte: Antworten der CCU mit dem Zeichen `°` (ISO-8859-1) führten dazu, dass die Statusvariablen nicht angelegt wurden.
+* Fehlende Übersetzungen ergänzt.
 
 Version 3.74:
 * Konfiguration der festen Temperaturen lässt beim Bearbeiten keine ungültigen oder doppelten Werte mehr zu.  

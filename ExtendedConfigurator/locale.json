@@ -4,9 +4,22 @@
             "Devices": "Geräte",
             "Address": "Adresse",
             "Type": "Typ",
-            "Use of the HomeMatic groups must be activated in the IO.": "Verwendung der HomeMatic Gruppen muss im IO aktiviert sein.",
+            "These protocols are not enabled in the I/O, the matching devices cannot be listed:": "Diese Protokolle sind im I/O nicht aktiviert, die zugehörigen Geräte können nicht aufgelistet werden:",
+            "Open I/O instance": "I/O Instanz öffnen",
+            "HomeMatic BidCos-RF": "HomeMatic BidCos-RF",
+            "HomeMatic IP": "HomeMatic IP",
+            "HomeMatic BidCos-Wired": "HomeMatic BidCos-Wired",
+            "HomeMatic groups": "HomeMatic Gruppen",
+            "RF interface (radio)": "RF-Interface (Funk)",
+            "RF interface (HmIP)": "RF-Interface (HmIP)",
             "Instance has no active parent instance!": "Keine aktive Parent Instanz!",
-            "This module is free for non-commercial use,\r\nDonations in support of the author are accepted here:": "Dieses Modul ist für die nicht kommerzielle Nutzung kostenlos,\r\nSchenkungen als Unterstützung für den Autor werden hier akzeptiert:"
+            "This module is free for non-commercial use,\r\nDonations in support of the author are accepted here:": "Dieses Modul ist für die nicht kommerzielle Nutzung kostenlos,\r\nSchenkungen als Unterstützung für den Autor werden hier akzeptiert:",
+            "Error on %s": "Fehler bei %s",
+            "Invalid response from CCU.": "Ungültige Antwort der CCU.",
+            "No device address configured (migration required)": "Keine Geräte-Adresse eingetragen (Migration erforderlich)",
+            "Device not found on the CCU": "Gerät auf der CCU nicht gefunden",
+            "Name": "Name",
+            "RF interface (radio, not connected)": "RF-Interface (Funk, nicht verbunden)"
         }
     }
 }

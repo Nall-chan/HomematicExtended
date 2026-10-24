@@ -1,23 +1,39 @@
 {
     "translations": {
         "de": {
-            "Up-Button": "Hoch-Taste",
-            "Down-Button": "Runter-Taste",
-            "Action Up-Button": "Aktion Hoch-Taste",
-            "Action Down-Button": "Aktion Runter-Taste",
             "Number of pages": "Seitenanzahl",
             "Display timeout": "Display Timeout",
             "Display-Script": "Display-Script",
             "Configuration is valid.": "Konfiguration gültig.",
-            "No PRESS datapoint selected.": "Kein PRESS Datenpunkt ausgewählt.",
-            "One or more invalid datapoints selected.": "Mindestens ein gewählter Datenpunkt ist ungültig.",
             "No Display-Script selected.": "Kein Display-Script ausgewählt.",
             "Timeout to small.": "Timeout darf nicht negativ sein.",
             "Number of pages to small.": "Seitenanzahl darf nicht negativ sein.",
             "Instance has no active parent instance!": "Keine aktive Parent Instanz!",
             "Error in display-script.": "Fehler im Display-Script.",
-            "Error on send data to HM-Dis-WM55.": "Fehler beim senden der Daten an HM-DIS-WM55.",
-            "This module is free for non-commercial use,\r\nDonations in support of the author are accepted here:": "Dieses Modul ist für die nicht kommerzielle Nutzung kostenlos,\r\nSchenkungen als Unterstützung für den Autor werden hier akzeptiert:"
+            "This module is free for non-commercial use,\r\nDonations in support of the author are accepted here:": "Dieses Modul ist für die nicht kommerzielle Nutzung kostenlos,\r\nSchenkungen als Unterstützung für den Autor werden hier akzeptiert:",
+            "Error on %s": "Fehler bei %s",
+            "Invalid response from CCU.": "Ungültige Antwort der CCU.",
+            "No display address entered.": "Keine Adresse des Displays eingetragen.",
+            "One or more invalid triggers in the expert settings.": "Ein oder mehrere ungültige Auslöser in den Experteneinstellungen.",
+            "Expert settings": "Experteneinstellungen",
+            "Additional triggers from variables of other Homematic devices. The buttons of the display itself are received automatically.": "Zusätzliche Auslöser von Variablen anderer Homematic-Geräte. Die Tasten des Displays selbst werden automatisch empfangen.",
+            "Additional triggers": "Zusätzliche Auslöser",
+            "Variable": "Variable",
+            "Function": "Funktion",
+            "Page up": "Seite hoch",
+            "Page down": "Seite runter",
+            "Action up": "Aktion oben",
+            "Action down": "Aktion unten",
+            "seconds": "Sekunden",
+            "System": "System",
+            "Radio": "Funk",
+            "Wired": "Kabelgebunden",
+            "IP": "IP",
+            "Group": "Gruppe",
+            "Address (with channel)": "Adresse (mit Kanal)",
+            "Address must contain the channel (e.g. NEQ1234567:1).": "Die Adresse muss den Kanal enthalten (z.B. NEQ1234567:1).",
+            "Restore display script": "Display-Script wiederherstellen",
+            "Display script already exists.": "Das Display-Script ist bereits vorhanden."
         }
     }
 }

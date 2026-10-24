@@ -11,9 +11,10 @@ namespace HMExtended
         public const Programme = '{A5010577-C443-4A85-ABF2-3F2D6CDD2465}';
         public const Dis_WM55 = '{271BCAB1-0658-46D9-A164-985AEB641B48}';
         public const Dis_EP_WM55 = '{E64ED916-FA6C-45B2-B8E3-EDC3191BC4C0}';
+        public const RemoteScript = '{246EDB89-70BC-403B-A1FA-3B3B1B540401}';
+        public const ExtendedConfigurator = '{7B8F83C6-E3BC-AC8C-3FFC-D81CAC96D93B}';
         public const RF_Interface = '{36549B96-FA11-4651-8662-F310EEEC5C7D}';
         public const RF_Interface_Splitter = '{6EE35B5B-9DD9-4B23-89F6-37589134852F}';
-        public const RF_Interface_Konfigurator = '{91624C6F-E67E-47DA-ADFE-9A5A1A89AAC3}';
         public const WR_Interface = '{01C66202-7E94-49C4-8D8F-6A75CE944E87}';
         public const HeatingGroup = '{F179857C-DF5A-2CED-F553-CDB4D42815ED}';
         public const HeatingDevice = '{E2674369-5272-44FE-905A-DCBF0E5126C6}';
@@ -35,6 +36,10 @@ namespace HMExtended
         public const Groups = 'VirtualDevices';
         public const MASTER = 'MASTER';
         public const VALUES = 'VALUES';
+        public const ProtocolBidCosRF = 0;
+        public const ProtocolBidCosWR = 1;
+        public const ProtocolHmIP = 2;
+        public const ProtocolGroups = 3;
         public static $Interfaces = [
             self::BidCos_RF,
             self::BidCos_WR,
@@ -53,11 +58,30 @@ namespace HMExtended
         public const Powermeter_HmIP = 'ENERGIE_METER_TRANSMITTER';
 
         public const Dis_WM55 = 'HM-Dis-WM55'; // HM-Dis-WM55
+        public const Dis_EP_WM55 = 'HM-Dis-EP-WM55'; // HM-Dis-EP-WM55
 
         public const HeatingDevice = 'HM-CC-RT-DN'; // CLIMATECONTROL_RECEIVER
         public const HeatingGroup = 'HM-CC-VG-1'; //'CLIMATECONTROL_RT_TRANSCEIVER';
         public const HeatingGroupHmIP = 'HmIP-HEATING'; //'HEATING_CLIMATECONTROL_TRANSCEIVER';
         public const ClimacontrolRegulator = 'HM-CC-TC'; //'CLIMATECONTROL_REGULATOR';
+
+        /**
+         * Module, deren Adresse einen Kanal enthält (Ausgabe-Kanal). Der Konfigurator trägt diesen Kanal ein.
+         */
+        public static $GuidToDefaultChannel = [
+            GUID::Dis_WM55    => Channels::First,
+            GUID::Dis_EP_WM55 => Channels::Third
+        ];
+
+        /**
+         * Module, welche die gemeinsamen Profile der Heizungsgeräte und das Profil 'Execute.HM' nutzen.
+         */
+        public static $HeatingGuids = [
+            GUID::HeatingDevice,
+            GUID::HeatingGroup,
+            GUID::HeatingGroupHmIP,
+            GUID::ClimacontrolRegulator
+        ];
 
         public static $GuidToType = [
             // Konfigurator muss noch ergänzt werden um:
@@ -66,11 +90,10 @@ namespace HMExtended
             //GUID::WR_Interface                   =>
             // Vorhandener Konfigurator muss noch migriert werden:
             //GUID::RF_Interface_Splitter          =>
-            //GUID::RF_Interface_Konfigurator      =>
             // Konfigurator 'fertig' => Aber die Instanzen sind noch nicht so weit
             GUID::Powermeter                     => [self::Powermeter, self::Powermeter_IEC1, self::Powermeter_IEC2, self::Powermeter_IGL, self::Powermeter_HmIP],
             GUID::Dis_WM55                       => [self::Dis_WM55],
-            //GUID::Dis_EP_WM55                    =>
+            GUID::Dis_EP_WM55                    => [self::Dis_EP_WM55],
             // Konfigurator fertig
             GUID::HeatingDevice                  => [self::HeatingDevice],
             GUID::HeatingGroup                   => [self::HeatingGroup],
@@ -1000,7 +1023,11 @@ namespace HMExtended
             'Wh' => '~Electricity.Wh',
             'm3' => '~Gas',
             'kWh'=> '~Electricity',
-            'W'  => '~Watt'
+            'W'  => '~Watt',
+            'mA' => '~Milliampere.HM',
+            'A'  => '~Ampere',
+            'V'  => '~Volt',
+            'Hz' => '~Hertz'
         ];
     }
 }
@@ -1017,18 +1044,26 @@ namespace HMExtended\Device
         public const ScheduleTemps = 'ScheduleTemps';
         public const Interval = 'Interval';
     }
-class Timer {
-    public const ReadRFInterfaces ='ReadRFInterfaces';
-    public const ReadWRInterface ='ReadWRInterface';
-}
-    class Address{
+    class Timer
+    {
+        public const ReadRFInterfaces = 'ReadRFInterfaces';
+        public const ReadWRInterface = 'ReadWRInterface';
+    }
+    class Address
+    {
         public const PROGRAMS = 'PROGRAMS';
         public const RFINTERFACE = 'RFINTERFACE';
         public const WRINTERFACE = 'WRINTERFACE';
-        public static $GuidToStaticAddress=[
-            \HMExtended\GUID::Programme => self::PROGRAMS,
+        public const REMOTESCRIPT = 'REMOTESCRIPT';
+        /**
+         * Pseudo-Adresse für die Nachricht des Splitters an alle RF-Interfaces. Sie enthält die Adressen aller gemeldeten Interfaces.
+         */
+        public const AllInterfaces = '*ALL*';
+        public static $GuidToStaticAddress = [
+            \HMExtended\GUID::Programme    => self::PROGRAMS,
             \HMExtended\GUID::RF_Interface => self::RFINTERFACE,
-            \HMExtended\GUID::WR_Interface => self::WRINTERFACE
-        ];        
+            \HMExtended\GUID::WR_Interface => self::WRINTERFACE,
+            \HMExtended\GUID::RemoteScript => self::REMOTESCRIPT
+        ];
     }
 }

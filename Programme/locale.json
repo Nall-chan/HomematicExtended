@@ -8,7 +8,11 @@
             "CCU-Program %s not found!'": "CCU-Programm %s nicht gefunden!",
             "Error on start CCU-Program.": "Fehler beim starten des CCU-Programmes.",
             "Error on read info of CCU-Program %s.": "Fehler beim lesen der Informationen des CCU-Programmes %s.",
-            "This module is free for non-commercial use,\r\nDonations in support of the author are accepted here:": "Dieses Modul ist für die nicht kommerzielle Nutzung kostenlos,\r\nSchenkungen als Unterstützung für den Autor werden hier akzeptiert:"
+            "This module is free for non-commercial use,\r\nDonations in support of the author are accepted here:": "Dieses Modul ist für die nicht kommerzielle Nutzung kostenlos,\r\nSchenkungen als Unterstützung für den Autor werden hier akzeptiert:",
+            "Error on %s": "Fehler bei %s",
+            "Invalid response from CCU.": "Ungültige Antwort der CCU.",
+            "Invalid Ident.": "Ungültiger Ident.",
+            "Error on start program.": "Fehler beim Starten des Programmes."
         }
     }
 }

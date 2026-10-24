@@ -1,42 +1,119 @@
 {
     "elements": [
         {
-            "name": "PageUpID",
-            "type": "SelectVariable",
-            "caption": "Up-Button"
+            "name": "Address",
+            "type": "ValidationTextBox",
+            "caption": "Address (with channel)",
+            "validate": "^[A-Za-z0-9-]{10,16}:[0-9]{1,2}$"
         },
         {
-            "name": "PageDownID",
-            "type": "SelectVariable",
-            "caption": "Down-Button"
-        },
-        {
-            "name": "ActionUpID",
-            "type": "SelectVariable",
-            "caption": "Action Up-Button"
-        },
-        {
-            "name": "ActionDownID",
-            "type": "SelectVariable",
-            "caption": "Action Down-Button"
+            "name": "Protocol",
+            "type": "Select",
+            "caption": "System",
+            "options": [
+                {
+                    "caption": "Radio",
+                    "value": 0
+                },
+                {
+                    "caption": "Wired",
+                    "value": 1
+                },
+                {
+                    "caption": "IP",
+                    "value": 2
+                },
+                {
+                    "caption": "Group",
+                    "value": 3
+                }
+            ]
         },
         {
             "name": "MaxPage",
             "type": "NumberSpinner",
-            "caption": "Number of pages"
+            "caption": "Number of pages",
+            "minimum": 1,
+            "maximum": 99
         },
         {
             "name": "Timeout",
             "type": "NumberSpinner",
-            "caption": "Display timeout"
+            "caption": "Display timeout",
+            "suffix": "seconds",
+            "minimum": 0,
+            "maximum": 86400
         },
         {
             "name": "ScriptID",
             "type": "SelectScript",
             "caption": "Display-Script"
+        },
+        {
+            "type": "ExpansionPanel",
+            "caption": "Expert settings",
+            "items": [
+                {
+                    "type": "Label",
+                    "caption": "Additional triggers from variables of other Homematic devices. The buttons of the display itself are received automatically."
+                },
+                {
+                    "type": "List",
+                    "name": "ExpertTriggers",
+                    "caption": "Additional triggers",
+                    "rowCount": 5,
+                    "add": true,
+                    "delete": true,
+                    "columns": [
+                        {
+                            "caption": "Variable",
+                            "name": "VariableID",
+                            "width": "auto",
+                            "add": 0,
+                            "edit": {
+                                "type": "SelectVariable"
+                            }
+                        },
+                        {
+                            "caption": "Function",
+                            "name": "Action",
+                            "width": "250px",
+                            "add": 0,
+                            "edit": {
+                                "type": "Select",
+                                "options": [
+                                    {
+                                        "caption": "Page up",
+                                        "value": 0
+                                    },
+                                    {
+                                        "caption": "Page down",
+                                        "value": 1
+                                    },
+                                    {
+                                        "caption": "Action up",
+                                        "value": 2
+                                    },
+                                    {
+                                        "caption": "Action down",
+                                        "value": 3
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ],
     "actions": [
+        {
+            "type": "Button",
+            "name": "RestoreScript",
+            "caption": "Restore display script",
+            "enabled": false,
+            "onClick": "IPS_RequestAction($id, 'RestoreDisplayScript', true);"
+        },
         {
             "type": "Label",
             "caption": "This module is free for non-commercial use,\r\nDonations in support of the author are accepted here:"
@@ -66,12 +143,12 @@
         {
             "code": 104,
             "icon": "inactive",
-            "caption": "No PRESS datapoint selected."
+            "caption": "No display address entered."
         },
         {
             "code": 202,
             "icon": "inactive",
-            "caption": "One or more invalid datapoints selected."
+            "caption": "One or more invalid triggers in the expert settings."
         },
         {
             "code": 203,
@@ -87,6 +164,11 @@
             "code": 205,
             "icon": "inactive",
             "caption": "Number of pages to small."
+        },
+        {
+            "code": 206,
+            "icon": "inactive",
+            "caption": "Address must contain the channel (e.g. NEQ1234567:1)."
         }
     ]
 }

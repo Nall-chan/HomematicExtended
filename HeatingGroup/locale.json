@@ -54,7 +54,14 @@
             "Device lock": "Gerätesperre",
             "Mode locked": "Modus gesperrt",
             "Too many temperatures on schedule. Crop to 31 actions.": "Zu viele Temperaturen im Zeitplan. Auf 31 Aktionen reduziert.",
-            "This module is free for non-commercial use,\r\nDonations in support of the author are accepted here:": "Dieses Modul ist für die nicht kommerzielle Nutzung kostenlos,\r\nSchenkungen als Unterstützung für den Autor werden hier akzeptiert:"
+            "This module is free for non-commercial use,\r\nDonations in support of the author are accepted here:": "Dieses Modul ist für die nicht kommerzielle Nutzung kostenlos,\r\nSchenkungen als Unterstützung für den Autor werden hier akzeptiert:",
+            "Instance has no active parent instance!": "Keine aktive Parent Instanz!",
+            "Error on %s": "Fehler bei %s",
+            "Invalid response from CCU.": "Ungültige Antwort der CCU.",
+            "Variable is disabled in config.": "Variable ist in der Konfiguration deaktiviert.",
+            "Invalid Ident.": "Ungültiger Ident.",
+            "Invalid Ident for VALUE.": "Ungültiger Ident für VALUE.",
+            "Party is disabled in config.": "Party ist in der Konfiguration deaktiviert."
         }
     }
 }

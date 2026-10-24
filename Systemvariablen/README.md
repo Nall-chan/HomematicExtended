@@ -1,11 +1,14 @@
 [![SDK](https://img.shields.io/badge/Symcon-PHPModul-red.svg)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
-[![Version](https://img.shields.io/badge/Modul%20version-3.74-blue.svg)]()
-[![License](https://img.shields.io/badge/License-Custom--NC--SA-green.svg)](#7-lizenz)  
-[![Version](https://img.shields.io/badge/Symcon%20Version-6.1%20%3E-green.svg)](https://community.symcon.de/t/ip-symcon-6-1-stable-changelog/40276-IP-Symcon-5-1-%28Stable%29-Changelog)
-[![Check Style](https://github.com/Nall-chan/HomematicExtended/workflows/Check%20Style/badge.svg)](https://github.com/Nall-chan/HomematicExtended/actions) [![Run Tests](https://github.com/Nall-chan/HomematicExtended/workflows/Run%20Tests/badge.svg)](https://github.com/Nall-chan/HomematicExtended/actions)  
-[![Spenden](https://www.paypalobjects.com/de_DE/DE/i/btn/btn_donate_SM.gif)](../README.md#6-spenden) 
+[![Module Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FNall-chan%2FHomematicExtended%2Frefs%2Fheads%2Fmaster%2Flibrary.json&query=%24.version&label=Modul%20Version&color=blue)](https://community.symcon.de/t/modul-homematic-extended-systemvariablen-programme-powermeter-u-v-m/38340)
+[![Symcon Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FNall-chan%2FHomematicExtended%2Frefs%2Fheads%2Fmaster%2Flibrary.json&query=%24.compatibility.version&suffix=%3E&label=Symcon%20Version&color=green)](https://www.symcon.de/de/service/dokumentation/installation/migrationen/v81-v90-q1-2026/)  
+[![License](https://img.shields.io/badge/License-Custom--NC--SA-green.svg)](#10-lizenz)
+[![Check Style](https://github.com/Nall-chan/HomematicExtended/workflows/Check%20Style/badge.svg)](https://github.com/Nall-chan/HomematicExtended/actions)
+[![Run Tests](https://github.com/Nall-chan/HomematicExtended/workflows/Run%20Tests/badge.svg)](https://github.com/Nall-chan/HomematicExtended/actions)  
+[![PayPal.Me](https://img.shields.io/badge/PayPal-Me-lightblue.svg)](../README.md#6-spenden)
+[![Wunschliste](https://img.shields.io/badge/Wunschliste-Amazon-ff69fb.svg)](../README.md#6-spenden)
 
 # HomeMatic Systemvariablen  <!-- omit in toc -->
+
    Bereitstellen der System und Alarmvariablen einer CCU in IPS.  
 
 ## Dokumentation <!-- omit in toc -->
@@ -13,12 +16,19 @@
 **Inhaltsverzeichnis**
 
 - [1. Funktionsumfang](#1-funktionsumfang)
-- [2. Installation](#2-installation)
-- [3. Einrichten der Instanzen in IP-Symcon](#3-einrichten-der-instanzen-in-ip-symcon)
-- [4. Statusvariablen und Profile](#4-statusvariablen-und-profile)
-- [5. WebFront](#5-webfront)
-- [6. PHP-Befehlsreferenz](#6-php-befehlsreferenz)
-- [7. Lizenz](#7-lizenz)
+- [2. Voraussetzungen](#2-voraussetzungen)
+- [3. Software-Installation](#3-software-installation)
+- [4. Einrichten der Instanzen in IP-Symcon](#4-einrichten-der-instanzen-in-ip-symcon)
+- [5. Statusvariablen](#5-statusvariablen)
+- [6. Visualisierung](#6-visualisierung)
+  - [Kachel Visualisierung](#kachel-visualisierung)
+  - [WebFront Visualisierung](#webfront-visualisierung)
+- [7. PHP-Befehlsreferenz](#7-php-befehlsreferenz)
+- [8. Aktionen](#8-aktionen)
+- [9. Anhang](#9-anhang)
+  - [1. Changelog](#1-changelog)
+  - [2. Spenden](#2-spenden)
+- [10. Lizenz](#10-lizenz)
 
 ## 1. Funktionsumfang
 
@@ -59,17 +69,21 @@
 
     **Hinweis:** Über den Homematic Konfigurator in IPS kann das benötigte Homematic Device
     komfortabel angelegt werden.  
-![CCUPushSystemvariablen](../docs/CCUPushSystemvariablen.png)  
+![CCUPushSystemvariablen](../imgs/CCUPushSystemvariablen.png)  
 
-## 2. Installation
+## 2. Voraussetzungen
+
+- IP-Symcon ab Version 9.0  
+- Ein Homematic Socket (`HomeMatic Socket`), an dem die CCU angebunden ist  
+- Die Firewall der CCU erlaubt den Zugriff auf die `Remote HomeMatic-Script API` (siehe [Haupt-README](../README.md#2-voraussetzungen))  
+
+## 3. Software-Installation
 
 Dieses Modul ist Bestandteil der [HomeMaticExtended-Library](../).  
 
+## 4. Einrichten der Instanzen in IP-Symcon
 
-## 3. Einrichten der Instanzen in IP-Symcon
-
-
-![Instanzen](../docs/HMExtendedInstanzen.png)  
+![Instanzen](../imgs/HMExtendedInstanzen.png)  
    Unter Instanz hinzufügen sind die 'HomeMatic Systemvariablen' unter dem Hersteller 'HomeMatic' zu finden.  
    Nach dem Anlegen der Instanz sollte als übergeordnetes Gerät schon der HomeMatic Socket ausgewählt sein.  
    Existieren in IPS mehrere Homematic Socket, so ist der auszuwählen, der der CCU entspricht von dem die Systemvariablen gelesen werden sollen.  
@@ -84,7 +98,7 @@ Dieses Modul ist Bestandteil der [HomeMaticExtended-Library](../).
 
    Hier kann mit dem entfernen des Haken 'Benutze Standardaktion' die Bedienung einer
    Variable, aus dem WebFront heraus, unterbunden werden.  
-![Systemvariablen](../docs/Systemvariablen.png)  
+![Systemvariablen](../imgs/Systemvariablen.png)  
 
 |  Eigenschaft  |   Typ   | Standardwert |                          Funktion                           |
 | :-----------: | :-----: | :----------: | :---------------------------------------------------------: |
@@ -94,8 +108,7 @@ Dieses Modul ist Bestandteil der [HomeMaticExtended-Library](../).
 | EnableAlarmDP | boolean |     true     |        Aktiviert die verarbeitung von Alarmvariablen        |
 | AlarmScriptID | integer |      0       | Script-ID welches bei der Alarmverarbeitung ausgeführt wird |
 
-
-## 4. Statusvariablen und Profile  
+## 5. Statusvariablen
 
 **Statusvariablen:**  
    Alle von der CCU gemeldeten Systemvariablen werden in IPS dargestellt.  
@@ -136,14 +149,18 @@ Dieses Modul ist Bestandteil der [HomeMaticExtended-Library](../).
    Der Profilname lautet immer:
    'HM.SysVar\<ID der Systemvariablen Instanz\>.\<IDENT der Systemvariable\>; (z.B. HM.SysVar12345.950).  
 
-## 5. WebFront  
+## 6. Visualisierung
+
+### Kachel Visualisierung
+
+*Screenshot der Kachel Visualisierung folgt.*  
+
+### WebFront Visualisierung
 
 Die direkte Darstellung im WebFront ist möglich, es wird aber empfohlen mit Links zu arbeiten.  
-![Systemvariablen](../docs/Systemvariablen_WF.png)  
+![Systemvariablen](../imgs/Systemvariablen_WF.png)  
 
-
-## 6. PHP-Befehlsreferenz
-
+## 7. PHP-Befehlsreferenz
 
    Um einen Wert einer Systemvariable aus IPS heraus in die CCU zu schreiben, werden die
    schon vorhandenen HM_WriteValue* Befehle von IPS genutzt.  
@@ -171,7 +188,7 @@ Die direkte Darstellung im WebFront ist möglich, es wird aber empfohlen mit Lin
    True bei Erfolg, im Fehlerfall False.  
 
 **Übersicht aller übergeben Variablen im Alarm-Script:**  
-![Alarmvariable](../docs/Alarmvariable.png)  
+![Alarmvariable](../imgs/Alarmvariable.png)  
 
 |  Indexname  |  Type   |             Bedeutung              |
 | :---------: | :-----: | :--------------------------------: |
@@ -185,7 +202,28 @@ Die direkte Darstellung im WebFront ist möglich, es wird aber empfohlen mit Lin
 |    VALUE    | boolean |           Aktueller Wert           |
 |  VARIABLE   | integer |     ObjektID der Alarmvariable     |
 
+## 8. Aktionen
 
-## 7. Lizenz
+**Grundsätzlich können alle bedienbaren Statusvariablen als Ziel einer [`Aktion`](https://www.symcon.de/service/dokumentation/konzepte/automationen/ablaufplaene/aktionen/) mit `Auf Wert schalten` angesteuert werden, so dass hier keine speziellen Aktionen benutzt werden müssen.**  
 
-[Custom NC-SA](../LICENSE)  
+## 9. Anhang
+
+### 1. Changelog
+
+Der vollständige Changelog der Library steht in der [Haupt-README](../README.md#2-changelog).  
+
+Version 3.75:
+
+- Keine Änderungen. Das Modul wird in einer späteren Version auf den Datenfluss des Homematic Sockets umgestellt.  
+
+### 2. Spenden
+
+Dieses Modul ist für die nicht kommerzielle Nutzung kostenlos, Schenkungen als Unterstützung für den Autor werden hier akzeptiert:
+
+  [![PayPal.Me](https://img.shields.io/badge/PayPal-Me-lightblue.svg)](https://paypal.me/Nall4chan)
+
+  [![Wunschliste](https://img.shields.io/badge/Wunschliste-Amazon-ff69fb.svg)](https://www.amazon.de/hz/wishlist/ls/YU4AI9AQT9F?ref_=wl_share)
+
+## 10. Lizenz
+
+[Custom NC-SA](../LICENSE)

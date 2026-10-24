@@ -3,11 +3,18 @@
         "de": {
             "Address": "Adresse",
             "Instance has no active parent instance!": "Keine aktive Parent Instanz!",
-            "Error on send Data.": "",
+            "Error on send Data.": "Fehler beim Senden der Daten.",
             "Parameter %s must be type of integer.": "Parameter %s muss vom Typ integer sein.",
             "Parameter %s must be type of string.": "Parameter %s muss vom Typ string sein.",
             "Parameter %s out of range.": "Parameter %s außerhalb des zulässigen Bereiches.",
-            "This module is free for non-commercial use,\r\nDonations in support of the author are accepted here:": "Dieses Modul ist für die nicht kommerzielle Nutzung kostenlos,\r\nSchenkungen als Unterstützung für den Autor werden hier akzeptiert:"
+            "This module is free for non-commercial use,\r\nDonations in support of the author are accepted here:": "Dieses Modul ist für die nicht kommerzielle Nutzung kostenlos,\r\nSchenkungen als Unterstützung für den Autor werden hier akzeptiert:",
+            "Error on %s": "Fehler bei %s",
+            "Invalid response from CCU.": "Ungültige Antwort der CCU.",
+            "Address (with channel 3)": "Adresse (mit Kanal 3)",
+            "Configuration is valid.": "Konfiguration gültig.",
+            "No address entered.": "Keine Adresse eingetragen.",
+            "Address must contain the channel (e.g. NEQ1234567:3).": "Die Adresse muss den Kanal enthalten (z.B. NEQ1234567:3).",
+            "Invalid address, the address must contain the channel.": "Ungültige Adresse, die Adresse muss den Kanal enthalten."
         }
     }
 }

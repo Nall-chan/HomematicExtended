@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @copyright     2015 Michael Tröger
  * @license       Custom Non-Commercial Share-Alike License (see LICENSE)
  *
- * @version       3.74
+ * @version       3.75
  */
 require_once __DIR__ . '/../libs/HMBase.php';  // HMBase Klasse
 
@@ -21,6 +21,9 @@ require_once __DIR__ . '/../libs/HMBase.php';  // HMBase Klasse
  */
 class HomeMaticDisEPWM55 extends HMBase
 {
+    private const Placeholder = 'XXX';
+    private const StatusNoChannel = IS_EBASE + 2;
+
     /**
      * Interne Funktion des SDK.
      */
@@ -28,8 +31,8 @@ class HomeMaticDisEPWM55 extends HMBase
     {
         parent::Create();
 
-        $this->RegisterPropertyString(\HMExtended\Device\Property::Address, '');
-        $this->RegisterPropertyInteger(\HMExtended\Device\Property::Protocol, 0);
+        // Adresse der Anzeige mit Kanal 3 und Protokoll. Der Platzhalter verhindert Fehler im Symcon Homematic Konfigurator.
+        $this->RegisterHMPropertys(self::Placeholder . '9999996');
         $this->RegisterPropertyBoolean(\HMExtended\Device\Property::EmulateStatus, false);
     }
 
@@ -42,6 +45,15 @@ class HomeMaticDisEPWM55 extends HMBase
         $Address = $this->ReadPropertyString(\HMExtended\Device\Property::Address);
         $this->SetSummary($Address);
         $this->SetReceiveDataFilter('.*9999999999.*');
+        if (($Address == '') || str_starts_with($Address, self::Placeholder)) {
+            $this->SetStatus(IS_INACTIVE);
+            return;
+        }
+        if (!str_contains($Address, ':')) {
+            $this->SetStatus(self::StatusNoChannel);
+            return;
+        }
+        $this->SetStatus(IS_ACTIVE);
     }
 
     //################# public
@@ -78,6 +90,10 @@ class HomeMaticDisEPWM55 extends HMBase
      */
     public function WriteValueDisplayLine(int $Line, string $Text, int $Icon): bool
     {
+        if (($Line < 1) || ($Line > 3)) {
+            trigger_error(sprintf($this->Translate('Parameter %s out of range.'), 'Line'), E_USER_NOTICE);
+            return false;
+        }
         $Data[] = '0x0A';
         for ($index = 1; $index <= 3; $index++) {
             if ($index == $Line) {
@@ -109,6 +125,10 @@ class HomeMaticDisEPWM55 extends HMBase
      */
     public function WriteValueDisplayLineEx(int $Line, string $Text, int $Icon, int $Chime, int $Repeat, int $Wait, int $Color): bool
     {
+        if (($Line < 1) || ($Line > 3)) {
+            trigger_error(sprintf($this->Translate('Parameter %s out of range.'), 'Line'), E_USER_NOTICE);
+            return false;
+        }
         $Data[] = '0x0A';
         for ($index = 1; $index <= 3; $index++) {
             if ($index == $Line) {
@@ -219,29 +239,21 @@ class HomeMaticDisEPWM55 extends HMBase
      */
     private function SendData(array $Submit): bool
     {
-        $ParentData = [
-            'DataID'     => \HMExtended\GUID::SendRpcToIO,
-            'Protocol'   => 0,
-            'MethodName' => 'setValue',
-            'WaitTime'   => 3,
-            'Data'       => [$this->ReadPropertyString(\HMExtended\Device\Property::Address), 'SUBMIT', '0x02,' . implode(',', $Submit) . ',0x03']
-        ];
-        $this->SendDebug('Send', $ParentData, 0);
-
-        $JSON = json_encode($ParentData);
-        $ResultJSON = @$this->SendDataToParent($JSON);
-        if ($ResultJSON === false) {
-            trigger_error($this->Translate('Error on send Data.'), E_USER_NOTICE);
-            $this->SendDebug('Error JSON', $ResultJSON, 0);
+        $Address = $this->ReadPropertyString(\HMExtended\Device\Property::Address);
+        if (($Address == '') || str_starts_with($Address, self::Placeholder) || !str_contains($Address, ':')) {
+            trigger_error($this->Translate('Invalid address, the address must contain the channel.'), E_USER_NOTICE);
             return false;
         }
-        $Result = json_decode(utf8_encode($ResultJSON));
-        if ($Result === false) {
+        $Result = $this->SendRPC(
+            'setValue',
+            $this->ReadPropertyInteger(\HMExtended\Device\Property::Protocol),
+            [$Address, 'SUBMIT'],
+            '0x02,' . implode(',', $Submit) . ',0x03'
+        );
+        if ($Result === null) {
             trigger_error($this->Translate('Error on send Data.'), E_USER_NOTICE);
-            $this->SendDebug('Error decode', $Result, 0);
             return false;
         }
-        $this->SendDebug('Receive', $Result, 0);
         return true;
     }
 

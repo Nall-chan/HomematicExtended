@@ -38,10 +38,6 @@ class LibraryTest extends TestCaseSymconValidation
     {
         $this->validateModule(__DIR__ . '/../HomeMaticScript');
     }
-    public function testValidateParaInterface(): void
-    {
-        $this->validateModule(__DIR__ . '/../ParaInterface');
-    }
     public function testValidatePowerMeter(): void
     {
         $this->validateModule(__DIR__ . '/../PowerMeter');
@@ -53,10 +49,6 @@ class LibraryTest extends TestCaseSymconValidation
     public function testValidateRFInterface(): void
     {
         $this->validateModule(__DIR__ . '/../RFInterface');
-    }
-    public function testValidateRFInterfaceConfigurator(): void
-    {
-        $this->validateModule(__DIR__ . '/../RFInterfaceConfigurator');
     }
     public function testValidateRFInterfaceSplitter(): void
     {

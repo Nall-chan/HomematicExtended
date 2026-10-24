@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @copyright     2015 Michael Tröger
  * @license       Custom Non-Commercial Share-Alike License (see LICENSE)
  *
- * @version       3.74
+ * @version       3.75
  */
 require_once __DIR__ . '/HMBase.php';  // HMBase Klasse
 
@@ -34,6 +34,8 @@ class HMHeatingDevice extends HMBase
     protected const SelectedWeekScheduleIdent = '';
 
     protected const EVENT = 'WEEK_PROFIL';
+    protected const EnablePrefix = 'enable_';
+    protected const EnablePartyProperty = 'enable_PARTY';
     protected const TIME = 'Time';
     protected const TEMP = 'Temp';
 
@@ -68,7 +70,7 @@ class HMHeatingDevice extends HMBase
         $this->RegisterPropertyBoolean(\HMExtended\Device\Property::EmulateStatus, false);
 
         foreach (\HMExtended\Property::$Properties[static::DeviceTyp] as $Property => $Value) {
-            $this->RegisterPropertyBoolean('enable_' . $Property, $Value);
+            $this->RegisterPropertyBoolean(self::EnablePrefix . $Property, $Value);
         }
         $this->RegisterPropertyBoolean(\HMExtended\Device\Property::Schedule, true);
         $this->RegisterPropertyBoolean(\HMExtended\Device\Property::SetPointBehavior, true);
@@ -119,7 +121,8 @@ class HMHeatingDevice extends HMBase
      */
     public function Destroy(): void
     {
-        if (!IPS_InstanceExists($this->InstanceID)) {
+        // Die Profile werden von allen Heizungsmodulen gemeinsam genutzt und erst mit der letzten Instanz gelöscht.
+        if ((!IPS_InstanceExists($this->InstanceID)) && (!$this->ExistInstancesOf(\HMExtended\DeviceType::$HeatingGuids))) {
             foreach (\HMExtended\Variables::$Profiles as $ProfileName => $ProfileData) {
                 $this->UnregisterProfile($ProfileName);
             }
@@ -141,7 +144,7 @@ class HMHeatingDevice extends HMBase
         foreach (\HMExtended\ValuesSet::$Variables[static::DeviceTyp] as $Ident => $VarData) {
             $Property = isset($VarData[4]) ? $VarData[4] : $Ident;
             if (array_key_exists($Property, \HMExtended\Property::$Properties[static::DeviceTyp])) {
-                if (!$this->ReadPropertyBoolean('enable_' . $Property)) {
+                if (!$this->ReadPropertyBoolean(self::EnablePrefix . $Property)) {
                     $this->UnregisterVariable($Ident);
                 }
             }
@@ -149,7 +152,7 @@ class HMHeatingDevice extends HMBase
         foreach (\HMExtended\ParamSet::$Variables[static::DeviceTyp] as $Ident => $ParaData) {
             $Property = isset($ParaData[4]) ? $ParaData[4] : $Ident;
             if (array_key_exists($Property, \HMExtended\Property::$Properties[static::DeviceTyp])) {
-                if (!$this->ReadPropertyBoolean('enable_' . $Property)) {
+                if (!$this->ReadPropertyBoolean(self::EnablePrefix . $Property)) {
                     $this->UnregisterVariable($Ident);
                 }
             }
@@ -167,7 +170,7 @@ class HMHeatingDevice extends HMBase
             }
             if ($ProfileSubmitPlan) {
                 $this->CreateProfile($ProfileSubmitPlan);
-                $isOld = @$this->GetIDForIdent(\HMExtended\Variables::SELECT_NEW_WEEK_PROGRAM);
+                $isOld = $this->FindIDForIdent(\HMExtended\Variables::SELECT_NEW_WEEK_PROGRAM);
                 $this->RegisterVariableInteger(\HMExtended\Variables::SELECT_NEW_WEEK_PROGRAM, $this->Translate('Schedule save in profile'), $ProfileSubmitPlan);
                 $this->EnableAction(\HMExtended\Variables::SELECT_NEW_WEEK_PROGRAM);
                 if (!$isOld) {
@@ -180,8 +183,8 @@ class HMHeatingDevice extends HMBase
         } else {
             $this->UnregisterVariable(\HMExtended\Variables::SELECT_NEW_WEEK_PROGRAM);
             $this->UnregisterVariable(\HMExtended\Variables::SUBMIT_WEEK_PROGRAM);
-            $EventId = @IPS_GetObjectIDByIdent(self::EVENT, $this->InstanceID);
-            if ($EventId != false) {
+            $EventId = $this->FindIDForIdent(self::EVENT);
+            if ($EventId != 0) {
                 IPS_DeleteEvent($EventId);
             }
         }
@@ -189,19 +192,51 @@ class HMHeatingDevice extends HMBase
             return;
         }
         if (($Address != '') && ($this->HasActiveParent())) {
-            @$this->CreateVariablesFromValues();
-            @$this->GetValuesAndSetVariable();
-            @$this->CreateVariablesFromParams();
-            @$this->GetParamsAndSetVariable();
+            // Nach der ersten fehlgeschlagenen Abfrage werden keine Folgeanfragen mehr gesendet.
+            if ($this->CreateVariablesFromValues() && $this->GetValuesAndSetVariable() && $this->CreateVariablesFromParams()) {
+                $this->GetParamsAndSetVariable();
+            }
         }
+    }
+
+    /**
+     * Liest einen Datenpunkt (Paramset VALUES) von der CCU und schreibt ihn in die Statusvariable.
+     *
+     * @param string $Ident Ident der Statusvariable, muss ein Datenpunkt der Werte sein.
+     *
+     * @return bool true, wenn die CCU den Wert geliefert hat.
+     */
+    public function RequestState(string $Ident): bool
+    {
+        if (!array_key_exists($Ident, \HMExtended\ValuesSet::$Variables[static::DeviceTyp])) {
+            trigger_error($this->Translate('Invalid Ident for VALUE.'), E_USER_NOTICE);
+            return false;
+        }
+        $AddressWithChannel = $this->ReadPropertyString(\HMExtended\Device\Property::Address) . static::ValuesChannel;
+        $Result = $this->SendRPC('getValue', $this->ReadPropertyInteger(\HMExtended\Device\Property::Protocol), [$AddressWithChannel, $Ident]);
+        if ($Result === null) {
+            return false;
+        }
+        @$this->SetValue($Ident, $Result);
+        return true;
+    }
+
+    /**
+     * Liest das Paramset MASTER (Einstellungen und Zeitprofile) von der CCU und aktualisiert Statusvariablen und Wochenplan.
+     *
+     * @return bool true, wenn die CCU die Parameter geliefert hat.
+     */
+    public function RequestParams(): bool
+    {
+        return $this->GetParamsAndSetVariable();
     }
 
     /**
      * Interne Funktion des SDK.
      */
-    public function RequestAction(string $Ident, mixed $Value, bool &$done = false): void
+    protected function ProcessRequestAction(string $Ident, mixed $Value, bool &$done = false): void
     {
-        parent::RequestAction($Ident, $Value, $done);
+        parent::ProcessRequestAction($Ident, $Value, $done);
         if ($done) {
             return;
         }
@@ -244,33 +279,13 @@ class HMHeatingDevice extends HMBase
             $Property = isset(\HMExtended\ParamSet::$Variables[static::DeviceTyp][$Ident][4]) ? \HMExtended\ParamSet::$Variables[static::DeviceTyp][$Ident][4] : $Ident;
         }
         if (array_key_exists($Property, \HMExtended\Property::$Properties[static::DeviceTyp])) {
-            if (!$this->ReadPropertyBoolean('enable_' . $Property)) {
-                trigger_error('Variable is disabled in config.', E_USER_NOTICE);
+            if (!$this->ReadPropertyBoolean(self::EnablePrefix . $Property)) {
+                trigger_error($this->Translate('Variable is disabled in config.'), E_USER_NOTICE);
                 $done = true;
                 return;
             }
         }
         return;
-    }
-
-    public function RequestState(string $Ident): bool
-    {
-        if (!array_key_exists($Ident, \HMExtended\ValuesSet::$Variables[static::DeviceTyp])) {
-            trigger_error($this->Translate('Invalid Ident for VALUE.'), E_USER_NOTICE);
-            return false;
-        }
-        $AddressWithChannel = $this->ReadPropertyString(\HMExtended\Device\Property::Address) . static::ValuesChannel;
-        $Result = $this->SendRPC('getValue', $this->ReadPropertyInteger(\HMExtended\Device\Property::Protocol), [$AddressWithChannel, $Ident]);
-        if ($Result === null) {
-            return false;
-        }
-        @$this->SetValue($Ident, $Result);
-        return true;
-    }
-
-    public function RequestParams(): bool
-    {
-        return $this->GetParamsAndSetVariable();
     }
 
     //################# protected
@@ -288,6 +303,12 @@ class HMHeatingDevice extends HMBase
         }
     }
 
+    /**
+     * Schreibt einen Wert in die Statusvariable. Das aktive Zeitprofil wird zusätzlich gemerkt und der Wochenplan aktualisiert.
+     *
+     * @param string $Ident Ident der Statusvariable.
+     * @param mixed $Value Der Wert.
+     */
     protected function SetVariable(string $Ident, mixed $Value): void
     {
         if ($Ident == static::SelectedWeekScheduleIdent) {
@@ -301,6 +322,11 @@ class HMHeatingDevice extends HMBase
         parent::SetVariable($Ident, $Value);
     }
 
+    /**
+     * Zerlegt das Paramset MASTER in die Zeitprofile (Wochenplan) und die übrigen Parameter und schreibt diese in die Statusvariablen.
+     *
+     * @param array $Params Das Paramset MASTER der CCU.
+     */
     protected function SetParamVariables(array $Params): void
     {
         $ScheduleData = [];
@@ -323,11 +349,20 @@ class HMHeatingDevice extends HMBase
         }
         $this->WeekSchedules = $ScheduleData;
         foreach ($Params as $Ident => $Value) {
-            @$this->SetValue($Ident, $Value);
+            // Nicht jeder Parameter besitzt eine Variable (abgewählt in der Konfiguration oder nicht verwendet).
+            if ($this->FindIDForIdent((string) $Ident) > 0) {
+                $this->SetValue((string) $Ident, $Value);
+            }
         }
         $this->RefreshScheduleObject();
     }
 
+    /**
+     * Wandelt einen Wert in den PHP-Typ der Statusvariable.
+     *
+     * @param int $VarType Variablentyp (VARIABLETYPE_*).
+     * @param mixed $Value Der Wert, wird direkt geändert.
+     */
     protected function FixValueType(int $VarType, mixed &$Value): void
     {
         switch ($VarType) {
@@ -346,6 +381,14 @@ class HMHeatingDevice extends HMBase
         }
     }
 
+    /**
+     * Schreibt Parameter in das Paramset MASTER des Gerätes.
+     *
+     * @param array $Parameter Ident => Wert.
+     * @param bool $EmulateStatus Bei true wird die Antwort der CCU nicht abgewartet.
+     *
+     * @return bool true, wenn die CCU den Auftrag angenommen hat.
+     */
     protected function PutParamSet(array $Parameter, bool $EmulateStatus = false): bool
     {
         $Paramset = [$this->ReadPropertyString(\HMExtended\Device\Property::Address) . static::ParamChannel, \HMExtended\CCU::MASTER];
@@ -353,6 +396,14 @@ class HMHeatingDevice extends HMBase
         return ($Result !== null) ? true : false;
     }
 
+    /**
+     * Schreibt mehrere Datenpunkte gemeinsam in das Paramset VALUES des Gerätes.
+     *
+     * @param array $Values Ident => Wert.
+     * @param bool $EmulateStatus Bei true wird die Antwort der CCU nicht abgewartet.
+     *
+     * @return bool true, wenn die CCU den Auftrag angenommen hat.
+     */
     protected function PutValueSet(array $Values, bool $EmulateStatus = false): bool
     {
         $Paramset = [$this->ReadPropertyString(\HMExtended\Device\Property::Address) . static::ValuesChannel, \HMExtended\CCU::VALUES];
@@ -360,6 +411,15 @@ class HMHeatingDevice extends HMBase
         return ($Result !== null) ? true : false;
     }
 
+    /**
+     * Schreibt einen einzelnen Datenpunkt des Paramsets VALUES.
+     *
+     * @param string $ValueName Ident des Datenpunktes.
+     * @param mixed $Value Der Wert.
+     * @param bool $EmulateStatus Bei true wird der Wert direkt in die Statusvariable übernommen.
+     *
+     * @return bool true, wenn die CCU den Auftrag angenommen hat.
+     */
     protected function PutValue(string $ValueName, $Value, bool $EmulateStatus = false): bool
     {
         $Paramset = [$this->ReadPropertyString(\HMExtended\Device\Property::Address) . static::ValuesChannel, $ValueName];
@@ -372,6 +432,9 @@ class HMHeatingDevice extends HMBase
 
     //################# PRIVATE
 
+    /**
+     * Baut das Wochenplan-Ereignis aus den Daten des aktiven Zeitprofils neu auf. Ohne Wochenplan in der Konfiguration passiert nichts.
+     */
     private function RefreshScheduleObject(): void
     {
         $this->SendDebug(__FUNCTION__, '', 0);
@@ -381,8 +444,8 @@ class HMHeatingDevice extends HMBase
         if (!count($this->WeekSchedules)) {
             return;
         }
-        $EventId = @IPS_GetObjectIDByIdent(self::EVENT, $this->InstanceID);
-        if ($EventId === false) {
+        $EventId = $this->FindIDForIdent(self::EVENT);
+        if ($EventId == 0) {
             return;
         }
         $Event = IPS_GetEvent($EventId);
@@ -420,11 +483,16 @@ class HMHeatingDevice extends HMBase
         }
     }
 
+    /**
+     * Überträgt den Wochenplan zur CCU und schreibt ihn dort in das gewählte Zeitprofil.
+     *
+     * @param int $Plan Nummer des Zeitprofils auf der CCU (beginnt bei 1).
+     */
     private function SaveSchedule(int $Plan): void
     {
         $this->SendDebug(__FUNCTION__, '', 0);
-        $EventId = @IPS_GetObjectIDByIdent(self::EVENT, $this->InstanceID);
-        if ($EventId === false) {
+        $EventId = $this->FindIDForIdent(self::EVENT);
+        if ($EventId == 0) {
             return;
         }
         $Event = IPS_GetEvent($EventId);
@@ -470,10 +538,13 @@ class HMHeatingDevice extends HMBase
         }
     }
 
-    private function CreateVariablesFromValues(): void
+    private function CreateVariablesFromValues(): bool
     {
         $AddressWithChannel = $this->ReadPropertyString(\HMExtended\Device\Property::Address) . static::ValuesChannel;
         $Result = $this->GetParamsetDescription(\HMExtended\CCU::VALUES, $AddressWithChannel);
+        if (count($Result) == 0) {
+            return false;
+        }
         foreach ($Result as $Variable) {
             $Ident = $Variable['ID'];
             $Name = $Variable['ID'];
@@ -483,7 +554,7 @@ class HMHeatingDevice extends HMBase
             }
             $Property = isset(\HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][4]) ? \HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][4] : $Ident;
             if (array_key_exists($Property, \HMExtended\Property::$Properties[static::DeviceTyp])) {
-                if (!$this->ReadPropertyBoolean('enable_' . $Property)) {
+                if (!$this->ReadPropertyBoolean(self::EnablePrefix . $Property)) {
                     continue;
                 }
             }
@@ -506,12 +577,16 @@ class HMHeatingDevice extends HMBase
                 $this->EnableAction($Ident);
             }
         }
+        return true;
     }
 
-    private function CreateVariablesFromParams(): void
+    private function CreateVariablesFromParams(): bool
     {
         $AddressWithChannel = $this->ReadPropertyString(\HMExtended\Device\Property::Address) . static::ParamChannel;
         $Result = $this->GetParamsetDescription(\HMExtended\CCU::MASTER, $AddressWithChannel);
+        if (count($Result) == 0) {
+            return false;
+        }
         foreach ($Result as $Variable) {
             $Ident = $Variable['ID'];
             $Profile = '';
@@ -534,7 +609,7 @@ class HMHeatingDevice extends HMBase
 
                 $Property = isset(\HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][4]) ? \HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][4] : $Ident;
                 if (array_key_exists($Property, \HMExtended\Property::$Properties[static::DeviceTyp])) {
-                    if (!$this->ReadPropertyBoolean('enable_' . $Property)) {
+                    if (!$this->ReadPropertyBoolean(self::EnablePrefix . $Property)) {
                         continue;
                     }
                 }
@@ -555,8 +630,14 @@ class HMHeatingDevice extends HMBase
                 }
             }
         }
+        return true;
     }
 
+    /**
+     * Liest das Paramset MASTER von der CCU und schreibt die Werte in die Statusvariablen.
+     *
+     * @return bool true, wenn die CCU Parameter geliefert hat.
+     */
     private function GetParamsAndSetVariable(): bool
     {
         $AddressWithChannel = $this->ReadPropertyString(\HMExtended\Device\Property::Address) . static::ParamChannel;
@@ -630,6 +711,15 @@ class HMHeatingDevice extends HMBase
         }
     }
 
+    /**
+     * Legt die Aktionen des Wochenplans an, eine je Temperatur. Die Aktions-IDs beginnen bei 1.
+     * Es werden höchstens 31 Aktionen angelegt.
+     *
+     * @param array $Event Das Wochenplan-Ereignis.
+     * @param array $ScheduleData Die Zeitprofile der CCU.
+     *
+     * @return array Aktions-ID => Temperatur.
+     */
     private function UpdateScheduleActions(array $Event, array $ScheduleData): array
     {
         $this->SendDebug(__FUNCTION__, '', 0);
@@ -640,38 +730,41 @@ class HMHeatingDevice extends HMBase
         $ScheduleTemps = array_unique($ScheduleTemps);
         if (count($ScheduleTemps) > 31) {
             $this->LogMessage($this->Translate('Too many temperatures on schedule. Crop to 31 actions.'), KL_WARNING);
-            $ScheduleTemps = array_slice($ScheduleTemps, 0, 32);
+            $ScheduleTemps = array_slice($ScheduleTemps, 0, 31);
         }
         $ScheduleTempsProperty = array_column(json_decode($this->ReadPropertyString(\HMExtended\Device\Property::ScheduleTemps), true), 'TemperatureValue');
         $ScheduleTemps = array_unique(array_merge($ScheduleTemps, $ScheduleTempsProperty), SORT_NUMERIC);
         if (count($ScheduleTemps) > 31) {
             $this->LogMessage($this->Translate('Too many temperatures on schedule. Crop to 31 actions.'), KL_WARNING);
-            $ScheduleTemps = array_slice($ScheduleTemps, 0, 32);
+            $ScheduleTemps = array_slice($ScheduleTemps, 0, 31);
         }
         sort($ScheduleTemps);
+        if (count($ScheduleTemps) == 0) {
+            return [];
+        }
         $StepSize = 260 / count($ScheduleTemps);
 
         foreach ($Event['ScheduleActions'] as $Action) {
             IPS_SetEventScheduleAction($Event['EventID'], $Action['ID'], '', 0, '');
         }
-        $i = 0;
+        // Aktions-IDs müssen größer als 0 sein (0 = 'keine Aktion')
+        $ActionId = 1;
+        $Actions = [];
         foreach ($ScheduleTemps as $Temp) {
-            $Color = self::TempToRGB($i, $StepSize);
+            $Color = self::TempToRGB($ActionId - 1, $StepSize);
             $this->SendDebug((string) $Temp, $Color, 0);
-            IPS_SetEventScheduleAction($Event['EventID'], $i++, sprintf('%0.1f °C', $Temp), $Color, "<?php\r\n/** Do not edit this code,\r\n    It will be automatically overwritten.\r\n*/\r\n\r\n" . 'HM_RequestParams($_IPS[\'TARGET\']);');
-            if ($i == 32) {
-                break;
-            }
+            $Actions[$ActionId] = $Temp;
+            IPS_SetEventScheduleAction($Event['EventID'], $ActionId++, sprintf('%0.1f °C', $Temp), $Color, "<?php\r\n/** Do not edit this code,\r\n    It will be automatically overwritten.\r\n*/\r\n\r\n" . 'HM_RequestParams($_IPS[\'TARGET\']);');
         }
-        $this->SendDebug(__FUNCTION__, $ScheduleTemps, 0);
-        return $ScheduleTemps;
+        $this->SendDebug(__FUNCTION__, $Actions, 0);
+        return $Actions;
     }
 
     private function CreateWeekPlan(): void
     {
         $this->WeekSchedules = [];
-        $EventId = @IPS_GetObjectIDByIdent(self::EVENT, $this->InstanceID);
-        if ($EventId === false) {
+        $EventId = $this->FindIDForIdent(self::EVENT);
+        if ($EventId == 0) {
             $EventId = IPS_CreateEvent(2);
             IPS_SetParent($EventId, $this->InstanceID);
             IPS_SetIdent($EventId, self::EVENT);

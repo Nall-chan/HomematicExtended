@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @copyright     2015 Michael Tröger
  * @license       Custom Non-Commercial Share-Alike License (see LICENSE)
  *
- * @version       3.74
+ * @version       3.75
  */
 require_once __DIR__ . '/../libs/HMHeatingDevice.php';  // HMBase Klasse
 
@@ -35,15 +35,16 @@ class HomeMaticIPHeatingGroup extends HMHeatingDevice
     /**
      * Interne Funktion des SDK.
      */
-    public function RequestAction(string $Ident, mixed $Value, bool &$done = false): void
+    protected function ProcessRequestAction(string $Ident, mixed $Value, bool &$done = false): void
     {
-        parent::RequestAction($Ident, $Value, $done);
+        parent::ProcessRequestAction($Ident, $Value, $done);
         if ($done) {
             return;
         }
         if (array_key_exists($Ident, \HMExtended\ValuesSet::$Variables[static::DeviceTyp])) {
-            $Ident = is_string(\HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][2]) ? \HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][2] : $Ident;
-            $this->FixValueType(\HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][0], $Value);
+            $ValueDefinition = \HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident];
+            $Ident = is_string($ValueDefinition[2] ?? null) ? $ValueDefinition[2] : $Ident;
+            $this->FixValueType($ValueDefinition[0], $Value);
             $SendValue = $Value;
             switch ($Ident) { // Sonderfall Party Variablen
                 case \HMExtended\HeatingGroupHmIP::PARTY_TIME_START:
@@ -76,8 +77,8 @@ class HomeMaticIPHeatingGroup extends HMHeatingDevice
                 case \HMExtended\HeatingGroupHmIP::CONTROL_MODE:
                     switch ($Value) {
                         case 2: // Sonderfall Mode Party
-                            if (!$this->ReadPropertyBoolean('enable_PARTY')) {
-                                trigger_error('Party is disabled in config.', E_USER_NOTICE);
+                            if (!$this->ReadPropertyBoolean(self::EnablePartyProperty)) {
+                                trigger_error($this->Translate('Party is disabled in config.'), E_USER_NOTICE);
                                 return;
                             }
                             $Start = (new DateTime())->setTimestamp((int) $this->GetValue(\HMExtended\HeatingGroupHmIP::PARTY_TIME_START));
@@ -95,15 +96,16 @@ class HomeMaticIPHeatingGroup extends HMHeatingDevice
             return;
         }
         if (array_key_exists($Ident, \HMExtended\ParamSet::$Variables[static::DeviceTyp])) {
-            $Ident = is_string(\HMExtended\ParamSet::$Variables[static::DeviceTyp][$Ident][2]) ? \HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][2] : $Ident;
-            $this->FixValueType(\HMExtended\ParamSet::$Variables[static::DeviceTyp][$Ident][0], $Value);
+            $ParamDefinition = \HMExtended\ParamSet::$Variables[static::DeviceTyp][$Ident];
+            $Ident = is_string($ParamDefinition[2] ?? null) ? $ParamDefinition[2] : $Ident;
+            $this->FixValueType($ParamDefinition[0], $Value);
             $SendValue = $Value;
             switch ($Ident) { // Sonderfall Entkalkung
                 case \HMExtended\HeatingGroupHmIP::DECALCIFICATION_TIME:
                     $d = (new DateTime())->setTimestamp((int) $Value);
                     $CalcMin = (int) $d->format('i');
                     $CalcHour = (int) $d->format('H');
-                    $SendValue = ($CalcHour * 2) + ($CalcMin > 30 ? 1 : 0);
+                    $SendValue = ($CalcHour * 2) + ($CalcMin >= 30 ? 1 : 0);
                     break;
             }
             if ($this->PutParamSet([$Ident=>$SendValue])) {
@@ -115,6 +117,11 @@ class HomeMaticIPHeatingGroup extends HMHeatingDevice
         return;
     }
 
+    /**
+     * Wandelt die Entkalkungszeit (halbe Stunden seit 00:00) in einen Zeitstempel.
+     *
+     * @param array $Params Das Paramset MASTER der CCU.
+     */
     protected function SetParamVariables(array $Params): void
     {
         $d = new DateTime();
@@ -129,6 +136,12 @@ class HomeMaticIPHeatingGroup extends HMHeatingDevice
         parent::SetParamVariables($Params);
     }
 
+    /**
+     * Wandelt die Party-Zeiten (Format `Y_m_d H:i`) in Zeitstempel. Nie gesetzte Zeiten (`1999_11_30 00:00`) werden zur aktuellen Zeit.
+     *
+     * @param string $Ident Ident der Statusvariable.
+     * @param mixed $Value Der Wert der CCU.
+     */
     protected function SetVariable(string $Ident, mixed $Value): void
     {
         switch ($Ident) {

@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @copyright     2015 Michael Tröger
  * @license       Custom Non-Commercial Share-Alike License (see LICENSE)
  *
- * @version       3.74
+ * @version       3.75
  */
 require_once __DIR__ . '/../libs/HMBase.php';
 
@@ -27,9 +27,27 @@ class HomeMaticRemoteScript extends HMBase
     public function Create(): void
     {
         parent::Create();
-        $this->RegisterHMPropertys('XXX9999993');
-        $this->SetReceiveDataFilter('.*9999999999.*');
+        // Feste Adresse, die Instanz gehört zu keinem Gerät. Address und Protocol müssen vorhanden sein, sonst hängt sich der Symcon Homematic Konfigurator auf.
+        $this->RegisterPropertyString(\HMExtended\Device\Property::Address, \HMExtended\Device\Address::REMOTESCRIPT);
+        $this->RegisterPropertyInteger(\HMExtended\Device\Property::Protocol, static::ProtocolId);
         $this->RegisterPropertyBoolean(\HMExtended\Device\Property::EmulateStatus, false);
+    }
+
+    /**
+     * Interne Funktion des SDK.
+     * Ersetzt die bisherige Platzhalter-Adresse (XXX9999993:n) durch die feste Adresse.
+     */
+    public function Migrate(string $JSONData): string
+    {
+        $Data = json_decode($JSONData);
+        if (is_object($Data) && property_exists($Data, 'configuration') && property_exists($Data->configuration, \HMExtended\Device\Property::Address)) {
+            if (str_starts_with((string) $Data->configuration->{\HMExtended\Device\Property::Address}, 'XXX')) {
+                $Data->configuration->{\HMExtended\Device\Property::Address} = \HMExtended\Device\Address::REMOTESCRIPT;
+                $this->SendDebug('Migrate', json_encode($Data->configuration), 0);
+                return json_encode($Data);
+            }
+        }
+        return $JSONData;
     }
 
     /**
@@ -38,6 +56,7 @@ class HomeMaticRemoteScript extends HMBase
     public function ApplyChanges(): void
     {
         parent::ApplyChanges();
+        $this->SetReceiveDataFilter('.*9999999999.*');
     }
 
     //################# PUBLIC

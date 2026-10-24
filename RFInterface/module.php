@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @copyright     2015 Michael Tröger
  * @license       Custom Non-Commercial Share-Alike License (see LICENSE)
  *
- * @version       3.74
+ * @version       3.75
  */
 require_once __DIR__ . '/../libs/HMBase.php';  // HMBase Klasse
 
@@ -22,6 +22,7 @@ require_once __DIR__ . '/../libs/HMBase.php';  // HMBase Klasse
 class HomeMaticRFInterface extends IPSModuleStrict
 {
     use HMExtended\DebugHelper;
+    use HMExtended\VariableHelper;
 
     /**
      * Interne Funktion des SDK.
@@ -30,7 +31,18 @@ class HomeMaticRFInterface extends IPSModuleStrict
     {
         parent::Create();
         $this->RegisterPropertyString(\HMExtended\Device\Property::Address, '');
-        $this->ConnectParent(\HMExtended\GUID::RF_Interface_Splitter);
+    }
+
+    /**
+     * Interne Funktion des SDK.
+     * Die Instanz wird mit dem RF-Interface Splitter verbunden.
+     */
+    public function GetCompatibleParents(): string
+    {
+        return json_encode([
+            'type'      => 'connect',
+            'moduleIDs' => [\HMExtended\GUID::RF_Interface_Splitter]
+        ]);
     }
 
     /**
@@ -44,7 +56,8 @@ class HomeMaticRFInterface extends IPSModuleStrict
         $this->SetSummary($Address);
 
         if ($Address !== '') {
-            $this->SetReceiveDataFilter('.*"ADDRESS":"' . $Address . '".*');
+            // Eigene Adresse und die Nachricht des Splitters an alle Interfaces
+            $this->SetReceiveDataFilter('.*"ADDRESS":"(' . preg_quote($Address, '/') . '|' . preg_quote(\HMExtended\Device\Address::AllInterfaces, '/') . ')".*');
         } else {
             $this->SetReceiveDataFilter('.*9999999999.*');
         }
@@ -58,20 +71,27 @@ class HomeMaticRFInterface extends IPSModuleStrict
     public function ReceiveData(string $JSONString): string
     {
         $Data = json_decode($JSONString);
+        if (!is_object($Data)) {
+            return '';
+        }
         unset($Data->DataID);
+        if (($Data->ADDRESS ?? '') === \HMExtended\Device\Address::AllInterfaces) {
+            $this->CheckInterfacePresent((array) ($Data->PRESENT ?? []));
+            return '';
+        }
         unset($Data->ADDRESS);
         $this->SendDebug('Receive', $Data, 0);
         foreach ($Data as $Ident => $Value) {
             if ($Value === '') {
                 continue;
             }
-            
-            switch ($Ident){
+
+            switch ($Ident) {
                 case 'DUTY_CYCLE':
                     $Profile = '~Intensity.100';
                     break;
                 case 'CONNECTED':
-                    $Profile='~Alert.Reversed';
+                    $Profile = '~Alert.Reversed';
                     break;
                 default:
                     $Profile = '';
@@ -98,6 +118,25 @@ class HomeMaticRFInterface extends IPSModuleStrict
             $this->SetValue($Ident, $Value);
         }
         return '';
+    }
+
+    /**
+     * Setzt die Variable CONNECTED auf false, wenn das eigene Interface nicht in der Antwort der CCU enthalten war.
+     * Andere Werte bleiben unverändert, da ein fehlendes Interface keine neuen Werte liefert.
+     *
+     * @param array $Present Adressen der Interfaces, welche die CCU gemeldet hat.
+     */
+    private function CheckInterfacePresent(array $Present): void
+    {
+        $Address = $this->ReadPropertyString(\HMExtended\Device\Property::Address);
+        $this->SendDebug('Present', $Present, 0);
+        if (($Address === '') || in_array($Address, $Present, true)) {
+            return;
+        }
+        $this->SendDebug('Interface missing', $Address, 0);
+        if ($this->FindIDForIdent('CONNECTED') > 0) {
+            $this->SetValue('CONNECTED', false);
+        }
     }
 }
 

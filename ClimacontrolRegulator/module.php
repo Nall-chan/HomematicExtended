@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @copyright     2015 Michael Tröger
  * @license       Custom Non-Commercial Share-Alike License (see LICENSE)
  *
- * @version       3.74
+ * @version       3.75
  */
 require_once __DIR__ . '/../libs/HMHeatingDevice.php';  // HMBase Klasse
 
@@ -35,15 +35,16 @@ class HomeMaticClimateControlRegulator extends HMHeatingDevice
     /**
      * Interne Funktion des SDK.
      */
-    public function RequestAction(string $Ident, mixed $Value, bool &$done = false): void
+    protected function ProcessRequestAction(string $Ident, mixed $Value, bool &$done = false): void
     {
-        parent::RequestAction($Ident, $Value, $done);
+        parent::ProcessRequestAction($Ident, $Value, $done);
         if ($done) {
             return;
         }
         if (array_key_exists($Ident, \HMExtended\ValuesSet::$Variables[static::DeviceTyp])) {
-            $Ident = is_string(\HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][2]) ? \HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][2] : $Ident;
-            $this->FixValueType(\HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][0], $Value);
+            $ValueDefinition = \HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident];
+            $Ident = is_string($ValueDefinition[2] ?? null) ? $ValueDefinition[2] : $Ident;
+            $this->FixValueType($ValueDefinition[0], $Value);
             $SendValue = $Value;
             switch ($Ident) {
                 case \HMExtended\ClimacontrolRegulator::SETPOINT:
@@ -58,8 +59,9 @@ class HomeMaticClimateControlRegulator extends HMHeatingDevice
             return;
         }
         if (array_key_exists($Ident, \HMExtended\ParamSet::$Variables[static::DeviceTyp])) {
-            $Ident = is_string(\HMExtended\ParamSet::$Variables[static::DeviceTyp][$Ident][2]) ? \HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][2] : $Ident;
-            $this->FixValueType(\HMExtended\ParamSet::$Variables[static::DeviceTyp][$Ident][0], $Value);
+            $ParamDefinition = \HMExtended\ParamSet::$Variables[static::DeviceTyp][$Ident];
+            $Ident = is_string($ParamDefinition[2] ?? null) ? $ParamDefinition[2] : $Ident;
+            $this->FixValueType($ParamDefinition[0], $Value);
             $SendValue = $Value;
             switch ($Ident) {
                 case \HMExtended\ClimacontrolRegulator::DECALCIFICATION_TIME: // Sonderfall Entkalkung
@@ -78,7 +80,7 @@ class HomeMaticClimateControlRegulator extends HMHeatingDevice
                     return;
                 case \HMExtended\ClimacontrolRegulator::PARTY_END_TIME: // Sonderfall Party Variablen
                     if ($Value < time()) {
-                        trigger_error($this->Translate('Time cannot be in the past'));
+                        trigger_error($this->Translate('Time cannot be in the past'), E_USER_NOTICE);
                         return;
                     }
                     $d = (new DateTime())->setTimestamp((int) $Value);
@@ -87,7 +89,7 @@ class HomeMaticClimateControlRegulator extends HMHeatingDevice
                     $d->setTime(0, 0, 0, 0);
                     $days = ((new DateTime())->setTime(0, 0, 0, 0))->diff($d);
                     if ($days->days > 200) {
-                        trigger_error($this->Translate('Time too far in the future'));
+                        trigger_error($this->Translate('Time too far in the future'), E_USER_NOTICE);
                         return;
                     }
                     $d->setTime($CalcHour, ($CalcMin >= 30) ? 30 : 0, 0, 0);
@@ -114,6 +116,11 @@ class HomeMaticClimateControlRegulator extends HMHeatingDevice
         return;
     }
 
+    /**
+     * Berechnet aus Tag, Stunde und Minute die Zeitpunkte für Party und Entkalkung und schreibt die Parameter in die Statusvariablen.
+     *
+     * @param array $Params Das Paramset MASTER der CCU.
+     */
     protected function SetParamVariables(array $Params): void
     {
         $d = new DateTime();
