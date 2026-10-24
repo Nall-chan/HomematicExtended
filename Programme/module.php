@@ -7,9 +7,9 @@ declare(strict_types=1);
  *
  * @file          module.php
  *
- * @author        Michael Tröger <micha@nall-chan.net>
- * @copyright     2023 Michael Tröger
- * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
+ * @author        Michael Tröger <nall4chan@gmail.com>
+ * @copyright     2015 Michael Tröger
+ * @license       Custom Non-Commercial Share-Alike License (see LICENSE)
  *
  * @version       3.74
  */
@@ -27,7 +27,8 @@ class HomeMaticProgramme extends HMBase
     public function Create(): void
     {
         parent::Create();
-        $this->RegisterHMPropertys('XXX9999998');
+        $this->RegisterPropertyString(\HMExtended\Device\Property::Address, \HMExtended\Device\Address::PROGRAMS);
+        $this->RegisterPropertyInteger(\HMExtended\Device\Property::Protocol, static::ProtocolId);
         $this->RegisterPropertyBoolean(\HMExtended\Device\Property::EmulateStatus, false);
     }
 
@@ -97,7 +98,7 @@ class HomeMaticProgramme extends HMBase
      * IPS-Instanz-Funktion 'HM_StartProgram'.
      * Startet ein auf der CCU hinterlegtes Programme.
      *
-     * @return bool True bei erfolg, sonst false.
+     * @return bool True bei Erfolg, sonst false.
      */
     public function StartProgram(string $Parameter): bool
     {
@@ -137,38 +138,25 @@ class HomeMaticProgramme extends HMBase
      */
     private function ReadCCUPrograms(): bool
     {
-        $HMScript = 'SysPrgs=dom.GetObject(ID_PROGRAMS).EnumUsedIDs();';
-        $HMScriptResult = $this->LoadHMScript($HMScript);
-        if ($HMScriptResult === false) {
+        $Script = 'string pid;
+        foreach (pid, dom.GetObject(ID_PROGRAMS).EnumUsedIDs())
+        {
+          WriteLine(pid # "\t" # dom.GetObject(pid).Name());
+        }';
+        $ret = $this->LoadHMScript($Script);
+        if ($ret === false) {
             return false;
         }
-        $xml = $this->GetScriptXML($HMScriptResult);
-        if ($xml === false) {
-            return false;
+        $ret = explode('<xml>', $ret);
+        $ret = explode("\r\n", array_shift($ret));
+        array_pop($ret);
+        foreach ($ret as $line) {
+            $data = explode("\t", $line);
+            $this->SendDebug($data[0], $data[1], 0);
+            $this->MaintainVariable($data[0], $data[1], 1, 'Execute.HM', 0, true);
+            $this->EnableAction($data[0]);
         }
-        $Result = true;
-        foreach (explode(chr(0x09), (string) $xml->SysPrgs) as $SysPrg) {
-            $HMScript = 'Name=dom.GetObject(' . $SysPrg . ').Name();' . PHP_EOL
-                    . 'Info=dom.GetObject(' . $SysPrg . ').PrgInfo();' . PHP_EOL;
-            $HMScriptResult = $this->LoadHMScript($HMScript);
-            if ($HMScriptResult === false) {
-                $Result = false;
-                continue;
-            }
-            $varXml = $this->GetScriptXML($HMScriptResult);
-            if ($varXml === false) {
-                $Result = false;
-                continue;
-            }
-            $this->SendDebug($SysPrg, (string) $varXml->Name, 0);
-            $var = @$this->GetIDForIdent($SysPrg);
-            $Name = (string) $varXml->Name;
-            if ($var === false) {
-                $this->MaintainVariable($SysPrg, $Name, 1, 'Execute.HM', 0, true);
-                $this->EnableAction($SysPrg);
-            }
-        }
-        return $Result;
+        return true;
     }
 
     /**

@@ -7,9 +7,9 @@ declare(strict_types=1);
  *
  * @file          module.php
  *
- * @author        Michael Tröger <micha@nall-chan.net>
- * @copyright     2023 Michael Tröger
- * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
+ * @author        Michael Tröger <nall4chan@gmail.com>
+ * @copyright     2015 Michael Tröger
+ * @license       Custom Non-Commercial Share-Alike License (see LICENSE)
  *
  * @version       3.74
  */
@@ -81,11 +81,15 @@ class HomeMaticExtendedConfigurator extends HMBase
             return json_encode($Form);
         }
         $this->DeviceData = $this->LoadDeviceData();
+        $Form['actions'][0]['values'] = array_merge($Form['actions'][0]['values'], $this->GetConfigInstance(\HMExtended\GUID::Programme));        
         if (IPS_GetProperty($ParentId, 'RFOpen')) {
-            //$Form['actions'][0]['values'] = array_merge($Form['actions'][0]['values'], $this->GetConfigRows(0, \HMExtended\GUID::Powermeter));
+            $Form['actions'][0]['values'] = array_merge($Form['actions'][0]['values'], $this->GetConfigRows(0, \HMExtended\GUID::Powermeter));
             //$Form['actions'][0]['values'] = array_merge($Form['actions'][0]['values'], $this->GetConfigRows(0, \HMExtended\GUID::Dis_WM55));
             $Form['actions'][0]['values'] = array_merge($Form['actions'][0]['values'], $this->GetConfigRows(0, \HMExtended\GUID::HeatingDevice));
             $Form['actions'][0]['values'] = array_merge($Form['actions'][0]['values'], $this->GetConfigRows(0, \HMExtended\GUID::ClimacontrolRegulator));
+        }
+        if (IPS_GetProperty($ParentId, 'WROpen')) {
+            $Form['actions'][0]['values'] = array_merge($Form['actions'][0]['values'], $this->GetConfigInstance(\HMExtended\GUID::WR_Interface));        
         }
         if (IPS_GetProperty($ParentId, 'GROpen')) {
             $Form['actions'][0]['values'] = array_merge($Form['actions'][0]['values'], $this->GetConfigRows(3, \HMExtended\GUID::HeatingGroupHmIP));
@@ -126,6 +130,53 @@ class HomeMaticExtendedConfigurator extends HMBase
     protected function GetConfigParam(mixed &$item1, int $InstanceID, string $ConfigParam): void
     {
         $item1 = IPS_GetProperty($InstanceID, $ConfigParam);
+    }
+
+    private function GetConfigInstance(string $GUID):array
+    {
+        if (!array_key_exists($GUID,\HMExtended\Device\Address::$GuidToStaticAddress)){
+            return [];
+        }
+        $IPSDevices = $this->GetInstanceList($GUID, \HMExtended\Device\Property::Address);
+        $Devices= [];
+        foreach ($IPSDevices as $InstanceID => $Address) {
+            $Devices[] = [
+                'instanceID'      => $InstanceID,
+                'address'         => '',
+                'name'            => IPS_GetName($InstanceID),
+                'longname'        => IPS_GetName($InstanceID),
+                'type'            => IPS_GetModule($GUID)['ModuleName'],
+                'create' => [
+                    'moduleID'      => $GUID,
+                    'location'      => [],                    
+                    'configuration' => [
+                        \HMExtended\Device\Property::Address      => \HMExtended\Device\Address::$GuidToStaticAddress[$GUID],
+                        \HMExtended\Device\Property::Protocol     => 0,
+                        \HMExtended\Device\Property::EmulateStatus=> false
+                    ]
+                ]
+            ];
+        }
+        if (!count($Devices)){
+            $Devices[] = [
+                'instanceID'      => 0,
+                'address'         => '',
+                'name'            => IPS_GetModule($GUID)['ModuleName'],
+                'longname'        => IPS_GetModule($GUID)['ModuleName'],
+                'type'            => IPS_GetModule($GUID)['ModuleName'],
+                'create' => [
+                    'moduleID'      => $GUID,
+                    'location'      => [],
+                    'configuration' => [
+                        \HMExtended\Device\Property::Address      => \HMExtended\Device\Address::$GuidToStaticAddress[$GUID],
+                        \HMExtended\Device\Property::Protocol     => 0,
+                        \HMExtended\Device\Property::EmulateStatus=> false
+                    ]
+                ]
+            ];
+
+        }
+        return $Devices;
     }
 
     private function GetConfigRows(int $Protocol, string $GUID): array
@@ -196,7 +247,7 @@ class HomeMaticExtendedConfigurator extends HMBase
     {
         if (!array_key_exists($Protocol, $this->listDevices)) {
             $Devices = $this->SendRPC('listDevices', $Protocol, []);
-            if ($Devices === false) {
+            if (!is_array($Devices)) {
                 return [];
             }
             $this->listDevices[$Protocol] = $Devices;

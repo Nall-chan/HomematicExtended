@@ -7,9 +7,9 @@ declare(strict_types=1);
  *
  * @file          module.php
  *
- * @author        Michael Tröger <micha@nall-chan.net>
- * @copyright     2023 Michael Tröger
- * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
+ * @author        Michael Tröger <nall4chan@gmail.com>
+ * @copyright     2015 Michael Tröger
+ * @license       Custom Non-Commercial Share-Alike License (see LICENSE)
  *
  * @version       3.74
  */
@@ -30,7 +30,7 @@ class HomeMaticRFInterface extends IPSModuleStrict
     {
         parent::Create();
         $this->RegisterPropertyString(\HMExtended\Device\Property::Address, '');
-        $this->ConnectParent('{6EE35B5B-9DD9-4B23-89F6-37589134852F}');
+        $this->ConnectParent(\HMExtended\GUID::RF_Interface_Splitter);
     }
 
     /**
@@ -65,9 +65,17 @@ class HomeMaticRFInterface extends IPSModuleStrict
             if ($Value === '') {
                 continue;
             }
-            $Profil = '';
-            if ($Ident == 'DUTY_CYCLE') {
-                $Profil = '~Intensity.100';
+            
+            switch ($Ident){
+                case 'DUTY_CYCLE':
+                    $Profile = '~Intensity.100';
+                    break;
+                case 'CONNECTED':
+                    $Profile='~Alert.Reversed';
+                    break;
+                default:
+                    $Profile = '';
+                    break;
             }
             switch (gettype($Value)) {
                 case 'boolean':
@@ -86,18 +94,8 @@ class HomeMaticRFInterface extends IPSModuleStrict
                 default:
                     continue 2;
             }
-            $vid = @$this->GetIDForIdent($Ident);
-            if ($vid === false) {
-                $this->MaintainVariable($Ident, $Ident, $Typ, $Profil, 0, true);
-                $vid = $this->GetIDForIdent($Ident);
-            }
-            if ($Ident == 'CONNECTED') {
-                $this->SetValue($Ident, $Value);
-                continue;
-            }
-            if (GetValue($vid) != $Value) {
-                $this->SetValue($Ident, $Value);
-            }
+            $this->MaintainVariable($Ident, $Ident, $Typ, $Profile, 0, true);
+            $this->SetValue($Ident, $Value);
         }
         return '';
     }

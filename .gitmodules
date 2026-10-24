@@ -10,3 +10,6 @@
 [submodule ".vscode"]
 	path = .vscode
 	url = https://github.com/Nall-chan/SymconVSCTasks.git
+[submodule ".claude-rules"]
+	path = .claude-rules
+	url = https://github.com/Nall-chan/symcon-module-rules.git

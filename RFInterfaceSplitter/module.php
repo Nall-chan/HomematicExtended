@@ -7,9 +7,9 @@ declare(strict_types=1);
  *
  * @file          module.php
  *
- * @author        Michael Tröger <micha@nall-chan.net>
- * @copyright     2023 Michael Tröger
- * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
+ * @author        Michael Tröger <nall4chan@gmail.com>
+ * @copyright     2015 Michael Tröger
+ * @license       Custom Non-Commercial Share-Alike License (see LICENSE)
  *
  * @version       3.71
  */
@@ -27,10 +27,11 @@ class HomeMaticRFInterfaceSplitter extends HMBase
     public function Create(): void
     {
         parent::Create();
-        $this->RegisterHMPropertys('XXX9999994');
+        $this->RegisterPropertyString(\HMExtended\Device\Property::Address, \HMExtended\Device\Address::RFINTERFACE);
+        $this->RegisterPropertyInteger(\HMExtended\Device\Property::Protocol, static::ProtocolId);
         $this->RegisterPropertyBoolean(\HMExtended\Device\Property::EmulateStatus, false);
-        $this->RegisterPropertyInteger('Interval', 0);
-        $this->RegisterTimer('ReadRFInterfaces', 0, '@HM_ReadRFInterfaces($_IPS[\'TARGET\']);');
+        $this->RegisterPropertyInteger(\HMExtended\Device\Property::Interval, 0);
+        $this->RegisterTimer(\HMExtended\Device\Timer::ReadRFInterfaces, 0, 'HM_ReadRFInterfaces($_IPS[\'TARGET\']);');
     }
 
     /**
@@ -44,24 +45,15 @@ class HomeMaticRFInterfaceSplitter extends HMBase
             return;
         }
 
-        if ($this->CheckConfig()) {
-            if ($this->ReadPropertyInteger('Interval') >= 5) {
-                $this->SetTimerInterval('ReadRFInterfaces', $this->ReadPropertyInteger('Interval') * 1000);
-            } else {
-                $this->SetTimerInterval('ReadRFInterfaces', 0);
+        $this->CheckConfig();
+        if ($this->GetStatus() == IS_ACTIVE)
+        {
+            $this->SetTimerInterval(\HMExtended\Device\Timer::ReadRFInterfaces, $this->ReadPropertyInteger(\HMExtended\Device\Property::Interval) * 1000);            
+            if ( $this->HasActiveParent()) {
+                @$this->ReadRFInterfaces();
             }
         } else {
-            $this->SetTimerInterval('ReadRFInterfaces', 0);
-        }
-
-        if (!$this->HasActiveParent()) {
-            return;
-        }
-
-        try {
-            $this->ReadRFInterfaces();
-        } catch (Exception $exc) {
-            echo $this->Translate($exc->getMessage());
+            $this->SetTimerInterval(\HMExtended\Device\Timer::ReadRFInterfaces, 0);
         }
     }
     /**
@@ -122,7 +114,7 @@ class HomeMaticRFInterfaceSplitter extends HMBase
         if ($State == IS_ACTIVE) {
             $this->ApplyChanges();
         } else {
-            $this->SetTimerInterval('ReadRFInterfaces', 0);
+            $this->SetTimerInterval(\HMExtended\Device\Timer::ReadRFInterfaces, 0);
         }
     }
 
@@ -130,30 +122,21 @@ class HomeMaticRFInterfaceSplitter extends HMBase
 
     /**
      * Prüft die Konfiguration und setzt den Status der Instanz.
-     *
-     * @return bool True wenn Konfig ok, sonst false.
      */
-    private function CheckConfig(): bool
+    private function CheckConfig(): void
     {
-        $Interval = $this->ReadPropertyInteger('Interval');
-        if ($Interval < 0) {
-            $this->SetStatus(IS_EBASE + 2);
-            return false;
-        }
-
-        if ($Interval == 0) {
+        $Interval = $this->ReadPropertyInteger(\HMExtended\Device\Property::Interval);
+        if ($Interval <= 0) {
             $this->SetStatus(IS_INACTIVE);
-            return true;
+            return;
         }
-
         if ($Interval < 5) {
-            $this->SetStatus(IS_EBASE + 3);
-            return false;
+            $this->SetStatus(IS_EBASE + 2);
+            return;
         }
-
         $this->SetStatus(IS_ACTIVE);
-        return true;
     }
+    
     /**
      * Liest alle Daten der RF-Interfaces aus der CCU aus.
      *

@@ -7,9 +7,9 @@ declare(strict_types=1);
  *
  * @file          module.php
  *
- * @author        Michael Tröger <micha@nall-chan.net>
- * @copyright     2023 Michael Tröger
- * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
+ * @author        Michael Tröger <nall4chan@gmail.com>
+ * @copyright     2015 Michael Tröger
+ * @license       Custom Non-Commercial Share-Alike License (see LICENSE)
  *
  * @version       3.74
  */
@@ -565,7 +565,7 @@ class HomeMaticSystemvariablen extends HMBase
             return false;
         }
         $parent = IPS_GetParent($EventID);
-        if (IPS_GetInstance($parent)['ModuleInfo']['ModuleID'] != '{EE4A81C6-5C90-4DB7-AD2F-F6BBD521412E}') {
+        if (IPS_GetInstance($parent)['ModuleInfo']['ModuleID'] != \HMExtended\GUID::HmDevice) {
             $this->HMDeviceAddress = '';
             $this->HMDeviceDatapoint = '';
             return false;
@@ -633,7 +633,7 @@ class HomeMaticSystemvariablen extends HMBase
             try {
                 $xmlVar = @new SimpleXMLElement(array_pop($lines), LIBXML_NOBLANKS + LIBXML_NONET);
             } catch (Throwable $exc) {
-                $this->SendDebug($SysVar, $exc->getMessage(), 0);
+                $this->SendDebug((string) $SysVar, $exc->getMessage(), 0);
                 trigger_error($this->Translate($exc->getMessage()), E_USER_NOTICE);
                 $Result = false;
                 continue;
@@ -713,7 +713,7 @@ class HomeMaticSystemvariablen extends HMBase
                 }
             }
             if (IPS_GetVariable($VarID)['VariableType'] != $VarType) {
-                $this->SendDebug($SysVar, 'Type of CCU Systemvariable ' . IPS_GetName($VarID) . ' has changed.', 0);
+                $this->SendDebug((string) $SysVar, 'Type of CCU Systemvariable ' . IPS_GetName($VarID) . ' has changed.', 0);
                 trigger_error(sprintf($this->Translate('Type of CCU Systemvariable %s has changed.'), IPS_GetName($VarID)), E_USER_NOTICE);
                 $Result = false;
                 continue;

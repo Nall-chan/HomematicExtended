@@ -7,9 +7,9 @@ declare(strict_types=1);
  *
  * @file          module.php
  *
- * @author        Michael Tröger <micha@nall-chan.net>
- * @copyright     2023 Michael Tröger
- * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
+ * @author        Michael Tröger <nall4chan@gmail.com>
+ * @copyright     2015 Michael Tröger
+ * @license       Custom Non-Commercial Share-Alike License (see LICENSE)
  *
  * @version       3.74
  */
@@ -189,10 +189,10 @@ class HMHeatingDevice extends HMBase
             return;
         }
         if (($Address != '') && ($this->HasActiveParent())) {
-            $this->CreateVariablesFromValues();
-            $this->GetValuesAndSetVariable();
-            $this->CreateVariablesFromParams();
-            $this->GetParamsAndSetVariable();
+            @$this->CreateVariablesFromValues();
+            @$this->GetValuesAndSetVariable();
+            @$this->CreateVariablesFromParams();
+            @$this->GetParamsAndSetVariable();
         }
     }
 
@@ -508,19 +508,6 @@ class HMHeatingDevice extends HMBase
         }
     }
 
-    private function GetValuesAndSetVariable(): bool
-    {
-        $AddressWithChannel = $this->ReadPropertyString(\HMExtended\Device\Property::Address) . static::ValuesChannel;
-        $Result = $this->GetParamset(\HMExtended\CCU::VALUES, $AddressWithChannel);
-        if (count($Result) != 0) {
-            foreach ($Result as $Ident => $Value) {
-                $this->SetVariable($Ident, $Value);
-            }
-            return true;
-        }
-        return false;
-    }
-
     private function CreateVariablesFromParams(): void
     {
         $AddressWithChannel = $this->ReadPropertyString(\HMExtended\Device\Property::Address) . static::ParamChannel;
@@ -670,7 +657,7 @@ class HMHeatingDevice extends HMBase
         $i = 0;
         foreach ($ScheduleTemps as $Temp) {
             $Color = self::TempToRGB($i, $StepSize);
-            $this->SendDebug($Temp, $Color, 0);
+            $this->SendDebug((string) $Temp, $Color, 0);
             IPS_SetEventScheduleAction($Event['EventID'], $i++, sprintf('%0.1f °C', $Temp), $Color, "<?php\r\n/** Do not edit this code,\r\n    It will be automatically overwritten.\r\n*/\r\n\r\n" . 'HM_RequestParams($_IPS[\'TARGET\']);');
             if ($i == 32) {
                 break;

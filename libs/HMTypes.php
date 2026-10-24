@@ -11,6 +11,7 @@ namespace HMExtended
         public const Programme = '{A5010577-C443-4A85-ABF2-3F2D6CDD2465}';
         public const Dis_WM55 = '{271BCAB1-0658-46D9-A164-985AEB641B48}';
         public const Dis_EP_WM55 = '{E64ED916-FA6C-45B2-B8E3-EDC3191BC4C0}';
+        public const RF_Interface = '{36549B96-FA11-4651-8662-F310EEEC5C7D}';
         public const RF_Interface_Splitter = '{6EE35B5B-9DD9-4B23-89F6-37589134852F}';
         public const RF_Interface_Konfigurator = '{91624C6F-E67E-47DA-ADFE-9A5A1A89AAC3}';
         public const WR_Interface = '{01C66202-7E94-49C4-8D8F-6A75CE944E87}';
@@ -23,6 +24,7 @@ namespace HMExtended
         public const SendToRFInterfaceDevice = '{E2966A08-BCE1-4E76-8C4B-7E0136244E1B}';
         public const SendToRFSplitter = '{2F910A05-3607-4070-A6FF-53539E5D3BBB}';
         public const HmIO = '{A151ECE9-D733-4FB9-AA15-7F7DD10C58AF}';
+        public const HmDevice = '{EE4A81C6-5C90-4DB7-AD2F-F6BBD521412E}';
     }
 
     class CCU
@@ -43,11 +45,16 @@ namespace HMExtended
 
     class DeviceType
     {
-        public const Powermeter = 'POWERMETER'; // HM-ES-PMSw1-Pl
-        public const Powermeter_IEC = 'POWERMETER_IEC2'; // HM-ES-TX-WM
+        // suche nach Datenpunkt *ENERGY_COUNTER
+        public const Powermeter = 'POWERMETER';
+        public const Powermeter_IEC1 = 'POWERMETER_IEC1';
+        public const Powermeter_IEC2 = 'POWERMETER_IEC2';
+        public const Powermeter_IGL = 'POWERMETER_IGL';
+        public const Powermeter_HmIP = 'ENERGIE_METER_TRANSMITTER';
+
         public const Dis_WM55 = 'HM-Dis-WM55'; // HM-Dis-WM55
 
-        public const HeatingDevice = 'HM-CC-RT-DN';
+        public const HeatingDevice = 'HM-CC-RT-DN'; // CLIMATECONTROL_RECEIVER
         public const HeatingGroup = 'HM-CC-VG-1'; //'CLIMATECONTROL_RT_TRANSCEIVER';
         public const HeatingGroupHmIP = 'HmIP-HEATING'; //'HEATING_CLIMATECONTROL_TRANSCEIVER';
         public const ClimacontrolRegulator = 'HM-CC-TC'; //'CLIMATECONTROL_REGULATOR';
@@ -61,7 +68,7 @@ namespace HMExtended
             //GUID::RF_Interface_Splitter          =>
             //GUID::RF_Interface_Konfigurator      =>
             // Konfigurator 'fertig' => Aber die Instanzen sind noch nicht so weit
-            GUID::Powermeter                     => [self::Powermeter, self::Powermeter_IEC],
+            GUID::Powermeter                     => [self::Powermeter, self::Powermeter_IEC1, self::Powermeter_IEC2, self::Powermeter_IGL, self::Powermeter_HmIP],
             GUID::Dis_WM55                       => [self::Dis_WM55],
             //GUID::Dis_EP_WM55                    =>
             // Konfigurator fertig
@@ -70,6 +77,7 @@ namespace HMExtended
             GUID::HeatingGroupHmIP               => [self::HeatingGroupHmIP],
             GUID::ClimacontrolRegulator          => [self::ClimacontrolRegulator]
         ];
+
     }
 
     class Channels
@@ -245,6 +253,13 @@ namespace HMExtended
         public const VARIABLETYPE_NONE = -1;
         public const SUBMIT_WEEK_PROGRAM = 'SUBMIT_WEEK_PROGRAM';
         public const SELECT_NEW_WEEK_PROGRAM = 'SELECT_NEW_WEEK_PROGRAM';
+
+        public static $HmTypeToIpsType = [
+            'FLOAT' => VARIABLETYPE_FLOAT,
+            'BOOL'  => VARIABLETYPE_BOOLEAN,
+            'UINT'  => VARIABLETYPE_INTEGER,
+            'STRING'=> VARIABLETYPE_STRING
+        ];
 
         public static $Profiles = [
             'Heating.Control.SetPoint.Temperature.HM'=> [
@@ -977,6 +992,17 @@ namespace HMExtended
             ]
         ];
     }
+
+    class Profiles
+    {
+        public static $UnitToProfile = [
+            ''   => '',
+            'Wh' => '~Electricity.Wh',
+            'm3' => '~Gas',
+            'kWh'=> '~Electricity',
+            'W'  => '~Watt'
+        ];
+    }
 }
 
 namespace HMExtended\Device
@@ -989,5 +1015,20 @@ namespace HMExtended\Device
         public const SetPointBehavior = 'SetPointBehavior';
         public const Schedule = 'enable_SCHEDULE';
         public const ScheduleTemps = 'ScheduleTemps';
+        public const Interval = 'Interval';
+    }
+class Timer {
+    public const ReadRFInterfaces ='ReadRFInterfaces';
+    public const ReadWRInterface ='ReadWRInterface';
+}
+    class Address{
+        public const PROGRAMS = 'PROGRAMS';
+        public const RFINTERFACE = 'RFINTERFACE';
+        public const WRINTERFACE = 'WRINTERFACE';
+        public static $GuidToStaticAddress=[
+            \HMExtended\GUID::Programme => self::PROGRAMS,
+            \HMExtended\GUID::RF_Interface => self::RFINTERFACE,
+            \HMExtended\GUID::WR_Interface => self::WRINTERFACE
+        ];        
     }
 }

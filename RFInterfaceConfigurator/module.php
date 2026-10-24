@@ -7,9 +7,9 @@ declare(strict_types=1);
  *
  * @file          module.php
  *
- * @author        Michael Tröger <micha@nall-chan.net>
- * @copyright     2023 Michael Tröger
- * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
+ * @author        Michael Tröger <nall4chan@gmail.com>
+ * @copyright     2015 Michael Tröger
+ * @license       Custom Non-Commercial Share-Alike License (see LICENSE)
  *
  * @version       3.71
  */
@@ -29,7 +29,7 @@ class HomeMaticRFInterfaceConfigurator extends IPSModuleStrict
     public function Create(): void
     {
         parent::Create();
-        $this->ConnectParent('{6EE35B5B-9DD9-4B23-89F6-37589134852F}');
+        $this->ConnectParent(\HMExtended\GUID::RF_Interface_Splitter);
     }
 
     /**
@@ -66,7 +66,7 @@ class HomeMaticRFInterfaceConfigurator extends IPSModuleStrict
 
             return json_encode($Form);
         }
-        $DevicesIDs = IPS_GetInstanceListByModuleID('{36549B96-FA11-4651-8662-F310EEEC5C7D}');
+        $DevicesIDs = IPS_GetInstanceListByModuleID(\HMExtended\GUID::RF_Interface);
         $InstanceIDList = [];
         foreach ($DevicesIDs as $DeviceID) {
             if (IPS_GetInstance($DeviceID)['ConnectionID'] == $ParentId) {
@@ -111,7 +111,7 @@ class HomeMaticRFInterfaceConfigurator extends IPSModuleStrict
                     ];
                 }
                 $AddValue['create'] = [
-                    'moduleID'      => '{36549B96-FA11-4651-8662-F310EEEC5C7D}',
+                    'moduleID'      => \HMExtended\GUID::RF_Interface,
                     'configuration' => [\HMExtended\Device\Property::Address => $Interface['ADDRESS']]
                 ];
                 $Liste[] = $AddValue;

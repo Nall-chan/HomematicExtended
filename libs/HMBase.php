@@ -7,9 +7,9 @@ declare(strict_types=1);
  *
  * @package       HomematicExtended
  * @file          HMBase.php
- * @author        Michael Tröger <micha@nall-chan.net>
- * @copyright     2023 Michael Tröger
- * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
+ * @author        Michael Tröger <nall4chan@gmail.com>
+ * @copyright     2015 Michael Tröger
+ * @license       Custom Non-Commercial Share-Alike License (see LICENSE)
  * @version       3.74
  */
 eval('declare(strict_types=1);namespace HMExtended {?>' . file_get_contents(__DIR__ . '/helper/DebugHelper.php') . '}');
@@ -33,6 +33,9 @@ require_once __DIR__ . '/HMTypes.php';  // HMTypes Data
  * @method void RegisterAttributeArray(string $name, array $Value, int $Size = 0)
  * @method array ReadAttributeArray(string $name)
  * @method void WriteAttributeArray(string $name, array $value)
+ * @method bool IORequestAction(string $Ident, mixed $Value)
+ * @method void IOMessageSink(int $TimeStamp, int $SenderID, int $Message, array $Data)
+ * @method int IORegisterParent()
  */
 abstract class HMBase extends IPSModuleStrict
 {
@@ -48,7 +51,8 @@ abstract class HMBase extends IPSModuleStrict
         }
 
     protected const ProtocolId = 0;
-
+    protected const ValuesChannel = '';
+    protected const ParamChannel = '';
     /**
      * Interne Funktion des SDK.
      */
@@ -162,6 +166,20 @@ abstract class HMBase extends IPSModuleStrict
     {
         return $this->IORegisterParent();
     }
+
+    protected function GetValuesAndSetVariable(): bool
+    {
+        $AddressWithChannel = $this->ReadPropertyString(\HMExtended\Device\Property::Address) . static::ValuesChannel;
+        $Result = $this->GetParamset(\HMExtended\CCU::VALUES, $AddressWithChannel);
+        if (count($Result) != 0) {
+            foreach ($Result as $Ident => $Value) {
+                $this->SetVariable($Ident, $Value);
+            }
+            return true;
+        }
+        return false;
+    }
+
     protected function SetVariable(string $Ident, $Value)
     {
         @$this->SetValue($Ident, $Value);
@@ -187,11 +205,14 @@ abstract class HMBase extends IPSModuleStrict
         ];
         $this->SendDebug('Send', $ParentData, 0);
         $Result = @$this->SendDataToParent(json_encode($ParentData));
+        if ($Result === false || $Result === null) {
+            return false;
+        }
         $this->SendDebug('Receive', utf8_encode($Result), 0);
         return utf8_encode($Result);
     }
 
-    protected function GetScriptXML(string $Content): SimpleXMLElement
+    protected function GetScriptXML(string $Content): SimpleXMLElement|false
     {
         $XMLContent = strstr($Content, '<xml><exec>');
         try {

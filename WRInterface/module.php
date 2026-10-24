@@ -7,9 +7,9 @@ declare(strict_types=1);
  *
  * @file          module.php
  *
- * @author        Michael Tröger <micha@nall-chan.net>
- * @copyright     2023 Michael Tröger
- * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
+ * @author        Michael Tröger <nall4chan@gmail.com>
+ * @copyright     2015 Michael Tröger
+ * @license       Custom Non-Commercial Share-Alike License (see LICENSE)
  *
  * @version       3.74
  */
@@ -27,13 +27,12 @@ class HomeMaticWRInterface extends HMBase
     public function Create(): void
     {
         parent::Create();
-
-        $this->RegisterHMPropertys('XXX9999993');
+        $this->RegisterPropertyString(\HMExtended\Device\Property::Address, \HMExtended\Device\Address::WRINTERFACE);
+        $this->RegisterPropertyInteger(\HMExtended\Device\Property::Protocol, static::ProtocolId);
         $this->RegisterPropertyBoolean(\HMExtended\Device\Property::EmulateStatus, false);
 
-        $this->RegisterPropertyInteger('Interval', 0);
-
-        $this->RegisterTimer('ReadWRInterface', 0, 'HM_ReadWRInterface($_IPS[\'TARGET\']);');
+        $this->RegisterPropertyInteger(\HMExtended\Device\Property::Interval, 0);
+        $this->RegisterTimer(\HMExtended\Device\Timer::ReadWRInterface, 0, 'HM_ReadWRInterface($_IPS[\'TARGET\']);');
     }
 
     /**
@@ -47,22 +46,18 @@ class HomeMaticWRInterface extends HMBase
             return;
         }
 
-        if ($this->CheckConfig()) {
-            if ($this->ReadPropertyInteger('Interval') >= 5) {
-                $this->SetTimerInterval('ReadWRInterface', $this->ReadPropertyInteger('Interval') * 1000);
-            } else {
-                $this->SetTimerInterval('ReadWRInterface', 0);
+        $this->CheckConfig();
+        if ($this->GetStatus() == IS_ACTIVE)
+        {
+            $this->SetTimerInterval(\HMExtended\Device\Timer::ReadWRInterface, $this->ReadPropertyInteger(\HMExtended\Device\Property::Interval) * 1000);            
+            if ( $this->HasActiveParent()) {
+                @$this->ReadWRInterface();
             }
         } else {
-            $this->SetTimerInterval('ReadWRInterface', 0);
+            $this->SetTimerInterval(\HMExtended\Device\Timer::ReadWRInterface, 0);
         }
 
-        if (!$this->HasActiveParent()) {
-            return;
-        }
-
-        $this->ReadWRInterface();
-    }
+   }
 
     //################# PUBLIC
 
@@ -82,6 +77,14 @@ class HomeMaticWRInterface extends HMBase
             if ($Value === '') {
                 continue;
             }
+            switch ($Ident){
+                case 'CONNECTED':
+                    $Profile='~Alert.Reversed';
+                    break;
+                default:
+                    $Profile = '';
+                    break;
+            }
             switch (gettype($Value)) {
                 case 'boolean':
                     $Typ = VARIABLETYPE_BOOLEAN;
@@ -99,18 +102,8 @@ class HomeMaticWRInterface extends HMBase
                 default:
                     continue 2;
             }
-            $vid = @$this->GetIDForIdent($Ident);
-            if ($vid === false) {
-                $this->MaintainVariable($Ident, $Ident, $Typ, '', 0, true);
-                $vid = $this->GetIDForIdent($Ident);
-            }
-            if ($Ident == 'CONNECTED') {
-                $this->SetValue($Ident, $Value);
-                continue;
-            }
-            if (GetValue($vid) != $Value) {
-                $this->SetValue($Ident, $Value);
-            }
+            $this->MaintainVariable($Ident, $Ident, $Typ, $Profile, 0, true);
+            $this->SetValue($Ident, $Value);
         }
         return true;
     }
@@ -134,7 +127,7 @@ class HomeMaticWRInterface extends HMBase
         if ($State == IS_ACTIVE) {
             $this->ApplyChanges();
         } else {
-            $this->SetTimerInterval('ReadWRInterface', 0);
+            $this->SetTimerInterval(\HMExtended\Device\Timer::ReadWRInterface, 0);
         }
     }
 
@@ -142,29 +135,19 @@ class HomeMaticWRInterface extends HMBase
 
     /**
      * Prüft die Konfiguration und setzt den Status der Instanz.
-     *
-     * @return bool True wenn Konfig ok, sonst false.
      */
-    private function CheckConfig(): bool
+    private function CheckConfig():void
     {
-        $Interval = $this->ReadPropertyInteger('Interval');
-        if ($Interval < 0) {
-            $this->SetStatus(IS_EBASE + 2);
-            return false;
-        }
-
-        if ($Interval == 0) {
+        $Interval = $this->ReadPropertyInteger(\HMExtended\Device\Property::Interval);
+        if ($Interval <= 0) {
             $this->SetStatus(IS_INACTIVE);
-            return true;
+            return;
         }
-
         if ($Interval < 5) {
-            $this->SetStatus(IS_EBASE + 3);
-            return false;
+            $this->SetStatus(IS_EBASE + 2);
+                        return;
         }
-
         $this->SetStatus(IS_ACTIVE);
-        return true;
     }
 
     /**
@@ -199,7 +182,7 @@ class HomeMaticWRInterface extends HMBase
             $this->SendDebug('Error JSON', $ResultJSON, 0);
             return false;
         }
-        $Result = json_decode(utf8_encode($ResultJSON), true);
+        $Result = json_decode($ResultJSON, true);
         if (($Result === false) || is_null($Result)) {
             trigger_error($this->Translate('Error on read WR-Interface.'), E_USER_NOTICE);
             $this->SendDebug('Error decode', $Result, 0);

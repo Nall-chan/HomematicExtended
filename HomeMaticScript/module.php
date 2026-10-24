@@ -7,9 +7,9 @@ declare(strict_types=1);
  *
  * @file          module.php
  *
- * @author        Michael Tröger <micha@nall-chan.net>
- * @copyright     2023 Michael Tröger
- * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
+ * @author        Michael Tröger <nall4chan@gmail.com>
+ * @copyright     2015 Michael Tröger
+ * @license       Custom Non-Commercial Share-Alike License (see LICENSE)
  *
  * @version       3.74
  */
@@ -70,7 +70,7 @@ class HomeMaticRemoteScript extends HMBase
      *
      * @return SimpleXMLElement das Ergebnis von der CCU als JSON-String.
      */
-    private function SendScript(string $Script): SimpleXMLElement
+    private function SendScript(string $Script): SimpleXMLElement|false
     {
         $HMScriptResult = $this->LoadHMScript($Script);
         if ($HMScriptResult === false) {
