@@ -125,10 +125,7 @@ Erweitert IPS um die native Unterstützung von:
 
 ## 3. Software-Installation
 
-**IPS 5.1:**  
-
    Über den 'Module-Store' in Symcon das Modul 'HomematicExtended' hinzufügen.  
-   **Bei kommerzieller Nutzung (z.B. als Errichter oder Integrator) wenden Sie sich bitte an den Autor.**  
 
 ## 4. Einrichten der Instanzen in IP-Symcon
 
@@ -160,19 +157,19 @@ Erweitert IPS um die native Unterstützung von:
 
 ### 2. Changelog
 
-Version 3.75 (Test):
+Version 3.75:
 
 > [!IMPORTANT]
 > * Mindestens IP-Symcon 9.0 erforderlich.
-> * Das Modul `HomeMatic Paraset Interface` wurde entfernt. Vorhandene Instanzen müssen vor dem Update gelöscht werden.
+> * Das Modul `HomeMatic Paraset Interface` wurde entfernt. Vorhandene Instanzen sind nach dem Update ohne Funktion.
 > * Das Modul `HomeMatic RF-Interface Konfigurator` wurde entfernt. Die RF-Interfaces (Gateways) legt der `HomeMatic Extended Konfigurator` an. Eine vorhandene Instanz des RF-Interface Konfigurators muss gelöscht werden, die Instanzen `HomeMatic RF-Interface` und `HomeMatic RF-Interface Splitter` bleiben erhalten.
 > * `HomeMatic Dis-WM55`: Die Eigenschaften `PageUpID`, `PageDownID`, `ActionUpID` und `ActionDownID` entfallen. Stattdessen wird die Adresse des Displays mit Kanal eingetragen (z.B. `NEQ1234567:1`), an diese Adresse wird immer ausgegeben. Bestehende Instanzen werden beim Update übernommen, Auslöser von anderen Geräten stehen danach in den Experteneinstellungen.
 > * `HomeMatic Dis-WM55`: Die Taste 'Seite hoch' blättert jetzt zurück und 'Seite runter' weiter (bisher war die Richtung vertauscht).
 
 **Neue Funktionen und Aktionen**
-* Konfigurator: Kann jetzt auch die Displays `HM-Dis-WM55` und `HM-Dis-EP-WM55`, die Instanz `HomeMatic RemoteScript` sowie die RF-Interfaces (Gateways) der CCU anlegen. Für ein RF-Interface wird die Kette aus RF-Interface, RF-Interface Splitter und Homematic Socket erzeugt, jedes Gateway erhält eine eigene Zeile. Auch Gateways, die gerade offline sind, werden mit Name, Typ und IP-Adresse angezeigt (gelesen aus der Konfigurationsdatei der CCU, der Sicherheitsschlüssel wird nie gelesen).
+* Konfigurator: Kann jetzt auch die Displays `HM-Dis-WM55` und `HM-Dis-EP-WM55`, die Instanz `HomeMatic RemoteScript` sowie die RF-Interfaces (Gateways) der CCU anlegen. Für ein RF-Interface wird die Kette aus RF-Interface, RF-Interface Splitter und Homematic Socket erzeugt, jedes Gateway erhält eine eigene Zeile. Auch Gateways, die gerade offline sind, werden mit Name, Typ und IP-Adresse angezeigt.
 * HomeMatic Dis-WM55: Experteneinstellungen für zusätzliche Auslöser von Variablen anderer Homematic Geräte.
-* HomeMatic Dis-WM55: Neue Schaltfläche `Display-Script wiederherstellen` legt das Display-Script neu an, wenn es gelöscht wurde. Die Schaltfläche ist nur aktiv, solange das Script fehlt.
+* HomeMatic Dis-WM55: Neue Schaltfläche `Display-Script wiederherstellen` legt das Display-Script neu an, wenn es gelöscht wurde. Die Schaltfläche ist erst aktiv, wenn das Script fehlt.
 
 **Geändertes Verhalten**
 * HomeMatic RF-Interface Splitter: Neue Instanzen haben das Intervall 60 Sekunden (bisher 0, also aus). Bestehende Instanzen behalten ihr Intervall.
@@ -186,7 +183,7 @@ Version 3.75 (Test):
 **Fehlerbehebungen**
 * Heizgruppen und HM-CC-TC: Die Fehlermeldung `Wochenplan-Aktions-ID muss größer als 0 sein` ist behoben. Fehler beim Zuordnen von Variablen der Parameter behoben.
 * Powermeter: Der Summenzähler wurde bei Ereignissen nicht aktualisiert. Unbekannte Datenpunkte oder Einheiten führen nicht mehr zu Fehlern.
-* HomeMatic RF-Interface: Die Variable `CONNECTED` blieb auf dem alten Wert, wenn das Funk-Interface offline war und von der CCU nicht mehr gemeldet wurde ([Issue #13](https://github.com/Nall-chan/HomematicExtended/issues/13)). Ist ein Interface nicht mehr erreichbar, wird `CONNECTED` jetzt auf `false` gesetzt.  
+* HomeMatic RF-Interface: Die Variable `CONNECTED` blieb auf dem alten Wert, wenn das Funk-Interface offline war und von der CCU nicht mehr gemeldet wurde. Ist ein Interface nicht mehr erreichbar, wird `CONNECTED` jetzt auf `false` gesetzt.  
 * Heizgruppen (`HM-CC-VG-1`, `HmIP-HEATING`): Zeiten wurden bei exakt 30 Minuten auf die volle Stunde abgerundet (z.B. 09:30 auf 09:00 bei Party Start/Ende und Entkalkung).  
 * HomeMatic Programme: Programme mit ungültiger ID werden nicht mehr an die CCU gesendet. Startet die CCU ein Programm nicht, wird eine Fehlermeldung ausgegeben.  
 * HomeMatic WR-Interface: Falsche Fehlermeldung, wenn das Wired-Interface im Homematic Socket deaktiviert ist.
