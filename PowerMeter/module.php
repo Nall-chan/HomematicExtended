@@ -25,10 +25,17 @@ class HomeMaticPowermeter extends HMBase
     protected const ValuesChannel = '';
 
     /**
-     * Datenpunkte, zu denen die CCU einen Summenzähler (Systemvariable) führt.
-     * Faktor: Umrechnung des Systemvariablen-Wertes auf kWh bzw. m³ (Annahme: CCU liefert Wh, Gas in m³).
+     * Datenpunkte, zu denen die CCU einen Summenzähler (Systemvariable `svEnergyCounter<Suffix>_<Kanal-ID>_<Adresse>`) führt.
+     * Factor: Umrechnung des Systemvariablen-Wertes auf kWh bzw. m³.
+     * Belegt am HM-ES-TX-WM (live, Vergleich mit der CCU): ENERGY_COUNTER Wh -> kWh (Faktor 1000), GAS_ENERGY_COUNTER m³ (Faktor 1).
+     * Annahme (nicht belegt): IEC_ENERGY_COUNTER liefert die Systemvariable in Wh, GAS_VOLUME (HmIP-ESI) in m³ unter dem Suffix Gas.
      */
-    private const EnergyCounters = ['ENERGY_COUNTER', 'IEC_ENERGY_COUNTER', 'GAS_ENERGY_COUNTER'];
+    private const EnergyCounters = [
+        'ENERGY_COUNTER'     => ['Suffix' => '', 'Factor' => 1000, 'Profile' => '~Electricity'],
+        'IEC_ENERGY_COUNTER' => ['Suffix' => 'IEC', 'Factor' => 1000, 'Profile' => '~Electricity'],
+        'GAS_ENERGY_COUNTER' => ['Suffix' => 'Gas', 'Factor' => 1, 'Profile' => '~Gas'],
+        'GAS_VOLUME'         => ['Suffix' => 'Gas', 'Factor' => 1, 'Profile' => '~Gas']
+    ];
 
     /**
      * Interne Funktion des SDK.
@@ -101,7 +108,7 @@ class HomeMaticPowermeter extends HMBase
         if (!isset($Event['VariableName'])) {
             return '';
         }
-        if (in_array($Event['VariableName'], self::EnergyCounters, true)) {
+        if (array_key_exists($Event['VariableName'], self::EnergyCounters)) {
             $this->ReadPowerSysVar($Event['VariableName']);
         }
         return '';
@@ -144,47 +151,38 @@ class HomeMaticPowermeter extends HMBase
             if ($Variable['OPERATIONS'] & 0b10) {
                 $this->EnableAction($Ident);
             }
-            if (in_array($Ident, self::EnergyCounters, true)) {
-                // Summenzähler: Gas in m³, Strom in kWh
-                $TotalProfile = ($Ident == 'GAS_ENERGY_COUNTER') ? $Profile : '~Electricity';
-                $this->MaintainVariable($Ident . '_TOTAL', $Ident . '_TOTAL', $VarType, $TotalProfile, 0, true);
+            if (array_key_exists($Ident, self::EnergyCounters)) {
+                // Die Variable des Summenzählers wird erst angelegt, wenn die CCU einen Wert ungleich 0 liefert.
                 $this->ReadPowerSysVar($Ident);
             }
         }
     }
 
     /**
-     * Holt den Wert des Summenzähler per HM-Script aus der CCU.
+     * Holt den Wert des Summenzählers per HM-Script aus der CCU.
+     * Die Statusvariable `<Datenpunkt>_TOTAL` wird erst angelegt, wenn die Systemvariable existiert und einen Wert ungleich 0 hat.
+     * Bereits vorhandene Variablen bleiben unverändert erhalten und werden weiter aktualisiert.
      *
-     * @throws Exception Wenn CCU nicht erreicht wurde.
+     * @param string $Datapoint Datenpunkt des Zählers, ein Schlüssel von EnergyCounters.
+     *
+     * @return bool true, wenn ein Wert ungleich 0 gelesen und gesetzt wurde.
      */
     private function ReadPowerSysVar(string $Datapoint): bool
     {
-        switch ($Datapoint) {
-            case 'GAS_ENERGY_COUNTER':
-                $Suffix = 'Gas';
-                $Factor = 1;
-                break;
-            case 'IEC_ENERGY_COUNTER':
-                $Suffix = 'IEC';
-                $Factor = 1000;
-                break;
-            case 'ENERGY_COUNTER':
-                $Suffix = '';
-                $Factor = 1000;
-                break;
-            default:
-                $this->SendDebug('Unknown counter', $Datapoint, 0);
-                return false;
+        if (!array_key_exists($Datapoint, self::EnergyCounters)) {
+            $this->SendDebug('Unknown counter', $Datapoint, 0);
+            return false;
         }
+        $Counter = self::EnergyCounters[$Datapoint];
+        // Die Abfrage von Value() nur, wenn die Systemvariable existiert (sonst Skriptfehler auf der CCU).
         $HMScript = 'object oitemID;' . PHP_EOL .
-                'oitemID = dom.GetObject("svEnergyCounter' . $Suffix .
+                'oitemID = dom.GetObject("svEnergyCounter' . $Counter['Suffix'] .
                 '_" # dom.GetObject("' . \HMExtended\CCU::$Interfaces[$this->ReadPropertyInteger(\HMExtended\Device\Property::Protocol)] .
                 '.' . $this->ReadPropertyString(\HMExtended\Device\Property::Address) .
                 '.' . $Datapoint .
                 '").Channel() # "_' . $this->ReadPropertyString(\HMExtended\Device\Property::Address) .
                 '");' . PHP_EOL .
-                'Value=oitemID.Value();' . PHP_EOL;
+                'if (oitemID) { Value=oitemID.Value(); }' . PHP_EOL;
 
         $HMScriptResult = $this->LoadHMScript($HMScript);
         if ($HMScriptResult === false) {
@@ -194,8 +192,17 @@ class HomeMaticPowermeter extends HMBase
         if ($xml === false) {
             return false;
         }
-        $this->SendDebug($Datapoint . '_TOTAL', (string) $xml->Value, 0);
-        $Value = ((float) $xml->Value) / $Factor;
+        $Raw = (string) $xml->Value;
+        if ($Raw === '') {
+            $this->SendDebug($Datapoint . '_TOTAL', 'System variable not found', 0);
+            return false;
+        }
+        $this->SendDebug($Datapoint . '_TOTAL', $Raw, 0);
+        $Value = ((float) $Raw) / $Counter['Factor'];
+        if ($Value == 0.0) {
+            return false;
+        }
+        $this->MaintainVariable($Datapoint . '_TOTAL', $Datapoint . '_TOTAL', VARIABLETYPE_FLOAT, $Counter['Profile'], 0, true);
         $this->SetVariable($Datapoint . '_TOTAL', $Value);
         return true;
     }

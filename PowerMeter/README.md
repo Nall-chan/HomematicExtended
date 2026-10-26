@@ -93,9 +93,12 @@ Eine der folgende Statusvariablen wird automatisch angelegt, je nach verwendeten
 
 |      Name  /  Ident      |  Typ  |    Profil    |
 | :----------------------: | :---: | :----------: |
+|    GAS_VOLUME_TOTAL      | float |     ~Gas     |
 | GAS_ENERGY_COUNTER_TOTAL | float |     ~Gas     |
 | IEC_ENERGY_COUNTER_TOTAL | float | ~Electricity |
 |   ENERGY_COUNTER_TOTAL   | float | ~Electricity |
+
+Die Variablen der Summenzähler werden erst angelegt, wenn die CCU die zugehörige Systemvariable liefert und der Wert nicht 0 ist.  
 
 **Profile:**  
 Es werden die IPS-Profile ~Electricity und ~Gas genutzt, neue Profile werden nicht angelegt.  
@@ -124,6 +127,11 @@ Die direkte Darstellung im WebFront ist möglich, es wird aber empfohlen mit Lin
 ### 1. Changelog
 
 Der vollständige Changelog der Library steht in der [Haupt-README](../README.md#2-changelog).  
+
+Version 3.76:
+
+- Neuer Datenpunkt `GAS_VOLUME` (HmIP-ESI) mit Summenzähler `GAS_VOLUME_TOTAL`.  
+- Die Summenzähler werden nur angelegt, wenn die CCU die Systemvariable liefert und der Wert nicht 0 ist.  
 
 Version 3.75:
 

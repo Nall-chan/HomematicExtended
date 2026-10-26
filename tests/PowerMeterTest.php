@@ -10,15 +10,19 @@ class PowerMeterTest extends HomematicModuleTestCase
 {
     private const Address = 'XXX0000001:1';
     private int $PowerMeterId;
+    private int $IoId;
 
     protected function setUp(): void
     {
         parent::setUp();
         $IoId = $this->createFakeIo();
+        $this->IoId = $IoId;
         FakeHomematicIO::$RpcResponses = [
             'getParamsetDescription' => [
                 'ENERGY_COUNTER'     => ['ID' => 'ENERGY_COUNTER', 'TYPE' => 'FLOAT', 'UNIT' => 'Wh', 'OPERATIONS' => 5],
                 'GAS_ENERGY_COUNTER' => ['ID' => 'GAS_ENERGY_COUNTER', 'TYPE' => 'FLOAT', 'UNIT' => 'm3', 'OPERATIONS' => 5],
+                'GAS_VOLUME'         => ['ID' => 'GAS_VOLUME', 'TYPE' => 'FLOAT', 'UNIT' => 'm3', 'OPERATIONS' => 5],
+                'GAS_VOLUME_STATUS'  => ['ID' => 'GAS_VOLUME_STATUS', 'TYPE' => 'ENUM', 'UNIT' => '', 'OPERATIONS' => 5],
                 'POWER'              => ['ID' => 'POWER', 'TYPE' => 'FLOAT', 'UNIT' => 'W', 'OPERATIONS' => 5],
                 'CURRENT'            => ['ID' => 'CURRENT', 'TYPE' => 'FLOAT', 'UNIT' => 'mA', 'OPERATIONS' => 5],
                 'FREQUENCY'          => ['ID' => 'FREQUENCY', 'TYPE' => 'FLOAT', 'UNIT' => 'Hz', 'OPERATIONS' => 5],
@@ -31,6 +35,8 @@ class PowerMeterTest extends HomematicModuleTestCase
             'getParamset' => [
                 'ENERGY_COUNTER'     => 1500.0,
                 'GAS_ENERGY_COUNTER' => 12.5,
+                'GAS_VOLUME'         => 2034.2,
+                'GAS_VOLUME_STATUS'  => 0,
                 'POWER'              => 42.0,
                 'BOOT'               => false,
                 'WEIRD_UNIT'         => 1.0
@@ -57,6 +63,50 @@ class PowerMeterTest extends HomematicModuleTestCase
         }
         $this->assertNotFalse(@IPS_GetObjectIDByIdent('ENERGY_COUNTER_TOTAL', $this->PowerMeterId));
         $this->assertNotFalse(@IPS_GetObjectIDByIdent('GAS_ENERGY_COUNTER_TOTAL', $this->PowerMeterId));
+        $this->assertNotFalse(@IPS_GetObjectIDByIdent('GAS_VOLUME', $this->PowerMeterId));
+        $this->assertNotFalse(@IPS_GetObjectIDByIdent('GAS_VOLUME_TOTAL', $this->PowerMeterId));
+        // Status-ENUM ist nicht unterstützt und erzeugt keine Variable
+        $this->assertFalse(@IPS_GetObjectIDByIdent('GAS_VOLUME_STATUS', $this->PowerMeterId));
+        // IEC_ENERGY_COUNTER gehört nicht zu diesem Gerät, daher auch kein Summenzähler
+        $this->assertFalse(@IPS_GetObjectIDByIdent('IEC_ENERGY_COUNTER_TOTAL', $this->PowerMeterId));
+    }
+
+    public function testTotalIsNotCreatedWithoutSystemVariable(): void
+    {
+        // Systemvariable fehlt auf der CCU: das Skript liefert keinen Wert.
+        $this->recreateDevice('<xml><exec>/x</exec><sessionId>0</sessionId><httpUserAgent>x</httpUserAgent></xml>');
+        foreach (['ENERGY_COUNTER_TOTAL', 'GAS_ENERGY_COUNTER_TOTAL', 'GAS_VOLUME_TOTAL'] as $Ident) {
+            $this->assertFalse(@IPS_GetObjectIDByIdent($Ident, $this->PowerMeterId), $Ident);
+        }
+        $this->assertNotFalse(@IPS_GetObjectIDByIdent('ENERGY_COUNTER', $this->PowerMeterId));
+    }
+
+    public function testTotalIsNotCreatedWithZeroValueAndCreatedLater(): void
+    {
+        $this->recreateDevice('<xml><exec>/x</exec><sessionId>0</sessionId><httpUserAgent>x</httpUserAgent><Value>0.000000</Value></xml>');
+        $this->assertFalse(@IPS_GetObjectIDByIdent('ENERGY_COUNTER_TOTAL', $this->PowerMeterId));
+        // Der Zähler läuft an: der nächste Event legt die Variable an.
+        FakeHomematicIO::$ScriptResponse = '<xml><exec>/x</exec><sessionId>0</sessionId><httpUserAgent>x</httpUserAgent><Value>3000.0</Value></xml>';
+        IPS\InstanceManager::getInstanceInterface($this->PowerMeterId)->ReceiveData(json_encode([
+            'DataID'        => \HMExtended\GUID::HmDevice,
+            'DeviceID'      => self::Address,
+            'VariableName'  => 'ENERGY_COUNTER',
+            'VariableValue' => 3000.0
+        ]));
+        $this->assertEquals(3.0, GetValueFloat(IPS_GetObjectIDByIdent('ENERGY_COUNTER_TOTAL', $this->PowerMeterId)));
+    }
+
+    public function testEventOfGasVolumeUpdatesTotal(): void
+    {
+        FakeHomematicIO::$ScriptResponse = '<xml><exec>/x</exec><sessionId>0</sessionId><httpUserAgent>x</httpUserAgent><Value>2035.5</Value></xml>';
+        IPS\InstanceManager::getInstanceInterface($this->PowerMeterId)->ReceiveData(json_encode([
+            'DataID'        => \HMExtended\GUID::HmDevice,
+            'DeviceID'      => self::Address,
+            'VariableName'  => 'GAS_VOLUME',
+            'VariableValue' => 2035.5
+        ]));
+        $this->assertEquals(2035.5, GetValueFloat(IPS_GetObjectIDByIdent('GAS_VOLUME', $this->PowerMeterId)));
+        $this->assertEquals(2035.5, GetValueFloat(IPS_GetObjectIDByIdent('GAS_VOLUME_TOTAL', $this->PowerMeterId)));
     }
 
     public function testUnknownTypeIsSkipped(): void
@@ -141,6 +191,17 @@ class PowerMeterTest extends HomematicModuleTestCase
         $Interface = IPS\InstanceManager::getInstanceInterface($this->PowerMeterId);
         $this->assertSame('{}', $Interface->Migrate('{}'));
         $this->assertSame('invalid', $Interface->Migrate('invalid'));
+    }
+
+    /**
+     * Legt eine neue Instanz an, nachdem die Antwort der CCU auf das HM-Script geändert wurde.
+     */
+    private function recreateDevice(string $ScriptResponse): void
+    {
+        FakeHomematicIO::$ScriptResponse = $ScriptResponse;
+        $this->PowerMeterId = $this->createDevice(HomeMaticPowermeter::class, \HMExtended\GUID::Powermeter, 'HMPM2', $this->IoId);
+        IPS_SetProperty($this->PowerMeterId, \HMExtended\Device\Property::Address, self::Address);
+        IPS_ApplyChanges($this->PowerMeterId);
     }
 
     private function migrate(array $Configuration): array

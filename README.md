@@ -157,6 +157,11 @@ Erweitert IPS um die native Unterstützung von:
 
 ### 2. Changelog
 
+Version 3.76:
+
+* HomeMatic Powermeter: Unterstützt den Datenpunkt `GAS_VOLUME` des HmIP-ESI. Der Summenzähler `GAS_VOLUME_TOTAL` (m³) wird aus der CCU-Systemvariable `svEnergyCounterGas_…` gelesen, sobald diese existiert.  
+* HomeMatic Powermeter: Die Statusvariablen `ENERGY_COUNTER_TOTAL`, `IEC_ENERGY_COUNTER_TOTAL`, `GAS_ENERGY_COUNTER_TOTAL` und `GAS_VOLUME_TOTAL` werden nur noch angelegt, wenn die CCU die Systemvariable des Summenzählers liefert und der Wert nicht 0 ist. Bereits vorhandene Variablen bleiben erhalten. Ein Ereignis von `GAS_VOLUME` aktualisiert den Summenzähler.  
+
 Version 3.75:
 
 > [!IMPORTANT]
