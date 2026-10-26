@@ -130,7 +130,7 @@ Der vollständige Changelog der Library steht in der [Haupt-README](../README.md
 
 Version 3.76:
 
-- Neuer Datenpunkt `GAS_VOLUME` (HmIP-ESI) mit Summenzähler `GAS_VOLUME_TOTAL`.  
+- HmIP-ESI im Gasmodus: Der Summenzähler der CCU wird als `GAS_VOLUME_TOTAL` in m³ angezeigt (bisher fälschlich als `ENERGY_COUNTER_TOTAL` in kWh, um Faktor 1000 zu klein). Eine vorhandene Variable `ENERGY_COUNTER_TOTAL` wird dann nicht mehr aktualisiert und kann gelöscht werden.  
 - Die Summenzähler werden nur angelegt, wenn die CCU die Systemvariable liefert und der Wert nicht 0 ist.  
 
 Version 3.75:

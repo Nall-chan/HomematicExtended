@@ -25,16 +25,25 @@ class HomeMaticPowermeter extends HMBase
     protected const ValuesChannel = '';
 
     /**
+     * Attribut: Gerät mit GAS_VOLUME (HmIP-ESI) arbeitet als Gaszähler, die Systemvariable svEnergyCounter_… zählt dann m³.
+     * Bleibt über Neustarts erhalten und wird nur geändert, wenn Werte oder Events die Betriebsart zeigen.
+     */
+    private const AttributeGasMode = 'GasMode';
+
+    /**
      * Datenpunkte, zu denen die CCU einen Summenzähler (Systemvariable `svEnergyCounter<Suffix>_<Kanal-ID>_<Adresse>`) führt.
      * Factor: Umrechnung des Systemvariablen-Wertes auf kWh bzw. m³.
      * Belegt am HM-ES-TX-WM (live, Vergleich mit der CCU): ENERGY_COUNTER Wh -> kWh (Faktor 1000), GAS_ENERGY_COUNTER m³ (Faktor 1).
-     * Annahme (nicht belegt): IEC_ENERGY_COUNTER liefert die Systemvariable in Wh, GAS_VOLUME (HmIP-ESI) in m³ unter dem Suffix Gas.
+     * Belegt am HmIP-ESI im Gasmodus (Debug eines Forennutzers): die CCU führt nur svEnergyCounter_… (kein Suffix Gas),
+     * der Wert wächst mit GAS_VOLUME in m³ (Faktor 1). Daher nutzen ENERGY_COUNTER und GAS_VOLUME dieselbe Systemvariable,
+     * ausgewertet wird je nach Betriebsart (GasMode) nur einer der beiden Datenpunkte.
+     * Annahme (nicht belegt): IEC_ENERGY_COUNTER liefert die Systemvariable in Wh.
      */
     private const EnergyCounters = [
         'ENERGY_COUNTER'     => ['Suffix' => '', 'Factor' => 1000, 'Profile' => '~Electricity'],
         'IEC_ENERGY_COUNTER' => ['Suffix' => 'IEC', 'Factor' => 1000, 'Profile' => '~Electricity'],
         'GAS_ENERGY_COUNTER' => ['Suffix' => 'Gas', 'Factor' => 1, 'Profile' => '~Gas'],
-        'GAS_VOLUME'         => ['Suffix' => 'Gas', 'Factor' => 1, 'Profile' => '~Gas']
+        'GAS_VOLUME'         => ['Suffix' => '', 'Factor' => 1, 'Profile' => '~Gas']
     ];
 
     /**
@@ -47,6 +56,7 @@ class HomeMaticPowermeter extends HMBase
         $this->RegisterPropertyString(\HMExtended\Device\Property::Address, '');
         $this->RegisterPropertyInteger(\HMExtended\Device\Property::Protocol, static::ProtocolId);
         $this->RegisterPropertyBoolean(\HMExtended\Device\Property::EmulateStatus, false);
+        $this->RegisterAttributeBoolean(self::AttributeGasMode, false);
     }
 
     /**
@@ -91,8 +101,16 @@ class HomeMaticPowermeter extends HMBase
             $this->SetReceiveDataFilter('.*9999999999.*');
         }
         if (($Address) && ($this->HasActiveParent())) {
+            // Die Werte zuerst lesen: sie bestimmen die Betriebsart, bevor die Summenzähler gelesen werden.
+            $Values = @$this->GetParamset(\HMExtended\CCU::VALUES, $Address . static::ValuesChannel);
+            // Ohne Werte (z.B. CCU nicht erreichbar) bleibt die zuletzt erkannte Betriebsart erhalten.
+            if (count($Values) > 0) {
+                $this->WriteAttributeBoolean(self::AttributeGasMode, array_key_exists('GAS_VOLUME', $Values) && !array_key_exists('ENERGY_COUNTER', $Values));
+            }
             @$this->CreateVariablesFromValues();
-            @$this->GetValuesAndSetVariable();
+            foreach ($Values as $Ident => $Value) {
+                $this->SetVariable($Ident, $Value);
+            }
         }
     }
 
@@ -107,6 +125,12 @@ class HomeMaticPowermeter extends HMBase
         $Event = json_decode($JSONString, true);
         if (!isset($Event['VariableName'])) {
             return '';
+        }
+        // Ein Gerät mit GAS_VOLUME meldet im Gasmodus nur GAS_VOLUME, sonst ENERGY_COUNTER.
+        if ($Event['VariableName'] == 'GAS_VOLUME') {
+            $this->WriteAttributeBoolean(self::AttributeGasMode, true);
+        } elseif ($Event['VariableName'] == 'ENERGY_COUNTER') {
+            $this->WriteAttributeBoolean(self::AttributeGasMode, false);
         }
         if (array_key_exists($Event['VariableName'], self::EnergyCounters)) {
             $this->ReadPowerSysVar($Event['VariableName']);
@@ -173,6 +197,12 @@ class HomeMaticPowermeter extends HMBase
             $this->SendDebug('Unknown counter', $Datapoint, 0);
             return false;
         }
+        // ENERGY_COUNTER und GAS_VOLUME teilen sich die Systemvariable, je nach Betriebsart gilt nur einer.
+        $GasMode = $this->ReadAttributeBoolean(self::AttributeGasMode);
+        if ((($Datapoint == 'ENERGY_COUNTER') && $GasMode) || (($Datapoint == 'GAS_VOLUME') && !$GasMode)) {
+            $this->SendDebug($Datapoint . '_TOTAL', 'Skipped, GasMode: ' . ($GasMode ? 'true' : 'false'), 0);
+            return false;
+        }
         $Counter = self::EnergyCounters[$Datapoint];
         // Die Abfrage von Value() nur, wenn die Systemvariable existiert (sonst Skriptfehler auf der CCU).
         $HMScript = 'object oitemID;' . PHP_EOL .
@@ -199,7 +229,8 @@ class HomeMaticPowermeter extends HMBase
         }
         $this->SendDebug($Datapoint . '_TOTAL', $Raw, 0);
         $Value = ((float) $Raw) / $Counter['Factor'];
-        if ($Value == 0.0) {
+        // Neu angelegt wird erst bei einem Wert ungleich 0, eine vorhandene Variable folgt auch einem Zurücksetzen auf 0.
+        if (($Value == 0.0) && ($this->FindIDForIdent($Datapoint . '_TOTAL') == 0)) {
             return false;
         }
         $this->MaintainVariable($Datapoint . '_TOTAL', $Datapoint . '_TOTAL', VARIABLETYPE_FLOAT, $Counter['Profile'], 0, true);
