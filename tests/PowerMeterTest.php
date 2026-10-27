@@ -235,7 +235,7 @@ class PowerMeterTest extends HomematicModuleTestCase
             ]));
         }
         $this->assertCount(0, FakeHomematicIO::$Requests);
-        $this->assertSame(\HMExtended\Device\Timer::ReadSystemVariablesDelay, $this->timerInterval());
+        $this->assertSame(50, $this->timerInterval());
         $this->assertEquals(5000.0, GetValueFloat(IPS_GetObjectIDByIdent('ENERGY_COUNTER_TOTAL', $this->PowerMeterId)));
         $this->runTimer();
         $this->assertCount(1, FakeHomematicIO::$Requests);

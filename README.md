@@ -173,7 +173,7 @@ Version 3.78:
 
 * HomeMatic Extended Konfigurator: Listet jetzt auch die HmIP-Geräte für den Powermeter (z.B. HmIP-PSM, HmIP-ESI) und die HmIP-Wetterstationen.  
 * HomeMatic Extended Konfigurator: Ein geschlossenes Wired-Interface im Homematic Socket wird nicht mehr als Hinweis gemeldet, da die Library keine Wired-Geräte unterstützt.  
-* HomeMatic Powermeter: Der Summenzähler wird 5 Sekunden nach der Meldung des Gerätes gelesen, mehrere Meldungen kurz hintereinander lösen nur ein Lesen aus.  
+* HomeMatic Powermeter: Der Summenzähler wird 50 ms nach der Meldung des Gerätes gelesen, damit das Programm der CCU ihn vorher aktualisiert hat.  
 
 **Behobene falsche Werte in Statusvariablen**
 

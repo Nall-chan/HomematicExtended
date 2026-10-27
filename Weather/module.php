@@ -37,6 +37,12 @@ class HomeMaticWeather extends HMBase
     private const TriggerDatapoints = ['ILLUMINATION', 'SUNSHINEDURATION', 'RAIN_COUNTER'];
 
     /**
+     * Verzögerung in Millisekunden zwischen Ereignis und Lesen der Systemvariablen, damit das Programm der CCU die Zähler bereits aktualisiert hat.
+     * Gelesen werden nur Tages- und Summenwerte, der genaue Zeitpunkt ist dafür ohne Bedeutung.
+     */
+    private const ReadDelay = 5000;
+
+    /**
      * Datentypen der CCU, für die Statusvariablen angelegt werden. ENUM (Status-Werte) und ACTION werden nicht abgebildet.
      */
     private const HmTypeToIpsType = [
@@ -128,7 +134,7 @@ class HomeMaticWeather extends HMBase
         }
         if (in_array($Event['VariableName'], self::TriggerDatapoints)) {
             // Mehrere Ereignisse kurz hintereinander lösen nur ein Lesen aus.
-            $this->SetTimerInterval(\HMExtended\Device\Timer::ReadSystemVariables, \HMExtended\Device\Timer::ReadSystemVariablesDelay);
+            $this->SetTimerInterval(\HMExtended\Device\Timer::ReadSystemVariables, self::ReadDelay);
         }
         return '';
     }

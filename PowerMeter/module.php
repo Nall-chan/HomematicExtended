@@ -32,6 +32,13 @@ class HomeMaticPowermeter extends HMBase
     private const AttributeGasMode = 'GasMode';
 
     /**
+     * Verzögerung in Millisekunden zwischen dem Ereignis eines Zählers und dem Lesen der Systemvariable.
+     * Das Ereignis löst auf der CCU zeitgleich das Zählerprogramm aus. Die Zeit ist kurz gehalten, damit der Zeitstempel
+     * des Summenzählers im Archiv zur Messung passt (Vorgabe des Nutzers: 50 ms).
+     */
+    private const ReadDelay = 50;
+
+    /**
      * Datenpunkte, zu denen die CCU einen Summenzähler (Systemvariable `svEnergyCounter<Suffix>_<Kanal-ID>_<Adresse>`) führt.
      * Factor: Umrechnung des Systemvariablen-Wertes auf kWh bzw. m³.
      * Belegt am HM-ES-TX-WM (live, Vergleich mit der CCU): ENERGY_COUNTER Wh -> kWh (Faktor 1000), GAS_ENERGY_COUNTER m³ (Faktor 1).
@@ -148,7 +155,7 @@ class HomeMaticPowermeter extends HMBase
                 $Pending[] = $Event['VariableName'];
                 $this->PendingCounters = $Pending;
             }
-            $this->SetTimerInterval(\HMExtended\Device\Timer::ReadSystemVariables, \HMExtended\Device\Timer::ReadSystemVariablesDelay);
+            $this->SetTimerInterval(\HMExtended\Device\Timer::ReadSystemVariables, self::ReadDelay);
         }
         return '';
     }

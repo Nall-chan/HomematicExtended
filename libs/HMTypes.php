@@ -1054,11 +1054,6 @@ namespace HMExtended\Device
         public const ReadRFInterfaces = 'ReadRFInterfaces';
         public const ReadWRInterface = 'ReadWRInterface';
         public const ReadSystemVariables = 'ReadSystemVariables';
-        /**
-         * Verzögerung in Millisekunden zwischen einem Ereignis und dem Lesen der Systemvariablen.
-         * Das Ereignis löst auf der CCU zeitgleich das Zählerprogramm aus, das die Systemvariable aktualisiert.
-         */
-        public const ReadSystemVariablesDelay = 5000;
     }
     class Address
     {
