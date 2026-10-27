@@ -22,6 +22,7 @@ require_once __DIR__ . '/../libs/HMTypes.php';  // HMTypes Data
  */
 class HomeMaticExtendedConfigurator extends HMBase
 {
+    protected const SummaryShowsHost = true;
     private const IORFOpen = 'RFOpen';
     private const IOWROpen = 'WROpen';
     private const IOGROpen = 'GROpen';

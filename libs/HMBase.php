@@ -55,6 +55,10 @@ abstract class HMBase extends IPSModuleStrict
     protected const ValuesChannel = '';
     protected const ParamChannel = '';
     /**
+     * True, wenn die Zusammenfassung den Host des Homematic Sockets anzeigt (Konfigurator, Splitter und Singletons).
+     */
+    protected const SummaryShowsHost = false;
+    /**
      * Interne Funktion des SDK.
      */
     public function Create(): void
@@ -106,6 +110,11 @@ abstract class HMBase extends IPSModuleStrict
         switch ($Message) {
             case IPS_KERNELSTARTED:
                 $this->KernelReady();
+                break;
+            case IM_CHANGESETTINGS:
+                if ($SenderID == $this->ParentID) {
+                    $this->SetHostSummary();
+                }
                 break;
         }
     }
@@ -220,7 +229,36 @@ abstract class HMBase extends IPSModuleStrict
      */
     protected function RegisterParent(): int
     {
-        return $this->IORegisterParent();
+        $OldParentId = $this->ParentID;
+        $ParentId = $this->IORegisterParent();
+        if (static::SummaryShowsHost) {
+            // Ändert der Nutzer den Host im Socket, wird die Zusammenfassung nachgeführt.
+            if ($ParentId != $OldParentId) {
+                if ($OldParentId > 0) {
+                    $this->UnregisterMessage($OldParentId, IM_CHANGESETTINGS);
+                }
+                if ($ParentId > 0) {
+                    $this->RegisterMessage($ParentId, IM_CHANGESETTINGS);
+                }
+            }
+            $this->SetHostSummary();
+        }
+        return $ParentId;
+    }
+
+    /**
+     * Zeigt den Host des Homematic Sockets in der Zusammenfassung an, ohne Parent bleibt sie leer.
+     */
+    protected function SetHostSummary(): void
+    {
+        if (!static::SummaryShowsHost) {
+            return;
+        }
+        $Host = '';
+        if ($this->ParentID > 0) {
+            $Host = (string) @IPS_GetProperty($this->ParentID, \HMExtended\Device\IOProperty::Host);
+        }
+        $this->SetSummary($Host);
     }
 
     /**

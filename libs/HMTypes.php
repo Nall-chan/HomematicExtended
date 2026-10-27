@@ -1049,6 +1049,13 @@ namespace HMExtended\Device
         public const ScheduleTemps = 'ScheduleTemps';
         public const Interval = 'Interval';
     }
+    /**
+     * Eigenschaften des Homematic Sockets (IO), welche die Module nur lesen.
+     */
+    class IOProperty
+    {
+        public const Host = 'Host';
+    }
     class Timer
     {
         public const ReadRFInterfaces = 'ReadRFInterfaces';

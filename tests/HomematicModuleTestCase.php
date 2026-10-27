@@ -29,6 +29,8 @@ class FakeHomematicIO extends IPSModuleStrict
         $this->RegisterPropertyBoolean('IPOpen', false);
         $this->RegisterPropertyBoolean('WROpen', false);
         $this->RegisterPropertyBoolean('GROpen', false);
+        // Adresse der CCU, wird in der Zusammenfassung angezeigt
+        $this->RegisterPropertyString('Host', '192.168.1.10');
     }
 
     public function ForwardData(string $JSONString): string

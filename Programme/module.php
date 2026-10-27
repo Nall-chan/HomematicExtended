@@ -21,6 +21,7 @@ require_once __DIR__ . '/../libs/HMBase.php';  // HMBase Klasse
  */
 class HomeMaticProgramme extends HMBase
 {
+    protected const SummaryShowsHost = true;
     /**
      * Interne Funktion des SDK.
      */
