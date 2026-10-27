@@ -252,18 +252,55 @@ class ExtendedConfiguratorTest extends HomematicModuleTestCase
         $this->assertNotNull($Popup);
         $Items = $Popup['popup']['items'];
         $Text = implode(' ', array_column($Items, 'caption'));
-        foreach (['HomeMatic IP', 'HomeMatic BidCos-Wired', 'HomeMatic groups'] as $Protocol) {
+        foreach (['HomeMatic IP', 'HomeMatic groups'] as $Protocol) {
             $this->assertStringContainsString($Protocol, $Text);
         }
         $this->assertStringNotContainsString('HomeMatic BidCos-RF', $Text);
+        // Die Library unterstützt keine Wired-Geräte, ein geschlossenes Wired-Interface ist kein Hinweis wert.
+        $this->assertStringNotContainsString('HomeMatic BidCos-Wired', $Text);
         $Button = array_values(array_filter($Items, fn ($Item) => $Item['type'] == 'OpenObjectButton'));
         $this->assertCount(1, $Button);
         $this->assertSame($this->IoId, $Button[0]['objectID']);
     }
 
+    public function testHmIpDevicesAreListedWhenIpInterfaceIsOpen(): void
+    {
+        FakeHomematicIO::$RpcResponses['listDevices@2'] = [
+            ['ADDRESS' => '0001D3C99C1234:1', 'TYPE' => 'WEATHER_TRANSMIT'],
+            ['ADDRESS' => '0001D3C99C1234:2', 'TYPE' => 'COND_SWITCH_TRANSMITTER_WIND_SPEED'],
+            ['ADDRESS' => '0001DA49A00001:6', 'TYPE' => 'ENERGIE_METER_TRANSMITTER']
+        ];
+        $this->assertArrayNotHasKey('0001D3C99C1234:1', $this->rowsByAddress());
+        IPS_SetProperty($this->IoId, 'IPOpen', true);
+        IPS_ApplyChanges($this->IoId);
+        $Rows = $this->rowsByAddress();
+        $this->assertSame(\HMExtended\GUID::Weather, $Rows['0001D3C99C1234:1']['create']['moduleID']);
+        $this->assertSame(2, $Rows['0001D3C99C1234:1']['create']['configuration']['Protocol']);
+        $this->assertArrayNotHasKey('0001D3C99C1234:2', $Rows);
+        $this->assertSame(\HMExtended\GUID::Powermeter, $Rows['0001DA49A00001:6']['create']['moduleID']);
+        $this->assertSame(2, $Rows['0001DA49A00001:6']['create']['configuration']['Protocol']);
+        // Der BidCos-Powermeter bleibt auf Funk.
+        $this->assertSame(0, $Rows['KEQ0971739:2']['create']['configuration']['Protocol']);
+    }
+
+    public function testPowermeterInstanceOfOtherProtocolIsNotListedAsMissing(): void
+    {
+        require_once __DIR__ . '/../PowerMeter/module.php';
+        FakeHomematicIO::$RpcResponses['listDevices@2'] = [['ADDRESS' => '0001DA49A00001:6', 'TYPE' => 'ENERGIE_METER_TRANSMITTER']];
+        IPS_SetProperty($this->IoId, 'IPOpen', true);
+        IPS_ApplyChanges($this->IoId);
+        $PowerMeter = $this->createDevice(HomeMaticPowermeter::class, \HMExtended\GUID::Powermeter, 'HMPM', $this->IoId);
+        IPS_SetProperty($PowerMeter, \HMExtended\Device\Property::Address, '0001DA49A00001:6');
+        IPS_SetProperty($PowerMeter, \HMExtended\Device\Property::Protocol, 2);
+        IPS_ApplyChanges($PowerMeter);
+        $Rows = array_values(array_filter($this->getRows(), fn ($Row) => ($Row['instanceID'] ?? 0) == $PowerMeter));
+        $this->assertCount(1, $Rows);
+        $this->assertSame('0001DA49A00001:6', $Rows[0]['address']);
+    }
+
     public function testNoPopupWhenAllProtocolsAreEnabled(): void
     {
-        foreach (['RFOpen', 'IPOpen', 'WROpen', 'GROpen'] as $Property) {
+        foreach (['RFOpen', 'IPOpen', 'GROpen'] as $Property) {
             IPS_SetProperty($this->IoId, $Property, true);
         }
         IPS_ApplyChanges($this->IoId);

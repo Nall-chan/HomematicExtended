@@ -19,6 +19,7 @@ require_once __DIR__ . '/../libs/HMBase.php';  // HMBase Klasse
  * HomeMaticPowermeter ist die Klasse für das IPS-Modul 'HomeMatic PowerMeter'.
  * Erweitert HMBase.
  *
+ * @property string[] $PendingCounters Datenpunkte, deren Summenzähler nach Ablauf des Timers gelesen wird.
  */
 class HomeMaticPowermeter extends HMBase
 {
@@ -60,6 +61,8 @@ class HomeMaticPowermeter extends HMBase
         $this->RegisterPropertyInteger(\HMExtended\Device\Property::Protocol, static::ProtocolId);
         $this->RegisterPropertyBoolean(\HMExtended\Device\Property::EmulateStatus, false);
         $this->RegisterAttributeBoolean(self::AttributeGasMode, false);
+        $this->RegisterTimer(\HMExtended\Device\Timer::ReadSystemVariables, 0, 'IPS_RequestAction($_IPS[\'TARGET\'], \'' . \HMExtended\Device\Timer::ReadSystemVariables . '\', true);');
+        $this->PendingCounters = [];
     }
 
     /**
@@ -97,6 +100,8 @@ class HomeMaticPowermeter extends HMBase
     public function ApplyChanges(): void
     {
         parent::ApplyChanges();
+        $this->SetTimerInterval(\HMExtended\Device\Timer::ReadSystemVariables, 0);
+        $this->PendingCounters = [];
         $Address = $this->ReadPropertyString(\HMExtended\Device\Property::Address);
         if ($Address) {
             $this->SetReceiveDataFilter('.*"DeviceID":"' . $Address . static::ValuesChannel . '.*');
@@ -136,7 +141,14 @@ class HomeMaticPowermeter extends HMBase
             $this->WriteAttributeBoolean(self::AttributeGasMode, false);
         }
         if (array_key_exists($Event['VariableName'], self::EnergyCounters)) {
-            $this->ReadPowerSysVar($Event['VariableName']);
+            // Das Ereignis löst auf der CCU zeitgleich das Zählerprogramm aus. Die Systemvariable wird daher erst nach Ablauf des Timers gelesen,
+            // mehrere Ereignisse kurz hintereinander lösen nur ein Lesen aus.
+            $Pending = $this->PendingCounters;
+            if (!in_array($Event['VariableName'], $Pending)) {
+                $Pending[] = $Event['VariableName'];
+                $this->PendingCounters = $Pending;
+            }
+            $this->SetTimerInterval(\HMExtended\Device\Timer::ReadSystemVariables, \HMExtended\Device\Timer::ReadSystemVariablesDelay);
         }
         return '';
     }
@@ -158,6 +170,30 @@ class HomeMaticPowermeter extends HMBase
     protected function IOChangeState(int $State): void
     {
         $this->ApplyChanges();
+    }
+
+    /**
+     * Verarbeitet den Timer zum Lesen der Summenzähler.
+     *
+     * @param string $Ident Ident der Variable bzw. Aktion.
+     * @param mixed  $Value Der Wert.
+     * @param bool   $done  Wird true, wenn die Aktion vollständig verarbeitet wurde.
+     */
+    protected function ProcessRequestAction(string $Ident, mixed $Value, bool &$done = false): void
+    {
+        parent::ProcessRequestAction($Ident, $Value, $done);
+        if ($done) {
+            return;
+        }
+        if ($Ident == \HMExtended\Device\Timer::ReadSystemVariables) {
+            $this->SetTimerInterval(\HMExtended\Device\Timer::ReadSystemVariables, 0);
+            $Pending = $this->PendingCounters;
+            $this->PendingCounters = [];
+            foreach ($Pending as $Datapoint) {
+                $this->ReadPowerSysVar($Datapoint);
+            }
+            $done = true;
+        }
     }
 
     //################# PRIVATE

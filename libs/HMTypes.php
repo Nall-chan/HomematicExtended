@@ -7,6 +7,7 @@ namespace HMExtended
     class GUID
     {
         public const Powermeter = '{400F9193-FE79-4086-8D76-958BF9C1B357}';
+        public const Weather = '{0877F1DB-2277-4B74-BCD9-E10D81015C31}';
         public const Systemvariablen = '{AF50C42B-7183-4992-B04A-FAFB07BB1B90}';
         public const Programme = '{A5010577-C443-4A85-ABF2-3F2D6CDD2465}';
         public const Dis_WM55 = '{271BCAB1-0658-46D9-A164-985AEB641B48}';
@@ -57,6 +58,9 @@ namespace HMExtended
         public const Powermeter_IGL = 'POWERMETER_IGL';
         public const Powermeter_HmIP = 'ENERGIE_METER_TRANSMITTER';
 
+        // Wetterkanal der HmIP-Wetterstationen HmIP-SWO-B/-PL/-PR (nur diese führen Systemvariablen auf der CCU)
+        public const Weather_HmIP = 'WEATHER_TRANSMIT';
+
         public const Dis_WM55 = 'HM-Dis-WM55'; // HM-Dis-WM55
         public const Dis_EP_WM55 = 'HM-Dis-EP-WM55'; // HM-Dis-EP-WM55
 
@@ -92,6 +96,7 @@ namespace HMExtended
             //GUID::RF_Interface_Splitter          =>
             // Konfigurator 'fertig' => Aber die Instanzen sind noch nicht so weit
             GUID::Powermeter                     => [self::Powermeter, self::Powermeter_IEC1, self::Powermeter_IEC2, self::Powermeter_IGL, self::Powermeter_HmIP],
+            GUID::Weather                        => [self::Weather_HmIP],
             GUID::Dis_WM55                       => [self::Dis_WM55],
             GUID::Dis_EP_WM55                    => [self::Dis_EP_WM55],
             // Konfigurator fertig
@@ -1048,6 +1053,12 @@ namespace HMExtended\Device
     {
         public const ReadRFInterfaces = 'ReadRFInterfaces';
         public const ReadWRInterface = 'ReadWRInterface';
+        public const ReadSystemVariables = 'ReadSystemVariables';
+        /**
+         * Verzögerung in Millisekunden zwischen einem Ereignis und dem Lesen der Systemvariablen.
+         * Das Ereignis löst auf der CCU zeitgleich das Zählerprogramm aus, das die Systemvariable aktualisiert.
+         */
+        public const ReadSystemVariablesDelay = 5000;
     }
     class Address
     {

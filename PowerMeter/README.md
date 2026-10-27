@@ -91,7 +91,7 @@ Existieren in IPS mehrere Homematic Sockets, so ist der auszuwählen, an welcher
 | System      | Protocol | integer | `0`          | Schnittstelle der CCU, an der das Gerät angelernt ist: `0` = Funk, `1` = Kabelgebunden, `2` = IP.               |
 
 Die Instanz liest beim Übernehmen der Einstellungen und beim Start von Symcon alle Datenpunkte des Kanals (Paramset `VALUES`) und legt dafür Statusvariablen an. Danach aktualisieren die Ereignisse der CCU diese Variablen.  
-Meldet die CCU einen Zählerstand (`ENERGY_COUNTER`, `ENERGY_COUNTER_FEED_IN`, `GAS_ENERGY_COUNTER`, `GAS_VOLUME` oder `IEC_ENERGY_COUNTER`), liest die Instanz zusätzlich den Summenzähler aus der zugehörigen Systemvariable der CCU (siehe [Statusvariablen](#5-statusvariablen)).  
+Meldet die CCU einen Zählerstand (`ENERGY_COUNTER`, `ENERGY_COUNTER_FEED_IN`, `GAS_ENERGY_COUNTER`, `GAS_VOLUME` oder `IEC_ENERGY_COUNTER`), liest die Instanz 5 Sekunden später den Summenzähler aus der zugehörigen Systemvariable der CCU (siehe [Statusvariablen](#5-statusvariablen)). Bis dahin hat das Programm der CCU den Summenzähler aktualisiert, mehrere Meldungen kurz hintereinander lösen nur ein Lesen aus.  
 
 Bestehende Instanzen aus älteren Versionen (Eigenschaft `EventID`) werden beim Update auf Adresse und System umgestellt.  
 
@@ -145,6 +145,11 @@ Die direkte Darstellung im WebFront ist möglich, es wird aber empfohlen mit Lin
 ### 1. Changelog
 
 Der vollständige Changelog der Library steht in der [Haupt-README](../README.md#2-changelog).  
+
+Version 3.78:
+
+- Der `HomeMatic Extended Konfigurator` listet jetzt auch die HmIP-Geräte (z.B. HmIP-PSM, HmIP-ESI).  
+- Der Summenzähler wird 5 Sekunden nach der Meldung des Gerätes gelesen. Bisher konnte er um eine Meldung hinterherhängen, wenn das Programm der CCU den Zähler noch nicht aktualisiert hatte.  
 
 Version 3.77:
 

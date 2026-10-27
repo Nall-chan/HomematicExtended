@@ -66,7 +66,8 @@ Die Instanz besitzt keine einstellbaren Eigenschaften, die Liste der Geräte wir
 
 | Gerät                                 | Modul                                                                    | System        | Adresse der Instanz                  |
 | :------------------------------------ | :----------------------------------------------------------------------- | :------------ | :----------------------------------- |
-| Schaltaktor mit Leistungsmessung u.ä. | [HomeMatic Powermeter](../PowerMeter/)                                   | Funk          | Gerät mit Kanal des Zählers          |
+| Schaltaktor mit Leistungsmessung u.ä. | [HomeMatic Powermeter](../PowerMeter/)                                   | Funk, HmIP    | Gerät mit Kanal des Zählers          |
+| HmIP-Wetterstation `HmIP-SWO-…`       | [HomeMatic Weather](../Weather/)                                         | HmIP          | Gerät mit Kanal 1                    |
 | `HM-Dis-WM55`                         | [HomeMatic Dis-WM55](../DisplayStatusAnzeige/)                           | Funk          | Gerät mit Kanal 1                    |
 | `HM-Dis-EP-WM55`                      | [HomeMatic Dis-EP-WM55](../ePaperStatusAnzeige/)                         | Funk          | Gerät mit Kanal 3                    |
 | `HM-CC-RT-DN`                         | [HomeMatic Heating Device](../HeatingDevice/)                            | Funk          | Gerät                                |
@@ -84,7 +85,7 @@ Die Zeilen für Programme, RemoteScript und WR-Interface stehen für das jeweili
 
 - **Gerät auf der CCU nicht gefunden:** Zu einer vorhandenen Instanz gibt es auf der CCU kein Gerät mit der eingetragenen Adresse (Gerät abgelernt, Tippfehler, falscher Socket).  
 - **Keine Adresse konfiguriert (Migration erforderlich):** Die Instanz stammt aus einer älteren Version und hat noch keine Adresse. Die Adresse wird beim Update aus den bisherigen Einstellungen übernommen, gelingt das nicht, ist die Adresse in der Instanz einzutragen.  
-- **Nicht aktivierte Protokolle:** Sind Protokolle im Homematic Socket nicht aktiviert, erscheint beim Öffnen eine Meldung mit der Liste der Protokolle und der Schaltfläche `I/O Instanz öffnen`. Die Geräte dieser Protokolle fehlen in der Liste.  
+- **Nicht aktivierte Protokolle:** Sind Funk, HmIP oder Gruppen im Homematic Socket nicht aktiviert, erscheint beim Öffnen eine Meldung mit der Liste der Protokolle und der Schaltfläche `I/O Instanz öffnen`. Die Geräte dieser Protokolle fehlen in der Liste. Wired wird nicht gemeldet, die Library unterstützt keine Wired-Geräte (die Zeile des WR-Interface erscheint nur bei aktiviertem Wired).  
 
 ### RF-Interfaces
 
@@ -115,6 +116,11 @@ Die Instanz besitzt keine Statusvariablen und keine speziellen Aktionen.
 ### 1. Changelog
 
 Der vollständige Changelog der Library steht in der [Haupt-README](../README.md#2-changelog).  
+
+Version 3.78:
+
+- Neue Zeilen für die HmIP-Geräte des Powermeter (z.B. HmIP-PSM, HmIP-ESI) und für die HmIP-Wetterstationen (`HomeMatic Weather`).  
+- Ein geschlossenes Wired-Interface wird nicht mehr gemeldet.  
 
 Version 3.75:
 

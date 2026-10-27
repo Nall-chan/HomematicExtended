@@ -19,9 +19,6 @@ require_once __DIR__ . '/../libs/HMTypes.php';  // HMTypes Data
 /**
  * HomeMaticExtendedConfigurator ist die Klasse für das IPS-Modul 'HomeMatic Extended Configurator'.
  * Erweitert HMBase.
- *
- * @property array $DeviceData Namen und Räume der CCU-Geräte, je Interface und Adresse.
- * @property array $listDevices Ergebnis von listDevices je Protokoll.
  */
 class HomeMaticExtendedConfigurator extends HMBase
 {
@@ -35,9 +32,23 @@ class HomeMaticExtendedConfigurator extends HMBase
     private const ProtocolCaptions = [
         self::IORFOpen => 'HomeMatic BidCos-RF',
         self::IOIPOpen => 'HomeMatic IP',
-        self::IOWROpen => 'HomeMatic BidCos-Wired',
         self::IOGROpen => 'HomeMatic groups'
     ];
+
+    /**
+     * Namen und Räume der CCU-Geräte, je Interface und Adresse.
+     * Gilt nur für einen Aufruf von GetConfigurationForm und liegt deshalb nicht im Buffer der Instanz (Buffer sind auf 256 kB begrenzt).
+     *
+     * @var array
+     */
+    private array $DeviceData = [];
+
+    /**
+     * Adresse und Typ aller Geräte und Kanäle aus listDevices, je Protokoll. Gilt nur für einen Aufruf von GetConfigurationForm.
+     *
+     * @var array
+     */
+    private array $listDevices = [];
     /**
      * Interne Funktion des SDK.
      */
@@ -46,8 +57,6 @@ class HomeMaticExtendedConfigurator extends HMBase
         parent::Create();
         $this->RegisterHMPropertys('XXX9999994');
         $this->RegisterPropertyBoolean(\HMExtended\Device\Property::EmulateStatus, false);
-        $this->DeviceData = [];
-        $this->listDevices = [];
     }
 
     /**
@@ -56,8 +65,6 @@ class HomeMaticExtendedConfigurator extends HMBase
     public function ApplyChanges(): void
     {
         parent::ApplyChanges();
-        $this->DeviceData = [];
-        $this->listDevices = [];
     }
     //################# PUBLIC
 
@@ -93,8 +100,19 @@ class HomeMaticExtendedConfigurator extends HMBase
         $Form['actions'][0]['values'] = array_merge($Form['actions'][0]['values'], $this->GetConfigInstance(\HMExtended\GUID::RemoteScript));
         $Gateways = $this->LoadGatewayConfig();
         $Form['actions'][0]['values'] = array_merge($Form['actions'][0]['values'], $this->GetConfigRFInterfaces($ParentId, $Gateways['rfd'] ?? []));
+        // Module mit Geräten auf mehreren Protokollen werden in einem Durchgang gelesen, damit Instanzen ohne Gerät nur einmal erscheinen.
+        $RadioAndIp = [];
         if (@IPS_GetProperty($ParentId, self::IORFOpen)) {
-            $Form['actions'][0]['values'] = array_merge($Form['actions'][0]['values'], $this->GetConfigRows(0, \HMExtended\GUID::Powermeter));
+            $RadioAndIp[] = \HMExtended\CCU::ProtocolBidCosRF;
+        }
+        if (@IPS_GetProperty($ParentId, self::IOIPOpen)) {
+            $RadioAndIp[] = \HMExtended\CCU::ProtocolHmIP;
+            $Form['actions'][0]['values'] = array_merge($Form['actions'][0]['values'], $this->GetConfigRows(\HMExtended\CCU::ProtocolHmIP, \HMExtended\GUID::Weather));
+        }
+        if (count($RadioAndIp)) {
+            $Form['actions'][0]['values'] = array_merge($Form['actions'][0]['values'], $this->GetConfigRows($RadioAndIp, \HMExtended\GUID::Powermeter));
+        }
+        if (@IPS_GetProperty($ParentId, self::IORFOpen)) {
             $Form['actions'][0]['values'] = array_merge($Form['actions'][0]['values'], $this->GetConfigRows(0, \HMExtended\GUID::Dis_WM55));
             $Form['actions'][0]['values'] = array_merge($Form['actions'][0]['values'], $this->GetConfigRows(0, \HMExtended\GUID::Dis_EP_WM55));
             $Form['actions'][0]['values'] = array_merge($Form['actions'][0]['values'], $this->GetConfigRows(0, \HMExtended\GUID::HeatingDevice));
@@ -384,12 +402,12 @@ class HomeMaticExtendedConfigurator extends HMBase
     /**
      * Liefert die Zeilen für alle Geräte eines Moduls, die auf der CCU gefunden wurden, sowie Zeilen für Instanzen ohne Gerät.
      *
-     * @param int $Protocol Das System der CCU.
+     * @param int|int[] $Protocols Das System der CCU, bei Modulen für mehrere Systeme eine Liste.
      * @param string $GUID GUID des Moduls.
      *
      * @return array Zeilen für das Element Konfigurator.
      */
-    private function GetConfigRows(int $Protocol, string $GUID): array
+    private function GetConfigRows(int|array $Protocols, string $GUID): array
     {
         $CreateParams = [
             'moduleID'      => $GUID,
@@ -397,8 +415,6 @@ class HomeMaticExtendedConfigurator extends HMBase
             'location'      => []
         ];
 
-        $Devices = $this->GetDevices($Protocol, \HMExtended\DeviceType::$GuidToType[$GUID]);
-        $this->SendDebug('Devices', $Devices, 0);
         $IPSDevices = $this->GetInstanceList($GUID, \HMExtended\Device\Property::Address);
         // Hat die Instanz einen Ausgabe-Kanal in der Adresse, so wird über die Geräteadresse (ohne Kanal) verglichen.
         $DefaultChannel = \HMExtended\DeviceType::$GuidToDefaultChannel[$GUID] ?? '';
@@ -407,30 +423,36 @@ class HomeMaticExtendedConfigurator extends HMBase
             $Pos = strpos($Address, ':');
             return $Pos === false ? $Address : substr($Address, 0, $Pos);
         }, $IPSDevices);
-        foreach ($Devices as &$Device) {
-            $Device = array_change_key_case($Device);
-            unset($Device['parent']);
-            $Device['create'] = $CreateParams;
-            $Device['create']['configuration'] = [
-                \HMExtended\Device\Property::Address      => $Device['address'] . $DefaultChannel,
-                \HMExtended\Device\Property::Protocol     => $Protocol,
-                \HMExtended\Device\Property::EmulateStatus=> false
-            ];
+        $Rows = [];
+        foreach ((array) $Protocols as $Protocol) {
+            $Devices = $this->GetDevices($Protocol, \HMExtended\DeviceType::$GuidToType[$GUID]);
+            $this->SendDebug('Devices', $Devices, 0);
+            foreach ($Devices as $Device) {
+                $Device = array_change_key_case($Device);
+                unset($Device['parent']);
+                $Device['create'] = $CreateParams;
+                $Device['create']['configuration'] = [
+                    \HMExtended\Device\Property::Address      => $Device['address'] . $DefaultChannel,
+                    \HMExtended\Device\Property::Protocol     => $Protocol,
+                    \HMExtended\Device\Property::EmulateStatus=> false
+                ];
 
-            $InstanceID = array_search($Device['address'], $IPSCompareAddresses);
+                $InstanceID = array_search($Device['address'], $IPSCompareAddresses);
 
-            if ($InstanceID !== false) {
-                unset($IPSDevices[$InstanceID]);
-                $Device['instanceID'] = $InstanceID;
-                $Device['name'] = IPS_GetName($InstanceID);
-                $Device['longname'] = IPS_GetName($InstanceID);
-            } else {
-                $Device['instanceID'] = 0;
-                $this->GetDeviceData($Protocol, $Device);
+                if ($InstanceID !== false) {
+                    unset($IPSDevices[$InstanceID]);
+                    $Device['instanceID'] = $InstanceID;
+                    $Device['name'] = IPS_GetName($InstanceID);
+                    $Device['longname'] = IPS_GetName($InstanceID);
+                } else {
+                    $Device['instanceID'] = 0;
+                    $this->GetDeviceData($Protocol, $Device);
+                }
+                $Rows[] = $Device;
             }
         }
         foreach ($IPSDevices as $InstanceID => $Address) {
-            $Devices[] = [
+            $Rows[] = [
                 'instanceID'      => $InstanceID,
                 'address'         => $Address,
                 'name'            => IPS_GetName($InstanceID),
@@ -438,7 +460,7 @@ class HomeMaticExtendedConfigurator extends HMBase
                 'type'            => $this->GetUnmatchedInstanceHint($Address)
             ];
         }
-        return $Devices;
+        return $Rows;
     }
 
     /**
@@ -493,9 +515,9 @@ class HomeMaticExtendedConfigurator extends HMBase
             if (!is_array($Devices)) {
                 return [];
             }
-            $listDevices = $this->listDevices;
-            $listDevices[$Protocol] = $Devices;
-            $this->listDevices = $listDevices;
+            // Für die Zeilen werden nur Adresse und Typ gebraucht, die übrigen Felder (CHILDREN, PARAMSETS, …) blähen das Formular auf.
+            $Devices = array_map(fn ($Device) => ['ADDRESS' => $Device['ADDRESS'] ?? '', 'TYPE' => $Device['TYPE'] ?? ''], $Devices);
+            $this->listDevices[$Protocol] = $Devices;
         } else {
             $Devices = $this->listDevices[$Protocol];
         }

@@ -27,6 +27,7 @@ Erweitert IPS um die native Unterstützung von:
 - [1. Funktionsumfang](#1-funktionsumfang)
   - [HomeMatic Systemvariablen:](#homematic-systemvariablen)
   - [HomeMatic Powermeter:](#homematic-powermeter)
+  - [HomeMatic Weather:](#homematic-weather)
   - [HomeMatic Programme:](#homematic-programme)
   - [HomeMatic RemoteScript Interface:](#homematic-remotescript-interface)
   - [HomeMatic Dis-WM55:](#homematic-dis-wm55)
@@ -56,6 +57,10 @@ Erweitert IPS um die native Unterstützung von:
 ### [HomeMatic Powermeter:](PowerMeter/)  
 
    Abfragen des Summenzählers der Geräte mit Leistungsmessung aus der CCU.  
+
+### [HomeMatic Weather:](Weather/)  
+
+   Werte der HmIP-Wetterstationen (HmIP-SWO-B, -PL, -PR) sowie Summe, heute und gestern von Sonnenscheindauer und Regenmenge aus den Systemvariablen der CCU.  
 
 ### [HomeMatic Programme:](Programme/)  
 
@@ -94,7 +99,7 @@ Erweitert IPS um die native Unterstützung von:
 
 ### [HomeMatic Extended Konfigurator:](ExtendedConfigurator/)
 
-   Legt die Instanzen der Geräte dieser Library an (Powermeter, Displays, Heizungsgeräte, Programme, RemoteScript und WR-Interface).
+   Legt die Instanzen der Geräte dieser Library an (Powermeter, Wetterstationen, Displays, Heizungsgeräte, Programme, RemoteScript und WR-Interface).
    Bereits angelegte Instanzen werden erkannt. Instanzen, zu denen kein Gerät auf der CCU gefunden wird, werden mit einem Hinweis angezeigt.
 
 ### [HomeMatic RF-Interface Splitter:](RFInterfaceSplitter/)
@@ -142,6 +147,7 @@ Erweitert IPS um die native Unterstützung von:
 | :---------------------------------: | :----------: | :------------------------------------: |
 |      HomeMatic Systemvariablen      |    Device    | {AF50C42B-7183-4992-B04A-FAFB07BB1B90} |
 |        HomeMatic Powermeter         |    Device    | {400F9193-FE79-4086-8D76-958BF9C1B357} |
+|          HomeMatic Weather          |    Device    | {0877F1DB-2277-4B74-BCD9-E10D81015C31} |
 |         HomeMatic Programme         |    Device    | {A5010577-C443-4A85-ABF2-3F2D6CDD2465} |
 |  HomeMatic RemoteScript Interface   |    Device    | {246EDB89-70BC-403B-A1FA-3B3B1B540401} |
 |         HomeMatic Dis-WM55          |    Device    | {271BCAB1-0658-46D9-A164-985AEB641B48} |
@@ -156,6 +162,26 @@ Erweitert IPS um die native Unterstützung von:
 |    HomeMatic Extended Configurator  | Configurator | {7B8F83C6-E3BC-AC8C-3FFC-D81CAC96D93B} |
 
 ### 2. Changelog
+
+Version 3.78:
+
+**Neue Module**
+
+* [HomeMatic Weather](Weather/): Werte der HmIP-Wetterstationen HmIP-SWO-B, -PL und -PR sowie Sonnenscheindauer und Regenmenge (Summe, heute, gestern) aus den Systemvariablen der CCU.  
+
+**Geändertes Verhalten**
+
+* HomeMatic Extended Konfigurator: Listet jetzt auch die HmIP-Geräte für den Powermeter (z.B. HmIP-PSM, HmIP-ESI) und die HmIP-Wetterstationen.  
+* HomeMatic Extended Konfigurator: Ein geschlossenes Wired-Interface im Homematic Socket wird nicht mehr als Hinweis gemeldet, da die Library keine Wired-Geräte unterstützt.  
+* HomeMatic Powermeter: Der Summenzähler wird 5 Sekunden nach der Meldung des Gerätes gelesen, mehrere Meldungen kurz hintereinander lösen nur ein Lesen aus.  
+
+**Behobene falsche Werte in Statusvariablen**
+
+* HomeMatic Powermeter: Die Summenzähler (`*_TOTAL`) konnten um eine Meldung hinterherhängen, wenn sie gelesen wurden, bevor das Programm der CCU sie aktualisiert hatte.  
+
+**Fehlerbehebungen**
+
+* HomeMatic Extended Konfigurator: Warnung `Buffer 'listDevices' ist über 256 kB` im Log beim Öffnen der Konfiguration.  
 
 Version 3.77:
 
