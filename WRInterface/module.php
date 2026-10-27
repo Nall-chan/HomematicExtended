@@ -21,6 +21,7 @@ require_once __DIR__ . '/../libs/HMBase.php';  // HMBase Klasse
  */
 class HomeMaticWRInterface extends HMBase
 {
+    protected const SummaryShowsHost = true;
     /**
      * Interne Funktion des SDK.
      */
@@ -31,12 +32,14 @@ class HomeMaticWRInterface extends HMBase
         $this->RegisterPropertyInteger(\HMExtended\Device\Property::Protocol, static::ProtocolId);
         $this->RegisterPropertyBoolean(\HMExtended\Device\Property::EmulateStatus, false);
 
-        $this->RegisterPropertyInteger(\HMExtended\Device\Property::Interval, 0);
+        $this->RegisterPropertyInteger(\HMExtended\Device\Property::Interval, 60);
         $this->RegisterTimer(\HMExtended\Device\Timer::ReadWRInterface, 0, 'HM_ReadWRInterface($_IPS[\'TARGET\']);');
     }
 
     /**
      * Interne Funktion des SDK.
+     * Ohne Parent (Instanz mit keinem Homematic Socket verbunden) läuft kein Abruf und es entstehen keine Fehlermeldungen.
+     * Mit Parent wird sofort gelesen, Fehler (Socket inaktiv, Wired nicht aktiviert, CCU antwortet nicht) werden gemeldet.
      */
     public function ApplyChanges(): void
     {
@@ -47,24 +50,21 @@ class HomeMaticWRInterface extends HMBase
         }
 
         $this->CheckConfig();
-        if ($this->GetStatus() == IS_ACTIVE) {
+        if (($this->GetStatus() == IS_ACTIVE) && $this->HasParent()) {
             $this->SetTimerInterval(\HMExtended\Device\Timer::ReadWRInterface, $this->ReadPropertyInteger(\HMExtended\Device\Property::Interval) * 1000);
-            if ($this->HasActiveParent()) {
-                @$this->ReadWRInterface();
-            }
+            $this->ReadWRInterface();
         } else {
             $this->SetTimerInterval(\HMExtended\Device\Timer::ReadWRInterface, 0);
         }
-
     }
 
     //################# PUBLIC
 
     /**
      * IPS-Instanz-Funktion 'HM_ReadWRInterface'.
-     * Liest die Daten des WR-Interface.
+     * Liest die Daten des WR-Interface und schreibt sie in die Statusvariablen.
      *
-     * @return bool True bei Erfolg, sonst false.
+     * @return bool True bei Erfolg, sonst false (die Meldung erhält der Aufrufer).
      */
     public function ReadWRInterface(): bool
     {
@@ -119,18 +119,26 @@ class HomeMaticWRInterface extends HMBase
     }
 
     /**
-     * Wird ausgeführt wenn sich der Status vom Parent ändert.
+     * Wird ausgeführt wenn sich der Status vom Parent ändert oder die Instanz verbunden bzw. getrennt wird.
+     * Mit Parent wird neu gestartet und gelesen, ein inaktiver Socket wird dabei und bei jedem weiteren Abruf gemeldet.
+     * Ohne Parent (getrennt) hält der Timer ohne Fehlermeldung an.
      */
     protected function IOChangeState(int $State): void
     {
-        if ($State == IS_ACTIVE) {
-            $this->ApplyChanges();
-        } else {
-            $this->SetTimerInterval(\HMExtended\Device\Timer::ReadWRInterface, 0);
-        }
+        $this->ApplyChanges();
     }
 
     //################# PRIVATE
+
+    /**
+     * Prüft, ob die Instanz mit einem Parent (Homematic Socket) verbunden ist.
+     *
+     * @return bool true, wenn ein Parent eingetragen ist (unabhängig von dessen Status).
+     */
+    private function HasParent(): bool
+    {
+        return IPS_GetInstance($this->InstanceID)['ConnectionID'] > 0;
+    }
 
     /**
      * Prüft die Konfiguration und setzt den Status der Instanz.
@@ -151,17 +159,18 @@ class HomeMaticWRInterface extends HMBase
 
     /**
      * Liest alle Daten des WR-Interfaces aus der CCU aus.
+     * Fehler werden per echo an den Aufrufer gemeldet, nach dem ersten Fehler folgt keine weitere Anfrage.
      *
-     * @return array Ein Array mit den Daten des Interface.
+     * @return false|array Die Daten des Interface, bei einem Fehler false.
      */
     private function GetInterface(): false|array
     {
         if (!$this->HasActiveParent()) {
-            trigger_error($this->Translate('Instance has no active parent instance!'), E_USER_NOTICE);
+            echo $this->Translate('Instance has no active parent instance!') . PHP_EOL;
             return false;
         }
         if (!(bool) IPS_GetProperty($this->ParentID, 'WROpen')) {
-            trigger_error($this->Translate('Use of the HomeMatic Wired interface must be activated in the IO.'), E_USER_NOTICE);
+            echo $this->Translate('Use of the HomeMatic Wired interface must be activated in the IO.') . PHP_EOL;
             return false;
         }
 
@@ -177,14 +186,14 @@ class HomeMaticWRInterface extends HMBase
         $JSON = json_encode($ParentData);
         $ResultJSON = @$this->SendDataToParent($JSON);
         if ($ResultJSON === false) {
-            trigger_error($this->Translate('Error on read WR-Interface.'), E_USER_NOTICE);
             $this->SendDebug('Error JSON', 'false', 0);
+            echo $this->Translate('Error on read WR-Interface.') . PHP_EOL;
             return false;
         }
         $Result = json_decode($ResultJSON, true);
         if (($Result === false) || is_null($Result)) {
-            trigger_error($this->Translate('Error on read WR-Interface.'), E_USER_NOTICE);
             $this->SendDebug('Error decode', $ResultJSON, 0);
+            echo $this->Translate('Error on read WR-Interface.') . PHP_EOL;
             return false;
         }
         $this->SendDebug('Receive', $Result, 0);

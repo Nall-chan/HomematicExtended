@@ -58,7 +58,7 @@ Existieren in IPS mehrere Homematic Sockets, so ist der auszuwählen, an dem die
 
 **Konfigurationsseite:**  
 
-*Screenshot der Konfigurationsseite folgt.*  
+![Konfiguration](imgs/config.png)  
 
 Die Instanz besitzt keine einstellbaren Eigenschaften, die Liste der Geräte wird bei jedem Öffnen der Konfiguration neu von der CCU gelesen. Neu angelernte Geräte erscheinen dadurch ohne weitere Schritte.  
 

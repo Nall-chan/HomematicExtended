@@ -53,16 +53,33 @@ Dieses Modul ist Bestandteil der [HomeMaticExtended-Library](../).
    Existieren in IPS mehrere 'HomeMatic Socket', so ist der auszuwählen, an welche CCU dieses Wired-Interface angeschlossen ist.  
 
 **Konfigurationsseite:**  
+![Konfiguration](imgs/config.png)  
 
-| Eigenschaft |   Typ   | Standardwert |                 Funktion                 |
-| :---------: | :-----: | :----------: | :--------------------------------------: |
-|  Interval   | integer |      0       | Intervall in Sekunden für den Datenabruf |
- 
+| Eigenschaft | Name     | Typ     | Standardwert | Beschreibung                                                                                 |
+| :---------- | :------- | :------ | :----------- | :------------------------------------------------------------------------------------------- |
+| Intervall   | Interval | integer | `60`         | Intervall in Sekunden für den Datenabruf. `0` schaltet den Abruf ab, kleinste Zeit `5`.        |
+
+**Status der Instanz:**  
+
+| Status | Bedeutung                                   |
+| :----: | :------------------------------------------ |
+|  102   | Abruf aktiv                                 |
+|  104   | Abruf abgeschaltet (Intervall `0`)          |
+|  202   | Intervall kleiner als 5 Sekunden            |
+
+Ist die Instanz mit keinem Homematic Socket verbunden, läuft kein Abruf und es entstehen keine Fehlermeldungen. Ist der Homematic Socket inaktiv, das Protokoll `Wired` im Socket nicht aktiviert oder antwortet die CCU nicht, meldet jeder Abruf einen Fehler im Log (auch `Übernehmen` der Instanz), die Statusvariablen behalten ihren letzten Wert.  
+
+**Beispiel für das Setzen des Intervalls per PHP:**  
+
+```php
+IPS_SetProperty(12345, 'Interval', 60);
+IPS_ApplyChanges(12345);
+```
+
 
 ## 5. Statusvariablen
 
 **Statusvariablen:**  
- ![WRInterface](../imgs/WRInterface.png)  
    Alle von der CCU gemeldeten Datenpunkte der Interfaces werden in IPS dargestellt.  
    Die folgenden Statusvariablen können durchaus variieren.  
 
@@ -79,7 +96,7 @@ Dieses Modul ist Bestandteil der [HomeMaticExtended-Library](../).
 
 ### Kachel Visualisierung
 
-*Screenshot der Kachel Visualisierung folgt.*  
+![Kachel](imgs/tile_list.png)  
 
 ### WebFront Visualisierung
 
@@ -98,6 +115,11 @@ Die direkte Darstellung im WebFront ist möglich, es wird aber empfohlen mit Lin
 ### 1. Changelog
 
 Der vollständige Changelog der Library steht in der [Haupt-README](../README.md#2-changelog).  
+
+Version 3.78:
+
+- Neue Instanzen fragen das WR-Interface alle 60 Sekunden ab (bisher war der Abruf abgeschaltet). Vorhandene Instanzen behalten ihr Intervall.  
+- Ohne verbundenen Homematic Socket läuft kein Abruf mehr und es entstehen keine Fehlermeldungen.  
 
 Version 3.75:
 

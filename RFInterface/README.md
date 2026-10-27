@@ -55,7 +55,7 @@ Dieses Modul ist Bestandteil der [HomeMaticExtended-Library](../).
 
 **Konfigurationsseite:**  
 
-![RFInterface](../imgs/RFInterface.png)  
+![Konfiguration](imgs/config.png)  
 
 | Eigenschaft |  Typ   | Standardwert |        Funktion        |
 | :---------: | :----: | :----------: | :--------------------: |
@@ -79,12 +79,12 @@ Dieses Modul ist Bestandteil der [HomeMaticExtended-Library](../).
 
 ### Kachel Visualisierung
 
-*Screenshot der Kachel Visualisierung folgt.*  
+![Kachel](imgs/tile_list.png)  
 
 ### WebFront Visualisierung
 
 Die direkte Darstellung im WebFront ist möglich, es wird aber empfohlen mit Links zu arbeiten.  
-![RFInterface](../imgs/RFInterface_WF.png)  
+![RFInterface](imgs/webfront.png)  
 
 ## 7. PHP-Befehlsreferenz
 

@@ -66,18 +66,18 @@ Dieses Modul ist Bestandteil der [HomeMaticExtended-Library](../).
    Des weiteren wird ein Standard-Profil 'Execute-HM' angelegt und den Variablen zugeordnet.  
    Es ist somit sofort möglich die Programme aus dem WebFront heraus zu starten.  
    Werden in der CCU Programme gelöscht, so müssen die dazugehörigen Variablen in IPS bei Bedarf manuell gelöscht werden.  
-![Programme](../imgs/Programme.png)  
+![Konfiguration](imgs/config.png)  
 
 ## 6. Visualisierung
 
 ### Kachel Visualisierung
 
-*Screenshot der Kachel Visualisierung folgt.*  
+![Kachel](imgs/tile_list.png)  
 
 ### WebFront Visualisierung
 
 Die direkte Darstellung im WebFront ist möglich, es wird aber empfohlen mit Links zu arbeiten.  
-![Programme](../imgs/Programme_WF.png)  
+![Programme](imgs/webfront.png)  
 
 ## 7. PHP-Befehlsreferenz
 

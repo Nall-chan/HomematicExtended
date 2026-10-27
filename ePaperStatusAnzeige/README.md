@@ -63,6 +63,7 @@ Nach dem Anlegen der Instanz sollte als übergeordnetes Gerät schon der Homemat
 Existieren in IPS mehrere Homematic Sockets, so ist der auszuwählen, an welcher CCU das Display angelernt ist.  
 
 **Konfigurationsseite:**  
+![Konfiguration](imgs/config.png)  
 
 | Eigenschaft           | Name    | Typ    | Standardwert                 | Beschreibung                                                     |
 | :-------------------- | :------ | :----- | :--------------------------- | :--------------------------------------------------------------- |

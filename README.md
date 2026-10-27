@@ -165,23 +165,11 @@ Erweitert IPS um die native Unterstützung von:
 
 Version 3.78:
 
-**Neue Module**
-
 * [HomeMatic Weather](Weather/): Werte der HmIP-Wetterstationen HmIP-SWO-B, -PL und -PR sowie Sonnenscheindauer und Regenmenge (Summe, heute, gestern) aus den Systemvariablen der CCU.  
-
-**Geändertes Verhalten**
-
 * HomeMatic Extended Konfigurator: Listet jetzt auch die HmIP-Geräte für den Powermeter (z.B. HmIP-PSM, HmIP-ESI) und die HmIP-Wetterstationen.  
 * HomeMatic Extended Konfigurator: Ein geschlossenes Wired-Interface im Homematic Socket wird nicht mehr als Hinweis gemeldet, da die Library keine Wired-Geräte unterstützt.  
-* HomeMatic Powermeter: Der Summenzähler wird 50 ms nach der Meldung des Gerätes gelesen, damit das Programm der CCU ihn vorher aktualisiert hat.  
-
-**Behobene falsche Werte in Statusvariablen**
-
 * HomeMatic Powermeter: Die Summenzähler (`*_TOTAL`) konnten um eine Meldung hinterherhängen, wenn sie gelesen wurden, bevor das Programm der CCU sie aktualisiert hatte.  
-
-**Fehlerbehebungen**
-
-* HomeMatic Extended Konfigurator: Warnung `Buffer 'listDevices' ist über 256 kB` im Log beim Öffnen der Konfiguration.  
+* HomeMatic WR-Interface: Neue Instanzen fragen das WR-Interface alle 60 Sekunden ab (bisher abgeschaltet), vorhandene Instanzen behalten ihr Intervall. Ohne verbundenen Homematic Socket läuft kein Abruf und es entstehen keine Fehlermeldungen.  
 
 Version 3.77:
 

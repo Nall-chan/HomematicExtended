@@ -69,7 +69,7 @@
 
     **Hinweis:** Über den Homematic Konfigurator in IPS kann das benötigte Homematic Device
     komfortabel angelegt werden.  
-![CCUPushSystemvariablen](../imgs/CCUPushSystemvariablen.png)  
+![CCUPushSystemvariablen](imgs/ccu_push.png)  
 
 ## 2. Voraussetzungen
 
@@ -98,7 +98,7 @@ Dieses Modul ist Bestandteil der [HomeMaticExtended-Library](../).
 
    Hier kann mit dem entfernen des Haken 'Benutze Standardaktion' die Bedienung einer
    Variable, aus dem WebFront heraus, unterbunden werden.  
-![Systemvariablen](../imgs/Systemvariablen.png)  
+![Systemvariablen](imgs/config.png)  
 
 |  Eigenschaft  |   Typ   | Standardwert |                          Funktion                           |
 | :-----------: | :-----: | :----------: | :---------------------------------------------------------: |
@@ -158,7 +158,7 @@ Dieses Modul ist Bestandteil der [HomeMaticExtended-Library](../).
 ### WebFront Visualisierung
 
 Die direkte Darstellung im WebFront ist möglich, es wird aber empfohlen mit Links zu arbeiten.  
-![Systemvariablen](../imgs/Systemvariablen_WF.png)  
+![Systemvariablen](imgs/webfront.png)  
 
 ## 7. PHP-Befehlsreferenz
 
@@ -188,7 +188,7 @@ Die direkte Darstellung im WebFront ist möglich, es wird aber empfohlen mit Lin
    True bei Erfolg, im Fehlerfall False.  
 
 **Übersicht aller übergeben Variablen im Alarm-Script:**  
-![Alarmvariable](../imgs/Alarmvariable.png)  
+![Alarmvariable](imgs/alarm_script.png)  
 
 |  Indexname  |  Type   |             Bedeutung              |
 | :---------: | :-----: | :--------------------------------: |

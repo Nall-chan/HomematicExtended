@@ -68,7 +68,7 @@ Wurde das Script gelöscht, legt die Schaltfläche `Display-Script wiederherstel
 
 **Konfigurationsseite:**  
 
-![Instanz hinzufügen](../imgs/Dis-WM55.png)  
+![Konfiguration](imgs/config.png)  
 
 | Eigenschaft          | Name           | Typ     | Standardwert                 | Beschreibung                                                                                                  |
 | :------------------- | :------------- | :------ | :--------------------------- | :------------------------------------------------------------------------------------------------------------ |

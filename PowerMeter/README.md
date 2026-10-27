@@ -84,6 +84,7 @@ Nach dem Anlegen der Instanz sollte als übergeordnetes Gerät schon der Homemat
 Existieren in IPS mehrere Homematic Sockets, so ist der auszuwählen, an welcher CCU das Gerät angelernt ist.  
 
 **Konfigurationsseite:**  
+![Konfiguration](imgs/config.png)  
 
 | Eigenschaft | Name     | Typ     | Standardwert | Beschreibung                                                                                                  |
 | :---------- | :------- | :------ | :----------- | :------------------------------------------------------------------------------------------------------------ |
@@ -125,12 +126,12 @@ Es werden die IPS-Profile ~Electricity und ~Gas genutzt, neue Profile werden nic
 
 ### Kachel Visualisierung
 
-*Screenshot der Kachel Visualisierung folgt.*  
+![Kachel](imgs/tile_list.png)  
 
 ### WebFront Visualisierung
 
 Die direkte Darstellung im WebFront ist möglich, es wird aber empfohlen mit Links zu arbeiten.  
-![WebFront](../imgs/Powermeter_WF.png)  
+![WebFront](imgs/webfront.png)  
 
 ## 7. PHP-Befehlsreferenz
 

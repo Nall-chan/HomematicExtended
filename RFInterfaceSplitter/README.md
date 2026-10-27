@@ -45,16 +45,16 @@ Dieses Modul ist Bestandteil der [HomeMaticExtended-Library](../).
 
 ## 4. Einrichten der Instanzen in IP-Symcon
 
-![Instanzen](../imgs/HMExtendedInstanzenRFSplitter.png)  
+![Instanzen](../imgs/HMExtendedInstanzen.png)  
    Unter Instanz hinzufügen ist das Gerät 'HomeMatic RF-Interface Splitter' unter dem Hersteller 'HomeMatic' zu finden.  
    Diese Instanz wird automatisch erzeugt, sobald im [HomeMatic Extended Konfigurator](../ExtendedConfigurator/) ein RF-Interface angelegt wird.
    Nach dem Anlegen der Instanz sollte als übergeordnetes Gerät schon der HomeMatic Socket ausgewählt sein.  
    Existieren in IPS mehrere Homematic Socket, so ist über 'Schnittstelle ändern' der Homematic Socket auszuwählen, an welcher CCU die Funk-Interfaces ausgelesen werden sollen.  
-   ![RFInterfaceSplitterGateway](../imgs/RFInterfaceSplitterGateway.png)  
+   ![RFInterfaceSplitterGateway](imgs/change_parent.png)  
    
 **Konfigurationsseite:**  
 
-![RFInterface](../imgs/RFInterfaceSplitter.png)  
+![Konfiguration](imgs/config.png)  
 
    In dem Splitter ist der Intervall in Sekunden einzustellen, in welchem die Daten von der CCU gelesen werden sollen.  
 

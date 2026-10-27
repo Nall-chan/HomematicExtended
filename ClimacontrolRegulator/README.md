@@ -57,7 +57,7 @@ Existieren in IPS mehrere Homematic Sockets, so ist der auszuwählen, an dem das
 
 **Konfigurationsseite:**  
 
-*Screenshot der Konfigurationsseite folgt.*  
+![Konfiguration](imgs/config.png)  
 
 | Eigenschaft | Name | Typ | Standardwert | Beschreibung |
 | :---------- | :--- | :-- | :----------- | :----------- |
