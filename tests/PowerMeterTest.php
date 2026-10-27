@@ -154,6 +154,33 @@ class PowerMeterTest extends HomematicModuleTestCase
         $this->assertEquals(5.0, GetValueFloat(IPS_GetObjectIDByIdent('ENERGY_COUNTER_TOTAL', $this->PowerMeterId)));
     }
 
+    public function testFeedInCounterOfHmIpPsmco(): void
+    {
+        // HmIP-PSMCO / ELV-SH-PSMCI: zusätzlicher Einspeisezähler, die CCU führt ihn in svEnergyCounterFeedIn_… (Wh).
+        FakeHomematicIO::$RpcResponses['getParamsetDescription']['ENERGY_COUNTER_FEED_IN'] = ['ID' => 'ENERGY_COUNTER_FEED_IN', 'TYPE' => 'FLOAT', 'UNIT' => 'Wh', 'OPERATIONS' => 5];
+        FakeHomematicIO::$RpcResponses['getParamset']['ENERGY_COUNTER_FEED_IN'] = 800.0;
+        FakeHomematicIO::$Requests = [];
+        $this->recreateDevice('<xml><exec>/x</exec><sessionId>0</sessionId><httpUserAgent>x</httpUserAgent><Value>2500000.0</Value></xml>');
+        $this->assertEquals(800.0, GetValueFloat(IPS_GetObjectIDByIdent('ENERGY_COUNTER_FEED_IN', $this->PowerMeterId)));
+        $this->assertEquals(2500.0, GetValueFloat(IPS_GetObjectIDByIdent('ENERGY_COUNTER_FEED_IN_TOTAL', $this->PowerMeterId)));
+        $this->assertSame('~Electricity', IPS_GetVariable(IPS_GetObjectIDByIdent('ENERGY_COUNTER_FEED_IN_TOTAL', $this->PowerMeterId))['VariableProfile']);
+        $Scripts = array_column(array_filter(FakeHomematicIO::$Requests, fn ($Request) => isset($Request['Content'])), 'Content');
+        $FeedInScripts = array_filter($Scripts, fn ($Script) => str_contains($Script, '.ENERGY_COUNTER_FEED_IN"'));
+        $this->assertCount(1, $FeedInScripts);
+        $this->assertStringContainsString('"svEnergyCounterFeedIn_"', reset($FeedInScripts));
+        // Ein Event des Einspeisezählers aktualisiert den Summenzähler.
+        FakeHomematicIO::$ScriptResponse = '<xml><exec>/x</exec><sessionId>0</sessionId><httpUserAgent>x</httpUserAgent><Value>2600000.0</Value></xml>';
+        IPS\InstanceManager::getInstanceInterface($this->PowerMeterId)->ReceiveData(json_encode([
+            'DataID'        => \HMExtended\GUID::HmDevice,
+            'DeviceID'      => self::Address,
+            'VariableName'  => 'ENERGY_COUNTER_FEED_IN',
+            'VariableValue' => 900.0
+        ]));
+        $this->assertEquals(2600.0, GetValueFloat(IPS_GetObjectIDByIdent('ENERGY_COUNTER_FEED_IN_TOTAL', $this->PowerMeterId)));
+        // Der normale Zähler bleibt davon unberührt ein eigener Summenzähler.
+        $this->assertNotFalse(@IPS_GetObjectIDByIdent('ENERGY_COUNTER_TOTAL', $this->PowerMeterId));
+    }
+
     public function testUnknownTypeIsSkipped(): void
     {
         $this->assertFalse(@IPS_GetObjectIDByIdent('WEIRD_TYPE', $this->PowerMeterId));

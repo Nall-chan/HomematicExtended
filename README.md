@@ -157,6 +157,10 @@ Erweitert IPS um die native Unterstützung von:
 
 ### 2. Changelog
 
+Version 3.77:
+
+* HomeMatic Powermeter: Neue Statusvariable `ENERGY_COUNTER_FEED_IN_TOTAL` (kWh) für den Einspeisezähler der HmIP-PSMCO und ELV-SH-PSMCI.  
+
 Version 3.76:
 
 * HomeMatic Powermeter: Der HmIP-ESI im Gasmodus wird erkannt (das Gerät liefert `GAS_VOLUME`, aber kein `ENERGY_COUNTER`). Der Summenzähler der CCU zählt dann m³ und erscheint als `GAS_VOLUME_TOTAL` (m³). Bisher wurde er als `ENERGY_COUNTER_TOTAL` durch 1000 geteilt und in kWh angezeigt. Eine bereits vorhandene Variable `ENERGY_COUNTER_TOTAL` wird beim ESI im Gasmodus nicht mehr aktualisiert und kann gelöscht werden.  

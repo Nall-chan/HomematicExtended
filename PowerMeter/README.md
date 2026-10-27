@@ -16,6 +16,7 @@
 **Inhaltsverzeichnis**
 
 - [1. Funktionsumfang](#1-funktionsumfang)
+  - [Unterstützte Geräte](#unterstützte-geräte)
 - [2. Voraussetzungen](#2-voraussetzungen)
 - [3. Software-Installation](#3-software-installation)
 - [4. Einrichten der Instanzen in IP-Symcon](#4-einrichten-der-instanzen-in-ip-symcon)
@@ -45,6 +46,21 @@
    Entsprechend war es nötig für diesen Typ von Systemvariable ein eigenes IPS-Device zu
    implementieren.  
 
+### Unterstützte Geräte
+
+Das Modul arbeitet nach dem Kanaltyp des Gerätes (`POWERMETER`, `POWERMETER_IGL`, `POWERMETER_IEC1`, `POWERMETER_IEC2` und `ENERGIE_METER_TRANSMITTER`), nicht nach einer Liste von Gerätetypen. Der Konfigurator bietet daher alle Kanäle dieser Typen an.  
+Geräte mit gleichen Datenpunkten und gleicher Systemvariable der CCU sind zu einer Zeile zusammengefasst. Getestet ist mindestens ein Gerät der Zeile, die übrigen verhalten sich laut CCU-Firmware gleich.  
+
+| Geräte                                                                                                                                                                                                                     | Kanal                     | Datenpunkt → Systemvariable der CCU                                                         | Statusvariable                 | Getestet                                   |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- | ------------------------------------------------------------------------------------------- | ------------------------------ | ------------------------------------------ |
+| Schaltaktoren mit Leistungsmessung: HM-ES-PMSw1-Pl, HM-ES-PMSw1-Pl-DN-R1 … R5, HM-ES-PMSw1-DR, HM-ES-PMSw1-SM, HM-ES-PMSwX, HmIP-PSM, HmIP-PSM-PE, -UK, -IT, -CH, HmIP-PSM-2, HmIP-PSM-PE-2, HmIP-PSM-CH-2, HmIP-PSM-A, HmIP-BSM, HmIP-BSM-I, HmIP-FSM, HmIP-FSM16, HmIP-USBSM | HM: :2, HmIP-PSM/-USBSM: :6, BSM: :7, FSM: :5 | `ENERGY_COUNTER` → `svEnergyCounter_…`                                                      | `ENERGY_COUNTER_TOTAL` (kWh)   | ✅ (HM-ES-PMSw1-Pl)                        |
+| Schaltaktoren mit Einspeisung: HmIP-PSMCO, ELV-SH-PSMCI                                                                                                                                                                     | :6                        | `ENERGY_COUNTER` → `svEnergyCounter_…`<br>`ENERGY_COUNTER_FEED_IN` → `svEnergyCounterFeedIn_…` | `ENERGY_COUNTER_TOTAL` (kWh)<br>`ENERGY_COUNTER_FEED_IN_TOTAL` (kWh) | Bezug ✅ (wie Schaltaktoren)<br>Einspeisung ❌ |
+| Zählersensor HM-ES-TX-WM (alle Firmwarestände)                                                                                                                                                                             | :1, IEC zusätzlich :2     | Strom: `ENERGY_COUNTER` → `svEnergyCounter_…`<br>Gas: `GAS_ENERGY_COUNTER` → `svEnergyCounterGas_…`<br>IEC: `IEC_ENERGY_COUNTER` → `svEnergyCounterIEC_…` | `ENERGY_COUNTER_TOTAL` (kWh)<br>`GAS_ENERGY_COUNTER_TOTAL` (m³)<br>`IEC_ENERGY_COUNTER_TOTAL` (kWh) | Strom ✅<br>Gas ✅<br>IEC ❌ |
+| Zählersensor HmIP-ESI, HmIP-ESI-IND (nur Gas)                                                                                                                                                                              | Zähler auf :2 bis :4      | Gas: `GAS_VOLUME` → `svEnergyCounter_…`<br>Strom und IEC: `ENERGY_COUNTER` → `svEnergyCounter_…` | `GAS_VOLUME_TOTAL` (m³)<br>`ENERGY_COUNTER_TOTAL` (kWh) | Gas ✅<br>Strom und IEC ✅ (wie Schaltaktoren) |
+
+Die Kanäle der Geräte stammen aus der CCU-Firmware ([eq-3/occu](https://github.com/eq-3/occu)). Ein Schaltaktor hat zusätzlich einen Schaltkanal, dieser gehört nicht zu diesem Modul.  
+Der HmIP-ESI nutzt im Gasmodus dieselbe Systemvariable wie im Strommodus. Das Modul erkennt den Gasmodus daran, dass das Gerät `GAS_VOLUME`, aber kein `ENERGY_COUNTER` liefert.  
+
 ## 2. Voraussetzungen
 
 - IP-Symcon ab Version 9.0  
@@ -58,33 +74,34 @@ Dieses Modul ist Bestandteil der [HomeMaticExtended-Library](../).
 
 ## 4. Einrichten der Instanzen in IP-Symcon
 
+> [!TIP]
+> Am einfachsten wird die Instanz über den `HomeMatic Extended Konfigurator` angelegt. Er bietet alle Messkanäle der [unterstützten Geräte](#unterstützte-geräte) an und trägt Adresse und System selbstständig ein.  
+
 ![Instanzen](../imgs/HMExtendedInstanzen.png)  
-   Unter Instanz hinzufügen ist das Gerät 'HomeMatic Powermeter' unter dem Hersteller
-   'HomeMatic' zu finden.  
 
-   Nach dem Anlegen der Instanz sollte als übergeordnetes Gerät schon der HomeMatic Socket
-   ausgewählt sein.  
-   Existieren in IPS mehrere Homematic Socket, so ist der auszuwählen, der der CCU
-   entspricht an dem das Gerät angelernt ist.  
-
-   Dieses Modul fragt den Wert aus der CCU immer dann ab, wenn der Wert
-   der Variable 'GAS_ENERGY_COUNTER', 'IEC_ENERGY_COUNTER' oder 'ENERGY_COUNTER'
-   des entsprechenden Gerätes sich in IPS aktualisiert.  
-   Oder der IPS-Dienst startet bzw. wenn eine Instanz neu konfiguriert wurde.  
-
-   Auch die HmIP Geräte mit Leistungsmessung funktionieren.  
+Alternativ unter `Instanz hinzufügen` das Gerät `HomeMatic Powermeter` unter dem Hersteller `HomeMatic` auswählen.  
+Nach dem Anlegen der Instanz sollte als übergeordnetes Gerät schon der Homematic Socket ausgewählt sein.  
+Existieren in IPS mehrere Homematic Sockets, so ist der auszuwählen, an welcher CCU das Gerät angelernt ist.  
 
 **Konfigurationsseite:**  
-![Powermeter](../imgs/Powermeter.png)  
 
-   Im Einstellungsdialog der Instanz ist entsprechend die zugehörige
-   'GAS_ENERGY_COUNTER', 'IEC_ENERGY_COUNTER' oder 'ENERGY_COUNTER'
-   Variable des Aktoren auszuwählen, von dem der 'ENERGY_COUNTER_TOTAL' Wert
-   gelesen werden soll.  
+| Eigenschaft | Name     | Typ     | Standardwert | Beschreibung                                                                                                  |
+| :---------- | :------- | :------ | :----------- | :------------------------------------------------------------------------------------------------------------ |
+| Adresse     | Address  | string  | (leer)       | Adresse des Messkanals mit Kanalnummer, z.B. `MEQ0123456:1` (Kanal siehe [unterstützte Geräte](#unterstützte-geräte)). |
+| System      | Protocol | integer | `0`          | Schnittstelle der CCU, an der das Gerät angelernt ist: `0` = Funk, `1` = Kabelgebunden, `2` = IP.               |
 
-| Eigenschaft |   Typ   | Standardwert |                    Funktion                     |
-| :---------: | :-----: | :----------: | :---------------------------------------------: |
-|   EventID   | integer |      0       | Variable-ID von einem ENERGY_COUNTER Datenpunkt |
+Die Instanz liest beim Übernehmen der Einstellungen und beim Start von Symcon alle Datenpunkte des Kanals (Paramset `VALUES`) und legt dafür Statusvariablen an. Danach aktualisieren die Ereignisse der CCU diese Variablen.  
+Meldet die CCU einen Zählerstand (`ENERGY_COUNTER`, `ENERGY_COUNTER_FEED_IN`, `GAS_ENERGY_COUNTER`, `GAS_VOLUME` oder `IEC_ENERGY_COUNTER`), liest die Instanz zusätzlich den Summenzähler aus der zugehörigen Systemvariable der CCU (siehe [Statusvariablen](#5-statusvariablen)).  
+
+Bestehende Instanzen aus älteren Versionen (Eigenschaft `EventID`) werden beim Update auf Adresse und System umgestellt.  
+
+**Beispiel für das Setzen der Adresse per PHP:**  
+
+```php
+IPS_SetProperty(12345, 'Address', 'MEQ0123456:1');
+IPS_SetProperty(12345, 'Protocol', 0);
+IPS_ApplyChanges(12345);
+```
 
 ## 5. Statusvariablen
 
@@ -97,6 +114,7 @@ Eine der folgende Statusvariablen wird automatisch angelegt, je nach verwendeten
 | GAS_ENERGY_COUNTER_TOTAL | float |     ~Gas     |
 | IEC_ENERGY_COUNTER_TOTAL | float | ~Electricity |
 |   ENERGY_COUNTER_TOTAL   | float | ~Electricity |
+| ENERGY_COUNTER_FEED_IN_TOTAL | float | ~Electricity |
 
 Die Variablen der Summenzähler werden erst angelegt, wenn die CCU die zugehörige Systemvariable liefert und der Wert nicht 0 ist.  
 
@@ -127,6 +145,10 @@ Die direkte Darstellung im WebFront ist möglich, es wird aber empfohlen mit Lin
 ### 1. Changelog
 
 Der vollständige Changelog der Library steht in der [Haupt-README](../README.md#2-changelog).  
+
+Version 3.77:
+
+- Neue Statusvariable `ENERGY_COUNTER_FEED_IN_TOTAL` (kWh) für den Einspeisezähler der HmIP-PSMCO und ELV-SH-PSMCI.  
 
 Version 3.76:
 

@@ -37,13 +37,16 @@ class HomeMaticPowermeter extends HMBase
      * Belegt am HmIP-ESI im Gasmodus (Debug eines Forennutzers): die CCU führt nur svEnergyCounter_… (kein Suffix Gas),
      * der Wert wächst mit GAS_VOLUME in m³ (Faktor 1). Daher nutzen ENERGY_COUNTER und GAS_VOLUME dieselbe Systemvariable,
      * ausgewertet wird je nach Betriebsart (GasMode) nur einer der beiden Datenpunkte.
+     * Belegt aus der CCU-Firmware (eq-3/occu, WebUI newdevices.htm): HmIP-PSMCO und ELV-SH-PSMCI führen den Einspeisezähler
+     * ENERGY_COUNTER_FEED_IN in svEnergyCounterFeedIn_…, das CCU-Programm summiert die Gerätewerte in Wh (Faktor 1000, nicht live geprüft).
      * Annahme (nicht belegt): IEC_ENERGY_COUNTER liefert die Systemvariable in Wh.
      */
     private const EnergyCounters = [
-        'ENERGY_COUNTER'     => ['Suffix' => '', 'Factor' => 1000, 'Profile' => '~Electricity'],
-        'IEC_ENERGY_COUNTER' => ['Suffix' => 'IEC', 'Factor' => 1000, 'Profile' => '~Electricity'],
-        'GAS_ENERGY_COUNTER' => ['Suffix' => 'Gas', 'Factor' => 1, 'Profile' => '~Gas'],
-        'GAS_VOLUME'         => ['Suffix' => '', 'Factor' => 1, 'Profile' => '~Gas']
+        'ENERGY_COUNTER'         => ['Suffix' => '', 'Factor' => 1000, 'Profile' => '~Electricity'],
+        'ENERGY_COUNTER_FEED_IN' => ['Suffix' => 'FeedIn', 'Factor' => 1000, 'Profile' => '~Electricity'],
+        'IEC_ENERGY_COUNTER'     => ['Suffix' => 'IEC', 'Factor' => 1000, 'Profile' => '~Electricity'],
+        'GAS_ENERGY_COUNTER'     => ['Suffix' => 'Gas', 'Factor' => 1, 'Profile' => '~Gas'],
+        'GAS_VOLUME'             => ['Suffix' => '', 'Factor' => 1, 'Profile' => '~Gas']
     ];
 
     /**
