@@ -5,6 +5,7 @@
             "Instance has no active parent instance!": "Keine aktive Parent Instanz!",
             "Error on %s": "Fehler bei %s",
             "Invalid response from CCU.": "Ungültige Antwort der CCU.",
+            "The CCU did not answer the HM-Script.": "Die CCU hat das HM-Script nicht beantwortet.",
             "Address": "Adresse",
             "System": "System",
             "Radio": "Funk",

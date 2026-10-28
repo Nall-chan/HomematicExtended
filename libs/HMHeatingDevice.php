@@ -209,7 +209,7 @@ class HMHeatingDevice extends HMBase
     public function RequestState(string $Ident): bool
     {
         if (!array_key_exists($Ident, \HMExtended\ValuesSet::$Variables[static::DeviceTyp])) {
-            trigger_error($this->Translate('Invalid Ident for VALUE.'), E_USER_NOTICE);
+            echo $this->Translate('Invalid Ident for VALUE.') . PHP_EOL;
             return false;
         }
         $AddressWithChannel = $this->ReadPropertyString(\HMExtended\Device\Property::Address) . static::ValuesChannel;
@@ -280,7 +280,7 @@ class HMHeatingDevice extends HMBase
         }
         if (array_key_exists($Property, \HMExtended\Property::$Properties[static::DeviceTyp])) {
             if (!$this->ReadPropertyBoolean(self::EnablePrefix . $Property)) {
-                trigger_error($this->Translate('Variable is disabled in config.'), E_USER_NOTICE);
+                echo $this->Translate('Variable is disabled in config.') . PHP_EOL;
                 $done = true;
                 return;
             }

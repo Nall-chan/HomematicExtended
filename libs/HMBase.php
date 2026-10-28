@@ -121,7 +121,7 @@ abstract class HMBase extends IPSModuleStrict
 
     /**
      * Interne Funktion des SDK.
-     * Meldungen (trigger_error) werden bei Bedienaktionen an das Frontend ausgegeben.
+     * Die Module melden Fehler per echo. Warnungen von Kernel-Funktionen gibt ModulErrorHandler ohne Dateiname und Zeile aus.
      */
     public function RequestAction(string $Ident, mixed $Value, bool &$done = false): void
     {
@@ -134,7 +134,7 @@ abstract class HMBase extends IPSModuleStrict
     }
 
     /**
-     * Gibt Fehlermeldungen per echo aus, damit sie dem Nutzer im Frontend angezeigt werden.
+     * Gibt Warnungen (z.B. von Kernel-Funktionen) während einer Bedienaktion per echo aus, ohne Dateiname und Zeile.
      *
      * @param int    $ErrLevel
      * @param string $ErrMsg
@@ -143,6 +143,11 @@ abstract class HMBase extends IPSModuleStrict
      */
     public function ModulErrorHandler(int $ErrLevel, string $ErrMsg): bool
     {
+        // Mit @ unterdrückte Meldungen (z.B. @GetIDForIdent in FindIDForIdent) nicht ausgeben: PHP ruft den Handler auch für diese auf.
+        // Seit PHP 8 beschränkt @ error_reporting auf die fatalen Fehler (Schnittmenge mit der globalen Einstellung).
+        if ((error_reporting() & ~(E_ERROR | E_PARSE | E_CORE_ERROR | E_COMPILE_ERROR | E_USER_ERROR | E_RECOVERABLE_ERROR)) === 0) {
+            return true;
+        }
         echo $ErrMsg;
         return true;
     }
@@ -177,7 +182,7 @@ abstract class HMBase extends IPSModuleStrict
 
     /**
      * Verarbeitet Bedienaktionen. Abgeleitete Klassen überschreiben diese Methode und rufen zuerst die Basis auf.
-     * Fehler werden dort mit trigger_error gemeldet und von RequestAction an das Frontend ausgegeben.
+     * Fehler werden per echo gemeldet und erscheinen im Frontend.
      *
      * @param string $Ident Ident der Variable bzw. Aktion.
      * @param mixed  $Value Der Wert.
@@ -312,17 +317,16 @@ abstract class HMBase extends IPSModuleStrict
     }
     /**
      * Überträgt das übergeben HM-Script an die CCU und liefert das Ergebnis.
+     * Fehler werden per echo an den Aufrufer gemeldet.
      *
      * @param string $HMScript Das zu übertragende HM-Script.
      *
-     * @throws Exception Wenn die CCU nicht erreicht wurde.
-     *
-     * @return false|string Das Ergebnis von der CCU.
+     * @return false|string Das Ergebnis von der CCU, bei einem Fehler false.
      */
     protected function LoadHMScript(string $HMScript): false|string
     {
         if (!$this->HasActiveParent()) {
-            trigger_error($this->Translate('Instance has no active parent instance!'), E_USER_NOTICE);
+            echo $this->Translate('Instance has no active parent instance!') . PHP_EOL;
             return false;
         }
         $ParentData = [
@@ -332,6 +336,8 @@ abstract class HMBase extends IPSModuleStrict
         $this->SendDebug('Send', $ParentData, 0);
         $Result = @$this->SendDataToParent(json_encode($ParentData));
         if ($Result === false || $Result === null) {
+            $this->SendDebug('Error', 'no response', 0);
+            echo $this->Translate('The CCU did not answer the HM-Script.') . PHP_EOL;
             return false;
         }
         // Die CCU liefert ISO-8859-1.
@@ -346,7 +352,7 @@ abstract class HMBase extends IPSModuleStrict
      *
      * @param string $Content Antwort der CCU.
      *
-     * @return SimpleXMLElement|false Das XML, bei ungültiger Antwort false (Meldung per trigger_error).
+     * @return SimpleXMLElement|false Das XML, bei ungültiger Antwort false (Meldung per echo).
      */
     protected function GetScriptXML(string $Content): SimpleXMLElement|false
     {
@@ -355,7 +361,7 @@ abstract class HMBase extends IPSModuleStrict
             $xml = @new SimpleXMLElement($XMLContent, LIBXML_NOBLANKS + LIBXML_NONET);
         } catch (Throwable $exc) {
             $this->SendDebug('Error', $exc->getMessage(), 0);
-            trigger_error($this->Translate('Invalid response from CCU.'), E_USER_NOTICE);
+            echo $this->Translate('Invalid response from CCU.') . PHP_EOL;
             return false;
         }
         unset($xml->exec);
@@ -411,12 +417,12 @@ abstract class HMBase extends IPSModuleStrict
      * @param mixed $Values Daten (Arrays werden als JSON übertragen), null = keine Daten.
      * @param bool $EmulateStatus Bei true wird die Antwort der CCU nicht abgewartet.
      *
-     * @return mixed Die Antwort der CCU, true ohne Antwortdaten, bei einem Fehler null (Meldung per trigger_error).
+     * @return mixed Die Antwort der CCU, true ohne Antwortdaten, bei einem Fehler null (Meldung per echo).
      */
     protected function SendRPC(string $MethodName, int $Protocol, array $Paramset, mixed $Values = null, bool $EmulateStatus = false): mixed
     {
         if (!$this->HasActiveParent()) {
-            trigger_error($this->Translate('Instance has no active parent instance!'), E_USER_NOTICE);
+            echo $this->Translate('Instance has no active parent instance!') . PHP_EOL;
             return null;
         }
         $ParentData = [
@@ -437,8 +443,8 @@ abstract class HMBase extends IPSModuleStrict
             return true;
         }
         if ($ResultJSON === false) {
-            trigger_error(sprintf($this->Translate('Error on %s'), $MethodName), E_USER_NOTICE);
             $this->SendDebug('Error', '', 0);
+            echo sprintf($this->Translate('Error on %s'), $MethodName) . PHP_EOL;
             return null;
         }
         $this->SendDebug('Receive JSON', $ResultJSON, 0);

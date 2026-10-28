@@ -1,0 +1,48 @@
+{
+    "_source": "IPS_GetPresentation, Symcon 9.1 (Rust-Edition), 2026-10-28. Je Darstellung: erlaubte Variablentypen, Parameter und Parameter der Gruppen je Variablentyp, Felder der Listen (OPTIONS).",
+    "{52D9E126-D7D2-2CBB-5E62-4CF7BA7C5D82}": {
+        "caption": "Enumeration",
+        "requestAction": true,
+        "variableTypes": [0, 1, 2, 3],
+        "parameters": ["DISPLAY", "ICON", "LAYOUT"],
+        "groups": {
+            "0": {"OPTIONS": ["Caption", "Color", "IconActive", "IconValue", "Value"]},
+            "1": {"OPTIONS": ["Caption", "Color", "IconActive", "IconValue", "Value"]},
+            "2": {"OPTIONS": ["Caption", "Color", "IconActive", "IconValue", "Value"]},
+            "3": {"OPTIONS": ["Caption", "Color", "IconActive", "IconValue", "Value"]}
+        }
+    },
+    "{60AE6B26-B3E2-BDB1-A3A1-BE232940664B}": {
+        "caption": "Switch",
+        "requestAction": true,
+        "variableTypes": [0],
+        "parameters": ["GLOW_COLOR", "GLOW_INTENSITY", "ICON_FALSE", "ICON_TRUE", "USAGE_TYPE", "USE_ICON_FALSE"],
+        "groups": {}
+    },
+    "{6F477326-1683-A2FD-D2E7-477F366ECB62}": {
+        "caption": "Value Input",
+        "requestAction": true,
+        "variableTypes": [1, 2, 3],
+        "parameters": ["MULTILINE", "PREFIX", "SUFFIX"],
+        "groups": {}
+    },
+    "{3319437D-7CDE-699D-750A-3C6A3841FA75}": {
+        "caption": "Value Presentation",
+        "requestAction": false,
+        "variableTypes": [0, 1, 2, 3],
+        "parameters": ["COLOR", "CONTENT_COLOR", "DISPLAY_TYPE", "ICON", "PERCENTAGE", "PREFIX", "PREVIEW_STYLE", "SHOW_PREVIEW", "SUFFIX", "USAGE_TYPE"],
+        "groups": {
+            "0": {"OPTIONS": ["Caption", "ColorActive", "ColorValue", "ContentColorActive", "ContentColorValue", "IconActive", "IconValue", "Value"]},
+            "1": {"DECIMAL_SEPARATOR": [], "DIGITS": [], "INTERVALS": [], "INTERVALS_ACTIVE": [], "MAX": [], "MIN": [], "THOUSANDS_SEPARATOR": []},
+            "2": {"DECIMAL_SEPARATOR": [], "DIGITS": [], "INTERVALS": [], "INTERVALS_ACTIVE": [], "MAX": [], "MIN": [], "THOUSANDS_SEPARATOR": []},
+            "3": {"MULTILINE": [], "OPTIONS": ["Caption", "ColorActive", "ColorValue", "ContentColorActive", "ContentColorValue", "IconActive", "IconValue", "Value"]}
+        }
+    },
+    "{497C4845-27FA-6E4F-AE37-5D951D3BDBF9}": {
+        "caption": "Date/Time",
+        "requestAction": false,
+        "variableTypes": [1, 2],
+        "parameters": ["DATE", "DAY_OF_THE_WEEK", "MONTH_TEXT", "TIME"],
+        "groups": {}
+    }
+}

@@ -174,7 +174,7 @@ class HomeMaticProgramme extends HMBase
     {
         // Der Ident ist die ID des Programmes und wird in das HM-Script eingesetzt.
         if (!ctype_digit($Ident)) {
-            trigger_error($this->Translate('Invalid Ident.'), E_USER_NOTICE);
+            echo $this->Translate('Invalid Ident.') . PHP_EOL;
             return false;
         }
         $HMScript = 'State=dom.GetObject(' . $Ident . ').ProgramExecute();';
@@ -192,7 +192,7 @@ class HomeMaticProgramme extends HMBase
             $this->SetValue($Ident, 0);
             return true;
         }
-        trigger_error($this->Translate('Error on start program.'), E_USER_NOTICE);
+        echo $this->Translate('Error on start program.') . PHP_EOL;
         return false;
     }
 }

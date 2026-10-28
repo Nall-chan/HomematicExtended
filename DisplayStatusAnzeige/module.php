@@ -524,7 +524,7 @@ class HomeMaticDisWM55 extends HMBase
             $Result = IPS_RunScriptWaitEx($ScriptID, ['SENDER' => 'HMDisWM55', 'ACTION' => $ActionString, 'PAGE' => max(1, $Page), 'EVENT' => $this->InstanceID]);
             $ResultData = json_decode($Result, true);
             if (!is_array($ResultData)) {
-                trigger_error($this->Translate('Error in display-script.'), E_USER_NOTICE);
+                echo $this->Translate('Error in display-script.') . PHP_EOL;
                 return;
             }
             $this->SendDebug('DisplayScript', $ResultData, 0);
@@ -547,7 +547,7 @@ class HomeMaticDisWM55 extends HMBase
     private function RestoreDisplayScript(): bool
     {
         if ($this->FindIDForIdent(self::ScriptIdent) != 0) {
-            trigger_error($this->Translate('Display script already exists.'), E_USER_NOTICE);
+            echo $this->Translate('Display script already exists.') . PHP_EOL;
             return false;
         }
         $this->RegisterScript(self::ScriptIdent, 'Display Script', $this->CreateDisplayScript(), -1);

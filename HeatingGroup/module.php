@@ -129,7 +129,7 @@ class HomeMaticHeatingGroup extends HMHeatingDevice
                             break;
                         case 2:
                             if (!$this->ReadPropertyBoolean(self::EnablePartyProperty)) {
-                                trigger_error($this->Translate('Party is disabled in config.'), E_USER_NOTICE);
+                                echo $this->Translate('Party is disabled in config.') . PHP_EOL;
                                 return;
                             }
                             if ($this->GetValue(\HMExtended\HeatingGroup::CONTROL_MODE) == 2) {
@@ -193,7 +193,7 @@ class HomeMaticHeatingGroup extends HMHeatingDevice
             }
             return;
         }
-        trigger_error($this->Translate('Invalid Ident.') . ' (' . $Ident . ')', E_USER_NOTICE);
+        echo $this->Translate('Invalid Ident.') . ' (' . $Ident . ')' . PHP_EOL;
         return;
     }
 

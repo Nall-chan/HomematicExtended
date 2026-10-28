@@ -117,12 +117,13 @@ class HomeMaticPowermeter extends HMBase
         }
         if (($Address) && ($this->HasActiveParent())) {
             // Die Werte zuerst lesen: sie bestimmen die Betriebsart, bevor die Summenzähler gelesen werden.
-            $Values = @$this->GetParamset(\HMExtended\CCU::VALUES, $Address . static::ValuesChannel);
-            // Ohne Werte (z.B. CCU nicht erreichbar) bleibt die zuletzt erkannte Betriebsart erhalten.
-            if (count($Values) > 0) {
-                $this->WriteAttributeBoolean(self::AttributeGasMode, array_key_exists('GAS_VOLUME', $Values) && !array_key_exists('ENERGY_COUNTER', $Values));
+            // Ein Fehler (z.B. Gerät nicht erreichbar) wird gemeldet, danach folgt keine weitere Anfrage; die zuletzt erkannte Betriebsart bleibt.
+            $Values = $this->GetParamset(\HMExtended\CCU::VALUES, $Address . static::ValuesChannel);
+            if (count($Values) == 0) {
+                return;
             }
-            @$this->CreateVariablesFromValues();
+            $this->WriteAttributeBoolean(self::AttributeGasMode, array_key_exists('GAS_VOLUME', $Values) && !array_key_exists('ENERGY_COUNTER', $Values));
+            $this->CreateVariablesFromValues();
             foreach ($Values as $Ident => $Value) {
                 $this->SetVariable($Ident, $Value);
             }

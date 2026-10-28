@@ -49,8 +49,9 @@ class HomeMaticRFInterfaceSplitter extends HMBase
         $this->CheckConfig();
         if ($this->GetStatus() == IS_ACTIVE) {
             $this->SetTimerInterval(\HMExtended\Device\Timer::ReadRFInterfaces, $this->ReadPropertyInteger(\HMExtended\Device\Property::Interval) * 1000);
-            if ($this->HasActiveParent()) {
-                @$this->ReadRFInterfaces();
+            // Ohne Parent keine Abfrage und keine Meldung. Mit Parent werden Fehler (z.B. Socket inaktiv) gemeldet.
+            if (IPS_GetInstance($this->InstanceID)['ConnectionID'] > 0) {
+                $this->ReadRFInterfaces();
             }
         } else {
             $this->SetTimerInterval(\HMExtended\Device\Timer::ReadRFInterfaces, 0);
@@ -65,7 +66,8 @@ class HomeMaticRFInterfaceSplitter extends HMBase
      */
     public function ForwardData(string $JSONString): string
     {
-        return serialize($this->GetInterfaces());
+        $Result = $this->GetInterfaces();
+        return serialize(($Result === false) ? [] : $Result);
     }
 
     //################# PUBLIC
@@ -74,11 +76,14 @@ class HomeMaticRFInterfaceSplitter extends HMBase
      * IPS-Instanz-Funktion 'HM_ReadRFInterfaces'.
      * Liest die Daten der RF-Interfaces und versendet sie an die Children.
      *
-     * @return bool True bei Erfolg, sonst false.
+     * @return bool True bei Erfolg, sonst false (die Meldung erhält der Aufrufer).
      */
     public function ReadRFInterfaces(): bool
     {
         $Result = $this->GetInterfaces();
+        if ($Result === false) {
+            return false;
+        }
         $ret = false;
         $Present = [];
         foreach ($Result as $ProtocolID => $Protocol) {
@@ -149,14 +154,15 @@ class HomeMaticRFInterfaceSplitter extends HMBase
 
     /**
      * Liest alle Daten der RF-Interfaces aus der CCU aus.
+     * Fehler werden per echo an den Aufrufer gemeldet, nach dem ersten Fehler folgt keine weitere Anfrage.
      *
-     * @return array Ein Array mit den Daten der Interfaces.
+     * @return array|false Die Daten der Interfaces je Protokoll, bei einem Fehler false.
      */
-    private function GetInterfaces(): array
+    private function GetInterfaces(): array|false
     {
         if (!$this->HasActiveParent()) {
-            trigger_error($this->Translate('Instance has no active parent instance!'), E_USER_NOTICE);
-            return [];
+            echo $this->Translate('Instance has no active parent instance!') . PHP_EOL;
+            return false;
         }
         $ParentId = $this->ParentID;
         $Protocol = [];
@@ -181,17 +187,17 @@ class HomeMaticRFInterfaceSplitter extends HMBase
             $JSON = json_encode($ParentData);
             $ResultJSON = @$this->SendDataToParent($JSON);
             if ($ResultJSON === false) {
-                trigger_error($this->Translate('Error on read interfaces:') . $ProtocolId, E_USER_NOTICE);
                 $this->SendDebug('Error JSON', 'false', 0);
-                continue;
+                echo $this->Translate('Error on read interfaces:') . $ProtocolId . PHP_EOL;
+                return false;
             }
             $Result = json_decode(mb_convert_encoding($ResultJSON, 'UTF-8', 'ISO-8859-1'), true);
             if (($Result === false) || is_null($Result)) {
                 $this->SendDebug('Error decode', $ResultJSON, 0);
-                trigger_error($this->Translate('Error on read interfaces:') . $ProtocolId, E_USER_NOTICE);
-            } else {
-                $ret[$ProtocolId] = $Result;
+                echo $this->Translate('Error on read interfaces:') . $ProtocolId . PHP_EOL;
+                return false;
             }
+            $ret[$ProtocolId] = $Result;
         }
         return $ret;
     }

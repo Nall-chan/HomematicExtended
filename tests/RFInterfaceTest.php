@@ -20,11 +20,12 @@ class RFInterfaceTest extends HomematicModuleTestCase
             'childRequirements'  => [\HMExtended\GUID::SendToRFInterfaceDevice],
             'implemented'        => [self::DeviceDataFlow, \HMExtended\GUID::SendToRFSplitter]
         ]);
+        // Antwort der CCU vor dem ersten Lesen in ApplyChanges hinterlegen.
+        $this->setInterfaces([$this->gateway('GW1', true, 3)]);
         $this->SplitterId = IPS_CreateInstance(\HMExtended\GUID::RF_Interface_Splitter);
         IPS_ConnectInstance($this->SplitterId, $this->IoId);
         IPS_SetProperty($this->SplitterId, \HMExtended\Device\Property::Interval, 10);
         IPS_ApplyChanges($this->SplitterId);
-        $this->setInterfaces([$this->gateway('GW1', true, 3)]);
     }
 
     public function testNewSplitterPollsEvery60Seconds(): void
@@ -100,8 +101,10 @@ class RFInterfaceTest extends HomematicModuleTestCase
         $First = $this->createInterface('GW1');
         $this->read();
         unset(FakeHomematicIO::$RpcResponses['listBidcosInterfaces']);
-        @$this->splitter()->ReadRFInterfaces();
+        $this->assertFalse($this->splitter()->ReadRFInterfaces());
         $this->assertTrue($this->connected($First));
+        // Fehler gehen an den Aufrufer, nach dem ersten Fehler folgt keine weitere Anfrage.
+        $this->expectOutputString('Error on read interfaces:0' . PHP_EOL);
     }
 
     public function testMissingInterfaceWithoutVariableIsIgnored(): void

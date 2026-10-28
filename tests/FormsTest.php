@@ -55,6 +55,24 @@ class FormsTest extends TestCase
         $this->assertTrue(true);
     }
 
+    /**
+     * Die Konsole speichert von einer Liste ohne Angabe nur die bearbeitbaren Spalten. Spalten ohne `edit` müssen `save` daher
+     * ausdrücklich angeben (true für Schlüssel wie die Id, false für reine Anzeige).
+     */
+    #[DataProvider('formProvider')]
+    public function testListColumnsWithoutEditDeclareSave(string $Folder): void
+    {
+        $Missing = [];
+        foreach ($this->getElements($Folder, 'List') as $List) {
+            foreach ($List['columns'] ?? [] as $Column) {
+                if (!isset($Column['edit']) && !array_key_exists('save', $Column)) {
+                    $Missing[] = ($List['name'] ?? '?') . '.' . ($Column['name'] ?? '?');
+                }
+            }
+        }
+        $this->assertSame([], $Missing, basename($Folder) . ': list columns without edit and without save');
+    }
+
     #[DataProvider('formProvider')]
     public function testCaptionsAreTranslated(string $Folder): void
     {

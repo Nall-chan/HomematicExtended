@@ -10,6 +10,10 @@ class LibraryTest extends TestCaseSymconValidation
     {
         $this->validateLibrary(__DIR__ . '/..');
     }
+    public function testValidateAlarmvariable(): void
+    {
+        $this->validateModule(__DIR__ . '/../Alarmvariable');
+    }
     public function testValidateClimacontrolRegulator(): void
     {
         $this->validateModule(__DIR__ . '/../ClimacontrolRegulator');

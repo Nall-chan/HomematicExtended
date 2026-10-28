@@ -11,23 +11,46 @@ declare(strict_types=1);
  * @copyright     2015-2026 Michael Tröger
  * @license       Custom Non-Commercial Share-Alike License (see LICENSE)
  *
- * @version       3.75
+ * @version       3.80
  */
-require_once __DIR__ . '/../libs/HMBase.php';  // HMBase Klasse
+require_once __DIR__ . '/../libs/HMSystemVariableBase.php';  // Basisklasse Systemvariablen
 
 /**
  * HomeMaticSystemvariablen ist die Klasse für das IPS-Modul 'HomeMatic Systemvariablen'.
- * Erweitert HMBase.
+ * Bildet die in der Konfiguration gewählten Systemvariablen der CCU als Statusvariablen ab.
+ * Die Statusvariablen tragen die ID der Systemvariable auf der CCU als Ident.
+ * Alarmvariablen bildet das Modul 'HomeMatic Alarmvariable' ab.
+ * Erweitert HMSystemVariableBase.
  *
- * @property string $HMDeviceAddress Die Geräte-Adresse welche eine Aktualisierung auslöst.
- * @property string $HMDeviceDatapoint Der zu überwachende Datenpunkt welcher eine Aktualisierung auslöst.
- * @property int $Event Die IPS-ID der Variable des Datenpunkt welcher eine Aktualisierung auslöst.
- * @property int $AlarmScriptID
- * @property array $SystemVars Ein Array mit allen IPS-Var-IDs welche den Namen des IDENT (ID der Systemvariable in der CCU) enthalten.
+ * @property bool $ShowDeselectHint true, solange der Hinweis zum Abwählen im geöffneten Formular noch nicht gezeigt wurde.
+ *
+ * @method void RegisterAttributeArray(string $name, array $Value, int $Size = 0)
+ * @method array ReadAttributeArray(string $name)
+ * @method void WriteAttributeArray(string $name, array $value)
  */
-class HomeMaticSystemvariablen extends HMBase
+class HomeMaticSystemvariablen extends HMSystemVariableBase
 {
-    private static $CcuVarType = [2 => VARIABLETYPE_BOOLEAN, 4 => VARIABLETYPE_FLOAT, 16 => VARIABLETYPE_INTEGER, 20 => VARIABLETYPE_STRING];
+    protected const ProgramPrefix = 'Symcon Systemvariablen ';
+
+    /**
+     * Ident-Präfix der Alarmvariablen bis Version 3.78. Sie und ihre Untervariablen werden nicht mehr aktualisiert.
+     */
+    private const LegacyAlarmPrefix = 'AlDP';
+    /**
+     * Profile bis Version 3.78: `HM.SysVar<Instanz-ID>.<CCU-ID>` und das Profil der Alarmvariablen.
+     */
+    private const LegacyProfilePrefix = 'HM.SysVar';
+    private const LegacyAlarmProfile = 'HM.AlReceipt';
+    /**
+     * Aktionen der Schaltflächen im Formular.
+     */
+    private const ActionDeleteUnused = 'DeleteUnusedVariables';
+    private const ActionDeleteLegacyAlarms = 'DeleteLegacyAlarmVariables';
+    private const ActionVariableEdited = 'VariableEdited';
+    /**
+     * Version, mit der die veralteten Funktionsnamen entfernt werden.
+     */
+    private const AliasRemovedIn = '3.90';
 
     /**
      * Interne Funktion des SDK.
@@ -35,72 +58,9 @@ class HomeMaticSystemvariablen extends HMBase
     public function Create(): void
     {
         parent::Create();
-        $this->RegisterHMPropertys('XXX9999999');
-
-        $this->RegisterPropertyInteger('EventID', 0);
-        $this->RegisterPropertyInteger('Interval', 0);
-        $this->RegisterPropertyBoolean(\HMExtended\Device\Property::EmulateStatus, false);
-        $this->RegisterPropertyBoolean('EnableAlarmDP', true);
-        $this->RegisterPropertyInteger('AlarmScriptID', 0);
-
-        $this->RegisterTimer('ReadHMSysVar', 0, 'HM_SystemVariablesTimer($_IPS[\'TARGET\']);');
-        $this->HMDeviceAddress = '';
-        $this->HMDeviceDatapoint = '';
-        $this->SystemVars = [];
-        $this->AlarmScriptID = 0;
-        $this->SetReceiveDataFilter('.*9999999999.*');
-        $this->SetSummary('');
-    }
-
-    /**
-     * Interne Funktion des SDK.
-     */
-    public function Destroy(): void
-    {
-        if (!IPS_InstanceExists($this->InstanceID)) {
-            $this->UnregisterProfile('HM.AlReceipt');
-
-            foreach ($this->SystemVars as $Ident) {
-                $VarProfil = 'HM.SysVar' . (string) $this->InstanceID . '.' . (string) $Ident;
-                if (IPS_VariableProfileExists($VarProfil)) {
-                    IPS_DeleteVariableProfile($VarProfil);
-                }
-            }
-        }
-
-        parent::Destroy();
-    }
-
-    /**
-     * Nachrichten aus der Nachrichtenschlange verarbeiten.
-     *
-     * @param int       $TimeStamp
-     * @param int       $SenderID
-     * @param int       $Message
-     * @param array $Data
-     */
-    public function MessageSink(int $TimeStamp, int $SenderID, int $Message, array $Data): void
-    {
-        $OldVars = $this->SystemVars;
-        parent::MessageSink($TimeStamp, $SenderID, $Message, $Data);
-        switch ($Message) {
-            case VM_DELETE:
-                $this->UnregisterMessage($SenderID, VM_DELETE);
-                $this->UnregisterReference($SenderID);
-                if ($SenderID == $this->ReadPropertyInteger('EventID')) {
-                    $this->SetNewConfig();
-                    return;
-                }
-                if (array_key_exists($SenderID, $OldVars)) {
-                    $VarProfil = 'HM.SysVar' . (string) $this->InstanceID . '.' . (string) $OldVars[$SenderID];
-                    if (IPS_VariableProfileExists($VarProfil)) {
-                        IPS_DeleteVariableProfile($VarProfil);
-                    }
-                    unset($OldVars[$SenderID]);
-                    $this->SystemVars = $OldVars;
-                }
-                break;
-        }
+        $this->RegisterPropertyString(\HMExtended\Device\Property::Variables, '[]');
+        $this->RegisterAttributeArray(\HMExtended\Device\Attribute::Metadata, []);
+        $this->ShowDeselectHint = true;
     }
 
     /**
@@ -108,335 +68,222 @@ class HomeMaticSystemvariablen extends HMBase
      */
     public function ApplyChanges(): void
     {
+        $this->ShowDeselectHint = true;
         parent::ApplyChanges();
-
-        $this->RegisterProfileIntegerEx('HM.AlReceipt', '', '', '', [
-            [0, 'Quittieren', '', 0x00FF00]
-        ]);
-
-        if (IPS_GetKernelRunlevel() != KR_READY) {
-            $this->HMDeviceAddress = '';
-            $this->HMDeviceDatapoint = '';
-            $this->SystemVars = [];
-            $this->SetReceiveDataFilter('.*9999999999.*');
-            $this->SetSummary('');
-            return;
-        }
-
-        $MyVars = IPS_GetChildrenIDs($this->InstanceID);
-        $OldVars = $this->SystemVars;
-        foreach ($MyVars as $Var) {
-            $Object = IPS_GetObject($Var);
-            if ($Object['ObjectType'] != 2) {
-                continue;
-            }
-            if (strpos($Object['ObjectIdent'], 'AlDP') !== false) {
-                $Object['ObjectIdent'] = substr($Object['ObjectIdent'], 4);
-            }
-            $OldVars[$Var] = $Object['ObjectIdent'];
-            $this->RegisterMessage($Var, VM_DELETE);
-        }
-        $this->SystemVars = $OldVars;
-
-        $this->SetNewConfig();
-
-        if (!$this->HasActiveParent()) {
-            return;
-        }
-
-        $this->ReadSysVars();
     }
 
-    //################# Datenaustausch
+    /**
+     * Interne Funktion des SDK.
+     * Beim Löschen der Instanz werden die Profile bis Version 3.78 entfernt, die nur diese Instanz genutzt hat.
+     */
+    public function Destroy(): void
+    {
+        if (!IPS_InstanceExists($this->InstanceID)) {
+            foreach (IPS_GetVariableProfileList() as $Profile) {
+                if (str_starts_with($Profile, self::LegacyProfilePrefix . $this->InstanceID . '.')) {
+                    IPS_DeleteVariableProfile($Profile);
+                }
+            }
+        }
+        parent::Destroy();
+    }
+
+    /**
+     * Interne Funktion des SDK.
+     * Migration der Instanzen bis Version 3.78: Der Auslöser (EventID, Variable PRESS_SHORT einer Homematic-Instanz der virtuellen
+     * Fernbedienung) wird zur Adresse der Taste, alle vorhandenen Statusvariablen werden in der Auswahlliste angehakt.
+     */
+    public function Migrate(string $JSONData): string
+    {
+        $Data = json_decode($JSONData);
+        if (!is_object($Data) || !property_exists($Data, 'configuration') || !property_exists($Data->configuration, 'EventID')
+            || property_exists($Data->configuration, \HMExtended\Device\Property::Variables)) {
+            return $JSONData;
+        }
+        $EventId = (int) $Data->configuration->EventID;
+        if (($EventId > 0) && IPS_VariableExists($EventId)) {
+            $Parent = IPS_GetParent($EventId);
+            if (IPS_InstanceExists($Parent) && (IPS_GetInstance($Parent)['ModuleInfo']['ModuleID'] == \HMExtended\GUID::HmDevice)) {
+                $Address = (string) IPS_GetProperty($Parent, \HMExtended\Device\Property::Address);
+                $Protocol = \HMExtended\SystemVariables::ProtocolOfKey($Address);
+                if ($Protocol !== false) {
+                    $Data->configuration->{\HMExtended\Device\Property::Address} = $Address;
+                    $Data->configuration->{\HMExtended\Device\Property::Protocol} = $Protocol;
+                }
+            }
+        }
+        $Data->configuration->{\HMExtended\Device\Property::Variables} = json_encode($this->RowsOfExistingVariables());
+        $this->SendDebug('Migrate', json_encode($Data->configuration), 0);
+        return json_encode($Data);
+    }
 
     /**
      * Interne Funktion des SDK.
      */
-    public function ReceiveData(string $JSONString): string
+    public function GetConfigurationForm(): string
     {
-        $this->ReadSysVars();
-        return '';
+        $Form = json_decode(file_get_contents(__DIR__ . '/form.json'), true);
+        if ($this->GetStatus() == IS_CREATING) {
+            return json_encode($Form);
+        }
+        // Der Hinweis zum Abwählen erscheint einmal je Öffnen des Formulars.
+        $this->ShowDeselectHint = true;
+        $Form = $this->AddKeyAndProgramToForm($Form);
+        $Form['elements'] = $this->SetFormField($Form['elements'], \HMExtended\Device\Property::Variables, 'values', $this->VariableListValues());
+        $Unused = $this->UnusedIdents();
+        // Immer sichtbar (der Hinweis zum Abwählen verweist darauf), bedienbar nur wenn es etwas zu löschen gibt.
+        $Form['actions'] = $this->SetFormField($Form['actions'], self::ActionDeleteUnused, 'enabled', count($Unused) > 0);
+        $Form['actions'] = $this->SetFormField($Form['actions'], self::ActionDeleteUnused, 'caption', sprintf($this->Translate('Delete %d status variables without selection'), count($Unused)));
+        $Legacy = count($this->LegacyAlarmIdents()) > 0;
+        $Form['actions'] = $this->SetFormField($Form['actions'], 'LegacyAlarmHint', 'visible', $Legacy);
+        $Form['actions'] = $this->SetFormField($Form['actions'], self::ActionDeleteLegacyAlarms, 'visible', $Legacy);
+        return json_encode($Form);
     }
 
     //################# PUBLIC
 
     /**
-     * IPS-Instanz-Funktion 'HM_AlarmReceipt'.
-     * Bestätigt einen Alarm auf der CCU.
+     * IPS-Instanz-Funktion 'HM_ReadSystemVariables'.
+     * Liest alle gewählten Systemvariablen von der CCU.
      *
-     * @param string $Ident Der IDENT der IPS-Statusvariable = Die ID der Alarmvariable in der CCU.
-     *
-     * @return bool True bei erfolg, sonst false.
+     * @return bool True bei Erfolg, sonst false (die Meldung erhält der Aufrufer).
      */
-    public function AlarmReceipt(string $Ident): bool
+    public function ReadSystemVariables(): bool
     {
-        if (IPS_GetKernelRunlevel() != KR_READY) {
+        if (!$this->UpdateVariables()) {
             return false;
         }
-        $VarID = @$this->GetIDForIdent($Ident);
-        if ($VarID === false) {
-            trigger_error(sprintf($this->Translate('Ident %s do not exist.'), (string) $Ident), E_USER_NOTICE);
-            return false;
-        }
-        $HMScript = 'object oitemID = dom.GetObject(' . substr($Ident, 4) . ');
-                    var State = 0;
-                    if (oitemID.AlState() == asOncoming )
-                    {
-                        State = oitemID.AlReceipt();
-                    }';
-        $HMScriptResult = $this->LoadHMScript($HMScript);
-        if ($HMScriptResult === false) {
-            return false;
-        }
-        $xmlData = $this->GetScriptXML($HMScriptResult);
-        if ($xmlData === false) {
-            return false;
-        }
-        if (isset($xmlData->State)) {
-            if ((int) $xmlData->State === 1) {
-                if ($this->ReadPropertyBoolean(\HMExtended\Device\Property::EmulateStatus) === true) {
-                    $this->SetValue($Ident, false);
-                }
-                return true;
-            }
-            if ((int) $xmlData->State === 0) {
-                return false;
-            }
-        }
-
-        $this->SendDebug('AlarmVar.' . $Ident, 'error on receipt', 0);
-        trigger_error(sprintf($this->Translate('Error on receipt alarm of %s.'), (string) $Ident), E_USER_NOTICE);
-        return false;
+        return $this->ReadValues(true);
     }
 
     /**
      * IPS-Instanz-Funktion 'HM_SystemVariablesTimer'.
-     * Wird durch den Timer ausgeführt und liest alle Systemvariablen von der CCU.
+     * Veraltet, ruft ReadSystemVariables auf.
      */
-    public function SystemVariablesTimer(): void
+    public function SystemVariablesTimer(): bool
     {
-        if (!$this->HasActiveParent()) {
-            return;
-        }
-
-        $this->ReadSysVars();
-    }
-
-    /**
-     * IPS-Instanz-Funktion 'HM_ReadSystemVariables'.
-     * Liest alle Systemvariablen von der CCU.
-     *
-     * @return bool True bei Erfolg, sonst false.
-     */
-    public function ReadSystemVariables()
-    {
-        return $this->ReadSysVars();
+        $this->LogAlias('HM_SystemVariablesTimer', 'HM_ReadSystemVariables');
+        return $this->ReadSystemVariables();
     }
 
     /**
      * IPS-Instanz-Funktion 'HM_WriteValueBoolean'.
      * Schreibt einen bool-Wert in eine Systemvariable der CCU.
      *
-     * @param string $Parameter Der IDENT der IPS-Statusvariable = Die ID der Alarmvariable in der CCU.
+     * @param string $Parameter Der Ident der Statusvariable (= ID der Systemvariable auf der CCU).
      * @param bool   $Value     Der zu schreibende Wert.
      *
      * @return bool True bei Erfolg, sonst false.
      */
-    public function WriteValueBoolean(string $Parameter, bool $Value)
+    public function WriteValueBoolean(string $Parameter, bool $Value): bool
     {
-        return $this->WriteValueBoolean2($Parameter, $Value);
-    }
-
-    /**
-     * IPS-Instanz-Funktion 'HM_WriteValueBoolean2'.
-     * Schreibt einen bool-Wert in eine Systemvariable der CCU.
-     *
-     * @param string $Parameter Der IDENT der IPS-Statusvariable = Die ID der Alarmvariable in der CCU.
-     * @param bool   $Value     Der zu schreibende Wert.
-     *
-     * @return bool True bei Erfolg, sonst false.
-     */
-    public function WriteValueBoolean2(string $Parameter, bool $Value)
-    {
-        $VarID = @$this->GetIDForIdent($Parameter);
-        if ($VarID === false) {
-            trigger_error(sprintf($this->Translate('Ident %s do not exist.'), (string) $Parameter), E_USER_NOTICE);
-            return false;
-        }
-
-        if (IPS_GetVariable($VarID)['VariableType'] != VARIABLETYPE_BOOLEAN) {
-            trigger_error(sprintf($this->Translate('Wrong Datatype for %s.'), (string) $VarID), E_USER_NOTICE);
-            return false;
-        }
-
-        if ($Value) {
-            $ValueStr = 'true';
-        } else {
-            $ValueStr = 'false';
-        }
-
-        $Result = $this->WriteSysVar($Parameter, $ValueStr);
-
-        if ($Result === true) {
-            if ($this->ReadPropertyBoolean(\HMExtended\Device\Property::EmulateStatus) === true) {
-                $this->SetValue($Parameter, $Value);
-            }
-            return true;
-        }
-
-        trigger_error($this->Translate('Error on write Data ') . $Parameter, E_USER_NOTICE);
-        return false;
+        return $this->WriteValue($Parameter, $Value, VARIABLETYPE_BOOLEAN);
     }
 
     /**
      * IPS-Instanz-Funktion 'HM_WriteValueInteger'.
-     * Schreibt einen integer-Wert in eine Systemvariable der CCU.
+     * Schreibt einen integer-Wert in eine Systemvariable der CCU (Wertelisten und Zähler).
      *
-     * @param string $Parameter Der IDENT der IPS-Statusvariable = Die ID der Alarmvariable in der CCU.
+     * @param string $Parameter Der Ident der Statusvariable (= ID der Systemvariable auf der CCU).
      * @param int    $Value     Der zu schreibende Wert.
      *
      * @return bool True bei Erfolg, sonst false.
      */
-    public function WriteValueInteger(string $Parameter, int $Value)
+    public function WriteValueInteger(string $Parameter, int $Value): bool
     {
-        return $this->WriteValueInteger2($Parameter, $Value);
-    }
-
-    /**
-     * IPS-Instanz-Funktion 'HM_WriteValueInteger2'.
-     * Schreibt einen integer-Wert in eine Systemvariable der CCU.
-     *
-     * @param string $Parameter Der IDENT der IPS-Statusvariable = Die ID der Alarmvariable in der CCU.
-     * @param int    $Value     Der zu schreibende Wert.
-     *
-     * @return bool True bei Erfolg, sonst false.
-     */
-    public function WriteValueInteger2(string $Parameter, int $Value)
-    {
-        $VarID = @$this->GetIDForIdent($Parameter);
-        if ($VarID === false) {
-            trigger_error(sprintf($this->Translate('Ident %s do not exist.'), (string) $Parameter), E_USER_NOTICE);
-            return false;
-        }
-
-        if (IPS_GetVariable($VarID)['VariableType'] != VARIABLETYPE_INTEGER) {
-            trigger_error(sprintf($this->Translate('Wrong Datatype for %s.'), (string) $VarID), E_USER_NOTICE);
-            return false;
-        }
-
-        $Result = $this->WriteSysVar($Parameter, (string) $Value);
-        if ($Result === true) {
-            if ($this->ReadPropertyBoolean(\HMExtended\Device\Property::EmulateStatus) === true) {
-                $this->SetValue($Parameter, $Value);
-            }
-            return true;
-        }
-        trigger_error($this->Translate('Error on write Data ') . $Parameter, E_USER_NOTICE);
-        return false;
+        return $this->WriteValue($Parameter, $Value, VARIABLETYPE_INTEGER);
     }
 
     /**
      * IPS-Instanz-Funktion 'HM_WriteValueFloat'.
      * Schreibt einen float-Wert in eine Systemvariable der CCU.
      *
-     * @param string $Parameter Der IDENT der IPS-Statusvariable = Die ID der Alarmvariable in der CCU.
+     * @param string $Parameter Der Ident der Statusvariable (= ID der Systemvariable auf der CCU).
      * @param float  $Value     Der zu schreibende Wert.
      *
      * @return bool True bei Erfolg, sonst false.
      */
-    public function WriteValueFloat(string $Parameter, float $Value)
+    public function WriteValueFloat(string $Parameter, float $Value): bool
     {
-        return $this->WriteValueFloat2($Parameter, $Value);
-    }
-
-    /**
-     * IPS-Instanz-Funktion 'HM_WriteValueFloat2'.
-     * Schreibt einen float-Wert in eine Systemvariable der CCU.
-     *
-     * @param string $Parameter Der IDENT der IPS-Statusvariable = Die ID der Alarmvariable in der CCU.
-     * @param float  $Value     Der zu schreibende Wert.
-     *
-     * @return bool True bei Erfolg, sonst false.
-     */
-    public function WriteValueFloat2(string $Parameter, float $Value)
-    {
-        $VarID = @$this->GetIDForIdent($Parameter);
-        if ($VarID === false) {
-            trigger_error(sprintf($this->Translate('Ident %s do not exist.'), (string) $Parameter), E_USER_NOTICE);
-            return false;
-        }
-
-        if (IPS_GetVariable($VarID)['VariableType'] != VARIABLETYPE_FLOAT) {
-            trigger_error(sprintf($this->Translate('Wrong Datatype for %s.'), (string) $VarID), E_USER_NOTICE);
-            return false;
-        }
-
-        $Result = $this->WriteSysVar($Parameter, (string) sprintf('%.6F', $Value));
-
-        if ($Result === true) {
-            if ($this->ReadPropertyBoolean(\HMExtended\Device\Property::EmulateStatus) === true) {
-                $this->SetValue($Parameter, $Value);
-            }
-            return true;
-        }
-
-        trigger_error($this->Translate('Error on write Data ') . $Parameter, E_USER_NOTICE);
-        return false;
+        return $this->WriteValue($Parameter, $Value, VARIABLETYPE_FLOAT);
     }
 
     /**
      * IPS-Instanz-Funktion 'HM_WriteValueString'.
      * Schreibt einen string-Wert in eine Systemvariable der CCU.
      *
-     * @param string $Parameter Der IDENT der IPS-Statusvariable = Die ID der Alarmvariable in der CCU.
+     * @param string $Parameter Der Ident der Statusvariable (= ID der Systemvariable auf der CCU).
      * @param string $Value     Der zu schreibende Wert.
      *
      * @return bool True bei Erfolg, sonst false.
      */
-    public function WriteValueString(string $Parameter, string $Value)
+    public function WriteValueString(string $Parameter, string $Value): bool
     {
-        return $this->WriteValueString2($Parameter, $Value);
+        return $this->WriteValue($Parameter, $Value, VARIABLETYPE_STRING);
     }
 
     /**
-     * IPS-Instanz-Funktion 'HM_WriteValueString2'.
-     * Schreibt einen string-Wert in eine Systemvariable der CCU.
-     *
-     * @param string $Parameter Der IDENT der IPS-Statusvariable = Die ID der Alarmvariable in der CCU.
-     * @param string $Value     Der zu schreibende Wert.
-     *
-     * @return bool True bei Erfolg, sonst false.
+     * IPS-Instanz-Funktion 'HM_WriteValueBoolean2'. Veraltet, ruft WriteValueBoolean auf.
      */
-    public function WriteValueString2(string $Parameter, string $Value)
+    public function WriteValueBoolean2(string $Parameter, bool $Value): bool
     {
-        $VarID = @$this->GetIDForIdent($Parameter);
-        if ($VarID === false) {
-            trigger_error(sprintf($this->Translate('Ident %s do not exist.'), (string) $Parameter), E_USER_NOTICE);
-            return false;
-        }
-
-        if (IPS_GetVariable($VarID)['VariableType'] != VARIABLETYPE_STRING) {
-            trigger_error(sprintf($this->Translate('Wrong Datatype for %s.'), (string) $VarID), E_USER_NOTICE);
-            return false;
-        }
-
-        $Result = $this->WriteSysVar($Parameter, (string) $Value);
-
-        if ($Result === true) {
-            if ($this->ReadPropertyBoolean(\HMExtended\Device\Property::EmulateStatus) === true) {
-                $this->SetValue($Parameter, $Value);
-            }
-            return true;
-        }
-
-        trigger_error($this->Translate('Error on write Data ') . $Parameter, E_USER_NOTICE);
-        return false;
+        $this->LogAlias('HM_WriteValueBoolean2', 'HM_WriteValueBoolean');
+        return $this->WriteValueBoolean($Parameter, $Value);
     }
 
-    //################# ActionHandler
+    /**
+     * IPS-Instanz-Funktion 'HM_WriteValueInteger2'. Veraltet, ruft WriteValueInteger auf.
+     */
+    public function WriteValueInteger2(string $Parameter, int $Value): bool
+    {
+        $this->LogAlias('HM_WriteValueInteger2', 'HM_WriteValueInteger');
+        return $this->WriteValueInteger($Parameter, $Value);
+    }
 
     /**
-     * Interne Funktion des SDK.
+     * IPS-Instanz-Funktion 'HM_WriteValueFloat2'. Veraltet, ruft WriteValueFloat auf.
+     */
+    public function WriteValueFloat2(string $Parameter, float $Value): bool
+    {
+        $this->LogAlias('HM_WriteValueFloat2', 'HM_WriteValueFloat');
+        return $this->WriteValueFloat($Parameter, $Value);
+    }
+
+    /**
+     * IPS-Instanz-Funktion 'HM_WriteValueString2'. Veraltet, ruft WriteValueString auf.
+     */
+    public function WriteValueString2(string $Parameter, string $Value): bool
+    {
+        $this->LogAlias('HM_WriteValueString2', 'HM_WriteValueString');
+        return $this->WriteValueString($Parameter, $Value);
+    }
+
+    /**
+     * IPS-Instanz-Funktion 'HM_AlarmReceipt'.
+     * Veraltet: Alarmvariablen bildet das Modul 'HomeMatic Alarmvariable' ab. Quittiert den Alarm einer alten Alarmvariable (Ident `AlDP<CCU-ID>`).
+     *
+     * @param string $Ident Ident der alten Alarmvariable.
+     *
+     * @return bool True wenn quittiert wurde, sonst false.
+     */
+    public function AlarmReceipt(string $Ident): bool
+    {
+        $this->LogAlias('HM_AlarmReceipt', 'HM_AlarmReceipt (HomeMatic Alarmvariable)');
+        if (!str_starts_with($Ident, self::LegacyAlarmPrefix) || !ctype_digit(substr($Ident, strlen(self::LegacyAlarmPrefix)))) {
+            echo sprintf($this->Translate('Ident %s does not exist.'), $Ident) . PHP_EOL;
+            return false;
+        }
+        $Output = $this->RunScript(\HMExtended\SystemVariables::AlarmReceiptScript((int) substr($Ident, strlen(self::LegacyAlarmPrefix))));
+        if ($Output === false) {
+            return false;
+        }
+        return trim($Output) === 'true';
+    }
+
+    //################# protected
+
+    /**
+     * Verarbeitet Bedienaktionen der Statusvariablen und die Schaltflächen des Formulars.
      */
     protected function ProcessRequestAction(string $Ident, mixed $Value, bool &$done = false): void
     {
@@ -444,493 +291,386 @@ class HomeMaticSystemvariablen extends HMBase
         if ($done) {
             return;
         }
-        if (strpos($Ident, 'AlDP') !== false) {
-            if ((bool) $Value === false) {
-                $this->AlarmReceipt($Ident);
-            }
+        $done = true;
+        switch ($Ident) {
+            case self::ActionDeleteUnused:
+                foreach ($this->UnusedIdents() as $UnusedIdent) {
+                    $this->UnregisterVariable($UnusedIdent);
+                }
+                $this->ReloadForm();
+                return;
+            case self::ActionDeleteLegacyAlarms:
+                $this->DeleteLegacyAlarmVariables();
+                $this->ReloadForm();
+                return;
+            case self::ActionVariableEdited:
+                // Hinweis beim ersten Abwählen einer Systemvariable, zu der eine Statusvariable existiert.
+                [$Id, $Use] = (json_decode((string) $Value, true) ?? []) + [0, true];
+                if (!$Use && $this->ShowDeselectHint && ($this->FindIDForIdent((string) $Id) > 0)) {
+                    $this->ShowDeselectHint = false;
+                    $this->UpdateFormField('DeselectHint', 'visible', true);
+                }
+                return;
+        }
+        if (!ctype_digit($Ident)) {
+            echo sprintf($this->Translate('Ident %s does not exist.'), $Ident) . PHP_EOL;
             return;
         }
-        $VarID = @$this->GetIDForIdent($Ident);
-        if ($VarID === false) {
-            trigger_error(sprintf($this->Translate('Ident %s do not exist.'), (string) $Ident), E_USER_NOTICE);
+        $VariableId = $this->FindIDForIdent($Ident);
+        if ($VariableId == 0) {
+            echo sprintf($this->Translate('Ident %s does not exist.'), $Ident) . PHP_EOL;
             return;
         }
-        switch (IPS_GetVariable($VarID)['VariableType']) {
+        $Type = IPS_GetVariable($VariableId)['VariableType'];
+        switch ($Type) {
             case VARIABLETYPE_BOOLEAN:
-                $this->WriteValueBoolean($Ident, (bool) $Value);
+                $Value = (bool) $Value;
                 break;
             case VARIABLETYPE_INTEGER:
-                $this->WriteValueInteger($Ident, (int) $Value);
+                $Value = (int) $Value;
                 break;
             case VARIABLETYPE_FLOAT:
-                $this->WriteValueFloat($Ident, (float) $Value);
+                $Value = (float) $Value;
                 break;
-            case VARIABLETYPE_STRING:
-                $this->WriteValueString($Ident, (string) $Value);
+            default:
+                $Value = (string) $Value;
                 break;
         }
-    }
-
-    //################# protected
-
-    /**
-     * Interne Funktion des SDK.
-     */
-    protected function KernelReady(): void
-    {
-        parent::KernelReady();
-        $this->ApplyChanges();
+        $this->WriteValue($Ident, $Value, $Type);
     }
 
     /**
-     * Wird ausgeführt wenn sich der Status vom Parent ändert.
+     * Liest die Eigenschaften aller Systemvariablen mit einem HM-Script und legt die Statusvariablen der gewählten Systemvariablen an.
+     * Vorhandene Statusvariablen werden nicht umbenannt. Fehlt eine Systemvariable auf der CCU oder hat sich ihr Typ geändert, wird das gemeldet.
+     *
+     * @return bool true, wenn die CCU geantwortet hat.
      */
-    protected function IOChangeState(int $State): void
+    protected function UpdateVariables(): bool
     {
-        $this->ApplyChanges();
-    }
-
-    /**
-     * Prüft die Konfiguration und setzt den Status der Instanz.
-     *
-     * @return bool True wenn Konfig ok, sonst false.
-     */
-    private function SetNewConfig(): bool
-    {
-        $this->UnregisterReference($this->AlarmScriptID);
-        $this->AlarmScriptID = $this->ReadPropertyInteger('AlarmScriptID');
-        $this->RegisterReference($this->AlarmScriptID);
-
-        $OldEvent = $this->Event;
-        if ($OldEvent > 0) {
-            $this->UnregisterMessage($OldEvent, VM_DELETE);
-            $this->UnregisterReference($OldEvent);
-            $this->Event = 0;
-        }
-        $Event = $this->ReadPropertyInteger('EventID');
-        $Interval = $this->ReadPropertyInteger('Interval');
-
-        if ($Interval < 0) {
-            $this->SetTimerInterval('ReadHMSysVar', 0);
-            $this->SetStatus(IS_EBASE + 2); //Error Timer is negativ
-            return false;
-        }
-
-        if ($Interval == 0) {
-            $this->SetTimerInterval('ReadHMSysVar', 0);
-
-            if ($Event == 0) {
-                $this->SetStatus(IS_INACTIVE); // kein Trigger und kein Timer aktiv
-                return false;
-            } else {
-                if ($this->GetTriggerVar()) {
-                    $this->SetReceiveDataFilter('.*"DeviceID":"' . $this->HMDeviceAddress . '","VariableName":"' . $this->HMDeviceDatapoint . '".*');
-                    $this->SendDebug('EventFilter', '.*"DeviceID":"' . $this->HMDeviceAddress . '","VariableName":"' . $this->HMDeviceDatapoint . '".*', 0);
-                    $this->RegisterMessage($Event, VM_DELETE);
-                    $this->RegisterReference($Event);
-                    $this->Event = $Event;
-                    $this->SetStatus(IS_ACTIVE); // OK
-                    return true;
-                }
-                $this->SetReceiveDataFilter('.*9999999999.*');
-                $this->Event = 0;
-                $this->SetTimerInterval('ReadHMSysVar', 0);
-                $this->SetStatus(IS_INACTIVE); // kein Trigger und kein Timer aktiv
-                return false;
-            }
-        }
-
-        if ($Interval < 5) {
-            $this->SetStatus(IS_EBASE + 3);  //Warnung Trigger zu klein
-            $this->SetTimerInterval('ReadHMSysVar', 0);
-            return false;
-        }
-
-        $this->SetTimerInterval('ReadHMSysVar', $Interval * 1000);
-        $this->SetStatus(IS_ACTIVE); //OK
-        return true;
-    }
-
-    /**
-     * Prüft und holt alle Daten zu der Event-Variable und Instanz.
-     *
-     * @return bool True wenn Quelle gültig ist, sonst false.
-     */
-    private function GetTriggerVar(): bool
-    {
-        $EventID = $this->ReadPropertyInteger('EventID');
-        if (($EventID == 0) || (!IPS_VariableExists($EventID))) {
-            $this->HMDeviceAddress = '';
-            $this->HMDeviceDatapoint = '';
-            return false;
-        }
-        $parent = IPS_GetParent($EventID);
-        if (IPS_GetInstance($parent)['ModuleInfo']['ModuleID'] != \HMExtended\GUID::HmDevice) {
-            $this->HMDeviceAddress = '';
-            $this->HMDeviceDatapoint = '';
-            return false;
-        }
-        $this->HMDeviceAddress = IPS_GetProperty($parent, \HMExtended\Device\Property::Address);
-        $this->HMDeviceDatapoint = IPS_GetObject($EventID)['ObjectIdent'];
-        return true;
-    }
-
-    /**
-     * Liest alle Systemvariablen aus der CCU und legt diese in IPS mit dem dazugehörigen Profil an.
-     *
-     * @throws Exception Wenn CUU nicht erreichbar oder Daten nicht auswertbar sind.
-     *
-     * @return bool True bei Erfolg, sonst false.
-     */
-    private function ReadSysVars(): bool
-    {
-        // Systemvariablen
-        $HMScript = 'SysVars=dom.GetObject(ID_SYSTEM_VARIABLES).EnumUsedIDs();';
-
-        $HMScriptResult = $this->LoadHMScript($HMScript);
-        if ($HMScriptResult === false) {
-            return false;
-        }
-        $xmlVars = $this->GetScriptXML($HMScriptResult);
-        if ($xmlVars === false) {
-            return false;
-        }
-
-        //Time & Timezone
-        $HMScript = 'Now=system.Date("%F %T%z");' . PHP_EOL
-                . 'TimeZone=system.Date("%z");' . PHP_EOL;
-
-        $HMScriptResult = $this->LoadHMScript($HMScript);
-        if ($HMScriptResult === false) {
-            return false;
-        }
-        $xmlTime = $this->GetScriptXML($HMScriptResult);
-        if ($xmlTime === false) {
-            return false;
-        }
-        $Date = new DateTime((string) $xmlTime->Now);
-        $CCUTime = $Date->getTimestamp();
-        $Date = new DateTime();
-        $NowTime = $Date->getTimestamp();
-        $TimeDiff = $NowTime - $CCUTime;
-        $CCUTimeZone = (string) $xmlTime->TimeZone;
-        $Result = true;
-        $OldVars = $this->SystemVars;
-        $OldVarsChange = false;
-        foreach (explode(chr(0x09), (string) $xmlVars->SysVars) as $SysVar) {
-            $VarIdent = $SysVar;
-            $HMScript = 'Name=dom.GetObject(' . $SysVar . ').Name();' . PHP_EOL
-                    . 'ValueType=dom.GetObject(' . $SysVar . ').ValueType();' . PHP_EOL
-                    . 'integer Type=dom.GetObject(' . $SysVar . ').Type();' . PHP_EOL
-                    . 'WriteLine(dom.GetObject(' . $SysVar . ').Value());' . PHP_EOL
-                    . 'Timestamp=dom.GetObject(' . $SysVar . ').Timestamp();' . PHP_EOL;
-
-            $HMScriptResult = $this->LoadHMScript($HMScript);
-            if ($HMScriptResult === false) {
-                return false;
-            }
-            $lines = explode("\r\n", $HMScriptResult);
-            try {
-                $xmlVar = @new SimpleXMLElement(array_pop($lines), LIBXML_NOBLANKS + LIBXML_NONET);
-            } catch (Throwable $exc) {
-                $this->SendDebug((string) $SysVar, $exc->getMessage(), 0);
-                trigger_error($this->Translate($exc->getMessage()), E_USER_NOTICE);
-                $Result = false;
-                continue;
-            }
-            if ((int) $xmlVar->Type == 2113) {
-                if (!$this->ReadPropertyBoolean('EnableAlarmDP')) {
-                    continue;
-                } else {
-                    $VarIdent = 'AlDP' . $SysVar;
-                }
-            }
-            $xmlVar->addChild('Variable', implode("\r\n", $lines));
-            $VarID = @$this->GetIDForIdent($VarIdent);
-            $VarType = self::$CcuVarType[(int) $xmlVar->ValueType];
-            $VarProfil = 'HM.SysVar' . (string) $this->InstanceID . '.' . (string) $SysVar;
-            $VarName = (string) $xmlVar->Name;
-
-            if (((int) $xmlVar->ValueType != VARIABLETYPE_STRING) && (!IPS_VariableProfileExists($VarProfil))) { // neu anlegen wenn VAR neu ist oder Profil nicht vorhanden
-                $HMScript = 'Name=dom.GetObject(' . $SysVar . ').Name();' . PHP_EOL
-                        . 'ValueSubType=dom.GetObject(' . $SysVar . ').ValueSubType();' . PHP_EOL
-                        . 'ValueList=dom.GetObject(' . $SysVar . ').ValueList();' . PHP_EOL
-                        . 'ValueName0=dom.GetObject(' . $SysVar . ').ValueName0();' . PHP_EOL
-                        . 'ValueName1=dom.GetObject(' . $SysVar . ').ValueName1();' . PHP_EOL
-                        . 'ValueMin=dom.GetObject(' . $SysVar . ').ValueMin();' . PHP_EOL
-                        . 'ValueMax=dom.GetObject(' . $SysVar . ').ValueMax();' . PHP_EOL
-                        . 'ValueUnit=dom.GetObject(' . $SysVar . ').ValueUnit();' . PHP_EOL;
-
-                $HMScriptResult = $this->LoadHMScript($HMScript);
-                if ($HMScriptResult === false) {
-                    return false;
-                }
-                $xmlVar2 = $this->GetScriptXML($HMScriptResult);
-                if ($xmlVar2 === false) {
-                    $Result = false;
-                    continue;
-                }
-
-                if (IPS_VariableProfileExists($VarProfil)) {
-                    IPS_DeleteVariableProfile($VarProfil);
-                }
-
-                IPS_CreateVariableProfile($VarProfil, $VarType);
-                switch ($VarType) {
-                    case VARIABLETYPE_BOOLEAN:
-                        if (isset($xmlVar2->ValueName0)) {
-                            @IPS_SetVariableProfileAssociation($VarProfil, 0, (string) $xmlVar2->ValueName0, '', -1);
-                        }
-                        if (isset($xmlVar2->ValueName1)) {
-                            @IPS_SetVariableProfileAssociation($VarProfil, 1, (string) $xmlVar2->ValueName1, '', -1);
-                        }
-                        break;
-                    case VARIABLETYPE_FLOAT:
-                        @IPS_SetVariableProfileDigits($VarProfil, strlen((string) $xmlVar2->ValueMin) - strpos('.', (string) $xmlVar2->ValueMin) - 1);
-                        @IPS_SetVariableProfileValues($VarProfil, (float) $xmlVar2->ValueMin, (float) $xmlVar2->ValueMax, 1);
-                        break;
-                }
-                if (isset($xmlVar2->ValueUnit)) {
-                    @IPS_SetVariableProfileText($VarProfil, '', ' ' . (string) $xmlVar2->ValueUnit);
-                }
-                if ((isset($xmlVar2->ValueSubType)) && ((int) $xmlVar2->ValueSubType == 29)) {
-                    foreach (explode(';', (string) $xmlVar2->ValueList) as $Index => $ValueList) {
-                        @IPS_SetVariableProfileAssociation($VarProfil, $Index, trim($ValueList), '', -1);
-                    }
-                }
-            }
-            if ($VarID === false) {
-                if ((int) $xmlVar->ValueType == VARIABLETYPE_STRING) {
-                    $VarProfil = '';
-                }
-                $this->MaintainVariable($VarIdent, $VarName, $VarType, $VarProfil, 0, true);
-                $this->EnableAction($VarIdent);
-                $VarID = @$this->GetIDForIdent($VarIdent);
-                if ((int) $xmlVar->ValueType != VARIABLETYPE_STRING) {
-                    $OldVars[$VarID] = $SysVar;
-                    $OldVarsChange = true;
-                    $this->RegisterMessage($VarID, VM_DELETE);
-                }
-            }
-            if (IPS_GetVariable($VarID)['VariableType'] != $VarType) {
-                $this->SendDebug((string) $SysVar, 'Type of CCU Systemvariable ' . IPS_GetName($VarID) . ' has changed.', 0);
-                trigger_error(sprintf($this->Translate('Type of CCU Systemvariable %s has changed.'), IPS_GetName($VarID)), E_USER_NOTICE);
-                $Result = false;
-                continue;
-            }
-            $VarTime = new DateTime((string) $xmlVar->Timestamp . $CCUTimeZone);
-
-            if (!(IPS_GetVariable($VarID)['VariableUpdated'] < ($TimeDiff + $VarTime->getTimestamp()))) {
-                continue;
-            }
-            switch ($VarType) {
-                case VARIABLETYPE_BOOLEAN:
-                    if ((int) $xmlVar->Type == 2113) {
-                        $this->ProcessAlarmVariable($VarIdent, $SysVar, $CCUTimeZone);
-                    } else {
-                        $this->SetValue($VarIdent, (string) $xmlVar->Variable == 'true');
-                    }
-                    break;
-                case VARIABLETYPE_INTEGER:
-                    $this->SetValue($VarIdent, (int) $xmlVar->Variable);
-                    break;
-                case VARIABLETYPE_FLOAT:
-                    $this->SetValue($VarIdent, (float) $xmlVar->Variable);
-                    break;
-                case VARIABLETYPE_STRING:
-                    $this->SetValue($VarIdent, (string) $xmlVar->Variable);
-                    break;
-            }
-        }
-        if ($OldVarsChange) {
-            $this->SystemVars = $OldVars;
-        }
-        return $Result;
-    }
-
-    /**
-     * Liest die Daten einer Systemvariable vom Typ 'Alarm' aus. Visualisiert den Status und startet bei Bedarf ein Script in IPS.
-     *
-     * @param string $VarIdent    Ident der Alarmvariable.
-     * @param string $SysVar      ID der Alarmvariable in der CCU.
-     * @param string $CCUTimeZone Die Zeitzone der CCU.
-     *
-     * @return bool True bei Erfolg, sonst false.
-     */
-    private function ProcessAlarmVariable(string $VarIdent, string $SysVar, string $CCUTimeZone): bool
-    {
-        $HMScript = 'Value = dom.GetObject(' . $SysVar . ').Value();
-                        string FirstTime = dom.GetObject(' . $SysVar . ').AlOccurrenceTime();
-                        string LastTime = dom.GetObject(' . $SysVar . ').LastTriggerTime();
-                        integer LastTriggerID = dom.GetObject(' . $SysVar . ').LastTriggerID();
-                        if( LastTriggerID == ID_ERROR )
-                        {
-                         LastTriggerID = dom.GetObject(' . $SysVar . ').AlTriggerDP();
-                        }
-                        string ChannelName = "";
-                        string Room = "";
-                        object oLastTrigger = dom.GetObject( LastTriggerID );
-                        if( oLastTrigger )
-                        {
-                         object oLastTriggerChannel = dom.GetObject( oLastTrigger.Channel() );
-                         if( oLastTriggerChannel )
-                         {
-                          string ChannelName = oLastTriggerChannel.Name();
-                          string sRID;
-                          foreach( sRID, oLastTriggerChannel.ChnRoom() )
-                          {
-                           object oRoom = dom.GetObject( sRID );
-                           if( oRoom )
-                           {
-                            Room = oRoom.Name();
-                           }
-                          }
-                         }
-                        }
-                       }' . PHP_EOL;
-
-        $HMScriptResult = $this->LoadHMScript($HMScript);
-        if ($HMScriptResult === false) {
-            return false;
-        }
-        $xmlData = $this->GetScriptXML($HMScriptResult);
-        if ($xmlData === false) {
-            return false;
-        }
-        $ParentID = $this->GetIDForIdent($VarIdent);
-        $ScriptData = [];
-        $ScriptData['SENDER'] = 'AlarmDP';
-        $ScriptData['VARIABLE'] = $ParentID;
-        $ScriptData['OLDVALUE'] = GetValueBoolean($ParentID);
-        $ScriptData['VALUE'] = (string) $xmlData->Value == 'true';
-        if ($ScriptData['VALUE']) {
-            $Time = new DateTime((string) $xmlData->LastTime . $CCUTimeZone);
-            $ScriptData['LastTime'] = $Time->getTimestamp();
-            $Time = new DateTime((string) $xmlData->FirstTime . $CCUTimeZone);
-            $ScriptData['FirstTime'] = $Time->getTimestamp();
-            $ScriptData['Room'] = (string) $xmlData->Room;
-            $ScriptData['ChannelName'] = (string) $xmlData->ChannelName;
-            $Channel = explode('.', (string) $xmlData->oLastTrigger);
-            if (count($Channel) >= 2) {
-                $ScriptData['Channel'] = $Channel[1];
-                $ScriptData['DP'] = $Channel[2];
-            } else {
-                $ScriptData['Channel'] = 'unbekannt';
-                $ScriptData['DP'] = 'unbekannt';
-            }
-        } else {
-            $ScriptData['LastTime'] = 0;
-            $ScriptData['FirstTime'] = 0;
-            $ScriptData['Room'] = '';
-            $ScriptData['ChannelName'] = '';
-            $ScriptData['Channel'] = '';
-            $ScriptData['DP'] = '';
-        }
-
-        $this->SetValue($VarIdent, $ScriptData['VALUE']);
-        $LastTimeID = $this->RegisterSubVariable($ParentID, 'LastTime', 'Letzter Alarm', VARIABLETYPE_INTEGER, '~UnixTimestamp');
-        SetValue($LastTimeID, $ScriptData['LastTime']);
-        $FirstTimeID = $this->RegisterSubVariable($ParentID, 'FirstTime', 'Erster Alarm', VARIABLETYPE_INTEGER, '~UnixTimestamp');
-        SetValue($FirstTimeID, $ScriptData['FirstTime']);
-        $RoomID = $this->RegisterSubVariable($ParentID, 'Room', 'Raum', VARIABLETYPE_STRING);
-        SetValue($RoomID, $ScriptData['Room']);
-        $ChannelNameID = $this->RegisterSubVariable($ParentID, 'ChannelName', 'Name', VARIABLETYPE_STRING);
-        SetValue($ChannelNameID, $ScriptData['ChannelName']);
-
-        $ScriptID = $this->ReadPropertyInteger('AlarmScriptID');
-        if ($ScriptID > 0) {
-            IPS_RunScriptEx($ScriptID, $ScriptData);
-        }
-        return true;
-    }
-
-    /**
-     * Schreibt einen Wert in eine Systemvariable auf der CCU.
-     *
-     * @param string $Parameter Der IDENT der IPS-Statusvariable = Die ID der Systemvariable in der CCU.
-     * @param string $ValueStr  Der neue Wert der Systemvariable.
-     *
-     * @throws Exception Wenn CUU nicht erreichbar oder Daten nicht auswertbar sind.
-     *
-     * @return bool True bei Erfolg, sonst false.
-     */
-    private function WriteSysVar(string $Parameter, string $ValueStr): bool
-    {
-        if (IPS_GetKernelRunlevel() != KR_READY) {
-            return false;
-        }
-        $HMScript = 'State=dom.GetObject(' . $Parameter . ').State("' . $ValueStr . '");';
-        $HMScriptResult = $this->LoadHMScript($HMScript);
-        if ($HMScriptResult === false) {
-            return false;
-        }
-        $xml = $this->GetScriptXML($HMScriptResult);
-        if ($xml === false) {
-            return false;
-        }
-        if ((string) $xml->State == 'true') {
+        $Selected = $this->SelectedIds();
+        $this->UnregisterProfile(self::LegacyAlarmProfile);
+        if (count($Selected) == 0) {
+            $this->WriteAttributeArray(\HMExtended\Device\Attribute::Metadata, []);
             return true;
-        } else {
+        }
+        $Output = $this->RunScript(\HMExtended\SystemVariables::ListScript());
+        if ($Output === false) {
             return false;
+        }
+        $List = \HMExtended\SystemVariables::ParseList($Output);
+        $Metadata = [];
+        foreach ($Selected as $Id) {
+            // Hinweise ohne Abbruch: die übrigen Systemvariablen werden gelesen, das Formular markiert die Zeile.
+            if (!isset($List[$Id]) || !\HMExtended\SystemVariables::IsSupported($List[$Id])) {
+                $this->LogMessage(sprintf($this->Translate('System variable %d does not exist on the CCU.'), $Id), KL_WARNING);
+                continue;
+            }
+            $Variable = $List[$Id];
+            $Ident = (string) $Id;
+            $Type = \HMExtended\SystemVariables::VariableTypes[$Variable['ValueType']];
+            $VariableId = $this->FindIDForIdent($Ident);
+            if (($VariableId > 0) && (IPS_GetVariable($VariableId)['VariableType'] != $Type)) {
+                // MaintainVariable würde die Statusvariable samt Archivdaten löschen und neu anlegen.
+                $this->LogMessage(sprintf($this->Translate('Type of CCU system variable %s has changed.'), $Variable['Name']), KL_WARNING);
+                continue;
+            }
+            $LegacyProfile = self::LegacyProfilePrefix . $this->InstanceID . '.' . $Ident;
+            if (($VariableId > 0) && (IPS_GetVariable($VariableId)['VariableProfile'] == $LegacyProfile)) {
+                // Profil bis Version 3.78 lösen, danach gilt die Darstellung.
+                $this->MaintainVariable($Ident, $Variable['Name'], $Type, '', 0, true);
+            }
+            $this->MaintainVariable($Ident, $Variable['Name'], $Type, \HMExtended\SystemVariables::Presentation(
+                $Variable,
+                VARIABLE_PRESENTATION_ENUMERATION,
+                VARIABLE_PRESENTATION_SWITCH,
+                VARIABLE_PRESENTATION_VALUE_INPUT
+            ), 0, true);
+            $this->EnableAction($Ident);
+            if (IPS_VariableProfileExists($LegacyProfile)) {
+                IPS_DeleteVariableProfile($LegacyProfile);
+            }
+            $Metadata[$Id] = $Variable;
+        }
+        $this->WriteAttributeArray(\HMExtended\Device\Attribute::Metadata, $Metadata);
+        return true;
+    }
+
+    /**
+     * Liest die Werte der gewählten Systemvariablen mit einem HM-Script.
+     *
+     * @param bool $Full true: alle Werte, false: nur seit dem letzten Lesen aktualisierte (Zeitstempel der CCU).
+     *
+     * @return bool true bei Erfolg.
+     */
+    protected function ReadValues(bool $Full): bool
+    {
+        $Ids = array_keys($this->ReadAttributeArray(\HMExtended\Device\Attribute::Metadata));
+        if (count($Ids) == 0) {
+            return true;
+        }
+        $Output = $this->RunScript(\HMExtended\SystemVariables::ReadScript($Ids, $Full ? '' : $this->LastTimestamp));
+        if ($Output === false) {
+            return false;
+        }
+        $Result = \HMExtended\SystemVariables::ParseRead($Output);
+        if ($Result['Now'] === '') {
+            echo $this->Translate('Invalid response from CCU.') . PHP_EOL;
+            return false;
+        }
+        $this->LastTimestamp = $Result['Now'];
+        foreach ($Result['Missing'] as $Id) {
+            $this->SendDebug((string) $Id, 'missing on CCU', 0);
+        }
+        foreach ($Result['Values'] as $Id => $Value) {
+            $Ident = (string) $Id;
+            $VariableId = $this->FindIDForIdent($Ident);
+            if ($VariableId == 0) {
+                continue;
+            }
+            $Type = \HMExtended\SystemVariables::VariableTypes[$Value['ValueType']] ?? -1;
+            if (IPS_GetVariable($VariableId)['VariableType'] != $Type) {
+                $this->SendDebug($Ident, 'type changed', 0);
+                continue;
+            }
+            $this->SendDebug($Ident, $Value['Value'], 0);
+            $this->SetValue($Ident, $Value['Value']);
+        }
+        return true;
+    }
+
+    /**
+     * Liefert die gewählten Systemvariablen mit ihrem Typ für das CCU-Programm.
+     *
+     * @return int[] CCU-ID => ValueType.
+     */
+    protected function ProgramVariables(): array
+    {
+        return array_map(function (array $Variable)
+        {
+            return $Variable['ValueType'];
+        }, $this->ReadAttributeArray(\HMExtended\Device\Attribute::Metadata));
+    }
+
+    //################# PRIVATE
+
+    /**
+     * Schreibt einen Wert in eine Systemvariable der CCU.
+     *
+     * @param string $Ident Ident der Statusvariable (= CCU-ID).
+     * @param mixed $Value Der Wert.
+     * @param int $Type Erwarteter Typ der Statusvariable.
+     *
+     * @return bool true bei Erfolg.
+     */
+    private function WriteValue(string $Ident, mixed $Value, int $Type): bool
+    {
+        $VariableId = ctype_digit($Ident) ? $this->FindIDForIdent($Ident) : 0;
+        if ($VariableId == 0) {
+            echo sprintf($this->Translate('Ident %s does not exist.'), $Ident) . PHP_EOL;
+            return false;
+        }
+        if (IPS_GetVariable($VariableId)['VariableType'] != $Type) {
+            echo sprintf($this->Translate('Wrong data type for %s.'), $Ident) . PHP_EOL;
+            return false;
+        }
+        $Output = $this->RunScript(\HMExtended\SystemVariables::WriteScript((int) $Ident, $Value));
+        if ($Output === false) {
+            return false;
+        }
+        if (trim($Output) !== 'true') {
+            $this->SendDebug('Write ' . $Ident, $Output, 0);
+            echo sprintf($this->Translate('Error on write CCU system variable %s.'), $Ident) . PHP_EOL;
+            return false;
+        }
+        if ($this->ReadPropertyBoolean(\HMExtended\Device\Property::EmulateStatus)) {
+            $this->SetValue($Ident, $Value);
+        }
+        return true;
+    }
+
+    /**
+     * Liefert die CCU-IDs der in der Konfiguration gewählten Systemvariablen.
+     *
+     * @return int[]
+     */
+    private function SelectedIds(): array
+    {
+        $Ids = [];
+        foreach (json_decode($this->ReadPropertyString(\HMExtended\Device\Property::Variables), true) ?? [] as $Row) {
+            if (($Row['Use'] ?? false) && isset($Row['Id'])) {
+                $Ids[] = (int) $Row['Id'];
+            }
+        }
+        return array_values(array_unique($Ids));
+    }
+
+    /**
+     * Liefert die Zeilen der Auswahl für alle vorhandenen Statusvariablen (alle gewählt).
+     *
+     * @return array[]
+     */
+    private function RowsOfExistingVariables(): array
+    {
+        $Rows = [];
+        foreach ($this->SystemVariableIdents() as $Ident) {
+            $Rows[] = ['Id' => (int) $Ident, 'Use' => true];
+        }
+        return $Rows;
+    }
+
+    /**
+     * Liefert die Idents aller Statusvariablen dieser Instanz, die eine Systemvariable abbilden (Ident = CCU-ID).
+     *
+     * @return string[]
+     */
+    private function SystemVariableIdents(): array
+    {
+        $Idents = [];
+        foreach (IPS_GetChildrenIDs($this->InstanceID) as $ChildId) {
+            if (!IPS_VariableExists($ChildId)) {
+                continue;
+            }
+            $Ident = IPS_GetObject($ChildId)['ObjectIdent'];
+            if (ctype_digit($Ident)) {
+                $Idents[] = $Ident;
+            }
+        }
+        return $Idents;
+    }
+
+    /**
+     * Liefert die Idents der Statusvariablen, deren Systemvariable nicht mehr gewählt ist.
+     *
+     * @return string[]
+     */
+    private function UnusedIdents(): array
+    {
+        $Selected = array_map('strval', $this->SelectedIds());
+        return array_values(array_diff($this->SystemVariableIdents(), $Selected));
+    }
+
+    /**
+     * Liefert die Idents der Alarmvariablen bis Version 3.78.
+     *
+     * @return string[]
+     */
+    private function LegacyAlarmIdents(): array
+    {
+        $Idents = [];
+        foreach (IPS_GetChildrenIDs($this->InstanceID) as $ChildId) {
+            $Ident = IPS_GetObject($ChildId)['ObjectIdent'];
+            if (str_starts_with($Ident, self::LegacyAlarmPrefix)) {
+                $Idents[] = $Ident;
+            }
+        }
+        return $Idents;
+    }
+
+    /**
+     * Löscht die Alarmvariablen bis Version 3.78 samt ihrer Untervariablen (Erster/Letzter Alarm, Raum, Name) und deren Profile.
+     * Wird nur über die Schaltfläche im Formular (mit Bestätigung) ausgeführt.
+     */
+    private function DeleteLegacyAlarmVariables(): void
+    {
+        foreach ($this->LegacyAlarmIdents() as $Ident) {
+            $VariableId = $this->FindIDForIdent($Ident);
+            if ($VariableId == 0) {
+                continue;
+            }
+            foreach (IPS_GetChildrenIDs($VariableId) as $ChildId) {
+                if (IPS_VariableExists($ChildId)) {
+                    IPS_DeleteVariable($ChildId);
+                }
+            }
+            $Profile = self::LegacyProfilePrefix . $this->InstanceID . '.' . substr($Ident, strlen(self::LegacyAlarmPrefix));
+            $this->UnregisterVariable($Ident);
+            if (IPS_VariableProfileExists($Profile)) {
+                IPS_DeleteVariableProfile($Profile);
+            }
         }
     }
 
     /**
-     * Erstellt eine Untervariable in IPS.
+     * Liefert die Zeilen der Auswahlliste: alle unterstützten Systemvariablen der CCU, ergänzt um gewählte, die auf der CCU fehlen (rot, Typ `fehlt`).
+     * Ohne Verbindung zur CCU werden nur die gewählten Variablen mit den zuletzt gelesenen Eigenschaften angezeigt, ohne sie als fehlend zu markieren.
      *
-     * @param int    $ParentID IPS-ID der übergeordneten Variable.
-     * @param string $Ident    IDENT der neuen Statusvariable.
-     * @param string $Name     Name der neuen Statusvariable.
-     * @param int    $Type     Der zu erstellende Typ von Variable.
-     * @param string $Profile  Das dazugehörige Variabelprofil.
-     * @param int    $Position Position der Variable.
-     *
-     * @throws Exception Wenn Variable nicht erstellt werden konnte.
-     *
-     * @return int IPS-ID der neuen Variable.
+     * @return array[]
      */
-    private function RegisterSubVariable($ParentID, $Ident, $Name, $Type, $Profile = '', $Position = 0): int
+    private function VariableListValues(): array
     {
-        if ($Profile != '') {
-            if (IPS_VariableProfileExists('~' . $Profile)) {
-                $Profile = '~' . $Profile;
-            }
-            if (!IPS_VariableProfileExists($Profile)) {
-                throw new Exception('Profile with name ' . $Profile . ' does not exist', E_USER_NOTICE);
-            }
-        }
-
-        $vid = @IPS_GetObjectIDByIdent($Ident, $ParentID);
-
-        if ($vid === false) {
-            $vid = 0;
-        }
-
-        if ($vid > 0) {
-            if (!IPS_VariableExists($vid)) {
-                throw new Exception('Ident with name ' . $Ident . ' is used for wrong object type', E_USER_NOTICE); //bail out
-            }
-            if (IPS_GetVariable($vid)['VariableType'] != $Type) {
-                IPS_DeleteVariable($vid);
-                $vid = 0;
+        $Selected = $this->SelectedIds();
+        $List = false;
+        if ($this->HasActiveParent()) {
+            $Output = $this->RunScriptQuiet(\HMExtended\SystemVariables::ListScript());
+            if ($Output !== false) {
+                $List = array_filter(\HMExtended\SystemVariables::ParseList($Output), [\HMExtended\SystemVariables::class, 'IsSupported']);
             }
         }
-
-        if ($vid == 0) {
-            $vid = IPS_CreateVariable($Type);
-
-            IPS_SetParent($vid, $ParentID);
-            IPS_SetIdent($vid, $Ident);
-            IPS_SetName($vid, $Name);
-            IPS_SetPosition($vid, $Position);
-            //IPS_SetReadOnly($vid, true);
+        $Metadata = $this->ReadAttributeArray(\HMExtended\Device\Attribute::Metadata);
+        $Values = [];
+        foreach ($List ?: [] as $Id => $Variable) {
+            $Values[] = $this->VariableListRow($Id, $Variable, in_array($Id, $Selected));
         }
-
-        IPS_SetVariableCustomProfile($vid, $Profile);
-        if (!in_array($vid, $this->GetReferenceList())) {
-            $this->RegisterReference($vid);
+        foreach ($Selected as $Id) {
+            if (isset($List[$Id])) {
+                continue;
+            }
+            if ($List === false) {
+                // CCU nicht erreichbar: zuletzt gelesene Eigenschaften, keine Aussage über fehlende Variablen.
+                $Values[] = $this->VariableListRow($Id, $Metadata[$Id] ?? null, true);
+                continue;
+            }
+            $Row = $this->VariableListRow($Id, null, true);
+            $Row['Type'] = $this->Translate('missing');
+            $Row['rowColor'] = '#FFC0C0';
+            $Values[] = $Row;
         }
-        return $vid;
+        usort($Values, function (array $A, array $B)
+        {
+            return [$A['Internal'] !== '', mb_strtolower($A['Name'])] <=> [$B['Internal'] !== '', mb_strtolower($B['Name'])];
+        });
+        return $Values;
+    }
+
+    /**
+     * Liefert eine Zeile der Auswahlliste. Als Name wird der Objektname der Statusvariable angezeigt, sofern sie existiert,
+     * sonst der Name der Systemvariable auf der CCU (nur Anzeige).
+     *
+     * @param int $Id CCU-ID.
+     * @param array|null $Variable Eigenschaften der Systemvariable, null wenn unbekannt.
+     * @param bool $Use Gewählt.
+     */
+    private function VariableListRow(int $Id, ?array $Variable, bool $Use): array
+    {
+        $TypeCaptions = [
+            \HMExtended\SystemVariables::ValueTypeBool    => 'Boolean',
+            \HMExtended\SystemVariables::ValueTypeInteger => 'Integer',
+            \HMExtended\SystemVariables::ValueTypeFloat   => 'Number',
+            \HMExtended\SystemVariables::ValueTypeString  => 'String'
+        ];
+        $Type = '';
+        if ($Variable !== null) {
+            $Type = ($Variable['ValueType'] == \HMExtended\SystemVariables::ValueTypeInteger) && ($Variable['SubType'] == \HMExtended\SystemVariables::SubTypeEnum)
+                ? 'Value list'
+                : ($TypeCaptions[$Variable['ValueType']] ?? '');
+        }
+        $VariableId = $this->FindIDForIdent((string) $Id);
+        return [
+            'Use'      => $Use,
+            'Id'       => $Id,
+            'Name'     => ($VariableId > 0) ? IPS_GetName($VariableId) : (($Variable !== null) ? $Variable['Name'] : ''),
+            'Type'     => ($Type !== '') ? $this->Translate($Type) : '',
+            // Anzeige in der Liste: Ja bzw. leer
+            'Internal' => (($Variable !== null) && $Variable['Internal']) ? $this->Translate('Yes') : ''
+        ];
+    }
+
+    /**
+     * Meldet den Aufruf einer veralteten Funktion im Log. Das Ergebnis der Funktion kommt trotzdem beim Aufrufer an.
+     */
+    private function LogAlias(string $Old, string $New): void
+    {
+        $this->LogMessage(sprintf($this->Translate('%s is deprecated and will be removed in version %s, use %s.'), $Old, self::AliasRemovedIn, $New), KL_WARNING);
     }
 }
 

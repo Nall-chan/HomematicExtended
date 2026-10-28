@@ -16,8 +16,11 @@
             "This module is free for non-commercial use,\r\nDonations in support of the author are accepted here:": "Dieses Modul ist für die nicht kommerzielle Nutzung kostenlos,\r\nSchenkungen als Unterstützung für den Autor werden hier akzeptiert:",
             "Error on %s": "Fehler bei %s",
             "Invalid response from CCU.": "Ungültige Antwort der CCU.",
+            "The CCU did not answer the HM-Script.": "Die CCU hat das HM-Script nicht beantwortet.",
             "No device address configured (migration required)": "Keine Geräte-Adresse eingetragen (Migration erforderlich)",
             "Device not found on the CCU": "Gerät auf der CCU nicht gefunden",
+            "Alarm variable not found on the CCU": "Alarmvariable auf der CCU nicht gefunden",
+            "internal": "intern",
             "Name": "Name",
             "RF interface (radio, not connected)": "RF-Interface (Funk, nicht verbunden)"
         }

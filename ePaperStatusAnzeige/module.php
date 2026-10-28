@@ -91,7 +91,7 @@ class HomeMaticDisEPWM55 extends HMBase
     public function WriteValueDisplayLine(int $Line, string $Text, int $Icon): bool
     {
         if (($Line < 1) || ($Line > 3)) {
-            trigger_error(sprintf($this->Translate('Parameter %s out of range.'), 'Line'), E_USER_NOTICE);
+            echo sprintf($this->Translate('Parameter %s out of range.'), 'Line') . PHP_EOL;
             return false;
         }
         $Data[] = '0x0A';
@@ -126,7 +126,7 @@ class HomeMaticDisEPWM55 extends HMBase
     public function WriteValueDisplayLineEx(int $Line, string $Text, int $Icon, int $Chime, int $Repeat, int $Wait, int $Color): bool
     {
         if (($Line < 1) || ($Line > 3)) {
-            trigger_error(sprintf($this->Translate('Parameter %s out of range.'), 'Line'), E_USER_NOTICE);
+            echo sprintf($this->Translate('Parameter %s out of range.'), 'Line') . PHP_EOL;
             return false;
         }
         $Data[] = '0x0A';
@@ -241,7 +241,7 @@ class HomeMaticDisEPWM55 extends HMBase
     {
         $Address = $this->ReadPropertyString(\HMExtended\Device\Property::Address);
         if (($Address == '') || str_starts_with($Address, self::Placeholder) || !str_contains($Address, ':')) {
-            trigger_error($this->Translate('Invalid address, the address must contain the channel.'), E_USER_NOTICE);
+            echo $this->Translate('Invalid address, the address must contain the channel.') . PHP_EOL;
             return false;
         }
         $Result = $this->SendRPC(
@@ -250,8 +250,8 @@ class HomeMaticDisEPWM55 extends HMBase
             [$Address, 'SUBMIT'],
             '0x02,' . implode(',', $Submit) . ',0x03'
         );
+        // SendRPC hat den Fehler bereits gemeldet.
         if ($Result === null) {
-            trigger_error($this->Translate('Error on send Data.'), E_USER_NOTICE);
             return false;
         }
         return true;
@@ -295,7 +295,7 @@ class HomeMaticDisEPWM55 extends HMBase
                 throw new Exception(sprintf($this->Translate('Parameter %s out of range.'), 'Color'));
             }
         } catch (Exception $exc) {
-            trigger_error($exc->getMessage(), E_USER_NOTICE);
+            echo $exc->getMessage() . PHP_EOL;
             return false;
         }
         $Data[] = '0x14';
@@ -330,7 +330,7 @@ class HomeMaticDisEPWM55 extends HMBase
                 throw new Exception(sprintf($this->Translate('Parameter %s out of range.'), 'Icon'));
             }
         } catch (Exception $exc) {
-            trigger_error($exc->getMessage(), E_USER_NOTICE);
+            echo $exc->getMessage() . PHP_EOL;
             return false;
         }
 

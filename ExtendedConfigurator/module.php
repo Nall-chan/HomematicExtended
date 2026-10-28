@@ -15,6 +15,7 @@ declare(strict_types=1);
  */
 require_once __DIR__ . '/../libs/HMBase.php';  // HMBase Klasse
 require_once __DIR__ . '/../libs/HMTypes.php';  // HMTypes Data
+require_once __DIR__ . '/../libs/HMSystemVariables.php';  // Scripte und Parser für Systemvariablen
 
 /**
  * HomeMaticExtendedConfigurator ist die Klasse für das IPS-Modul 'HomeMatic Extended Configurator'.
@@ -71,6 +72,7 @@ class HomeMaticExtendedConfigurator extends HMBase
 
     /**
      * Interne Funktion des SDK.
+     * Meldungen beim Lesen der CCU würden das Formular zerstören. Sie werden abgefangen, per Debug ausgegeben und im Formular angezeigt.
      */
     public function GetConfigurationForm(): string
     {
@@ -78,6 +80,81 @@ class HomeMaticExtendedConfigurator extends HMBase
         if ($this->GetStatus() == IS_CREATING) {
             return json_encode($Form);
         }
+        ob_start();
+        try {
+            $Form = $this->BuildForm($Form);
+        } finally {
+            $Errors = trim((string) ob_get_clean());
+        }
+        if ($Errors !== '') {
+            $this->SendDebug('FORM errors', $Errors, 0);
+            $Form['actions'][] = [
+                'type'  => 'PopupAlert',
+                'popup' => [
+                    'items' => [[
+                        'type'    => 'Label',
+                        'caption' => $Errors
+                    ]]
+                ]
+            ];
+        }
+        $this->SendDebug('FORM', json_encode($Form), 0);
+        $this->SendDebug('FORM', json_last_error_msg(), 0);
+        return json_encode($Form);
+    }
+
+    /**
+     * Liefert die Instanzen eines Moduls, die am Homematic Socket dieses Konfigurators hängen.
+     *
+     * @param string $GUID GUID des Moduls.
+     * @param string|null $ConfigParam Name einer Eigenschaft, deren Wert statt der Zahl geliefert wird.
+     *
+     * @return array Instanz-ID => Wert der Eigenschaft.
+     */
+    protected function GetInstanceList(string $GUID, ?string $ConfigParam = null): array
+    {
+        $InstanceIDList = array_filter(IPS_GetInstanceListByModuleID($GUID), [$this, 'FilterInstances']);
+        if ($ConfigParam != null) {
+            $InstanceIDList = array_flip(array_values($InstanceIDList));
+            array_walk($InstanceIDList, [$this, 'GetConfigParam'], $ConfigParam);
+        }
+        return $InstanceIDList;
+    }
+
+    /**
+     * Filter für array_filter: Instanzen mit demselben Homematic Socket wie dieser Konfigurator.
+     *
+     * @param int $InstanceID Instanz-ID.
+     *
+     * @return bool true, wenn die Instanz zum selben Socket gehört.
+     */
+    protected function FilterInstances(int $InstanceID): bool
+    {
+        return IPS_GetInstance($InstanceID)['ConnectionID'] == $this->ParentID;
+    }
+
+    /**
+     * Callback für array_walk: ersetzt den Eintrag durch den Wert einer Eigenschaft der Instanz.
+     *
+     * @param mixed $item1 Wert, wird ersetzt.
+     * @param int $InstanceID Instanz-ID.
+     * @param string $ConfigParam Name der Eigenschaft.
+     */
+    protected function GetConfigParam(mixed &$item1, int $InstanceID, string $ConfigParam): void
+    {
+        $item1 = IPS_GetProperty($InstanceID, $ConfigParam);
+    }
+
+    //################# protected
+    /**
+     * Füllt das Formular mit den Geräten der CCU und den vorhandenen Instanzen.
+     *
+     * @param array $Form Das Formular aus form.json.
+     *
+     * @return array Das gefüllte Formular.
+     */
+    private function BuildForm(array $Form): array
+    {
         $ParentId = IPS_GetInstance($this->InstanceID)['ConnectionID'];
         if ((!$this->HasActiveParent()) || ($ParentId == 0)) {
             $Form['actions'][] = [
@@ -89,10 +166,7 @@ class HomeMaticExtendedConfigurator extends HMBase
                     ]]
                 ]
             ];
-            $this->SendDebug('FORM', json_encode($Form), 0);
-            $this->SendDebug('FORM', json_last_error_msg(), 0);
-
-            return json_encode($Form);
+            return $Form;
         }
         // Bei jedem Aufruf neu von der CCU lesen, sonst fehlen neu angelernte Geräte.
         $this->listDevices = [];
@@ -101,6 +175,8 @@ class HomeMaticExtendedConfigurator extends HMBase
         $Form['actions'][0]['values'] = array_merge($Form['actions'][0]['values'], $this->GetConfigInstance(\HMExtended\GUID::RemoteScript));
         $Gateways = $this->LoadGatewayConfig();
         $Form['actions'][0]['values'] = array_merge($Form['actions'][0]['values'], $this->GetConfigRFInterfaces($ParentId, $Gateways['rfd'] ?? []));
+        $Form['actions'][0]['values'] = array_merge($Form['actions'][0]['values'], $this->GetConfigSystemVariables());
+        $Form['actions'][0]['values'] = array_merge($Form['actions'][0]['values'], $this->GetConfigAlarms($this->LoadSystemVariables()));
         // Module mit Geräten auf mehreren Protokollen werden in einem Durchgang gelesen, damit Instanzen ohne Gerät nur einmal erscheinen.
         $RadioAndIp = [];
         if (@IPS_GetProperty($ParentId, self::IORFOpen)) {
@@ -155,52 +231,7 @@ class HomeMaticExtendedConfigurator extends HMBase
             ];
         }
         $Form['actions'][0]['rowCount'] = count($Form['actions'][0]['values']) + 1;
-        $this->SendDebug('FORM', json_encode($Form), 0);
-        $this->SendDebug('FORM', json_last_error_msg(), 0);
-        return json_encode($Form);
-    }
-
-    //################# protected
-    /**
-     * Liefert die Instanzen eines Moduls, die am Homematic Socket dieses Konfigurators hängen.
-     *
-     * @param string $GUID GUID des Moduls.
-     * @param string|null $ConfigParam Name einer Eigenschaft, deren Wert statt der Zahl geliefert wird.
-     *
-     * @return array Instanz-ID => Wert der Eigenschaft.
-     */
-    protected function GetInstanceList(string $GUID, ?string $ConfigParam = null): array
-    {
-        $InstanceIDList = array_filter(IPS_GetInstanceListByModuleID($GUID), [$this, 'FilterInstances']);
-        if ($ConfigParam != null) {
-            $InstanceIDList = array_flip(array_values($InstanceIDList));
-            array_walk($InstanceIDList, [$this, 'GetConfigParam'], $ConfigParam);
-        }
-        return $InstanceIDList;
-    }
-
-    /**
-     * Filter für array_filter: Instanzen mit demselben Homematic Socket wie dieser Konfigurator.
-     *
-     * @param int $InstanceID Instanz-ID.
-     *
-     * @return bool true, wenn die Instanz zum selben Socket gehört.
-     */
-    protected function FilterInstances(int $InstanceID): bool
-    {
-        return IPS_GetInstance($InstanceID)['ConnectionID'] == $this->ParentID;
-    }
-
-    /**
-     * Callback für array_walk: ersetzt den Eintrag durch den Wert einer Eigenschaft der Instanz.
-     *
-     * @param mixed $item1 Wert, wird ersetzt.
-     * @param int $InstanceID Instanz-ID.
-     * @param string $ConfigParam Name der Eigenschaft.
-     */
-    protected function GetConfigParam(mixed &$item1, int $InstanceID, string $ConfigParam): void
-    {
-        $item1 = IPS_GetProperty($InstanceID, $ConfigParam);
+        return $Form;
     }
 
     /**
@@ -284,9 +315,12 @@ class HomeMaticExtendedConfigurator extends HMBase
         $Script = 'string o; string e;
             system.Exec("echo @@rfd; grep -E ' . $Fields . ' /etc/config/rfd.conf; echo @@hs485d; grep -E ' . $Fields . ' /etc/config/hs485d.conf", &o, &e);
             WriteLine(o); o = 0; e = 0;';
-        $Result = @$this->LoadHMScript($Script);
+        // Optionale Zusatzabfrage: Fehler nur per Debug.
+        ob_start();
+        $Result = $this->LoadHMScript($Script);
+        $Errors = (string) ob_get_clean();
         if ($Result === false) {
-            $this->SendDebug('Gateway config', 'not available', 0);
+            $this->SendDebug('Gateway config', 'not available ' . $Errors, 0);
             return [];
         }
         $Gateways = \HMExtended\ScriptParser::ParseGatewayConfig(\HMExtended\ScriptParser::SplitOutput($Result)[0]);
@@ -459,6 +493,116 @@ class HomeMaticExtendedConfigurator extends HMBase
                 'name'            => IPS_GetName($InstanceID),
                 'longname'        => IPS_GetName($InstanceID),
                 'type'            => $this->GetUnmatchedInstanceHint($Address)
+            ];
+        }
+        return $Rows;
+    }
+
+    /**
+     * Liest alle Systemvariablen der CCU mit einem HM-Script.
+     *
+     * @return array[] CCU-ID => Eigenschaften (siehe SystemVariables::ParseList), bei einem Fehler leer.
+     */
+    private function LoadSystemVariables(): array
+    {
+        $Result = $this->LoadHMScript(\HMExtended\SystemVariables::ListScript());
+        if ($Result === false) {
+            return [];
+        }
+        return \HMExtended\SystemVariables::ParseList(\HMExtended\ScriptParser::SplitOutput($Result)[0]);
+    }
+
+    /**
+     * Liefert die Zeilen der Instanzen des Moduls Systemvariablen. Ist keine Instanz vorhanden, wird eine Zeile zum Anlegen geliefert.
+     * Die Systemvariablen werden in der Instanz gewählt, mehrere Instanzen sind möglich.
+     *
+     * @return array Zeilen für das Element Konfigurator.
+     */
+    private function GetConfigSystemVariables(): array
+    {
+        $GUID = \HMExtended\GUID::Systemvariablen;
+        $Create = [
+            'moduleID'      => $GUID,
+            'location'      => [],
+            'configuration' => [
+                \HMExtended\Device\Property::Protocol      => 0,
+                \HMExtended\Device\Property::EmulateStatus => false
+            ]
+        ];
+        $Rows = [];
+        foreach ($this->GetInstanceList($GUID, \HMExtended\Device\Property::Address) as $InstanceID => $Address) {
+            $Rows[] = [
+                'instanceID' => $InstanceID,
+                'address'    => (\HMExtended\SystemVariables::ProtocolOfKey($Address) !== false) ? $Address : '',
+                'name'       => IPS_GetName($InstanceID),
+                'longname'   => IPS_GetName($InstanceID),
+                'type'       => IPS_GetModule($GUID)['ModuleName'],
+                'create'     => $Create
+            ];
+        }
+        if (!count($Rows)) {
+            $Rows[] = [
+                'instanceID' => 0,
+                'address'    => '',
+                'name'       => IPS_GetModule($GUID)['ModuleName'],
+                'longname'   => IPS_GetModule($GUID)['ModuleName'],
+                'type'       => IPS_GetModule($GUID)['ModuleName'],
+                'create'     => $Create
+            ];
+        }
+        return $Rows;
+    }
+
+    /**
+     * Liefert je Alarmvariable der CCU eine Zeile (Modul Alarmvariable) sowie Zeilen für Instanzen, deren Alarmvariable fehlt.
+     *
+     * @param array[] $SystemVariables Alle Systemvariablen der CCU.
+     *
+     * @return array Zeilen für das Element Konfigurator.
+     */
+    private function GetConfigAlarms(array $SystemVariables): array
+    {
+        $GUID = \HMExtended\GUID::Alarmvariable;
+        $Instances = $this->GetInstanceList($GUID, \HMExtended\Device\Property::AlarmID);
+        $Type = IPS_GetModule($GUID)['ModuleName'];
+        $Rows = [];
+        foreach ($SystemVariables as $Id => $Variable) {
+            if (!\HMExtended\SystemVariables::IsAlarm($Variable)) {
+                continue;
+            }
+            // Die Spalte Adresse zeigt den Namen auf der CCU, die Instanz kann anders heißen. Interne Alarme (z.B. WatchDog) werden gekennzeichnet.
+            $Row = [
+                'instanceID' => 0,
+                'address'    => $Variable['Name'],
+                'name'       => $Variable['Name'],
+                'longname'   => $Variable['Name'],
+                'type'       => $Variable['Internal'] ? $Type . ' (' . $this->Translate('internal') . ')' : $Type,
+                'create'     => [
+                    'moduleID'      => $GUID,
+                    'location'      => [],
+                    'configuration' => [
+                        \HMExtended\Device\Property::AlarmID       => $Id,
+                        \HMExtended\Device\Property::Protocol      => 0,
+                        \HMExtended\Device\Property::EmulateStatus => false
+                    ]
+                ]
+            ];
+            $InstanceID = array_search($Id, $Instances);
+            if ($InstanceID !== false) {
+                unset($Instances[$InstanceID]);
+                $Row['instanceID'] = $InstanceID;
+                $Row['name'] = IPS_GetName($InstanceID);
+                $Row['longname'] = IPS_GetName($InstanceID);
+            }
+            $Rows[] = $Row;
+        }
+        foreach ($Instances as $InstanceID => $AlarmId) {
+            $Rows[] = [
+                'instanceID' => $InstanceID,
+                'address'    => '',
+                'name'       => IPS_GetName($InstanceID),
+                'longname'   => IPS_GetName($InstanceID),
+                'type'       => $this->Translate('Alarm variable not found on the CCU')
             ];
         }
         return $Rows;

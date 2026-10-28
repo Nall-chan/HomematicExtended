@@ -9,6 +9,7 @@ namespace HMExtended
         public const Powermeter = '{400F9193-FE79-4086-8D76-958BF9C1B357}';
         public const Weather = '{0877F1DB-2277-4B74-BCD9-E10D81015C31}';
         public const Systemvariablen = '{AF50C42B-7183-4992-B04A-FAFB07BB1B90}';
+        public const Alarmvariable = '{72A9F016-A988-430D-B678-E787CC106449}';
         public const Programme = '{A5010577-C443-4A85-ABF2-3F2D6CDD2465}';
         public const Dis_WM55 = '{271BCAB1-0658-46D9-A164-985AEB641B48}';
         public const Dis_EP_WM55 = '{E64ED916-FA6C-45B2-B8E3-EDC3191BC4C0}';
@@ -1048,6 +1049,22 @@ namespace HMExtended\Device
         public const Schedule = 'enable_SCHEDULE';
         public const ScheduleTemps = 'ScheduleTemps';
         public const Interval = 'Interval';
+        /** Systemvariablen: Auswahlliste der CCU-Systemvariablen (JSON). */
+        public const Variables = 'Variables';
+        /** Alarmvariable: CCU-ID der Alarmvariable. */
+        public const AlarmID = 'AlarmID';
+    }
+    /**
+     * Attribute der Module (dauerhaft gespeicherter Zustand).
+     */
+    class Attribute
+    {
+        /** ReGa-ID des vom Modul angelegten CCU-Programms. */
+        public const ProgramID = 'ProgramID';
+        /** Adresse der Taste, die das CCU-Programm drückt (für das Zurücksetzen des Tastennamens). */
+        public const ProgramKey = 'ProgramKey';
+        /** Eigenschaften der gewählten Systemvariablen auf der CCU (Typ, Werteliste, Einheit). */
+        public const Metadata = 'Metadata';
     }
     /**
      * Eigenschaften des Homematic Sockets (IO), welche die Module nur lesen.

@@ -12,6 +12,7 @@
 Erweitert IPS um die native Unterstützung von:  
 
 * Systemvariablen der CCU
+* Alarmvariablen der CCU
 * Programmen auf der CCU
 * Summenzähler aller Typen von Verbrauchsmessern
 * Display Status-Anzeige (Dis-WM55)
@@ -26,6 +27,7 @@ Erweitert IPS um die native Unterstützung von:
 
 - [1. Funktionsumfang](#1-funktionsumfang)
   - [HomeMatic Systemvariablen:](#homematic-systemvariablen)
+  - [HomeMatic Alarmvariable:](#homematic-alarmvariable)
   - [HomeMatic Powermeter:](#homematic-powermeter)
   - [HomeMatic Weather:](#homematic-weather)
   - [HomeMatic Programme:](#homematic-programme)
@@ -50,9 +52,12 @@ Erweitert IPS um die native Unterstützung von:
 
 ### [HomeMatic Systemvariablen:](Systemvariablen/)  
 
-   Abfragen von System- und Alarmvariablen inkl. Profilen und Werten von der CCU.  
-   Schreiben von Werten der Systemvariablen zur CCU.  
-   Standard Actionhandler für die Bedienung der System- und Alarmvariablen aus dem IPS-Webfront.  
+   Die in einer Liste gewählten Systemvariablen der CCU als bedienbare Statusvariablen.  
+   Ein vom Modul angelegtes CCU-Programm meldet jede Aktualisierung sofort über eine Taste der virtuellen Fernbedienung, gelesen wird mit einer Anfrage für alle Systemvariablen.  
+
+### [HomeMatic Alarmvariable:](Alarmvariable/)  
+
+   Eine Alarmvariable der CCU mit Zustand, erstem und letztem Alarm und dem Auslöser. Der Alarm kann aus Symcon quittiert werden.  
 
 ### [HomeMatic Powermeter:](PowerMeter/)  
 
@@ -99,7 +104,7 @@ Erweitert IPS um die native Unterstützung von:
 
 ### [HomeMatic Extended Konfigurator:](ExtendedConfigurator/)
 
-   Legt die Instanzen der Geräte dieser Library an (Powermeter, Wetterstationen, Displays, Heizungsgeräte, Programme, RemoteScript und WR-Interface).
+   Legt die Instanzen der Geräte dieser Library an (Powermeter, Wetterstationen, Displays, Heizungsgeräte, Systemvariablen, Alarmvariablen, Programme, RemoteScript und WR-Interface).
    Bereits angelegte Instanzen werden erkannt. Instanzen, zu denen kein Gerät auf der CCU gefunden wird, werden mit einem Hinweis angezeigt.
 
 ### [HomeMatic RF-Interface Splitter:](RFInterfaceSplitter/)
@@ -146,6 +151,7 @@ Erweitert IPS um die native Unterstützung von:
 |                Modul                |     Typ      |                  GUID                  |
 | :---------------------------------: | :----------: | :------------------------------------: |
 |      HomeMatic Systemvariablen      |    Device    | {AF50C42B-7183-4992-B04A-FAFB07BB1B90} |
+|       HomeMatic Alarmvariable       |    Device    | {72A9F016-A988-430D-B678-E787CC106449} |
 |        HomeMatic Powermeter         |    Device    | {400F9193-FE79-4086-8D76-958BF9C1B357} |
 |          HomeMatic Weather          |    Device    | {0877F1DB-2277-4B74-BCD9-E10D81015C31} |
 |         HomeMatic Programme         |    Device    | {A5010577-C443-4A85-ABF2-3F2D6CDD2465} |
@@ -156,14 +162,51 @@ Erweitert IPS um die native Unterstützung von:
 |       HomeMatic RF-Interface        |    Device    | {36549B96-FA11-4651-8662-F310EEEC5C7D} |
 |       HomeMatic WR-Interface        |    Device    | {01C66202-7E94-49C4-8D8F-6A75CE944E87} |
 |      HomeMatic Heating Device       |    Device    | {E2674369-5272-44FE-905A-DCBF0E5126C6} |
-|      HomeMatic Heating Group        |    Device    | {F179857C-DF5A-2CED-F553-CDB4D42815ED} |
+|       HomeMatic Heating Group       |    Device    | {F179857C-DF5A-2CED-F553-CDB4D42815ED} |
 |     HomeMatic IP Heating Group      |    Device    | {05CD9BAE-5A3B-E10B-79D6-48CB45A02C6A} |
-|  HomeMatic Climate Control Regulator |    Device    | {AA29D32D-A00D-EC8F-4987-5EB071F77011} |
-|    HomeMatic Extended Configurator  | Configurator | {7B8F83C6-E3BC-AC8C-3FFC-D81CAC96D93B} |
+| HomeMatic Climate Control Regulator |    Device    | {AA29D32D-A00D-EC8F-4987-5EB071F77011} |
+|   HomeMatic Extended Configurator   | Configurator | {7B8F83C6-E3BC-AC8C-3FFC-D81CAC96D93B} |
 
 ### 2. Changelog
 
-Version 3.78:
+**Version 3.80:**  
+
+> [!IMPORTANT]
+> **HomeMatic Systemvariablen** wurde neu aufgebaut, vorhandene Instanzen werden beim Update übernommen (Details in der [README](Systemvariablen/#umstellung-von-version-378-und-älter)):
+>
+> - Statt der Auslöser-Variable wird die Taste der virtuellen Fernbedienung eingestellt, die Systemvariablen werden in einer Liste gewählt. Vorhandene Statusvariablen sind dort angehakt.
+> - Das CCU-Programm einmal über die Schaltfläche `CCU-Programm anlegen oder aktualisieren` anlegen. Ein Programm nach der bisherigen Anleitung meldet nicht jede Änderung.
+> - Alarmvariablen werden nicht mehr aktualisiert, sie werden mit dem Konfigurator als Instanzen des neuen Moduls **HomeMatic Alarmvariable** angelegt. Das Alarm-Script entfällt. Die alten Alarmvariablen können danach über eine Schaltfläche gelöscht werden.
+> - Die Profile `HM.SysVar…` werden durch Darstellungen ersetzt und gelöscht.
+> - `HM_WriteValueBoolean2`, `HM_WriteValueInteger2`, `HM_WriteValueFloat2`, `HM_WriteValueString2`, `HM_SystemVariablesTimer` und `HM_AlarmReceipt` der Systemvariablen sind veraltet und werden mit Version 3.90 entfernt.
+>
+> **Alle Module:** Fehler bei der Kommunikation mit der CCU werden jetzt auch beim Übernehmen der Konfiguration und beim Start gemeldet (z.B. Powermeter mit nicht erreichbarem Gerät). Bisher wurden sie dort unterdrückt.
+
+**Neue Module**
+
+* [HomeMatic Alarmvariable](Alarmvariable/): eine Alarmvariable der CCU mit Zustand, erstem und letztem Alarm, Auslöser und Quittieren.  
+
+**Neue Funktionen und Aktionen**
+
+* HomeMatic Systemvariablen: `HM_CreateCCUProgram`, `HM_DeleteCCUProgram`.  
+* HomeMatic Alarmvariable: `HM_ReadAlarm`, `HM_AlarmReceipt`, `HM_CreateCCUProgram`, `HM_DeleteCCUProgram`.  
+
+**Neue Statusvariablen**
+
+* HomeMatic Alarmvariable: `STATE`, `FIRST_TIME`, `LAST_TIME`, `TRIGGER_CHANNEL`, `TRIGGER_ROOM`, `TRIGGER_DATAPOINT`.  
+
+**Geändertes Verhalten**
+
+* HomeMatic Systemvariablen: Nur die gewählten Systemvariablen werden angelegt, auch versteckte stehen zur Auswahl. Gelesen wird mit einer Anfrage an die CCU statt einer je Systemvariable, die CCU liefert nur seit dem letzten Lesen aktualisierte Werte. Abgewählte Statusvariablen werden nur über die Schaltfläche gelöscht.  
+* HomeMatic Systemvariablen: Darstellung Aufzählung mit den Beschriftungen der CCU für Logikwerte und Wertelisten, Werteingabe mit Einheit für Zahlen und Texte.  
+* HomeMatic Systemvariablen und Alarmvariable: Die Auswahl der Taste zeigt, ob und wo eine Taste schon verwendet wird. Eine Taste, die Bedingung eines CCU-Programms oder direkt verknüpft ist, wird abgelehnt. Eine Taste mit Werksnamen erhält den Namen des Programms und beim Löschen ihren Werksnamen zurück.  
+* HomeMatic Extended Konfigurator: Listet die Instanzen der Systemvariablen und je Alarmvariable der CCU eine Zeile. Fehler beim Lesen der CCU erscheinen als Hinweis im Formular.  
+
+**Fehlerbehebungen**
+
+* Alle Module: Bei Bedienaktionen konnten intern unterdrückte Warnungen (z.B. `Object with ident … could not be found`) als Fehlermeldung im Frontend erscheinen.  
+
+**Version 3.78:**  
 
 * [HomeMatic Weather](Weather/): Werte der HmIP-Wetterstationen HmIP-SWO-B, -PL und -PR sowie Sonnenscheindauer und Regenmenge (Summe, heute, gestern) aus den Systemvariablen der CCU.  
 * HomeMatic Extended Konfigurator: Listet jetzt auch die HmIP-Geräte für den Powermeter (z.B. HmIP-PSM, HmIP-ESI) und die HmIP-Wetterstationen.  
@@ -171,16 +214,16 @@ Version 3.78:
 * HomeMatic Powermeter: Die Summenzähler (`*_TOTAL`) konnten um eine Meldung hinterherhängen, wenn sie gelesen wurden, bevor das Programm der CCU sie aktualisiert hatte.  
 * HomeMatic WR-Interface: Neue Instanzen fragen das WR-Interface alle 60 Sekunden ab (bisher abgeschaltet), vorhandene Instanzen behalten ihr Intervall. Ohne verbundenen Homematic Socket läuft kein Abruf und es entstehen keine Fehlermeldungen.  
 
-Version 3.77:
+**Version 3.77:**  
 
 * HomeMatic Powermeter: Neue Statusvariable `ENERGY_COUNTER_FEED_IN_TOTAL` (kWh) für den Einspeisezähler der HmIP-PSMCO und ELV-SH-PSMCI.  
 
-Version 3.76:
+**Version 3.76:**  
 
 * HomeMatic Powermeter: Der HmIP-ESI im Gasmodus wird erkannt (das Gerät liefert `GAS_VOLUME`, aber kein `ENERGY_COUNTER`). Der Summenzähler der CCU zählt dann m³ und erscheint als `GAS_VOLUME_TOTAL` (m³). Bisher wurde er als `ENERGY_COUNTER_TOTAL` durch 1000 geteilt und in kWh angezeigt. Eine bereits vorhandene Variable `ENERGY_COUNTER_TOTAL` wird beim ESI im Gasmodus nicht mehr aktualisiert und kann gelöscht werden.  
 * HomeMatic Powermeter: Die Statusvariablen `ENERGY_COUNTER_TOTAL`, `IEC_ENERGY_COUNTER_TOTAL`, `GAS_ENERGY_COUNTER_TOTAL` und `GAS_VOLUME_TOTAL` werden nur noch angelegt, wenn die CCU die Systemvariable des Summenzählers liefert und der Wert nicht 0 ist. Bereits vorhandene Variablen bleiben erhalten und werden weiter aktualisiert. Ein Ereignis von `GAS_VOLUME` aktualisiert den Summenzähler.  
 
-Version 3.75:
+**Version 3.75:**  
 
 > [!IMPORTANT]
 > * Mindestens IP-Symcon 9.0 erforderlich.
@@ -213,14 +256,14 @@ Version 3.75:
 * Heizungsgeräte: Antworten der CCU mit dem Zeichen `°` (ISO-8859-1) führten dazu, dass die Statusvariablen nicht angelegt wurden.
 * Fehlende Übersetzungen ergänzt.
 
-Version 3.74:
+**Version 3.74:**  
 * Konfiguration der festen Temperaturen lässt beim Bearbeiten keine ungültigen oder doppelten Werte mehr zu.  
 * Übersteigt die Summe der festen Temperaturen mit denen aus den Geräten ausgelesenen Temperaturen die Anzahl von 31, so wird eine Warnung in das Log geschrieben und die Anzahl auf 31 begrenzt (maximale Anzahl der Aktionen von einem Wochenplan).  
 
-Version 3.73:
+**Version 3.73:**  
 * Neue Eigenschaft in der Konfiguration der Heizgruppen und der HM-CC-TC Instanzen, um feste Temperaturen als Auswahl für den Wochenplan einzustellen.  
   
-Version 3.71:
+**Version 3.71:**  
 * Neue Eigenschaft in der Konfiguration der Heizgruppen und der HM-CC-TC Instanzen, um das Verhalten des Modus bei manueller Bedienung der Soll-Temperatur einzustellen.  
 * Fehlermeldungen wenn Aktives Zeitprofil in der Konfiguration abgeschaltet und Zeitplan eingeschaltet war.  
 * Zeitplan schaltet sofort um, wenn sich aktive Zeitprofil ändert.   
@@ -230,11 +273,11 @@ Version 3.71:
 * Homematic Script Instanz liefert jetzt ein Array anstatt JSON als Rückgabewert.  
 * Homematic Script Instanz liefert im Index `['Output']` des Rückgabewertes alle Write/WriteLine Scriptausgaben.  
 
-Version 3.70:
+**Version 3.70:**  
 
 * Zeitprofile der Heizgruppen und des HM-CC-TC werden als Wochenplan in IPS dargestellt und können dort bearbeitet werden.  
 
-Version 3.60:
+**Version 3.60:**  
 
 **Profile vor dem Update löschen:**  
 * Heating.Control.Profile.HmIP
@@ -254,152 +297,152 @@ Anpassungen für die HeatingGroupHmIP:
 HeatingGroup:
 * Instanz funktional hinzugefügt.  
  
-Version 3.50:
+**Version 3.50:**  
 
 * Neu: HomeMatic Paraset Interface Instanz zum lesen und schreiben von Parametern von Geräten.  
 * Neu: HM-Script wird intern über Symcon übertragen.  
 
-Version 3.20:
+**Version 3.20:**  
 
 * Neu: Symcon-Aktionen (Actions) für Homematic-Instanzen.  
 
-Version 3.12:
+**Version 3.12:**  
 
 * Fix: Fehlermeldung bei Senden an Dis-EP-WM55.  
 * Fix: Dokumentation für Dis-EP-WM55 korrigiert.  
 
-Version 3.11:
+**Version 3.11:**  
 
 * Fix: IntervalBox durch NumberSpinner ersetzt.  
 * Fix: Diverse Schreibfehler.  
 
-Version 3.10:  
+**Version 3.10:**  
 
 * Neu: Konfigurator für RF-Interfaces  
 * Fix: HMScript Fehler im Log der CCU bei Verwendung der Systemvariablen-Instanz.  
 
-Version 3.00:  
+**Version 3.00:**  
 
 * Neu: Release für IPS 5.1 und den Module-Store
 
-Version 2.80:
+**Version 2.80:**  
 
 * Neu: Referenzen werden in Symcon registriert.  
 * Fix: IPS_SetProperty und IPS_Applychanges auf sich selbst entfernt.  
 
-Version 2.65:
+**Version 2.65:**  
 
 * Fix: Keine Verbindung mehr bei CCU1 und CCU2.  
 
-Version 2.61:
+**Version 2.61:**  
 
 * Fix: memory exhausted error.  
 * Fix: Fehler bei der Verarbeitung von AlarmVariablen bei der CCU3.  
 * Neu: SSL und Authentifizierung wird für CCU3 unterstützt (sofern in IPS verfügbar!).  
 
-Version 2.60:
+**Version 2.60:**  
 
 * Neu: Modul intern überarbeitet.  
 * Neu: Diverse Anpassungen für IPS 5.0 und neuer.  
 * Fix: HmScript Fehler im Log der CCU bei Verwendung der PowerMeter-Instanz.  
 * Fix: Fehlermeldung bei AlarmScriptID in der Instanz Systemvariablen.  
 
-Version 2.50:  
+**Version 2.50:  
 
 * Fix: Für PHP 7.3
 
-Version 2.44:  
+**Version 2.44:  
 
 * Fix: ~String-Profil entfernt  
 
-Version 2.43:  
+**Version 2.43:  
 
 * Fix: Für IPS 5.0  
 
-Version 2.42:  
+**Version 2.42:  
 
 * Fix: RF-Splitter hat beim anlegen von RF-Interface Instanzen der CCU1 Fehler gemeldet.  
 * Fix: Icon ON/OFF vertauscht in der Display-Statusanzeige.  
 
-Version 2.40:  
+**Version 2.40:  
 
 * Neu: Übersetzungen für IPS 4.3  
 * Neu: Doku überarbeitet  
 * Fix: Systemvariablen vom Typ Float konnten falsch übertragen werden.  
 
-Version 2.35:  
+**Version 2.35:  
 
 * Fix: Dis-EP-WM55 hat nur Icons von 0-3 angenommen.  
 
-Version 2.31:  
+**Version 2.31:  
 
 * Fix: Fehlerbehandlung verbessert.  
 
-Version 2.30:  
+**Version 2.30:  
 
 * Fix: Fehlerbehandlung verbessert.  
 * Fix: Eventuelle XML-Fehler durch die CCU versucht abzufangen.  
 
-Version 2.22:  
+**Version 2.22:  
 
 * Fix: HomeMatic Remote-Script Instanzen belegten unnötig PHP-Slots.  
 * Fix: Fehlermeldung im HomeMatic Systemvariablen durch eine falsche Fehlermeldung wurde ein eigentlicher Fehler überdeckt.  
 
-Version 2.20:  
+**Version 2.20:  
 
 * Neu: Dis-EP-WM55 Ermöglicht es per PHP die Anzeige zu beschreiben.
 * Neu: Doku für HomeMatic WR-Interface ergänzt.
 
-Version 2.10:  
+**Version 2.10:  
 
 * Neu: HomeMatic WR-Interface zeigt den Status des Wired-Interfaces der CCU an.  
 * Neu: Alle 'CONNECTED' Statusvariablen der CCU-Interfaces werden immer aktualisiert um Ausfälle besser detektieren zu können.  
 * Fix: Instanzen haben nicht erkannt wenn sich der Parent geändert hat.  
 * Fix: Timer erzeugen keine Fehlermeldungen mehr.  
 
-Version 2.07:  
+**Version 2.07:  
 
 * Fix: Summenzähler für Powermeter hat bei GAS falsche Werte geliefert.  
 * Fix: Dis-WM55 ohne Funktion.  
 * Fix: Dis-WM55 hat immer das Display-Script überschrieben.  
 * Neu: Mehr Debug-Ausgaben bei Dis-WM55.  
 
-Version 2.06:  
+**Version 2.06:  
 
 * Fix: Doku geändert (Final).  
 * Fix: GUID für Empfang vom RF-Interface Splitter.  
 * Fix: Trigger für Powermeter und Systemvariablen waren unter Umständen falsch.  
 * Fix: HM-Systemvariablen vom Typ String wurden falsch dargestellt, wenn Umlaute enthalten waren.  
 
-Version 2.05:  
+**Version 2.05:  
 
 * Fix: Unter Umständen konnte die Adresse der CCU nicht aus dem HomeMatic-Socket ermitteln werden.  
 
-Version 2.04:  
+**Version 2.04:  
 
 * Fix: RFInstance-Splitter hat fehler gemeldet beim Anlegen von Instanzen, wenn keine vorhanden waren.  
 
-Version 2.03:  
+**Version 2.03:  
 
 * Fix: Doku geändert (Teil1).
 
-Version 2.02:  
+**Version 2.02:  
 
 * Fix: Powermeter-Instanz kann jetzt auch mit allen Varianten von HM-ES-TX-WM umgehen.  
 * Fix: Powermeter-Instanz unterstützt jetzt auch HMIP-PSM und ähnliche HMIP-'Mess-Steckdosen'  
 
-Version 2.01:  
+**Version 2.01:  
 
 * Neu: RF-Interface-Splitter zum auslesen der RF-Interfaces aus der CCU.  
 * Neu: RF-Interface zum darstellen der Werte eines RF-Interfaces der CCU.  
 
-Version 2.0:  
+**Version 2.0:  
 
-Version 1.5:  
+**Version 1.5:  
 
-Version 1.3:  
+**Version 1.3:  
 
-Version 1.1:  
+**Version 1.1:  
 
 ## 6. Spenden  
   

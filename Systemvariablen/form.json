@@ -1,14 +1,20 @@
 {
     "elements": [
         {
-            "name": "EventID",
-            "type": "SelectVariable",
-            "caption": "Trigger for refresh"
+            "name": "Address",
+            "type": "Select",
+            "caption": "Virtual key of the CCU",
+            "width": "850px",
+            "options": []
+        },
+        {
+            "type": "Label",
+            "caption": "The CCU program presses this key on every update of the selected system variables. Several instances may share one key."
         },
         {
             "name": "Interval",
             "type": "NumberSpinner",
-            "caption": "Interval",
+            "caption": "Additional cyclic reading (0 = off)",
             "suffix": "seconds",
             "minimum": 0,
             "maximum": 86400
@@ -19,14 +25,59 @@
             "caption": "emulate state"
         },
         {
-            "name": "EnableAlarmDP",
-            "type": "CheckBox",
-            "caption": "enable alarm variable"
+            "name": "Variables",
+            "type": "List",
+            "caption": "System variables of the CCU",
+            "rowCount": 15,
+            "add": false,
+            "delete": false,
+            "onEdit": "IPS_RequestAction($id, 'VariableEdited', json_encode([$Variables['Id'], $Variables['Use']]));",
+            "loadValuesFromConfiguration": false,
+            "sort": {
+                "column": "Name",
+                "direction": "ascending"
+            },
+            "columns": [
+                {
+                    "caption": "Create",
+                    "name": "Use",
+                    "width": "80px",
+                    "save": true,
+                    "add": false,
+                    "edit": {
+                        "type": "CheckBox"
+                    }
+                },
+                {
+                    "caption": "Name",
+                    "name": "Name",
+                    "width": "auto",
+                    "save": false
+                },
+                {
+                    "caption": "Type",
+                    "name": "Type",
+                    "width": "120px",
+                    "save": false
+                },
+                {
+                    "caption": "Hidden",
+                    "name": "Internal",
+                    "width": "80px",
+                    "save": false
+                },
+                {
+                    "caption": "CCU ID",
+                    "name": "Id",
+                    "width": "80px",
+                    "save": true
+                }
+            ],
+            "values": []
         },
         {
-            "name": "AlarmScriptID",
-            "type": "SelectScript",
-            "caption": "Alarmmanagement-Script"
+            "type": "Label",
+            "caption": "Alarm variables are created as instances of the module HomeMatic Alarmvariable with the configurator."
         }
     ],
     "status": [
@@ -38,27 +89,79 @@
         {
             "code": 104,
             "icon": "inactive",
-            "caption": "No trigger or interval active."
-        },
-        {
-            "code": 202,
-            "icon": "error",
-            "caption": "Interval to small."
+            "caption": "No virtual key and no interval: values are only read on request."
         },
         {
             "code": 203,
-            "icon": "inactive",
+            "icon": "error",
             "caption": "Interval smaller as 5 not possible."
         }
     ],
     "actions": [
         {
-            "type": "TestCenter"
+            "type": "PopupAlert",
+            "name": "DeselectHint",
+            "visible": false,
+            "popup": {
+                "items": [
+                    {
+                        "type": "Label",
+                        "caption": "Deselected system variables are not deleted. After applying the changes their status variables are no longer updated. They can be deleted with the button for status variables without selection."
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Label",
+            "name": "ProgramState",
+            "caption": ""
+        },
+        {
+            "type": "RowLayout",
+            "items": [
+                {
+                    "type": "Button",
+                    "caption": "Create or update CCU program",
+                    "confirm": "The CCU program is created or replaced for the saved selection and key. A key with its factory name gets the name of the program. Apply changes first. Continue?",
+                    "onClick": "echo HM_CreateCCUProgram($id); IPS_RequestAction($id, 'ReloadForm', true);"
+                },
+                {
+                    "type": "Button",
+                    "caption": "Delete CCU program",
+                    "confirm": "Delete the CCU program of this instance? The key gets its factory name back if it still has the name of the program.",
+                    "onClick": "echo HM_DeleteCCUProgram($id); IPS_RequestAction($id, 'ReloadForm', true);"
+                },
+                {
+                    "type": "Button",
+                    "caption": "read CCU",
+                    "onClick": "HM_ReadSystemVariables($id);"
+                }
+            ]
         },
         {
             "type": "Button",
-            "caption": "read CCU",
-            "onClick": "HM_ReadSystemVariables($id);"
+            "name": "DeleteUnusedVariables",
+            "caption": "",
+            "enabled": false,
+            "confirm": "Delete the status variables of all system variables without selection? Their archived data will be lost.",
+            "onClick": "IPS_RequestAction($id, 'DeleteUnusedVariables', true);"
+        },
+        {
+            "type": "Label",
+            "name": "LegacyAlarmHint",
+            "visible": false,
+            "caption": "This instance still contains alarm variables of version 3.78 and older. They are no longer updated. Create the alarm variables with the configurator as instances of HomeMatic Alarmvariable."
+        },
+        {
+            "type": "Button",
+            "name": "DeleteLegacyAlarmVariables",
+            "caption": "Delete old alarm variables",
+            "visible": false,
+            "confirm": "Delete the old alarm variables including their sub variables? Their archived data will be lost.",
+            "onClick": "IPS_RequestAction($id, 'DeleteLegacyAlarmVariables', true);"
+        },
+        {
+            "type": "TestCenter"
         },
         {
             "type": "Label",

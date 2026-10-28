@@ -80,7 +80,7 @@ class HomeMaticClimateControlRegulator extends HMHeatingDevice
                     return;
                 case \HMExtended\ClimacontrolRegulator::PARTY_END_TIME: // Sonderfall Party Variablen
                     if ($Value < time()) {
-                        trigger_error($this->Translate('Time cannot be in the past'), E_USER_NOTICE);
+                        echo $this->Translate('Time cannot be in the past') . PHP_EOL;
                         return;
                     }
                     $d = (new DateTime())->setTimestamp((int) $Value);
@@ -89,7 +89,7 @@ class HomeMaticClimateControlRegulator extends HMHeatingDevice
                     $d->setTime(0, 0, 0, 0);
                     $days = ((new DateTime())->setTime(0, 0, 0, 0))->diff($d);
                     if ($days->days > 200) {
-                        trigger_error($this->Translate('Time too far in the future'), E_USER_NOTICE);
+                        echo $this->Translate('Time too far in the future') . PHP_EOL;
                         return;
                     }
                     $d->setTime($CalcHour, ($CalcMin >= 30) ? 30 : 0, 0, 0);
@@ -112,7 +112,7 @@ class HomeMaticClimateControlRegulator extends HMHeatingDevice
             }
             return;
         }
-        trigger_error($this->Translate('Invalid Ident.'), E_USER_NOTICE);
+        echo $this->Translate('Invalid Ident.') . PHP_EOL;
         return;
     }
 

@@ -61,8 +61,9 @@ class ePaperStatusAnzeigeTest extends HomematicModuleTestCase
     public function testInvalidAddressDoesNotSend(): void
     {
         $this->configure('NEQ0000001');
-        $this->assertFalse(@$this->display()->WriteValueDisplayLine(1, 'Hallo', 2));
+        $this->assertFalse($this->display()->WriteValueDisplayLine(1, 'Hallo', 2));
         $this->assertCount(0, FakeHomematicIO::$Requests);
+        $this->expectOutputString('Invalid address, the address must contain the channel.' . PHP_EOL);
     }
 
     public function testTooLongTextIsCutToTwelveCharacters(): void
@@ -77,20 +78,25 @@ class ePaperStatusAnzeigeTest extends HomematicModuleTestCase
     public function testInvalidLineIsRejected(): void
     {
         $this->configure(self::Address);
-        $this->assertFalse(@$this->display()->WriteValueDisplayLine(0, 'Hallo', 0));
-        $this->assertFalse(@$this->display()->WriteValueDisplayLine(4, 'Hallo', 0));
-        $this->assertFalse(@$this->display()->WriteValueDisplayLineEx(4, 'Hallo', 0, 0, 0, 0, 0));
+        $this->assertFalse($this->display()->WriteValueDisplayLine(0, 'Hallo', 0));
+        $this->assertFalse($this->display()->WriteValueDisplayLine(4, 'Hallo', 0));
+        $this->assertFalse($this->display()->WriteValueDisplayLineEx(4, 'Hallo', 0, 0, 0, 0, 0));
         $this->assertCount(0, FakeHomematicIO::$Requests);
+        $this->expectOutputString(str_repeat('Parameter Line out of range.' . PHP_EOL, 3));
     }
 
     public function testInvalidSignalParametersAreRejected(): void
     {
         $this->configure(self::Address);
-        $this->assertFalse(@$this->display()->WriteValueDisplayNotify(7, 0, 0, 0));
-        $this->assertFalse(@$this->display()->WriteValueDisplayNotify(0, 16, 0, 0));
-        $this->assertFalse(@$this->display()->WriteValueDisplayNotify(0, 0, 16, 0));
-        $this->assertFalse(@$this->display()->WriteValueDisplayNotify(0, 0, 0, 4));
+        $this->assertFalse($this->display()->WriteValueDisplayNotify(7, 0, 0, 0));
+        $this->assertFalse($this->display()->WriteValueDisplayNotify(0, 16, 0, 0));
+        $this->assertFalse($this->display()->WriteValueDisplayNotify(0, 0, 16, 0));
+        $this->assertFalse($this->display()->WriteValueDisplayNotify(0, 0, 0, 4));
         $this->assertCount(0, FakeHomematicIO::$Requests);
+        $this->expectOutputString(
+            'Parameter Chime out of range.' . PHP_EOL . 'Parameter Repeat out of range.' . PHP_EOL .
+            'Parameter Wait out of range.' . PHP_EOL . 'Parameter Color out of range.' . PHP_EOL
+        );
     }
 
     public function testUmlautsAreConverted(): void
@@ -104,8 +110,9 @@ class ePaperStatusAnzeigeTest extends HomematicModuleTestCase
     public function testInvalidIconIsRejected(): void
     {
         $this->configure(self::Address);
-        $this->assertFalse(@$this->display()->WriteValueDisplayLine(1, 'Hallo', 10));
+        $this->assertFalse($this->display()->WriteValueDisplayLine(1, 'Hallo', 10));
         $this->assertCount(0, FakeHomematicIO::$Requests);
+        $this->expectOutputString('Parameter Icon out of range.' . PHP_EOL);
     }
 
     private function configure(string $Address): void

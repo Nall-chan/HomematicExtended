@@ -113,10 +113,11 @@ class HomeMaticWeather extends HMBase
         } else {
             $this->SetReceiveDataFilter('.*9999999999.*');
         }
+        // Fehler werden gemeldet, nach dem ersten Fehler folgt keine weitere Anfrage.
         if (($Address) && ($this->HasActiveParent())) {
-            @$this->CreateVariablesFromValues();
-            @$this->GetValuesAndSetVariable();
-            @$this->ReadSystemVariables();
+            if ($this->CreateVariablesFromValues() && $this->GetValuesAndSetVariable()) {
+                $this->ReadSystemVariables();
+            }
         }
     }
 
@@ -182,11 +183,16 @@ class HomeMaticWeather extends HMBase
 
     /**
      * Legt für alle Datenpunkte des Kanals (Paramset VALUES) Statusvariablen an.
+     *
+     * @return bool true, wenn die CCU die Beschreibung geliefert hat.
      */
-    private function CreateVariablesFromValues(): void
+    private function CreateVariablesFromValues(): bool
     {
         $AddressWithChannel = $this->ReadPropertyString(\HMExtended\Device\Property::Address) . static::ValuesChannel;
         $Result = $this->GetParamsetDescription(\HMExtended\CCU::VALUES, $AddressWithChannel);
+        if (count($Result) == 0) {
+            return false;
+        }
         foreach ($Result as $Variable) {
             $Ident = $Variable['ID'];
             if (!array_key_exists($Variable['TYPE'], self::HmTypeToIpsType)) {
@@ -199,6 +205,7 @@ class HomeMaticWeather extends HMBase
                 $this->EnableAction($Ident);
             }
         }
+        return true;
     }
 
     /**

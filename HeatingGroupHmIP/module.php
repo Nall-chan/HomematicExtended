@@ -78,7 +78,7 @@ class HomeMaticIPHeatingGroup extends HMHeatingDevice
                     switch ($Value) {
                         case 2: // Sonderfall Mode Party
                             if (!$this->ReadPropertyBoolean(self::EnablePartyProperty)) {
-                                trigger_error($this->Translate('Party is disabled in config.'), E_USER_NOTICE);
+                                echo $this->Translate('Party is disabled in config.') . PHP_EOL;
                                 return;
                             }
                             $Start = (new DateTime())->setTimestamp((int) $this->GetValue(\HMExtended\HeatingGroupHmIP::PARTY_TIME_START));
@@ -113,7 +113,7 @@ class HomeMaticIPHeatingGroup extends HMHeatingDevice
             }
             return;
         }
-        trigger_error($this->Translate('Invalid Ident.'), E_USER_NOTICE);
+        echo $this->Translate('Invalid Ident.') . PHP_EOL;
         return;
     }
 

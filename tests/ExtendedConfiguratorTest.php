@@ -27,6 +27,23 @@ class ConfiguratorTestScript extends IPSModuleStrict
     }
 }
 
+/**
+ * Platzhalter für das Modul Alarmvariable, der Konfigurator liest die Eigenschaft AlarmID.
+ */
+class ConfiguratorTestAlarm extends IPSModuleStrict
+{
+    public function Create(): void
+    {
+        parent::Create();
+        $this->RegisterPropertyInteger(\HMExtended\Device\Property::AlarmID, 0);
+    }
+
+    protected function getTime(): int
+    {
+        return 0;
+    }
+}
+
 class ExtendedConfiguratorTest extends HomematicModuleTestCase
 {
     private int $IoId;
@@ -36,7 +53,7 @@ class ExtendedConfiguratorTest extends HomematicModuleTestCase
     {
         parent::setUp();
         $this->IoId = $this->createFakeIo();
-        foreach ([[\HMExtended\GUID::Programme, 'ConfiguratorTestProgramme', 'CTPR'], [\HMExtended\GUID::RemoteScript, 'ConfiguratorTestScript', 'CTRS'], [\HMExtended\GUID::WR_Interface, 'ConfiguratorTestScript', 'CTWR'], [\HMExtended\GUID::HeatingGroup, 'ConfiguratorTestScript', 'CTHG'], [\HMExtended\GUID::HeatingGroupHmIP, 'ConfiguratorTestScript', 'CTHI']] as [$Guid, $Name, $Prefix]) {
+        foreach ([[\HMExtended\GUID::Programme, 'ConfiguratorTestProgramme', 'CTPR'], [\HMExtended\GUID::RemoteScript, 'ConfiguratorTestScript', 'CTRS'], [\HMExtended\GUID::WR_Interface, 'ConfiguratorTestScript', 'CTWR'], [\HMExtended\GUID::HeatingGroup, 'ConfiguratorTestScript', 'CTHG'], [\HMExtended\GUID::HeatingGroupHmIP, 'ConfiguratorTestScript', 'CTHI'], [\HMExtended\GUID::Systemvariablen, 'ConfiguratorTestScript', 'CTSV'], [\HMExtended\GUID::Alarmvariable, 'ConfiguratorTestAlarm', 'CTAV']] as [$Guid, $Name, $Prefix]) {
             $this->registerTestModule($Name, $Guid, MODULETYPE_DEVICE, $Prefix, [
                 'parentRequirements' => [\HMExtended\GUID::SendRpcToIO, \HMExtended\GUID::SendScriptToIO],
                 'implemented'        => [self::DeviceDataFlow]
@@ -366,6 +383,40 @@ class ExtendedConfiguratorTest extends HomematicModuleTestCase
         $Rows = $this->rowsByAddress();
         $this->assertArrayHasKey('GW1', $Rows);
         $this->assertArrayNotHasKey('MEQ0460859', $Rows);
+    }
+
+    public function testSystemVariablesAndAlarmRows(): void
+    {
+        $Xml = '<xml><exec>/x</exec><sessionId></sessionId><httpUserAgent>x</httpUserAgent></xml>';
+        $List = "950\tAnwesenheit\t1089\t2\t2\tfalse\t65535\t\t\t\tabwesend\tanwesend\t\r\n" .
+            "1253\tExt. Alarm Haus\t2113\t2\t6\tfalse\t65535\t\t\t\tnicht ausgel\xF6st\tausgel\xF6st\t\r\n" .
+            "9875\tInt. Alarm Haus\t2113\t2\t6\tfalse\t65535\t\t\t\tnicht ausgel\xF6st\tausgel\xF6st\t\r\n" .
+            "27852\tWatchDog: chronyd-highoffset\t2113\t2\t6\ttrue\t65535\t\t\t\tnicht ausgel\xF6st\tausgel\xF6st\t\r\n";
+        $Existing = IPS_CreateInstance(\HMExtended\GUID::Alarmvariable);
+        IPS_ConnectInstance($Existing, $this->IoId);
+        IPS_SetName($Existing, 'Alarm intern');
+        $Orphan = IPS_CreateInstance(\HMExtended\GUID::Alarmvariable);
+        IPS_ConnectInstance($Orphan, $this->IoId);
+        IPS_SetProperty($Existing, \HMExtended\Device\Property::AlarmID, 9875);
+        IPS_ApplyChanges($Existing);
+        IPS_SetProperty($Orphan, \HMExtended\Device\Property::AlarmID, 4711);
+        IPS_ApplyChanges($Orphan);
+        FakeHomematicIO::$ScriptResponses = [FakeHomematicIO::$ScriptResponse, 'x' . $Xml, $List . $Xml];
+        $Rows = $this->getRows();
+        $SystemVariables = array_values(array_filter($Rows, fn ($Row) => ($Row['create']['moduleID'] ?? '') === \HMExtended\GUID::Systemvariablen));
+        $this->assertCount(1, $SystemVariables);
+        $this->assertSame(0, $SystemVariables[0]['instanceID']);
+        $Alarms = array_column(array_filter($Rows, fn ($Row) => ($Row['create']['moduleID'] ?? '') === \HMExtended\GUID::Alarmvariable), null, 'name');
+        $this->assertSame(['Ext. Alarm Haus', 'Alarm intern', 'WatchDog: chronyd-highoffset'], array_keys($Alarms));
+        $this->assertSame(1253, $Alarms['Ext. Alarm Haus']['create']['configuration']['AlarmID']);
+        $this->assertSame($Existing, $Alarms['Alarm intern']['instanceID']);
+        // Die Spalte Adresse zeigt den Namen auf der CCU, auch wenn die Instanz anders heißt.
+        $this->assertSame('Int. Alarm Haus', $Alarms['Alarm intern']['address']);
+        $this->assertSame('Ext. Alarm Haus', $Alarms['Ext. Alarm Haus']['address']);
+        $this->assertStringEndsWith('(internal)', $Alarms['WatchDog: chronyd-highoffset']['type']);
+        $this->assertStringNotContainsString('internal', $Alarms['Ext. Alarm Haus']['type']);
+        $OrphanRows = array_values(array_filter($Rows, fn ($Row) => $Row['instanceID'] === $Orphan));
+        $this->assertSame('Alarm variable not found on the CCU', $OrphanRows[0]['type']);
     }
 
     public function testRowCountIsSet(): void

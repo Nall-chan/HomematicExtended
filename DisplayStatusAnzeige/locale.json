@@ -13,6 +13,7 @@
             "This module is free for non-commercial use,\r\nDonations in support of the author are accepted here:": "Dieses Modul ist für die nicht kommerzielle Nutzung kostenlos,\r\nSchenkungen als Unterstützung für den Autor werden hier akzeptiert:",
             "Error on %s": "Fehler bei %s",
             "Invalid response from CCU.": "Ungültige Antwort der CCU.",
+            "The CCU did not answer the HM-Script.": "Die CCU hat das HM-Script nicht beantwortet.",
             "No display address entered.": "Keine Adresse des Displays eingetragen.",
             "One or more invalid triggers in the expert settings.": "Ein oder mehrere ungültige Auslöser in den Experteneinstellungen.",
             "Expert settings": "Experteneinstellungen",
