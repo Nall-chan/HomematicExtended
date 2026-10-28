@@ -437,7 +437,7 @@ namespace HMExtended
                 '',
                 [
                     [0, 'Status unknown', '', -1],
-                    [1, 'not installed', '', -1],
+                    [1, 'Run to start position', '', -1],
                     [2, 'wait for adaptation', '', -1],
                     [3, 'Adaptation in progress', '', -1],
                     [4, 'Adaptation done', '', -1],
@@ -861,15 +861,13 @@ namespace HMExtended
                     VARIABLETYPE_INTEGER,
                     '~UnixTimestamp',
                     true,
-                    'Holiday/Party end',
-                    true
+                    'Holiday/Party end'
                 ],
                 ClimacontrolRegulator::TEMPERATUR_PARTY_VALUE => [
                     VARIABLETYPE_FLOAT,
                     '~Temperature.HM',
                     true,
-                    'Holiday/Party set point temperature',
-                    true
+                    'Holiday/Party set point temperature'
                 ],
                 ClimacontrolRegulator::PARTY_END_DAY => [
                     Variables::VARIABLETYPE_NONE,
@@ -952,9 +950,10 @@ namespace HMExtended
                     true,
                     'Decalcification time'
                 ],
+                // Die Werteliste der CCU beginnt bei HM-CC-RT-DN und HM-CC-VG-1 mit SATURDAY (bei HmIP mit SUNDAY).
                 HeatingGroup::DECALCIFICATION_WEEKDAY=> [
                     VARIABLETYPE_INTEGER,
-                    'DateTime.DoW.Sunday',
+                    'DateTime.DoW.Saturday',
                     true,
                     'Decalcification day'
                 ],

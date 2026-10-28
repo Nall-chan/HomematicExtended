@@ -607,7 +607,7 @@ class HMHeatingDevice extends HMBase
                     $VarType = \HMExtended\ParamSet::$Variables[static::DeviceTyp][$Ident][0];
                 }
 
-                $Property = isset(\HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][4]) ? \HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][4] : $Ident;
+                $Property = isset(\HMExtended\ParamSet::$Variables[static::DeviceTyp][$Ident][4]) ? \HMExtended\ParamSet::$Variables[static::DeviceTyp][$Ident][4] : $Ident;
                 if (array_key_exists($Property, \HMExtended\Property::$Properties[static::DeviceTyp])) {
                     if (!$this->ReadPropertyBoolean(self::EnablePrefix . $Property)) {
                         continue;

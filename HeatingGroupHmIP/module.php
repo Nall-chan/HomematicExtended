@@ -137,7 +137,8 @@ class HomeMaticIPHeatingGroup extends HMHeatingDevice
     }
 
     /**
-     * Wandelt die Party-Zeiten (Format `Y_m_d H:i`) in Zeitstempel. Nie gesetzte Zeiten (`1999_11_30 00:00`) werden zur aktuellen Zeit.
+     * Wandelt die Party-Zeiten (Format `Y_m_d H:i`) in Zeitstempel. Nie gesetzte Zeiten werden zur aktuellen Zeit:
+     * Die CCU liefert dann den kleinsten Wert des Datenpunktes (`2000_01_01 00:00`, ältere Firmware `1999_11_30 00:00`).
      *
      * @param string $Ident Ident der Statusvariable.
      * @param mixed $Value Der Wert der CCU.
@@ -147,12 +148,8 @@ class HomeMaticIPHeatingGroup extends HMHeatingDevice
         switch ($Ident) {
             case \HMExtended\HeatingGroupHmIP::PARTY_TIME_START:
             case \HMExtended\HeatingGroupHmIP::PARTY_TIME_END:
-                if ($Value == '1999_11_30 00:00') {
-                    $Value = time();
-                } else {
-                    $d = DateTime::createFromFormat('Y_m_d H:i', $Value);
-                    $Value = ($d->getTimestamp() < 7200) ? time() : $d->getTimestamp();
-                }
+                $d = DateTime::createFromFormat('Y_m_d H:i', (string) $Value);
+                $Value = (($d === false) || ((int) $d->format('Y') <= 2000)) ? time() : $d->getTimestamp();
                 break;
         }
         parent::SetVariable($Ident, $Value);

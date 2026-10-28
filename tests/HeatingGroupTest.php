@@ -62,6 +62,7 @@ class HeatingGroupTest extends HeatingTestCase
         IPS_SetProperty($this->DeviceId, \HMExtended\Device\Property::Address, 'INT0000001');
         IPS_SetProperty($this->DeviceId, 'enable_DECALCIFICATION_TIME', true);
         IPS_SetProperty($this->DeviceId, 'enable_BOOST_TIME_PERIOD', true);
+        IPS_SetProperty($this->DeviceId, 'enable_DECALCIFICATION_WEEKDAY', true);
         IPS_ApplyChanges($this->DeviceId);
         FakeHomematicIO::$Requests = [];
     }
@@ -143,6 +144,22 @@ class HeatingGroupTest extends HeatingTestCase
         $this->action('WEEK_PROGRAM_POINTER', 2);
         $this->assertSame(['WEEK_PROGRAM_POINTER' => 1], $this->lastPut('MASTER'));
         $this->assertSame(2, GetValueInteger($this->variable('WEEK_PROGRAM_POINTER')));
+    }
+
+    public function testDecalcificationWeekdayStartsWithSaturday(): void
+    {
+        // Werteliste der CCU (HM-CC-RT-DN, HM-CC-VG-1): SATURDAY, SUNDAY, MONDAY, …
+        $VariableId = $this->variable('DECALCIFICATION_WEEKDAY');
+        $this->assertSame('DateTime.DoW.Saturday', IPS_GetVariable($VariableId)['VariableProfile']);
+        $this->assertSame(6, GetValueInteger($VariableId));
+    }
+
+    public function testPartyPartWithoutTimestampVariableIsIgnored(): void
+    {
+        IPS_DeleteVariable($this->variable('PARTY_STOP_TIME'));
+        $this->device()->ReceiveData(json_encode(['VariableName' => 'PARTY_STOP_DAY', 'VariableValue' => 9]));
+        $this->device()->ReceiveData(json_encode(['VariableName' => 'PARTY_STOP_TIME', 'VariableValue' => 600]));
+        $this->assertFalse(@IPS_GetObjectIDByIdent('PARTY_STOP_TIME', $this->DeviceId));
     }
 
     public function testInvalidIdentIsReportedToUser(): void

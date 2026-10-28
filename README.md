@@ -169,6 +169,18 @@ Erweitert IPS um die native Unterstützung von:
 
 ### 2. Changelog
 
+**Version 3.81:**  
+
+**Behobene falsche Werte in Statusvariablen**
+
+* HomeMatic Heating Device (HM-CC-RT-DN) und HomeMatic Heating Group (HM-CC-VG-1): Der Entkalkungstag war um einen Tag verschoben (Anzeige und Schreiben).  
+* HomeMatic IP Heating Group: Der Ventilzustand `Fährt in Startposition` wurde als `nicht installiert` angezeigt. Eine nie gesetzte Urlaub/Party-Zeit wurde als 01.01.2000 angezeigt.  
+
+**Fehlerbehebungen**
+
+* HomeMatic Climate Control Regulator (HM-CC-TC): Abgewählte Urlaub/Party-Variablen wurden nicht entfernt und blieben bedienbar. Das Ende von Urlaub/Party wurde mit falschem Datentyp für die Tage gesendet.  
+* HomeMatic Heating Device und HomeMatic Heating Group: Meldungen der CCU zu Urlaub/Party erzeugten Warnungen im Log, wenn die zugehörige Statusvariable fehlte.  
+
 **Version 3.80:**  
 
 > [!IMPORTANT]

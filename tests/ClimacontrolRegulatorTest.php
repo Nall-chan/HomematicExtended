@@ -30,7 +30,7 @@ class ClimacontrolRegulatorTest extends HeatingTestCase
                 'MODE_TEMPERATUR_REGULATOR' => 'INTEGER',
                 'DECALCIFICATION_DAY'       => 'INTEGER',
                 'DECALCIFICATION_HOUR'      => 'INTEGER',
-                'PARTY_END_DAY'             => 'INTEGER',
+                'PARTY_END_DAY'             => 'FLOAT',
                 'TEMPERATUR_PARTY_VALUE'    => 'FLOAT'
             ]),
             'getParamset:MASTER' => array_merge([
@@ -38,7 +38,7 @@ class ClimacontrolRegulatorTest extends HeatingTestCase
                 'DECALCIFICATION_DAY'       => 6,
                 'DECALCIFICATION_HOUR'      => 22,
                 'DECALCIFICATION_MINUTE'    => 30,
-                'PARTY_END_DAY'             => 3,
+                'PARTY_END_DAY'             => 3.0,
                 'PARTY_END_HOUR'            => 18,
                 'PARTY_END_MINUTE'          => 1,
                 'TEMPERATUR_PARTY_VALUE'    => 17.0
@@ -102,12 +102,25 @@ class ClimacontrolRegulatorTest extends HeatingTestCase
         $this->assertSame('', $this->action('PARTY_END_TIME', $Target->getTimestamp()));
         $Put = $this->lastPut('MASTER');
         $this->assertSame(3, $Put['MODE_TEMPERATUR_REGULATOR']);
-        $this->assertEquals(2, $Put['PARTY_END_DAY']);
+        // PARTY_END_DAY ist auf der CCU ein FLOAT.
+        $this->assertSame(2.0, $Put['PARTY_END_DAY']);
         $this->assertSame($ExpectedFlag, $Put['PARTY_END_MINUTE']);
         $this->assertSame(18, $Put['PARTY_END_HOUR']);
         $this->assertSame(3, GetValueInteger($this->variable('MODE_TEMPERATUR_REGULATOR')));
         $Expected = (new DateTime())->setTime(18, $ExpectedMinute, 0, 0)->add(new DateInterval('P2D'));
         $this->assertSame($Expected->getTimestamp(), GetValueInteger($this->variable('PARTY_END_TIME')));
+    }
+
+    public function testDisabledPartyRemovesVariablesAndBlocksActions(): void
+    {
+        IPS_SetProperty($this->DeviceId, 'enable_PARTY_END_TIME', false);
+        IPS_SetProperty($this->DeviceId, 'enable_TEMPERATUR_PARTY_VALUE', false);
+        IPS_ApplyChanges($this->DeviceId);
+        $this->assertFalse(@IPS_GetObjectIDByIdent('PARTY_END_TIME', $this->DeviceId));
+        $this->assertFalse(@IPS_GetObjectIDByIdent('TEMPERATUR_PARTY_VALUE', $this->DeviceId));
+        FakeHomematicIO::$Requests = [];
+        $this->assertStringContainsString('Variable is disabled in config.', $this->action('TEMPERATUR_PARTY_VALUE', 18.0));
+        $this->assertCount(0, $this->requests('putParamset'));
     }
 
     public function testPartyEndInThePastIsRejected(): void

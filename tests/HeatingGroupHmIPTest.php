@@ -40,7 +40,7 @@ class HeatingGroupHmIPTest extends HeatingTestCase
                 'SET_POINT_TEMPERATURE'       => 21.0,
                 'PARTY_SET_POINT_TEMPERATURE' => 17.0,
                 'PARTY_TIME_START'            => '2026_03_05 09:30',
-                'PARTY_TIME_END'              => '1999_11_30 00:00'
+                'PARTY_TIME_END'              => '2000_01_01 00:00'
             ],
             'getParamsetDescription:MASTER' => $this->description([
                 'DECALCIFICATION_TIME'    => 'INTEGER',
@@ -66,7 +66,15 @@ class HeatingGroupHmIPTest extends HeatingTestCase
 
     public function testNeverSetPartyTimeBecomesNow(): void
     {
-        // Die CCU liefert 1999_11_30 00:00, wenn nie eine Zeit gesetzt wurde.
+        // Die CCU liefert den kleinsten Wert des Datenpunktes (2000_01_01 00:00), wenn nie eine Zeit gesetzt wurde.
+        $this->assertEqualsWithDelta(time(), GetValueInteger($this->variable('PARTY_TIME_END')), 5);
+    }
+
+    public function testNeverSetPartyTimeOfOldFirmwareBecomesNow(): void
+    {
+        $this->device()->ReceiveData(json_encode(['VariableName' => 'PARTY_TIME_END', 'VariableValue' => '2026_03_05 09:30']));
+        $this->assertSame(mktime(9, 30, 0, 3, 5, 2026), GetValueInteger($this->variable('PARTY_TIME_END')));
+        $this->device()->ReceiveData(json_encode(['VariableName' => 'PARTY_TIME_END', 'VariableValue' => '1999_11_30 00:00']));
         $this->assertEqualsWithDelta(time(), GetValueInteger($this->variable('PARTY_TIME_END')), 5);
     }
 

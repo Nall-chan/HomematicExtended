@@ -96,7 +96,8 @@ class HomeMaticClimateControlRegulator extends HMHeatingDevice
                     if ($this->PutParamSet(
                         [
                             \HMExtended\ClimacontrolRegulator::MODE_TEMPERATUR_REGULATOR => 3,
-                            \HMExtended\ClimacontrolRegulator::PARTY_END_DAY             => $days->format('%a'),
+                            // PARTY_END_DAY ist auf der CCU ein FLOAT (0 bis 200 Tage).
+                            \HMExtended\ClimacontrolRegulator::PARTY_END_DAY             => (float) $days->days,
                             \HMExtended\ClimacontrolRegulator::PARTY_END_MINUTE          => ($CalcMin >= 30) ? 1 : 0,
                             \HMExtended\ClimacontrolRegulator::PARTY_END_HOUR            => $CalcHour
                         ],
