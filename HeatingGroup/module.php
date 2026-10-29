@@ -232,12 +232,19 @@ class HomeMaticHeatingGroup extends HMHeatingDevice
     {
         if ($this->ReadPropertyBoolean(self::EnablePartyProperty)) {
             // Die Teile von Beginn und Ende werden in die Zeitstempel-Variable eingerechnet; fehlt diese (noch nicht angelegt oder vom Nutzer gelöscht), wird der Teil verworfen.
-            $PartyIdent = match ($Ident) {
-                \HMExtended\HeatingGroup::PARTY_START_DAY, \HMExtended\HeatingGroup::PARTY_START_MONTH, \HMExtended\HeatingGroup::PARTY_START_YEAR,
-                \HMExtended\HeatingGroup::PARTY_STOP_DAY, \HMExtended\HeatingGroup::PARTY_STOP_MONTH, \HMExtended\HeatingGroup::PARTY_STOP_YEAR => \HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][2],
-                \HMExtended\HeatingGroup::PARTY_START_TIME, \HMExtended\HeatingGroup::PARTY_STOP_TIME => $Ident,
-                default => ''
-            };
+            $PartyIdent = '';
+            if (in_array($Ident, [\HMExtended\HeatingGroup::PARTY_START_TIME, \HMExtended\HeatingGroup::PARTY_STOP_TIME])) {
+                $PartyIdent = $Ident;
+            } elseif (in_array($Ident, [
+                \HMExtended\HeatingGroup::PARTY_START_DAY,
+                \HMExtended\HeatingGroup::PARTY_START_MONTH,
+                \HMExtended\HeatingGroup::PARTY_START_YEAR,
+                \HMExtended\HeatingGroup::PARTY_STOP_DAY,
+                \HMExtended\HeatingGroup::PARTY_STOP_MONTH,
+                \HMExtended\HeatingGroup::PARTY_STOP_YEAR
+            ])) {
+                $PartyIdent = \HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][2];
+            }
             if (($PartyIdent !== '') && ($this->FindIDForIdent($PartyIdent) == 0)) {
                 return;
             }
