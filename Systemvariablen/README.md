@@ -186,11 +186,11 @@ string HM_DeleteCCUProgram(integer $InstanzID);
 
 Der vollständige Changelog der Library steht in der [Haupt-README](../README.md#2-changelog).  
 
-Version 3.80:
+**Version 3.80:**
 
 - Umstellung auf den Datenfluss des Homematic Sockets, Auswahlliste der Systemvariablen, CCU-Programm per Schaltfläche, Lesen mit einer Anfrage, Darstellungen statt Profile. Alarmvariablen bildet das neue Modul [HomeMatic Alarmvariable](../Alarmvariable/) ab.  
 
-Version 3.75:
+**Version 3.75:**
 
 - Keine Änderungen.  
 

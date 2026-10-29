@@ -151,7 +151,8 @@ class HomeMaticPowermeter extends HMBase
         if (array_key_exists($Event['VariableName'], self::EnergyCounters)) {
             // Das Ereignis löst auf der CCU zeitgleich das Zählerprogramm aus. Die Systemvariable wird daher erst nach Ablauf des Timers gelesen,
             // mehrere Ereignisse kurz hintereinander lösen nur ein Lesen aus.
-            $Pending = $this->PendingCounters;
+            // Der Zwischenspeicher ist noch nicht initialisiert, wenn ein Ereignis vor dem Ende von ApplyChanges eintrifft (z.B. nach einem Update).
+            $Pending = $this->PendingCounters ?: [];
             if (!in_array($Event['VariableName'], $Pending)) {
                 $Pending[] = $Event['VariableName'];
                 $this->PendingCounters = $Pending;
@@ -195,7 +196,7 @@ class HomeMaticPowermeter extends HMBase
         }
         if ($Ident == \HMExtended\Device\Timer::ReadSystemVariables) {
             $this->SetTimerInterval(\HMExtended\Device\Timer::ReadSystemVariables, 0);
-            $Pending = $this->PendingCounters;
+            $Pending = $this->PendingCounters ?: [];
             $this->PendingCounters = [];
             foreach ($Pending as $Datapoint) {
                 $this->ReadPowerSysVar($Datapoint);
@@ -212,14 +213,15 @@ class HomeMaticPowermeter extends HMBase
         $Result = $this->GetParamsetDescription(\HMExtended\CCU::VALUES, $AddressWithChannel);
         foreach ($Result as $Variable) {
             $Ident = $Variable['ID'];
-            if (!array_key_exists($Variable['TYPE'], \HMExtended\Variables::$HmTypeToIpsType)) {
-                $this->SendDebug('Unsupported type', $Ident . ': ' . $Variable['TYPE'], 0);
+            $HmType = $Variable['TYPE'] ?? '';
+            if (!array_key_exists($HmType, \HMExtended\Variables::$HmTypeToIpsType)) {
+                $this->SendDebug('Unsupported type', $Ident . ': ' . $HmType, 0);
                 continue;
             }
-            $VarType = \HMExtended\Variables::$HmTypeToIpsType[$Variable['TYPE']];
-            $Profile = \HMExtended\Profiles::$UnitToProfile[$Variable['UNIT']] ?? '';
+            $VarType = \HMExtended\Variables::$HmTypeToIpsType[$HmType];
+            $Profile = \HMExtended\Profiles::$UnitToProfile[$Variable['UNIT'] ?? ''] ?? '';
             $this->MaintainVariable($Ident, $Ident, $VarType, $Profile, 0, true);
-            if ($Variable['OPERATIONS'] & 0b10) {
+            if (($Variable['OPERATIONS'] ?? 0) & 0b10) {
                 $this->EnableAction($Ident);
             }
             if (array_key_exists($Ident, self::EnergyCounters)) {

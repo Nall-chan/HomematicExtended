@@ -116,12 +116,12 @@ Die direkte Darstellung im WebFront ist möglich, es wird aber empfohlen mit Lin
 
 Der vollständige Changelog der Library steht in der [Haupt-README](../README.md#2-changelog).  
 
-Version 3.78:
+**Version 3.78:**
 
 - Neue Instanzen fragen das WR-Interface alle 60 Sekunden ab (bisher war der Abruf abgeschaltet). Vorhandene Instanzen behalten ihr Intervall.  
 - Ohne verbundenen Homematic Socket läuft kein Abruf mehr und es entstehen keine Fehlermeldungen.  
 
-Version 3.75:
+**Version 3.75:**
 
 - Eigene Meldung, wenn das Wired-Protokoll im Homematic Socket nicht aktiviert ist.  
 

@@ -570,7 +570,7 @@ class HMHeatingDevice extends HMBase
             $this->CreateProfile($Profile);
             $this->MaintainVariable($Ident, $Name, $VarType, $Profile, 0, true);
             if ($Action === '') {
-                if ($Variable['OPERATIONS'] & 0b10) {
+                if (($Variable['OPERATIONS'] ?? 0) & 0b10) {
                     $this->EnableAction($Ident);
                 }
             } elseif ($Action) {
@@ -622,7 +622,7 @@ class HMHeatingDevice extends HMBase
 
                 $this->MaintainVariable($Ident, $Name, $VarType, $Profile, 0, true);
                 if ($Action === '') {
-                    if ($Variable['OPERATIONS'] & 0b10) {
+                    if (($Variable['OPERATIONS'] ?? 0) & 0b10) {
                         $this->EnableAction($Ident);
                     }
                 } elseif ($Action) {

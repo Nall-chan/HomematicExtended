@@ -192,6 +192,23 @@ class PowerMeterTest extends HomematicModuleTestCase
         $this->assertNotFalse(@IPS_GetObjectIDByIdent('WEIRD_UNIT', $this->PowerMeterId));
     }
 
+    public function testDatapointWithoutUnitKeyIsCreated(): void
+    {
+        // Nicht jeder Datenpunkt der CCU liefert den Schlüssel UNIT (z.B. HmIP-BSM).
+        FakeHomematicIO::$RpcResponses['getParamsetDescription']['NO_UNIT'] = ['ID' => 'NO_UNIT', 'TYPE' => 'FLOAT', 'OPERATIONS' => 5];
+        $this->recreateDevice('<xml><exec>/x</exec><sessionId>0</sessionId><httpUserAgent>x</httpUserAgent><Value>0</Value></xml>');
+        $this->assertNotFalse(@IPS_GetObjectIDByIdent('NO_UNIT', $this->PowerMeterId));
+    }
+
+    public function testEventBeforeBufferIsInitializedDoesNotFail(): void
+    {
+        // Nach einem Update trifft ein Ereignis ein, bevor ApplyChanges den Zwischenspeicher initialisiert hat.
+        $Instance = IPS\InstanceManager::getInstanceInterface($this->PowerMeterId);
+        (fn () => $this->SetBuffer('PendingCounters', ''))->call($Instance);
+        $Instance->ReceiveData(json_encode(['DataID' => \HMExtended\GUID::HmDevice, 'DeviceID' => self::Address, 'VariableName' => 'ENERGY_COUNTER', 'VariableValue' => 5.0]));
+        $this->assertTrue(true);
+    }
+
     public function testValuesAreRead(): void
     {
         $this->assertEquals(1500.0, GetValueFloat(IPS_GetObjectIDByIdent('ENERGY_COUNTER', $this->PowerMeterId)));

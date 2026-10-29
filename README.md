@@ -180,6 +180,7 @@ Erweitert IPS um die native Unterstützung von:
 
 * HomeMatic Climate Control Regulator (HM-CC-TC): Abgewählte Urlaub/Party-Variablen wurden nicht entfernt und blieben bedienbar. Das Ende von Urlaub/Party wurde mit falschem Datentyp für die Tage gesendet.  
 * HomeMatic Heating Device und HomeMatic Heating Group: Meldungen der CCU zu Urlaub/Party erzeugten Warnungen im Log, wenn die zugehörige Statusvariable fehlte.  
+* HomeMatic Powermeter: Datenpunkte, bei denen die CCU einzelne Angaben (Einheit, Typ, Bedienbarkeit) nicht mitliefert (z.B. beim HmIP-BSM), führten beim Übernehmen zu einem Fehler. Ein Ereignis der CCU, das unmittelbar nach einem Update der Library eintraf, erzeugte einen PHP-Fehler im Log.  
 
 **Version 3.80:**  
 
@@ -359,102 +360,102 @@ HeatingGroup:
 * Fix: HmScript Fehler im Log der CCU bei Verwendung der PowerMeter-Instanz.  
 * Fix: Fehlermeldung bei AlarmScriptID in der Instanz Systemvariablen.  
 
-**Version 2.50:  
+**Version 2.50:**  
 
 * Fix: Für PHP 7.3
 
-**Version 2.44:  
+**Version 2.44:**  
 
 * Fix: ~String-Profil entfernt  
 
-**Version 2.43:  
+**Version 2.43:**  
 
 * Fix: Für IPS 5.0  
 
-**Version 2.42:  
+**Version 2.42:**  
 
 * Fix: RF-Splitter hat beim anlegen von RF-Interface Instanzen der CCU1 Fehler gemeldet.  
 * Fix: Icon ON/OFF vertauscht in der Display-Statusanzeige.  
 
-**Version 2.40:  
+**Version 2.40:**  
 
 * Neu: Übersetzungen für IPS 4.3  
 * Neu: Doku überarbeitet  
 * Fix: Systemvariablen vom Typ Float konnten falsch übertragen werden.  
 
-**Version 2.35:  
+**Version 2.35:**  
 
 * Fix: Dis-EP-WM55 hat nur Icons von 0-3 angenommen.  
 
-**Version 2.31:  
+**Version 2.31:**  
 
 * Fix: Fehlerbehandlung verbessert.  
 
-**Version 2.30:  
+**Version 2.30:**  
 
 * Fix: Fehlerbehandlung verbessert.  
 * Fix: Eventuelle XML-Fehler durch die CCU versucht abzufangen.  
 
-**Version 2.22:  
+**Version 2.22:**  
 
 * Fix: HomeMatic Remote-Script Instanzen belegten unnötig PHP-Slots.  
 * Fix: Fehlermeldung im HomeMatic Systemvariablen durch eine falsche Fehlermeldung wurde ein eigentlicher Fehler überdeckt.  
 
-**Version 2.20:  
+**Version 2.20:**  
 
 * Neu: Dis-EP-WM55 Ermöglicht es per PHP die Anzeige zu beschreiben.
 * Neu: Doku für HomeMatic WR-Interface ergänzt.
 
-**Version 2.10:  
+**Version 2.10:**  
 
 * Neu: HomeMatic WR-Interface zeigt den Status des Wired-Interfaces der CCU an.  
 * Neu: Alle 'CONNECTED' Statusvariablen der CCU-Interfaces werden immer aktualisiert um Ausfälle besser detektieren zu können.  
 * Fix: Instanzen haben nicht erkannt wenn sich der Parent geändert hat.  
 * Fix: Timer erzeugen keine Fehlermeldungen mehr.  
 
-**Version 2.07:  
+**Version 2.07:**  
 
 * Fix: Summenzähler für Powermeter hat bei GAS falsche Werte geliefert.  
 * Fix: Dis-WM55 ohne Funktion.  
 * Fix: Dis-WM55 hat immer das Display-Script überschrieben.  
 * Neu: Mehr Debug-Ausgaben bei Dis-WM55.  
 
-**Version 2.06:  
+**Version 2.06:**  
 
 * Fix: Doku geändert (Final).  
 * Fix: GUID für Empfang vom RF-Interface Splitter.  
 * Fix: Trigger für Powermeter und Systemvariablen waren unter Umständen falsch.  
 * Fix: HM-Systemvariablen vom Typ String wurden falsch dargestellt, wenn Umlaute enthalten waren.  
 
-**Version 2.05:  
+**Version 2.05:**  
 
 * Fix: Unter Umständen konnte die Adresse der CCU nicht aus dem HomeMatic-Socket ermitteln werden.  
 
-**Version 2.04:  
+**Version 2.04:**  
 
 * Fix: RFInstance-Splitter hat fehler gemeldet beim Anlegen von Instanzen, wenn keine vorhanden waren.  
 
-**Version 2.03:  
+**Version 2.03:**  
 
 * Fix: Doku geändert (Teil1).
 
-**Version 2.02:  
+**Version 2.02:**  
 
 * Fix: Powermeter-Instanz kann jetzt auch mit allen Varianten von HM-ES-TX-WM umgehen.  
 * Fix: Powermeter-Instanz unterstützt jetzt auch HMIP-PSM und ähnliche HMIP-'Mess-Steckdosen'  
 
-**Version 2.01:  
+**Version 2.01:**  
 
 * Neu: RF-Interface-Splitter zum auslesen der RF-Interfaces aus der CCU.  
 * Neu: RF-Interface zum darstellen der Werte eines RF-Interfaces der CCU.  
 
-**Version 2.0:  
+**Version 2.0:**  
 
-**Version 1.5:  
+**Version 1.5:**  
 
-**Version 1.3:  
+**Version 1.3:**  
 
-**Version 1.1:  
+**Version 1.1:**  
 
 ## 6. Spenden  
   

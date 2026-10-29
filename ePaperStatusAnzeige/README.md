@@ -296,7 +296,7 @@ Die Instanz besitzt keine Statusvariablen. Die Anzeige wird daher über die PHP-
 
 Der vollständige Changelog der Library steht in der [Haupt-README](../README.md#2-changelog).  
 
-Version 3.75:
+**Version 3.75:**
 
 - Die Adresse wird vor dem Senden geprüft und muss den Kanal 3 enthalten (neue Statuscodes 104 und 202).  
 - Die Zeile der Befehle `HM_WriteValueDisplayLine` und `HM_WriteValueDisplayLineEx` wird auf 1-3 geprüft.  

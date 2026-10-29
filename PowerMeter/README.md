@@ -147,21 +147,26 @@ Die direkte Darstellung im WebFront ist möglich, es wird aber empfohlen mit Lin
 
 Der vollständige Changelog der Library steht in der [Haupt-README](../README.md#2-changelog).  
 
-Version 3.78:
+**Version 3.81:**
+
+- Datenpunkte, bei denen die CCU einzelne Angaben (Einheit, Typ, Bedienbarkeit) nicht mitliefert (z.B. beim HmIP-BSM), führten beim Übernehmen zu einem Fehler.  
+- Ein Ereignis der CCU, das unmittelbar nach einem Update der Library eintraf, erzeugte einen PHP-Fehler im Log.  
+
+**Version 3.78:**
 
 - Der `HomeMatic Extended Konfigurator` listet jetzt auch die HmIP-Geräte (z.B. HmIP-PSM, HmIP-ESI).  
 - Der Summenzähler wird 50 ms nach der Meldung des Gerätes gelesen. Bisher konnte er um eine Meldung hinterherhängen, wenn das Programm der CCU den Zähler noch nicht aktualisiert hatte.  
 
-Version 3.77:
+**Version 3.77:**
 
 - Neue Statusvariable `ENERGY_COUNTER_FEED_IN_TOTAL` (kWh) für den Einspeisezähler der HmIP-PSMCO und ELV-SH-PSMCI.  
 
-Version 3.76:
+**Version 3.76:**
 
 - HmIP-ESI im Gasmodus: Der Summenzähler der CCU wird als `GAS_VOLUME_TOTAL` in m³ angezeigt (bisher fälschlich als `ENERGY_COUNTER_TOTAL` in kWh, um Faktor 1000 zu klein). Eine vorhandene Variable `ENERGY_COUNTER_TOTAL` wird dann nicht mehr aktualisiert und kann gelöscht werden.  
 - Die Summenzähler werden nur angelegt, wenn die CCU die Systemvariable liefert und der Wert nicht 0 ist.  
 
-Version 3.75:
+**Version 3.75:**
 
 - Die Instanz nutzt direkt die Adresse des Gerätes (mit Kanal) statt einer Referenz auf eine andere Instanz. Bestehende Instanzen werden übernommen.  
 - Zusätzliche Einheiten (mA, A, V, Hz) erhalten passende Profile.  

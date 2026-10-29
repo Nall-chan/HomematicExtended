@@ -222,7 +222,7 @@ IPS_RequestAction(12345, 'RestoreDisplayScript', true);
 
 Der vollständige Changelog der Library steht in der [Haupt-README](../README.md#2-changelog).  
 
-Version 3.75:
+**Version 3.75:**
 
 - Die Adresse des Displays (mit Kanal) ersetzt die Auswahl der vier Variablen. Bestehende Instanzen werden übernommen.  
 - Die Ausgabe erfolgt immer an die konfigurierte Adresse.  

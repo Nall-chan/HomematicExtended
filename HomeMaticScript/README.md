@@ -92,7 +92,7 @@ Die Instanz besitzt keine Statusvariablen und keine speziellen Aktionen.
 
 Der vollständige Changelog der Library steht in der [Haupt-README](../README.md#2-changelog).  
 
-Version 3.75:
+**Version 3.75:**
 
 - Die Instanz verwendet eine feste Adresse. Bestehende Instanzen werden übernommen.  
 

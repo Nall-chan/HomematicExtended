@@ -163,7 +163,11 @@ Die Statusvariablen der Wetterstation sind nicht bedienbar.
 
 Der vollständige Changelog der Library steht in der [Haupt-README](../README.md#2-changelog).  
 
-Version 3.78:
+**Version 3.81:**
+
+- Datenpunkte, bei denen die CCU einzelne Angaben (Einheit, Typ, Bedienbarkeit) nicht mitliefert, führten beim Übernehmen zu einem Fehler.  
+
+**Version 3.78:**
 
 - Neues Modul.  
 

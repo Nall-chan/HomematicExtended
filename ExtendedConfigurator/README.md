@@ -121,17 +121,17 @@ Die Instanz besitzt keine Statusvariablen und keine speziellen Aktionen.
 
 Der vollständige Changelog der Library steht in der [Haupt-README](../README.md#2-changelog).  
 
-Version 3.80:
+**Version 3.80:**
 
 - Neue Zeilen für die Systemvariablen und je Alarmvariable der CCU (`HomeMatic Alarmvariable`).  
 - Fehler beim Lesen der CCU erscheinen als Hinweis im Formular.  
 
-Version 3.78:
+**Version 3.78:**
 
 - Neue Zeilen für die HmIP-Geräte des Powermeter (z.B. HmIP-PSM, HmIP-ESI) und für die HmIP-Wetterstationen (`HomeMatic Weather`).  
 - Ein geschlossenes Wired-Interface wird nicht mehr gemeldet.  
 
-Version 3.75:
+**Version 3.75:**
 
 - Neue Zeilen für Dis-WM55, Dis-EP-WM55, Heizungsgeräte, Heizgruppen, Klimaregler, RemoteScript und RF-Interfaces.  
 - Nicht aktivierte Protokolle werden in einer Meldung mit Schaltfläche zum Homematic Socket aufgelistet.  

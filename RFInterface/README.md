@@ -100,7 +100,7 @@ Die direkte Darstellung im WebFront ist möglich, es wird aber empfohlen mit Lin
 
 Der vollständige Changelog der Library steht in der [Haupt-README](../README.md#2-changelog).  
 
-Version 3.75:
+**Version 3.75:**
 
 - Ein Interface, das die CCU nicht mehr meldet (offline), setzt `CONNECTED` auf `false` (Issue 13).  
 - Die übergeordnete Instanz wird über die Instanzverbindung des RF-Interface Splitters bereitgestellt.  

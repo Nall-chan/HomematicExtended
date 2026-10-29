@@ -100,9 +100,6 @@ IPS_ApplyChanges(12345);
    Eine Alarmvariable, die noch nie ausgelöst hat, liefert keine Zeitpunkte, die Statusvariablen zeigen dann `-`.  
    `TRIGGER_CHANNEL`, `TRIGGER_ROOM` und `TRIGGER_DATAPOINT` zeigen den Auslöser eines anstehenden Alarms und werden geleert, sobald der Alarm nicht mehr ansteht. `FIRST_TIME` und `LAST_TIME` behalten die Zeitpunkte des letzten Alarms. Die Variablen des Auslösers werden erst angelegt, wenn ein Alarm mit Auslöser ansteht. Interne Alarmvariablen wie die `WatchDog: …`-Alarme von RaspberryMatic haben keinen auslösenden Kanal, ihre Instanzen haben nur Zustand, ersten und letzten Alarm.  
 
-> [!NOTE]
-> Zustand, Zeitpunkte und Auslöser eines anstehenden Alarms sowie das Leeren des Auslösers nach dem Ende sind live geprüft.
-
 ## 6. Visualisierung
 
 ### Kachel Visualisierung
@@ -148,7 +145,7 @@ string HM_DeleteCCUProgram(integer $InstanzID);
 
 Der vollständige Changelog der Library steht in der [Haupt-README](../README.md#2-changelog).  
 
-Version 3.80:
+**Version 3.80:**
 
 - Neues Modul.  
 

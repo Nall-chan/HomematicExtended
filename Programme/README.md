@@ -116,7 +116,7 @@ Die direkte Darstellung im WebFront ist möglich, es wird aber empfohlen mit Lin
 
 Der vollständige Changelog der Library steht in der [Haupt-README](../README.md#2-changelog).  
 
-Version 3.75:
+**Version 3.75:**
 
 - Fehlermeldung, wenn das Starten eines Programms fehlschlägt, statt eines PHP-Fehlers.  
 - Programmnamen mit Umlauten werden richtig angezeigt.  

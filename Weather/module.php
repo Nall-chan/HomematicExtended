@@ -195,13 +195,14 @@ class HomeMaticWeather extends HMBase
         }
         foreach ($Result as $Variable) {
             $Ident = $Variable['ID'];
-            if (!array_key_exists($Variable['TYPE'], self::HmTypeToIpsType)) {
-                $this->SendDebug('Unsupported type', $Ident . ': ' . $Variable['TYPE'], 0);
+            $HmType = $Variable['TYPE'] ?? '';
+            if (!array_key_exists($HmType, self::HmTypeToIpsType)) {
+                $this->SendDebug('Unsupported type', $Ident . ': ' . $HmType, 0);
                 continue;
             }
-            $VarType = self::HmTypeToIpsType[$Variable['TYPE']];
+            $VarType = self::HmTypeToIpsType[$HmType];
             $this->MaintainVariable($Ident, $Ident, $VarType, $this->GetProfileOrPresentation($Ident, $VarType, $Variable['UNIT'] ?? ''), 0, true);
-            if ($Variable['OPERATIONS'] & 0b10) {
+            if (($Variable['OPERATIONS'] ?? 0) & 0b10) {
                 $this->EnableAction($Ident);
             }
         }

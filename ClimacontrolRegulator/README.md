@@ -155,7 +155,12 @@ Der Wochenplan hat für jede Temperatur eine Aktion, die beim Auslösen die Para
 
 Der vollständige Changelog der Library steht in der [Haupt-README](../README.md#2-changelog).  
 
-Version 3.75:
+**Version 3.81:**
+
+- Abgewählte Urlaub/Party-Variablen wurden nicht entfernt und blieben bedienbar.  
+- Das Ende von Urlaub/Party wurde mit falschem Datentyp für die Tage gesendet.  
+
+**Version 3.75:**
 
 - Das Modul nutzt den Datenfluss des Homematic Sockets (ohne eigene Verbindung).  
 - Die Aktions-IDs des Wochenplans beginnen bei 1 (Fehler „Wochenplan-Aktions-ID muss größer als 0 sein“ behoben).  
