@@ -145,11 +145,19 @@ Zusätzlich werden bei aktivem Wochenplan angelegt:
 
 ### Kachel Visualisierung
 
-*Screenshot der Kachel Visualisierung folgt.*  
+Die Instanz erscheint als Thermostat-Kachel mit Soll- und Ist-Temperatur:  
+
+![Kachel](imgs/tile_instance.png)  
+
+Welche Statusvariablen die Kachel als Soll- und Ist-Temperatur zeigt, wird an der Kachel eingestellt: oben rechts den Stift (Größe und Position der Kacheln anpassen) wählen, dann den Stift der Kachel und unter `Soll Temperatur` die `Solltemperatur` sowie unter `Ist Temperatur` die `Temperatur` auswählen. Mehrere Statusvariablen geben eine Temperatur vor (z.B. Urlaub/Party, Fenster offen), ohne diese Einstellung zeigt die Kachel unter Umständen eine davon.  
+
+Maximiert zeigt die Kachel alle Statusvariablen:  
+
+![Kachel Liste](imgs/tile_list.png)  
 
 ### WebFront Visualisierung
 
-*Screenshot des WebFront folgt.*  
+![WebFront](imgs/webfront.png)  
 
 ## 7. PHP-Befehlsreferenz
 

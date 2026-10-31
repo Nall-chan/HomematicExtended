@@ -117,11 +117,13 @@ Zusätzlich werden bei aktivem Wochenplan angelegt:
 
 ### Kachel Visualisierung
 
-*Screenshot der Kachel Visualisierung folgt.*  
+Der HM-CC-TC liefert in diesem Modul keine Ist-Temperatur, die Instanz erscheint daher als Liste:  
+
+![Kachel Liste](imgs/tile_list.png)  
 
 ### WebFront Visualisierung
 
-*Screenshot des WebFront folgt.*  
+![WebFront](imgs/webfront.png)  
 
 ## 7. PHP-Befehlsreferenz
 
