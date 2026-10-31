@@ -60,7 +60,7 @@
                                                 "edit": {
                                                     "type": "NumberSpinner",
                                                     "digits": 1,
-                                                    "minimum": 5,
+                                                    "minimum": 6,
                                                     "maximum": 30,
                                                     "suffix": " °C"
                                                 }

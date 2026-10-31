@@ -23,6 +23,7 @@ class HomeMaticRFInterface extends IPSModuleStrict
 {
     use HMExtended\DebugHelper;
     use HMExtended\VariableHelper;
+    use HMPresentationVariable;
 
     /**
      * Interne Funktion des SDK.
@@ -85,18 +86,6 @@ class HomeMaticRFInterface extends IPSModuleStrict
             if ($Value === '') {
                 continue;
             }
-
-            switch ($Ident) {
-                case 'DUTY_CYCLE':
-                    $Profile = '~Intensity.100';
-                    break;
-                case 'CONNECTED':
-                    $Profile = '~Alert.Reversed';
-                    break;
-                default:
-                    $Profile = '';
-                    break;
-            }
             switch (gettype($Value)) {
                 case 'boolean':
                     $Typ = VARIABLETYPE_BOOLEAN;
@@ -114,7 +103,7 @@ class HomeMaticRFInterface extends IPSModuleStrict
                 default:
                     continue 2;
             }
-            $this->MaintainVariable($Ident, $Ident, $Typ, $Profile, 0, true);
+            $this->MaintainPresentationVariable($Ident, $Ident, $Typ, \HMExtended\DatapointPresentation::Get($Ident, '', $Typ, false, fn (string $Text): string => $this->Translate($Text)));
             $this->SetValue($Ident, $Value);
         }
         return '';

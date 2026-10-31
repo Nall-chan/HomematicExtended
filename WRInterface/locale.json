@@ -12,7 +12,9 @@
             "Error on %s": "Fehler bei %s",
             "Invalid response from CCU.": "Ungültige Antwort der CCU.",
             "The CCU did not answer the HM-Script.": "Die CCU hat das HM-Script nicht beantwortet.",
-            "Use of the HomeMatic Wired interface must be activated in the IO.": "Die Nutzung des HomeMatic Wired Interface muss im IO aktiviert sein."
+            "Use of the HomeMatic Wired interface must be activated in the IO.": "Die Nutzung des HomeMatic Wired Interface muss im IO aktiviert sein.",
+            "Alarm": "Alarm",
+            "OK": "OK"
         }
     }
 }

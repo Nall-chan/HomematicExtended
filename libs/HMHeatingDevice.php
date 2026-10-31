@@ -31,6 +31,10 @@ class HMHeatingDevice extends HMBase
     protected const WeekScheduleIndexEndTime = 'P%3$d_ENDTIME_%2$s_%1$d';
     protected const NumberOfWeekSchedules = 1;
     protected const NumberOfTimeSlot = 13;
+    /** Raster der Endzeiten im Wochenplan in Minuten und kleinste Temperatur (CCU-Firmware: HM-CC-RT-DN, HmIP 5 min und 5,0 °C). */
+    protected const ScheduleTimeStep = 5;
+    protected const MinScheduleTemperature = 5.0;
+    protected const MaxScheduleTemperature = 30.0;
     protected const SelectedWeekScheduleIdent = '';
 
     protected const EVENT = 'WEEK_PROFIL';
@@ -74,7 +78,7 @@ class HMHeatingDevice extends HMBase
         }
         $this->RegisterPropertyBoolean(\HMExtended\Device\Property::Schedule, true);
         $this->RegisterPropertyBoolean(\HMExtended\Device\Property::SetPointBehavior, true);
-        $InitTemps = [5, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 30];
+        $InitTemps = [static::MinScheduleTemperature, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 30];
         foreach ($InitTemps as &$Temp) {
             $Temp = ['TemperatureValue'=> $Temp];
         }
@@ -121,11 +125,9 @@ class HMHeatingDevice extends HMBase
      */
     public function Destroy(): void
     {
-        // Die Profile werden von allen Heizungsmodulen gemeinsam genutzt und erst mit der letzten Instanz gelöscht.
+        // Die Profile bis Version 3.81 wurden von allen Heizungsmodulen gemeinsam genutzt und werden erst mit der letzten Instanz gelöscht.
         if ((!IPS_InstanceExists($this->InstanceID)) && (!$this->ExistInstancesOf(\HMExtended\DeviceType::$HeatingGuids))) {
-            foreach (\HMExtended\Variables::$Profiles as $ProfileName => $ProfileData) {
-                $this->UnregisterProfile($ProfileName);
-            }
+            $this->UnregisterLegacyProfiles();
         }
         parent::Destroy();
     }
@@ -136,6 +138,8 @@ class HMHeatingDevice extends HMBase
     public function ApplyChanges(): void
     {
         parent::ApplyChanges();
+        // Ohne ausdrücklichen Status bliebe die Instanz nach einem Fehler beim Erstellen (z.B. beim Neuladen) in 101 (wird erstellt).
+        $this->SetStatus(IS_ACTIVE);
 
         $this->WeekProfile = 1;
         $Address = $this->ReadPropertyString(\HMExtended\Device\Property::Address);
@@ -159,26 +163,24 @@ class HMHeatingDevice extends HMBase
         }
         if ($this->ReadPropertyBoolean(\HMExtended\Device\Property::Schedule)) {
             $this->CreateWeekPlan();
-            $ProfileSubmitPlan = false;
+            $PresentationSubmitPlan = false;
             switch (static::SelectedWeekScheduleIdent) { //Nur Speichern Button
                 case \HMExtended\HeatingGroupHmIP::ACTIVE_PROFILE:
-                    $ProfileSubmitPlan = 'Heating.Control.Profile.HmIP';
+                    $PresentationSubmitPlan = \HMExtended\HeatingPresentation::ProfileHmIP;
                     break;
                 case \HMExtended\HeatingGroup::WEEK_PROGRAM_POINTER:
-                    $ProfileSubmitPlan = 'Heating.Control.Profile.HM';
+                    $PresentationSubmitPlan = \HMExtended\HeatingPresentation::ProfileHM;
                     break;
             }
-            if ($ProfileSubmitPlan) {
-                $this->CreateProfile($ProfileSubmitPlan);
+            if ($PresentationSubmitPlan) {
                 $isOld = $this->FindIDForIdent(\HMExtended\Variables::SELECT_NEW_WEEK_PROGRAM);
-                $this->RegisterVariableInteger(\HMExtended\Variables::SELECT_NEW_WEEK_PROGRAM, $this->Translate('Schedule save in profile'), $ProfileSubmitPlan);
+                $this->MaintainHeatingVariable(\HMExtended\Variables::SELECT_NEW_WEEK_PROGRAM, $this->Translate('Schedule save in profile'), VARIABLETYPE_INTEGER, $PresentationSubmitPlan, true, []);
                 $this->EnableAction(\HMExtended\Variables::SELECT_NEW_WEEK_PROGRAM);
                 if (!$isOld) {
                     $this->SetValue(\HMExtended\Variables::SELECT_NEW_WEEK_PROGRAM, 1);
                 }
             }
-            $this->CreateProfile('Execute.HM');
-            $this->RegisterVariableInteger(\HMExtended\Variables::SUBMIT_WEEK_PROGRAM, $this->Translate('Schedule save'), 'Execute.HM');
+            $this->MaintainHeatingVariable(\HMExtended\Variables::SUBMIT_WEEK_PROGRAM, $this->Translate('Schedule save'), VARIABLETYPE_INTEGER, \HMExtended\HeatingPresentation::Execute, true, []);
             $this->EnableAction(\HMExtended\Variables::SUBMIT_WEEK_PROGRAM);
         } else {
             $this->UnregisterVariable(\HMExtended\Variables::SELECT_NEW_WEEK_PROGRAM);
@@ -197,6 +199,7 @@ class HMHeatingDevice extends HMBase
                 $this->GetParamsAndSetVariable();
             }
         }
+        $this->RemoveLegacyProfiles();
     }
 
     /**
@@ -319,7 +322,25 @@ class HMHeatingDevice extends HMBase
                 $this->RefreshScheduleObject();
             }
         }
+        // Bekannte Datenpunkte ohne Statusvariable (in der Konfiguration abgewählt oder bewusst nicht abgebildet) sind kein Fehler.
+        // HMBase meldet `Unknown variable` nur noch für Datenpunkte, die das Modul nicht kennt.
+        if (($this->FindIDForIdent($Ident) == 0) && $this->IsKnownDatapoint($Ident)) {
+            return;
+        }
         parent::SetVariable($Ident, $Value);
+    }
+
+    /**
+     * Prüft, ob der Datenpunkt in den Tabellen des Gerätetyps steht (ValuesSet oder ParamSet).
+     *
+     * @param string $Ident Name des Datenpunktes.
+     *
+     * @return bool True, wenn das Modul den Datenpunkt kennt.
+     */
+    protected function IsKnownDatapoint(string $Ident): bool
+    {
+        return array_key_exists($Ident, \HMExtended\ValuesSet::$Variables[static::DeviceTyp] ?? [])
+            || array_key_exists($Ident, \HMExtended\ParamSet::$Variables[static::DeviceTyp] ?? []);
     }
 
     /**
@@ -336,6 +357,11 @@ class HMHeatingDevice extends HMBase
                 for ($Slot = 1; $Slot <= static::NumberOfTimeSlot; $Slot++) {
                     $TimeIndex = sprintf(static::WeekScheduleIndexEndTime, $Slot, $Day, $Plan);
                     $TempIndex = sprintf(static::WeekScheduleIndexTemp, $Slot, $Day, $Plan);
+                    // Fehlt ein Schaltpunkt in der Antwort der CCU, endet der Tag dort (keine PHP-Warnung).
+                    if (!isset($Params[$TimeIndex], $Params[$TempIndex])) {
+                        $ScheduleData[$Plan][$Index][$Slot] = [self::TIME => 1440, self::TEMP => (float) ($ScheduleData[$Plan][$Index][$Slot - 1][self::TEMP] ?? static::MinScheduleTemperature)];
+                        continue;
+                    }
                     $Time = (int) $Params[$TimeIndex];
                     $Temp = (float) $Params[$TempIndex];
 
@@ -430,6 +456,47 @@ class HMHeatingDevice extends HMBase
         return ($Result !== null) ? true : false;
     }
 
+    /**
+     * Wandelt die Schaltpunkte des Wochenplan-Ereignisses in die Parameter eines Zeitprofils der CCU.
+     * Ein Schaltpunkt gilt bis zum Beginn des nächsten, der letzte bis 24:00 (1440). Die Endzeiten werden auf das Raster
+     * des Gerätes gerundet (ScheduleTimeStep), da die CCU sonst abschneidet.
+     *
+     * @param array $ScheduleGroups Gruppen des Ereignisses (IPS_GetEvent, ScheduleGroups).
+     * @param array $ActionIdToTemp Aktions-ID => Temperatur.
+     * @param int $Plan Nummer des Zeitprofils auf der CCU (beginnt bei 1).
+     *
+     * @return array|false [Parameter, Zeitprofil je Tag], false wenn ein Tag mehr Schaltpunkte hat als das Gerät (NumberOfTimeSlot).
+     */
+    protected static function ScheduleToParams(array $ScheduleGroups, array $ActionIdToTemp, int $Plan): array|false
+    {
+        $Params = [];
+        $Schedule = [];
+        foreach ($ScheduleGroups as $Group) {
+            $Points = array_values($Group['Points']);
+            if (count($Points) > static::NumberOfTimeSlot) {
+                return false;
+            }
+            $Day = static::$Weekdays[$Group['Days']];
+            for ($i = 1; $i <= count($Points); $i++) {
+                $TimeIndex = sprintf(static::WeekScheduleIndexEndTime, $i, $Day, $Plan);
+                $TempIndex = sprintf(static::WeekScheduleIndexTemp, $i, $Day, $Plan);
+                if ($i < count($Points)) {
+                    $Minutes = ($Points[$i]['Start']['Hour'] * 60) + $Points[$i]['Start']['Minute'];
+                    $Rounded = (int) (round($Minutes / static::ScheduleTimeStep) * static::ScheduleTimeStep);
+                    $Params[$TimeIndex] = min(1440, max(static::ScheduleTimeStep, $Rounded));
+                } else {
+                    $Params[$TimeIndex] = 1440;
+                }
+                $Params[$TempIndex] = $ActionIdToTemp[$Points[$i - 1]['ActionID']] ?? static::MinScheduleTemperature;
+                $Schedule[$Group['Days']][$i] = [
+                    self::TIME => $Params[$TimeIndex],
+                    self::TEMP => $Params[$TempIndex]
+                ];
+            }
+        }
+        return [$Params, $Schedule];
+    }
+
     //################# PRIVATE
 
     /**
@@ -498,44 +565,23 @@ class HMHeatingDevice extends HMBase
         $Event = IPS_GetEvent($EventId);
 
         $ActionIdToTemp = [];
-        $Params = [];
-        $Schedule = [];
         foreach ($Event['ScheduleActions'] as $Action) {
             $ActionIdToTemp[$Action['ID']] = (float) str_replace(',', '.', $Action['Name']);
         }
-        foreach ($Event['ScheduleGroups'] as $Group) {
-            $Day = static::$Weekdays[$Group['Days']];
-            $Slot = 1;
-            for ($i = 1; $i <= count($Group['Points']); $i++) {
-                $TimeIndex = sprintf(static::WeekScheduleIndexEndTime, $Slot, $Day, $Plan);
-                $TempIndex = sprintf(static::WeekScheduleIndexTemp, $Slot, $Day, $Plan);
-                if ($i < count($Group['Points'])) {
-                    $Params[$TimeIndex] = ($Group['Points'][$i]['Start']['Hour'] * 60) + $Group['Points'][$i]['Start']['Minute'];
-                } else {
-                    $Params[$TimeIndex] = 1440;
-                }
-                $Params[$TempIndex] = $ActionIdToTemp[$Group['Points'][$i - 1]['ActionID']];
-                $Schedule[$Group['Days']][$Slot] = [
-                    self::TIME => $Params[$TimeIndex],
-                    self::TEMP => $Params[$TempIndex]
-                ];
-                $Slot++;
-            }
+        $Result = static::ScheduleToParams($Event['ScheduleGroups'], $ActionIdToTemp, $Plan);
+        if ($Result === false) {
+            echo sprintf($this->Translate('A day of the schedule has more than %d switching points.'), static::NumberOfTimeSlot) . PHP_EOL;
+            return;
+        }
+        [$Params, $Schedule] = $Result;
+        if (!$this->PutParamSet($Params)) {
+            return;
         }
         $Schedules = $this->WeekSchedules;
         $Schedules[$Plan] = $Schedule;
         $this->WeekSchedules = $Schedules;
-        $this->PutParamSet($Params);
-
-        if (static::SelectedWeekScheduleIdent) {
-            $ActivePlan = $this->WeekProfile;
-        } else {
-            $ActivePlan = 1;
-        }
-        $this->SendDebug('ActivePlan', $ActivePlan, 0);
-        if ($ActivePlan != $Plan) {
-            $this->RefreshScheduleObject();
-        }
+        // Auch beim aktiven Zeitprofil neu aufbauen: Die Zeiten wurden auf das Raster des Gerätes gerundet.
+        $this->RefreshScheduleObject();
     }
 
     private function CreateVariablesFromValues(): bool
@@ -562,18 +608,14 @@ class HMHeatingDevice extends HMBase
             if ($VarType == \HMExtended\Variables::VARIABLETYPE_NONE) {
                 continue;
             }
-            $Profile = \HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][1];
+            $Presentation = \HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][1];
             $Action = \HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][2];
             if (isset(\HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][3])) {
                 $Name = $this->Translate(\HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident][3]);
             }
-            $this->CreateProfile($Profile);
-            $this->MaintainVariable($Ident, $Name, $VarType, $Profile, 0, true);
-            if ($Action === '') {
-                if (($Variable['OPERATIONS'] ?? 0) & 0b10) {
-                    $this->EnableAction($Ident);
-                }
-            } elseif ($Action) {
+            $HasAction = ($Action === '') ? (bool) (($Variable['OPERATIONS'] ?? 0) & 0b10) : (bool) $Action;
+            $this->MaintainHeatingVariable($Ident, $Name, $VarType, $Presentation, $HasAction, $Variable);
+            if ($HasAction) {
                 $this->EnableAction($Ident);
             }
         }
@@ -613,19 +655,15 @@ class HMHeatingDevice extends HMBase
                         continue;
                     }
                 }
-                $Profile = \HMExtended\ParamSet::$Variables[static::DeviceTyp][$Ident][1];
+                $Presentation = \HMExtended\ParamSet::$Variables[static::DeviceTyp][$Ident][1];
                 $Action = \HMExtended\ParamSet::$Variables[static::DeviceTyp][$Ident][2];
                 if (isset(\HMExtended\ParamSet::$Variables[static::DeviceTyp][$Ident][3])) {
                     $Name = $this->Translate(\HMExtended\ParamSet::$Variables[static::DeviceTyp][$Ident][3]);
                 }
-                $this->CreateProfile($Profile);
-
-                $this->MaintainVariable($Ident, $Name, $VarType, $Profile, 0, true);
-                if ($Action === '') {
-                    if (($Variable['OPERATIONS'] ?? 0) & 0b10) {
-                        $this->EnableAction($Ident);
-                    }
-                } elseif ($Action) {
+                $HasAction = ($Action === '') ? (bool) (($Variable['OPERATIONS'] ?? 0) & 0b10) : (bool) $Action;
+                // Bei zusammengesetzten Werten (z.B. Party-Ende aus Tag, Stunde, Minute) gehört die Beschreibung zu einem Teilwert.
+                $this->MaintainHeatingVariable($Ident, $Name, $VarType, $Presentation, $HasAction, ($Ident == $Variable['ID']) ? $Variable : []);
+                if ($HasAction) {
                     $this->EnableAction($Ident);
                 }
             }
@@ -649,24 +687,44 @@ class HMHeatingDevice extends HMBase
         return false;
     }
 
-    private function CreateProfile($Profile): void
+    /**
+     * Legt eine Statusvariable mit Darstellung an bzw. aktualisiert deren Darstellung.
+     *
+     * @param string $Presentation Schlüssel der Darstellung (\HMExtended\HeatingPresentation).
+     * @param array $Description Beschreibung des Datenpunktes laut CCU, leer wenn unbekannt.
+     */
+    private function MaintainHeatingVariable(string $Ident, string $Name, int $VarType, string $Presentation, bool $HasAction, array $Description): void
     {
-        if ($Profile) {
-            if (substr($Profile, 0, 1) != '~') {
-                if (array_key_exists($Profile, \HMExtended\Variables::$Profiles)) {
-                    $this->RegisterProfileEx(
-                        \HMExtended\Variables::$Profiles[$Profile][0],
-                        $Profile,
-                        \HMExtended\Variables::$Profiles[$Profile][1],
-                        \HMExtended\Variables::$Profiles[$Profile][2],
-                        \HMExtended\Variables::$Profiles[$Profile][3],
-                        \HMExtended\Variables::$Profiles[$Profile][4],
-                        \HMExtended\Variables::$Profiles[$Profile][5],
-                        \HMExtended\Variables::$Profiles[$Profile][6],
-                        \HMExtended\Variables::$Profiles[$Profile][7]
-                    );
-                }
+        $this->MaintainPresentationVariable($Ident, $Name, $VarType, \HMExtended\HeatingPresentation::Get(
+            $Presentation,
+            $VarType,
+            $HasAction,
+            $Description,
+            fn (string $Text): string => $this->Translate($Text)
+        ));
+    }
+
+    /**
+     * Löscht die Profile bis Version 3.81, sobald keine Statusvariable dieser Instanz sie mehr nutzt.
+     * UnregisterProfile lässt Profile stehen, die Variablen anderer Instanzen oder des Nutzers verwenden.
+     */
+    private function RemoveLegacyProfiles(): void
+    {
+        foreach (IPS_GetChildrenIDs($this->InstanceID) as $ChildId) {
+            if (IPS_VariableExists($ChildId) && in_array(IPS_GetVariable($ChildId)['VariableProfile'], \HMExtended\Variables::LegacyProfiles)) {
+                return;
             }
+        }
+        $this->UnregisterLegacyProfiles();
+    }
+
+    /**
+     * Löscht die Profile bis Version 3.81. `Execute.HM` nutzt auch das Modul Programme, solange dessen Variablen es tragen, bleibt es stehen.
+     */
+    private function UnregisterLegacyProfiles(): void
+    {
+        foreach (\HMExtended\Variables::LegacyProfiles as $Profile) {
+            $this->UnregisterProfile($Profile);
         }
     }
 
@@ -683,11 +741,12 @@ class HMHeatingDevice extends HMBase
         $HasFixed = false;
         $NewScheduleTemps = [];
         foreach ($ScheduleTemps as $Temp) {
-            if ($Temp['TemperatureValue'] < 5) {
+            // Grenzen der Wochenplan-Temperaturen laut CCU-Firmware je Gerät.
+            if ($Temp['TemperatureValue'] < static::MinScheduleTemperature) {
                 $HasFixed = true;
                 continue;
             }
-            if ($Temp['TemperatureValue'] > 30) {
+            if ($Temp['TemperatureValue'] > static::MaxScheduleTemperature) {
                 $HasFixed = true;
                 continue;
             }

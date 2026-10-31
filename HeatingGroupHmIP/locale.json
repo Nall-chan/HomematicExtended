@@ -77,7 +77,12 @@
             "Variable is disabled in config.": "Variable ist in der Konfiguration deaktiviert.",
             "Invalid Ident.": "Ungültiger Ident.",
             "Invalid Ident for VALUE.": "Ungültiger Ident für VALUE.",
-            "Party is disabled in config.": "Party ist in der Konfiguration deaktiviert."
+            "Party is disabled in config.": "Party ist in der Konfiguration deaktiviert.",
+            "Valve closed": "Ventil geschlossen",
+            "Valve open": "Ventil offen",
+            "Central": "Zentral",
+            "Start": "Ausführen",
+            "A day of the schedule has more than %d switching points.": "Ein Tag des Wochenplans hat mehr als %d Schaltpunkte."
         }
     }
 }

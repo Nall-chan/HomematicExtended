@@ -192,7 +192,7 @@ Umlaute und der Doppelpunkt müssen für die Anzeige umgewandelt werden (`Ä Ö 
 
 ## 5. Statusvariablen
 
-Es werden keine Statusvariablen und Profile angelegt.  
+Es werden keine Statusvariablen angelegt.  
 
 ## 6. Visualisierung
 

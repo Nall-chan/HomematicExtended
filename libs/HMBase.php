@@ -22,6 +22,32 @@ require_once __DIR__ . '/HMTypes.php';  // HMTypes Data
 require_once __DIR__ . '/HMScriptParser.php';  // Parser für die Antworten der CCU
 
 /**
+ * Statusvariablen mit Darstellung (seit Version 3.82 statt Variablenprofilen).
+ */
+trait HMPresentationVariable
+{
+    /**
+     * Legt eine Statusvariable mit Darstellung an bzw. aktualisiert deren Darstellung.
+     * Eine Darstellung ersetzt ein gesetztes Profil nicht, das Profil (bis Version 3.81) wird daher vorher gelöst.
+     * Variable und Archivdaten bleiben erhalten, solange sich der Typ nicht ändert.
+     *
+     * @param string $Ident Ident der Statusvariable.
+     * @param string $Name Name beim Anlegen.
+     * @param int $VarType Typ der Statusvariable.
+     * @param array $Presentation Die Darstellung, leer für keine.
+     * @param int $Position Position beim Anlegen.
+     */
+    protected function MaintainPresentationVariable(string $Ident, string $Name, int $VarType, array $Presentation, int $Position = 0): void
+    {
+        $VariableId = $this->FindIDForIdent($Ident);
+        if (($VariableId > 0) && IPS_VariableExists($VariableId) && (IPS_GetVariable($VariableId)['VariableType'] == $VarType) && (IPS_GetVariable($VariableId)['VariableProfile'] !== '')) {
+            $this->MaintainVariable($Ident, $Name, $VarType, '', $Position, true);
+        }
+        $this->MaintainVariable($Ident, $Name, $VarType, count($Presentation) ? $Presentation : '', $Position, true);
+    }
+}
+
+/**
  * HMBase ist die Basis-Klasse für alle Module welche HMScript verwenden.
  * Erweitert IPSModuleStrict.
  *
@@ -45,6 +71,7 @@ abstract class HMBase extends IPSModuleStrict
         \HMExtended\VariableProfileHelper,
         \HMExtended\BufferHelper,
         \HMExtended\AttributeArrayHelper,
+        HMPresentationVariable,
         \HMExtended\InstanceStatus {
             \HMExtended\InstanceStatus::RegisterParent as IORegisterParent;
             \HMExtended\InstanceStatus::MessageSink as IOMessageSink;
@@ -416,13 +443,16 @@ abstract class HMBase extends IPSModuleStrict
      * @param array $Paramset Parameter der Methode.
      * @param mixed $Values Daten (Arrays werden als JSON übertragen), null = keine Daten.
      * @param bool $EmulateStatus Bei true wird die Antwort der CCU nicht abgewartet.
+     * @param bool $Quiet Bei true werden Fehler nur per Debug ausgegeben (optionale Abfragen).
      *
      * @return mixed Die Antwort der CCU, true ohne Antwortdaten, bei einem Fehler null (Meldung per echo).
      */
-    protected function SendRPC(string $MethodName, int $Protocol, array $Paramset, mixed $Values = null, bool $EmulateStatus = false): mixed
+    protected function SendRPC(string $MethodName, int $Protocol, array $Paramset, mixed $Values = null, bool $EmulateStatus = false, bool $Quiet = false): mixed
     {
         if (!$this->HasActiveParent()) {
-            echo $this->Translate('Instance has no active parent instance!') . PHP_EOL;
+            if (!$Quiet) {
+                echo $this->Translate('Instance has no active parent instance!') . PHP_EOL;
+            }
             return null;
         }
         $ParentData = [
@@ -443,8 +473,10 @@ abstract class HMBase extends IPSModuleStrict
             return true;
         }
         if ($ResultJSON === false) {
-            $this->SendDebug('Error', '', 0);
-            echo sprintf($this->Translate('Error on %s'), $MethodName) . PHP_EOL;
+            $this->SendDebug('Error', $MethodName, 0);
+            if (!$Quiet) {
+                echo sprintf($this->Translate('Error on %s'), $MethodName) . PHP_EOL;
+            }
             return null;
         }
         $this->SendDebug('Receive JSON', $ResultJSON, 0);

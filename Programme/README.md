@@ -63,7 +63,7 @@ Dieses Modul ist Bestandteil der [HomeMaticExtended-Library](../).
 ## 5. Statusvariablen
 
    Die Programme werden als Integer-Variable unterhalb der Instanz erzeugt. Es wird automatisch der Name und die Beschreibung aus der CCU übernommen.  
-   Des weiteren wird ein Standard-Profil 'Execute-HM' angelegt und den Variablen zugeordnet.  
+   Die Variablen erhalten die Darstellung Aufzählung mit dem Eintrag `Ausführen`.  
    Es ist somit sofort möglich die Programme aus dem WebFront heraus zu starten.  
    Werden in der CCU Programme gelöscht, so müssen die dazugehörigen Variablen in IPS bei Bedarf manuell gelöscht werden.  
 ![Konfiguration](imgs/config.png)  
@@ -115,6 +115,10 @@ Die direkte Darstellung im WebFront ist möglich, es wird aber empfohlen mit Lin
 ### 1. Changelog
 
 Der vollständige Changelog der Library steht in der [Haupt-README](../README.md#2-changelog).  
+
+**Version 3.82:**
+
+- Die Statusvariablen nutzen Darstellungen statt Variablenprofilen. Variablen und Archivdaten bleiben erhalten. Das Profil `Execute.HM` wird gelöscht, sobald keine Variable es mehr nutzt. Variablen von Programmen, die auf der CCU gelöscht wurden, behalten es.  
 
 **Version 3.75:**
 

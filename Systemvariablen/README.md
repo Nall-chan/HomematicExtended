@@ -154,17 +154,18 @@ bool HM_ReadSystemVariables(integer $InstanzID);
    Liest alle gewählten Systemvariablen von der CCU. Liefert `true` bei Erfolg.  
 
 ```php
-bool HM_WriteValueBoolean(integer $InstanzID, string $Ident, bool $Value);
-bool HM_WriteValueInteger(integer $InstanzID, string $Ident, int $Value);
-bool HM_WriteValueFloat(integer $InstanzID, string $Ident, float $Value);
-bool HM_WriteValueString(integer $InstanzID, string $Ident, string $Value);
+bool HM_WriteValueBoolean2(integer $InstanzID, string $Ident, bool $Value);
+bool HM_WriteValueInteger2(integer $InstanzID, string $Ident, int $Value);
+bool HM_WriteValueFloat2(integer $InstanzID, string $Ident, float $Value);
+bool HM_WriteValueString2(integer $InstanzID, string $Ident, string $Value);
 ```
 
    Schreibt einen Wert in die Systemvariable. Der Typ muss zur Statusvariable passen (Wertelisten: Index des Eintrags ab 0). Liefert `true`, wenn die CCU den Wert übernommen hat.  
+   Ab Symcon 10.0 stehen dieselben Funktionen auch ohne `2` zur Verfügung (`HM_WriteValueBoolean` usw.). Ein Modul kann diese Namen erst ab Symcon 10.0 belegen, bis dahin sind die Funktionen mit `2` zu verwenden. Ab Symcon 10.0 erzeugen die Funktionen mit `2` eine Warnung im Log.  
 
 ```php
 // Systemvariable mit der CCU-ID 29612 (Logikwert) einschalten
-HM_WriteValueBoolean(12345, '29612', true);
+HM_WriteValueBoolean2(12345, '29612', true);
 ```
 
 ```php
@@ -174,7 +175,7 @@ string HM_DeleteCCUProgram(integer $InstanzID);
 
    Legt das CCU-Programm für die gespeicherte Auswahl und Taste an (ein vorhandenes Programm der Instanz wird ersetzt) bzw. löscht es. Liefert eine Meldung für den Nutzer.  
 
-   Veraltete Funktionen (werden mit Version 3.90 entfernt, ein Aufruf erzeugt eine Warnung im Log): `HM_WriteValueBoolean2`, `HM_WriteValueInteger2`, `HM_WriteValueFloat2`, `HM_WriteValueString2` (ersetzt durch die Funktionen ohne `2`), `HM_SystemVariablesTimer` (ersetzt durch `HM_ReadSystemVariables`) und `HM_AlarmReceipt` dieses Moduls (ersetzt durch `HM_AlarmReceipt` des Moduls [HomeMatic Alarmvariable](../Alarmvariable/)).  
+   Veraltete Funktionen (werden mit Version 3.90 entfernt, ein Aufruf erzeugt eine Warnung im Log): `HM_SystemVariablesTimer` (ersetzt durch `HM_ReadSystemVariables`) und `HM_AlarmReceipt` dieses Moduls (ersetzt durch `HM_AlarmReceipt` des Moduls [HomeMatic Alarmvariable](../Alarmvariable/)).  
 
 ## 8. Aktionen
 
@@ -185,6 +186,10 @@ string HM_DeleteCCUProgram(integer $InstanzID);
 ### 1. Changelog
 
 Der vollständige Changelog der Library steht in der [Haupt-README](../README.md#2-changelog).  
+
+**Version 3.82:**
+
+- `HM_WriteValueBoolean2`, `HM_WriteValueInteger2`, `HM_WriteValueFloat2` und `HM_WriteValueString2` erzeugten eine falsche Warnung im Log.  
 
 **Version 3.80:**
 

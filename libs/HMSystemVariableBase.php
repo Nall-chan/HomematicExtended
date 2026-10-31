@@ -74,7 +74,7 @@ abstract class HMSystemVariableBase extends HMBase
 
     /**
      * Interne Funktion des SDK.
-     * Ohne Parent wird nicht gelesen und nichts gemeldet. Mit Parent wird sofort gelesen, Fehler werden gemeldet.
+     * Ohne aktiven Parent wird nicht gelesen und nichts gemeldet. Mit aktivem Parent wird sofort gelesen, Fehler werden gemeldet.
      */
     public function ApplyChanges(): void
     {
@@ -94,7 +94,9 @@ abstract class HMSystemVariableBase extends HMBase
         if (!$this->CheckConfig()) {
             return;
         }
-        if (!$this->HasParent()) {
+        // Lesen und Timer nur mit aktivem Socket (z.B. nicht beim Start von Symcon, bevor der Socket verbunden ist).
+        // Wird der Socket aktiv, startet IOChangeState über ApplyChanges den Timer.
+        if (!$this->HasActiveParent()) {
             return;
         }
         if ($this->UpdateVariables()) {
@@ -279,16 +281,6 @@ abstract class HMSystemVariableBase extends HMBase
     protected function HasKey(): bool
     {
         return \HMExtended\SystemVariables::ProtocolOfKey($this->ReadPropertyString(\HMExtended\Device\Property::Address)) !== false;
-    }
-
-    /**
-     * Prüft, ob die Instanz mit einem Parent (Homematic Socket) verbunden ist.
-     *
-     * @return bool true, wenn ein Parent eingetragen ist (unabhängig von dessen Status).
-     */
-    protected function HasParent(): bool
-    {
-        return IPS_GetInstance($this->InstanceID)['ConnectionID'] > 0;
     }
 
     /**

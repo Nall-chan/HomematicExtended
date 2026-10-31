@@ -283,286 +283,351 @@ namespace HMExtended
         public const SUBMIT_WEEK_PROGRAM = 'SUBMIT_WEEK_PROGRAM';
         public const SELECT_NEW_WEEK_PROGRAM = 'SELECT_NEW_WEEK_PROGRAM';
 
+        /**
+         * Variablenprofile der Heizungsmodule bis Version 3.81. Seit 3.82 nutzen die Statusvariablen Darstellungen (HeatingPresentation),
+         * die Profile werden beim Übernehmen gelöst und gelöscht, sobald keine Variable sie mehr nutzt.
+         */
+        public const LegacyProfiles = [
+            'Heating.Control.SetPoint.Temperature.HM',
+            // Aus einer älteren Version, wird seitdem nicht mehr angelegt.
+            'Heating.Control.SetPoint.Temperature.HmIP',
+            'Heating.Control.Profile.HmIP',
+            'Heating.Control.Profile.HM',
+            'DateTime.Time.Seconds.HM',
+            'Heating.Control.Mode.HM',
+            'Heating.Control.SetPoint.Mode.HmIP',
+            'Heating.Control.SetPoint.Mode.HM',
+            'Heating.Control.SetPoint.Mode.HM-CC-TC',
+            'Heating.Control.Boost.State.HM',
+            'Window.Open.State.HM.Reversed',
+            'Heating.Valve.State.HmIP',
+            'DateTime.DoW.Saturday',
+            'DateTime.DoW.Sunday',
+            'Heating.Control.Valve.Mode.HM',
+            'DateTime.Time.Minutes.30',
+            'DateTime.Time.Minutes.30.Steps',
+            'DateTime.Time.Minutes.60.Steps',
+            'Temperature.Room.Lowering.HmIP',
+            'Temperature.Room.Comfort.HmIP',
+            'Execute.HM'
+        ];
+
         public static $HmTypeToIpsType = [
             'FLOAT' => VARIABLETYPE_FLOAT,
             'BOOL'  => VARIABLETYPE_BOOLEAN,
             'UINT'  => VARIABLETYPE_INTEGER,
             'STRING'=> VARIABLETYPE_STRING
         ];
+    }
 
-        public static $Profiles = [
-            'Heating.Control.SetPoint.Temperature.HM'=> [
-                VARIABLETYPE_FLOAT,
-                'Temperature',
-                '',
-                '',
-                [
-                    [4.5, 'Off', '', -1],
-                    [5, '%.1f °C', '', -1],
-                    [30.5, 'On', '', -1]
-                ],
-                -1,
-                0.5,
-                1
-            ],
-            'Heating.Control.Profile.HmIP'=> [
-                VARIABLETYPE_INTEGER,
-                'Clock',
-                '',
-                '',
-                [
-                    [1, '1', '', -1],
-                    [2, '2', '', -1],
-                    [3, '3', '', -1],
-                    [4, '4', '', -1],
-                    [5, '5', '', -1],
-                    [6, '6', '', -1]
-                ],
-                -1,
-                0,
-                0
-            ],
-            'Heating.Control.Profile.HM'=> [
-                VARIABLETYPE_INTEGER,
-                'Clock',
-                '',
-                '',
-                [
-                    [1, '1', '', -1],
-                    [2, '2', '', -1],
-                    [3, '3', '', -1]
-                ],
-                -1,
-                0,
-                0
-            ],
-            'DateTime.Time.Seconds.HM'        => [
-                VARIABLETYPE_INTEGER,
-                'Clock',
-                '',
-                ' seconds',
-                0,
-                0,
-                0,
-                0
+    /**
+     * Darstellungen der Statusvariablen der Heizungsmodule (seit Version 3.82 statt Variablenprofilen).
+     *
+     * Variablen mit Aktion erhalten eine bedienbare Darstellung (Schieberegler, Aufzählung, Schalter),
+     * Variablen ohne Aktion eine Wertanzeige. Soll-Temperaturen übernehmen Grenzen und Sonderwerte
+     * aus der Paramset-Beschreibung der CCU (MIN, MAX, SPECIAL), da sie je Gerät verschieden sind.
+     */
+    class HeatingPresentation
+    {
+        public const SetPointTemperature = 'SetPointTemperature';
+        public const Temperature = 'Temperature';
+        public const Humidity = 'Humidity';
+        public const Switch = 'Switch';
+        public const Level = 'Level';
+        public const Percent = 'Percent';
+        public const DateTime = 'DateTime';
+        public const Time = 'Time';
+        public const Seconds = 'Seconds';
+        public const Minutes30 = 'Minutes30';
+        public const Minutes30Steps = 'Minutes30Steps';
+        public const Minutes60Steps = 'Minutes60Steps';
+        public const ProfileHmIP = 'ProfileHmIP';
+        public const ProfileHM = 'ProfileHM';
+        public const HeatingCooling = 'HeatingCooling';
+        public const SetPointModeHmIP = 'SetPointModeHmIP';
+        public const SetPointModeHM = 'SetPointModeHM';
+        public const OperationModeCCTC = 'OperationModeCCTC';
+        public const WindowState = 'WindowState';
+        public const ValveStateHmIP = 'ValveStateHmIP';
+        public const WeekdayFromSaturday = 'WeekdayFromSaturday';
+        public const WeekdayFromSunday = 'WeekdayFromSunday';
+        public const ValveMode = 'ValveMode';
+        public const Execute = 'Execute';
 
-            ],
-            'Heating.Control.Mode.HM'=> [
-                VARIABLETYPE_INTEGER,
-                '',
-                '',
-                '',
-                [
-                    [0, 'Heat', 'Flame', 0xFF0000],
-                    [1, 'Cool', 'Snowflake', 0x0000FF],
-                ],
-                -1,
-                0,
-                0
-            ],
-            'Heating.Control.SetPoint.Mode.HmIP'=> [
-                VARIABLETYPE_INTEGER,
-                '',
-                '',
-                '',
-                [
-                    [0, 'Automatic', 'Clock', 0x339966],
-                    [1, 'Manually', 'Execute', 0xFF0000],
-                    [2, 'Holiday/Party', 'Party', 0x3366FF]
-                ],
-                -1,
-                0,
-                0
-            ],
-            'Heating.Control.SetPoint.Mode.HM'=> [
-                VARIABLETYPE_INTEGER,
-                '',
-                '',
-                '',
-                [
-                    [0, 'Automatic', 'Clock', 0x339966],
-                    [1, 'Manually', 'Execute', 0xFF0000],
-                    [2, 'Holiday/Party', 'Party', 0x3366FF],
-                    [3, 'Boost', 'Flame', 0xFFFF99]
-                ],
-                -1,
-                0,
-                0
-            ],
-            'Heating.Control.SetPoint.Mode.HM-CC-TC'=> [
-                VARIABLETYPE_INTEGER,
-                '',
-                '',
-                '',
-                [
-                    [0, 'Manually', 'Execute', 0xFF0000],
-                    [1, 'Automatic', 'Clock', 0x339966],
-                    [2, 'Central', 'Remote', 0xff9900],
-                    [3, 'Holiday/Party', 'Party', 0x3366FF]
-                ],
-                -1,
-                0,
-                0
-            ],
-            'Heating.Control.Boost.State.HM'=> [
-                VARIABLETYPE_BOOLEAN,
-                '',
-                '',
-                '',
-                [
-                    [false, 'Off', '', -1],
-                    [true, 'On', 'Flame', 0xFFFF99]
-                ],
-                -1,
-                0,
-                0
-            ],
-            'Window.Open.State.HM.Reversed'=> [
-                VARIABLETYPE_INTEGER,
-                'Window',
-                '',
-                '',
-                [
-                    [0, 'Closed', '', -1],
-                    [1, 'Open', '', 0x0000FF]
-                ],
-                -1,
-                0,
-                0
-            ],
-            'Heating.Valve.State.HmIP'=> [
-                VARIABLETYPE_INTEGER,
-                'Gear',
-                '',
-                '',
-                [
-                    [0, 'Status unknown', '', -1],
-                    [1, 'Run to start position', '', -1],
-                    [2, 'wait for adaptation', '', -1],
-                    [3, 'Adaptation in progress', '', -1],
-                    [4, 'Adaptation done', '', -1],
-                    [5, 'Valve too tight', '', -1],
-                    [6, 'Range too big', '', -1],
-                    [7, 'Range too small', '', -1],
-                    [8, 'Error position', '', -1]
-                ],
-                -1,
-                0,
-                0
-            ],
-            'DateTime.DoW.Saturday'=> [
-                VARIABLETYPE_INTEGER,
-                'Calendar',
-                '',
-                '',
-                [
-                    [0, 'Saturday', '', -1],
-                    [1, 'Sunday', '', -1],
-                    [2, 'Monday', '', -1],
-                    [3, 'Tuesday', '', -1],
-                    [4, 'Wednesday', '', -1],
-                    [5, 'Thursday', '', -1],
-                    [6, 'Friday', '', -1]
-                ],
-                -1,
-                0,
-                0
-            ],
-            'DateTime.DoW.Sunday'=> [
-                VARIABLETYPE_INTEGER,
-                'Calendar',
-                '',
-                '',
-                [
-                    [0, 'Sunday', '', -1],
-                    [1, 'Monday', '', -1],
-                    [2, 'Tuesday', '', -1],
-                    [3, 'Wednesday', '', -1],
-                    [4, 'Thursday', '', -1],
-                    [5, 'Friday', '', -1],
-                    [6, 'Saturday', '', -1]
-                ],
-                -1,
-                0,
-                0
-            ],
-            'Heating.Control.Valve.Mode.HM'=> [
-                VARIABLETYPE_INTEGER,
-                'Gear',
-                '',
-                '',
-                [
-                    [0, 'Automatic', 'Clock', 0x339966],
-                    [1, 'Closed', 'Execute', 0x0000FF],
-                    [2, 'Open', 'Party', 0xFF0000]
-                ],
-                -1,
-                0,
-                0
-            ],
-            'DateTime.Time.Minutes.30'=> [
-                VARIABLETYPE_INTEGER,
-                'Clock',
-                '',
-                ' minutes',
-                0,
-                30,
-                1,
-                0
-            ],
-            'DateTime.Time.Minutes.30.Steps'=> [
-                VARIABLETYPE_INTEGER,
-                'Clock',
-                '',
-                ' minutes',
-                0,
-                30,
-                5,
-                0
-            ],
-            'DateTime.Time.Minutes.60.Steps'=> [
-                VARIABLETYPE_INTEGER,
-                'Clock',
-                '',
-                ' minutes',
-                0,
-                60,
-                5,
-                0
-            ],
-            'Temperature.Room.Lowering.HmIP'=> [
-                VARIABLETYPE_FLOAT,
-                'Temperature',
-                '',
-                ' °C',
-                5,
-                25,
-                0.5,
-                1
-            ],
-            'Temperature.Room.Comfort.HmIP'=> [
-                VARIABLETYPE_FLOAT,
-                'Temperature',
-                '',
-                ' °C',
-                15,
-                30,
-                0.5,
-                1
-            ],
-            'Execute.HM' => [
-                VARIABLETYPE_INTEGER,
-                '',
-                '',
-                '',
-                [
-                    [0, 'Start', '', -1]
-                ],
-                -1,
-                0,
-                0
-            ]
+        /** Soll-Temperatur der CCU für „Aus“ bzw. „An“ (HM-CC-RT-DN, HmIP). */
+        public const TemperatureOff = 4.5;
+        public const TemperatureOn = 30.5;
+
+        /** Schieberegler: USAGE_TYPE 0 = Temperatur (Standard 5 = keine), GRADIENT_TYPE 1 = Temperatur. */
+        public const SliderUsageTemperature = 0;
+        public const SliderGradientTemperature = 1;
+        /** Wertanzeige: USAGE_TYPE 1 = Temperatur (Standard 0 = keine). */
+        public const ValueUsageTemperature = 1;
+
+        /**
+         * Zahlenwerte: Symbol, Suffix, Nachkommastellen, Minimum, Maximum, Schrittweite, prozentual.
+         * Minimum und Maximum der Soll-Temperatur gelten nur, wenn die CCU keine Grenzen liefert.
+         */
+        public const Numbers = [
+            self::SetPointTemperature => ['Temperature', ' °C', 1, self::TemperatureOff, self::TemperatureOn, 0.5, false],
+            self::Temperature         => ['Temperature', ' °C', 1, 0, 0, 0, false],
+            self::Humidity            => ['Drops', ' %', 0, 0, 100, 1, false],
+            self::Level               => ['Intensity', ' %', 0, 0, 1, 0.05, true],
+            self::Percent             => ['Intensity', ' %', 0, 0, 100, 1, false],
+            self::Minutes30           => ['Clock', ' min', 0, 0, 30, 1, false],
+            self::Minutes30Steps      => ['Clock', ' min', 0, 0, 30, 5, false],
+            self::Minutes60Steps      => ['Clock', ' min', 0, 0, 60, 5, false]
         ];
+
+        /**
+         * Aufzählungen: Symbol und Einträge (Wert, Beschriftung, Symbol, Farbe).
+         * Die Beschriftungen werden vom Modul übersetzt (locale.json der Heizungsmodule).
+         */
+        public const Options = [
+            self::ProfileHmIP => ['Clock', [
+                [1, '1', '', -1],
+                [2, '2', '', -1],
+                [3, '3', '', -1],
+                [4, '4', '', -1],
+                [5, '5', '', -1],
+                [6, '6', '', -1]
+            ]],
+            self::ProfileHM => ['Clock', [
+                [1, '1', '', -1],
+                [2, '2', '', -1],
+                [3, '3', '', -1]
+            ]],
+            self::HeatingCooling => ['', [
+                [0, 'Heat', 'Flame', 0xFF0000],
+                [1, 'Cool', 'Snowflake', 0x0000FF]
+            ]],
+            self::SetPointModeHmIP => ['', [
+                [0, 'Automatic', 'Clock', 0x339966],
+                [1, 'Manually', 'Execute', 0xFF0000],
+                [2, 'Holiday/Party', 'Party', 0x3366FF]
+            ]],
+            self::SetPointModeHM => ['', [
+                [0, 'Automatic', 'Clock', 0x339966],
+                [1, 'Manually', 'Execute', 0xFF0000],
+                [2, 'Holiday/Party', 'Party', 0x3366FF],
+                [3, 'Boost', 'Flame', 0xFFFF99]
+            ]],
+            self::OperationModeCCTC => ['', [
+                [0, 'Manually', 'Execute', 0xFF0000],
+                [1, 'Automatic', 'Clock', 0x339966],
+                [2, 'Central', 'Remote', 0xFF9900],
+                [3, 'Holiday/Party', 'Party', 0x3366FF]
+            ]],
+            self::WindowState => ['Window', [
+                [0, 'Closed', '', -1],
+                [1, 'Open', '', 0x0000FF]
+            ]],
+            self::ValveStateHmIP => ['Gear', [
+                [0, 'Status unknown', '', -1],
+                [1, 'Run to start position', '', -1],
+                [2, 'wait for adaptation', '', -1],
+                [3, 'Adaptation in progress', '', -1],
+                [4, 'Adaptation done', '', -1],
+                [5, 'Valve too tight', '', -1],
+                [6, 'Range too big', '', -1],
+                [7, 'Range too small', '', -1],
+                [8, 'Error position', '', -1]
+            ]],
+            self::WeekdayFromSaturday => ['Calendar', [
+                [0, 'Saturday', '', -1],
+                [1, 'Sunday', '', -1],
+                [2, 'Monday', '', -1],
+                [3, 'Tuesday', '', -1],
+                [4, 'Wednesday', '', -1],
+                [5, 'Thursday', '', -1],
+                [6, 'Friday', '', -1]
+            ]],
+            self::WeekdayFromSunday => ['Calendar', [
+                [0, 'Sunday', '', -1],
+                [1, 'Monday', '', -1],
+                [2, 'Tuesday', '', -1],
+                [3, 'Wednesday', '', -1],
+                [4, 'Thursday', '', -1],
+                [5, 'Friday', '', -1],
+                [6, 'Saturday', '', -1]
+            ]],
+            self::ValveMode => ['Gear', [
+                [0, 'Automatic', 'Clock', 0x339966],
+                [1, 'Closed', 'Execute', 0x0000FF],
+                [2, 'Open', 'Party', 0xFF0000]
+            ]],
+            self::Execute => ['', [
+                [0, 'Start', '', -1]
+            ]]
+        ];
+
+        /** Beschriftungen der Sonderwerte (SPECIAL) aus der Paramset-Beschreibung, z.B. HM-CC-TC SETPOINT 0 und 100. */
+        public const SpecialCaptions = [
+            'VENT_CLOSED' => 'Valve closed',
+            'VENT_OPEN'   => 'Valve open'
+        ];
+
+        /** Weitere Beschriftungen, die die Darstellungen verwenden. */
+        public const Captions = ['Off', 'On'];
+
+        /**
+         * Liefert die Darstellung einer Statusvariable.
+         *
+         * @param string $Key Schlüssel der Darstellung (Konstante dieser Klasse).
+         * @param int $VariableType Typ der Statusvariable.
+         * @param bool $HasAction true, wenn die Variable bedienbar ist.
+         * @param array $Description Beschreibung des Datenpunktes laut getParamsetDescription (MIN, MAX, SPECIAL), leer wenn unbekannt.
+         * @param callable $Translate Übersetzt eine Beschriftung (string => string).
+         *
+         * @return array Die Darstellung für MaintainVariable.
+         */
+        public static function Get(string $Key, int $VariableType, bool $HasAction, array $Description, callable $Translate): array
+        {
+            switch ($Key) {
+                case self::Switch:
+                    if ($HasAction) {
+                        return ['PRESENTATION' => VARIABLE_PRESENTATION_SWITCH];
+                    }
+                    return [
+                        'PRESENTATION' => VARIABLE_PRESENTATION_VALUE_PRESENTATION,
+                        'OPTIONS'      => json_encode([
+                            self::ValueOption(false, $Translate('Off'), '', -1),
+                            self::ValueOption(true, $Translate('On'), '', -1)
+                        ])
+                    ];
+                case self::DateTime:
+                    return ['PRESENTATION' => VARIABLE_PRESENTATION_DATE_TIME, 'DATE' => 1, 'MONTH_TEXT' => false, 'DAY_OF_THE_WEEK' => false, 'TIME' => 1];
+                case self::Time:
+                    return ['PRESENTATION' => VARIABLE_PRESENTATION_DATE_TIME, 'DATE' => 0, 'DAY_OF_THE_WEEK' => false, 'TIME' => 1];
+                case self::Seconds:
+                    // Restzeit in Sekunden als Minuten und Sekunden.
+                    return ['PRESENTATION' => VARIABLE_PRESENTATION_DURATION, 'COUNTDOWN_TYPE' => 0, 'FORMAT' => 1];
+            }
+            if (array_key_exists($Key, self::Options)) {
+                return self::Enumeration($Key, $HasAction, $Description, $Translate);
+            }
+            return self::Number($Key, $VariableType, $HasAction, $Description, $Translate);
+        }
+
+        /**
+         * Zahlenwert als Schieberegler (mit Aktion) oder Wertanzeige (ohne Aktion).
+         */
+        private static function Number(string $Key, int $VariableType, bool $HasAction, array $Description, callable $Translate): array
+        {
+            [$Icon, $Suffix, $Digits, $Min, $Max, $Step, $Percentage] = self::Numbers[$Key];
+            $Intervals = [];
+            if ($Key == self::SetPointTemperature) {
+                // Die CCU liefert MIN/MAX je nach Schnittstelle als Zahl oder Text (z.B. '5.0' bei der virtuellen Heizgruppe).
+                if (is_numeric($Description['MIN'] ?? null) && is_numeric($Description['MAX'] ?? null)) {
+                    $Min = (float) $Description['MIN'];
+                    $Max = (float) $Description['MAX'];
+                }
+                if ($Min == self::TemperatureOff) {
+                    $Intervals[] = self::Interval($Min, $Translate('Off'));
+                }
+                if ($Max == self::TemperatureOn) {
+                    $Intervals[] = self::Interval($Max, $Translate('On'));
+                }
+                foreach ($Description['SPECIAL'] ?? [] as $Special) {
+                    if (is_array($Special) && is_numeric($Special['VALUE'] ?? null)) {
+                        $Caption = self::SpecialCaptions[$Special['ID'] ?? ''] ?? (string) ($Special['ID'] ?? $Special['VALUE']);
+                        $Intervals[] = self::Interval((float) $Special['VALUE'], $Translate($Caption));
+                    }
+                }
+            }
+            if ($VariableType == VARIABLETYPE_INTEGER) {
+                $Min = (int) $Min;
+                $Max = (int) $Max;
+            }
+            $Presentation = [
+                'PRESENTATION' => $HasAction ? VARIABLE_PRESENTATION_SLIDER : VARIABLE_PRESENTATION_VALUE_PRESENTATION,
+                'ICON'         => $Icon,
+                'SUFFIX'       => $Suffix,
+                'DIGITS'       => $Digits,
+                'PERCENTAGE'   => $Percentage
+            ];
+            if ($HasAction || $Percentage) {
+                $Presentation['MIN'] = $Min;
+                $Presentation['MAX'] = $Max;
+            }
+            if ($HasAction) {
+                $Presentation['STEP_SIZE'] = ($VariableType == VARIABLETYPE_INTEGER) ? (int) $Step : $Step;
+            }
+            if (count($Intervals)) {
+                $Presentation['INTERVALS_ACTIVE'] = true;
+                $Presentation['INTERVALS'] = json_encode($Intervals);
+            }
+            if (in_array($Key, [self::SetPointTemperature, self::Temperature])) {
+                // Verwendung Temperatur, die Werte unterscheiden sich je Darstellung (sliderForm.php, valuePresentationForm.php).
+                if ($HasAction) {
+                    $Presentation['USAGE_TYPE'] = self::SliderUsageTemperature;
+                    $Presentation['GRADIENT_TYPE'] = self::SliderGradientTemperature;
+                } else {
+                    $Presentation['USAGE_TYPE'] = self::ValueUsageTemperature;
+                }
+            }
+            return $Presentation;
+        }
+
+        /**
+         * Aufzählung (mit Aktion) oder Wertanzeige mit festen Texten je Wert (ohne Aktion).
+         */
+        private static function Enumeration(string $Key, bool $HasAction, array $Description, callable $Translate): array
+        {
+            [$Icon, $Entries] = self::Options[$Key];
+            if (($Key == self::ProfileHmIP) && is_numeric($Description['MIN'] ?? null) && is_numeric($Description['MAX'] ?? null)) {
+                // Anzahl der Profile laut CCU (z.B. 1..3 bei einer Heizgruppe, 1..6 im MASTER-Paramset).
+                $Entries = array_values(array_filter($Entries, fn ($Entry) => ($Entry[0] >= (int) $Description['MIN']) && ($Entry[0] <= (int) $Description['MAX'])));
+            }
+            if ($HasAction) {
+                $Options = [];
+                foreach ($Entries as [$Value, $Caption, $EntryIcon, $Color]) {
+                    $Options[] = ['Value' => $Value, 'Caption' => $Translate($Caption), 'IconActive' => $EntryIcon !== '', 'IconValue' => $EntryIcon, 'Color' => $Color];
+                }
+                return ['PRESENTATION' => VARIABLE_PRESENTATION_ENUMERATION, 'ICON' => $Icon, 'OPTIONS' => json_encode($Options)];
+            }
+            $Intervals = [];
+            foreach ($Entries as [$Value, $Caption, $EntryIcon, $Color]) {
+                $Interval = self::Interval($Value, $Translate($Caption));
+                $Interval['IconActive'] = $EntryIcon !== '';
+                $Interval['IconValue'] = $EntryIcon;
+                $Interval['ColorActive'] = $Color != -1;
+                $Interval['ColorValue'] = $Color;
+                $Intervals[] = $Interval;
+            }
+            return [
+                'PRESENTATION'     => VARIABLE_PRESENTATION_VALUE_PRESENTATION,
+                'ICON'             => $Icon,
+                'DIGITS'           => 0,
+                'INTERVALS_ACTIVE' => true,
+                'INTERVALS'        => json_encode($Intervals)
+            ];
+        }
+
+        /**
+         * Intervall für genau einen Wert mit festem Text.
+         */
+        private static function Interval(int|float $Value, string $Caption): array
+        {
+            return ['IntervalMinValue' => $Value, 'IntervalMaxValue' => $Value, 'ConstantActive' => true, 'ConstantValue' => $Caption];
+        }
+
+        /**
+         * Eintrag der Wertanzeige für Boolean.
+         */
+        private static function ValueOption(bool $Value, string $Caption, string $Icon, int $Color): array
+        {
+            return [
+                'Value'              => $Value,
+                'Caption'            => $Caption,
+                'IconActive'         => $Icon !== '',
+                'IconValue'          => $Icon,
+                'ColorActive'        => $Color != -1,
+                'ColorValue'         => $Color,
+                'ContentColorActive' => false,
+                'ContentColorValue'  => -1
+            ];
+        }
     }
 
     class ValuesSet
@@ -571,7 +636,7 @@ namespace HMExtended
             DeviceType::ClimacontrolRegulator => [
                 ClimacontrolRegulator::SETPOINT => [
                     VARIABLETYPE_FLOAT,
-                    '~Temperature.HM',
+                    HeatingPresentation::SetPointTemperature,
                     true,
                     'Target temperature'
                 ],
@@ -588,13 +653,13 @@ namespace HMExtended
             DeviceType::HeatingGroupHmIP => [
                 HeatingGroupHmIP::ACTIVE_PROFILE => [
                     VARIABLETYPE_INTEGER,
-                    'Heating.Control.Profile.HmIP',
+                    HeatingPresentation::ProfileHmIP,
                     true,
                     'Active profile'
                 ],
                 HeatingGroupHmIP::ACTUAL_TEMPERATURE => [
                     VARIABLETYPE_FLOAT,
-                    '~Temperature',
+                    HeatingPresentation::Temperature,
                     false,
                     'Temperature'
                 ],
@@ -603,31 +668,31 @@ namespace HMExtended
                 ],
                 HeatingGroupHmIP::BOOST_MODE => [
                     VARIABLETYPE_BOOLEAN,
-                    '~Switch',
+                    HeatingPresentation::Switch,
                     true,
                     'Boost'
                 ],
                 HeatingGroupHmIP::BOOST_TIME => [
                     VARIABLETYPE_INTEGER,
-                    'DateTime.Time.Seconds.HM',
+                    HeatingPresentation::Seconds,
                     false,
                     'Boost remaining time'
                 ],
                 HeatingGroupHmIP::FROST_PROTECTION => [
                     VARIABLETYPE_BOOLEAN,
-                    '~Switch',
+                    HeatingPresentation::Switch,
                     false,
                     'Frost protection'
                 ],
                 HeatingGroupHmIP::HEATING_COOLING => [
                     VARIABLETYPE_INTEGER,
-                    'Heating.Control.Mode.HM',
+                    HeatingPresentation::HeatingCooling,
                     true,
                     'Operation mode'
                 ],
                 HeatingGroupHmIP::HUMIDITY => [
                     VARIABLETYPE_INTEGER,
-                    '~Humidity',
+                    HeatingPresentation::Humidity,
                     false,
                     'Humidity'
                 ],
@@ -636,7 +701,7 @@ namespace HMExtended
                 ],
                 HeatingGroupHmIP::LEVEL => [
                     VARIABLETYPE_FLOAT,
-                    '~Intensity.1',
+                    HeatingPresentation::Level,
                     true,
                     'Valve opening'
                 ],
@@ -648,21 +713,21 @@ namespace HMExtended
                 ],
                 HeatingGroupHmIP::PARTY_SET_POINT_TEMPERATURE => [
                     VARIABLETYPE_FLOAT,
-                    '~Temperature.HM',
+                    HeatingPresentation::SetPointTemperature,
                     true,
                     'Holiday/Party set point temperature',
                     HeatingGroupHmIP::PARTY
                 ],
                 HeatingGroupHmIP::PARTY_TIME_END => [
                     VARIABLETYPE_INTEGER,
-                    '~UnixTimestamp',
+                    HeatingPresentation::DateTime,
                     true,
                     'Holiday/Party end',
                     HeatingGroupHmIP::PARTY
                 ],
                 HeatingGroupHmIP::PARTY_TIME_START => [
                     VARIABLETYPE_INTEGER,
-                    '~UnixTimestamp',
+                    HeatingPresentation::DateTime,
                     true,
                     'Holiday/Party start',
                     HeatingGroupHmIP::PARTY
@@ -672,7 +737,7 @@ namespace HMExtended
                 ],
                 HeatingGroupHmIP::SET_POINT_MODE => [
                     VARIABLETYPE_INTEGER,
-                    'Heating.Control.SetPoint.Mode.HmIP',
+                    HeatingPresentation::SetPointModeHmIP,
                     HeatingGroupHmIP::CONTROL_MODE,
                     'Target temperature mode'
                 ],
@@ -681,31 +746,31 @@ namespace HMExtended
                 ],
                 HeatingGroupHmIP::SET_POINT_TEMPERATURE => [
                     VARIABLETYPE_FLOAT,
-                    'Heating.Control.SetPoint.Temperature.HM',
+                    HeatingPresentation::SetPointTemperature,
                     true,
                     'Target temperature'
                 ],
                 HeatingGroupHmIP::SWITCH_POINT_OCCURED => [
                     VARIABLETYPE_BOOLEAN,
-                    '~Switch',
+                    HeatingPresentation::Switch,
                     false,
                     'Switch point occurred'
                 ],
                 HeatingGroupHmIP::VALVE_ADAPTION => [
                     VARIABLETYPE_BOOLEAN,
-                    '~Switch',
+                    HeatingPresentation::Switch,
                     true,
                     'Valve adaption'
                 ],
                 HeatingGroupHmIP::VALVE_STATE => [
                     VARIABLETYPE_INTEGER,
-                    'Heating.Valve.State.HmIP',
+                    HeatingPresentation::ValveStateHmIP,
                     false,
                     'Valve state'
                 ],
                 HeatingGroupHmIP::WINDOW_STATE => [
                     VARIABLETYPE_INTEGER,
-                    'Window.Open.State.HM.Reversed',
+                    HeatingPresentation::WindowState,
                     true,
                     'Window state'
                 ]
@@ -713,19 +778,19 @@ namespace HMExtended
             DeviceType::HeatingGroup => [
                 HeatingGroup::ACTUAL_HUMIDITY => [
                     VARIABLETYPE_INTEGER,
-                    '~Humidity',
+                    HeatingPresentation::Humidity,
                     false,
                     'Humidity'
                 ],
                 HeatingGroup::ACTUAL_TEMPERATURE => [
                     VARIABLETYPE_FLOAT,
-                    '~Temperature',
+                    HeatingPresentation::Temperature,
                     false,
                     'Temperature'
                 ],
                 HeatingGroup::SET_TEMPERATURE => [
                     VARIABLETYPE_FLOAT,
-                    'Heating.Control.SetPoint.Temperature.HM',
+                    HeatingPresentation::SetPointTemperature,
                     true,
                     'Target temperature'
                 ],
@@ -740,13 +805,13 @@ namespace HMExtended
                 ],
                 HeatingGroup::CONTROL_MODE => [
                     VARIABLETYPE_INTEGER,
-                    'Heating.Control.SetPoint.Mode.HM',
+                    HeatingPresentation::SetPointModeHM,
                     true,
                     'Target temperature mode'
                 ],
                 HeatingGroup::PARTY_TEMPERATURE => [
                     VARIABLETYPE_FLOAT,
-                    '~Temperature.HM',
+                    HeatingPresentation::SetPointTemperature,
                     true,
                     'Holiday/Party set point temperature',
                     HeatingGroup::PARTY
@@ -754,7 +819,7 @@ namespace HMExtended
 
                 HeatingGroup::PARTY_START_TIME => [
                     VARIABLETYPE_INTEGER,
-                    '~UnixTimestamp',
+                    HeatingPresentation::DateTime,
                     true,
                     'Holiday/Party start',
                     HeatingGroup::PARTY
@@ -776,7 +841,7 @@ namespace HMExtended
                 ],
                 HeatingGroup::PARTY_STOP_TIME => [
                     VARIABLETYPE_INTEGER,
-                    '~UnixTimestamp',
+                    HeatingPresentation::DateTime,
                     true,
                     'Holiday/Party end',
                     HeatingGroup::PARTY
@@ -798,13 +863,13 @@ namespace HMExtended
                 ],
                 HeatingGroup::COMFORT_MODE => [
                     VARIABLETYPE_INTEGER,
-                    'Execute.HM',
+                    HeatingPresentation::Execute,
                     true,
                     'Set to comfort temperature'
                 ],
                 HeatingGroup::LOWERING_MODE => [
                     VARIABLETYPE_INTEGER,
-                    'Execute.HM',
+                    HeatingPresentation::Execute,
                     true,
                     'Set to lowering temperature'
                 ],
@@ -818,19 +883,19 @@ namespace HMExtended
             DeviceType::ClimacontrolRegulator => [
                 ClimacontrolRegulator::MODE_TEMPERATUR_REGULATOR => [
                     VARIABLETYPE_INTEGER,
-                    'Heating.Control.SetPoint.Mode.HM-CC-TC',
+                    HeatingPresentation::OperationModeCCTC,
                     true,
                     'Operation mode'
                 ],
                 ClimacontrolRegulator::DECALCIFICATION_DAY => [
                     VARIABLETYPE_INTEGER,
-                    'DateTime.DoW.Saturday',
+                    HeatingPresentation::WeekdayFromSaturday,
                     true,
                     'Decalcification day'
                 ],
                 ClimacontrolRegulator::DECALCIFICATION_TIME => [
                     VARIABLETYPE_INTEGER,
-                    '~UnixTimestampTime',
+                    HeatingPresentation::Time,
                     true,
                     'Decalcification time'
                 ],
@@ -841,31 +906,31 @@ namespace HMExtended
                 ],
                 ClimacontrolRegulator::MODE_TEMPERATUR_VALVE => [
                     VARIABLETYPE_INTEGER,
-                    'Heating.Control.Valve.Mode.HM',
+                    HeatingPresentation::ValveMode,
                     true,
                     'Valve mode'
                 ],
                 ClimacontrolRegulator::TEMPERATUR_LOWERING_VALUE=> [
                     VARIABLETYPE_FLOAT,
-                    '~Temperature.HM',
+                    HeatingPresentation::SetPointTemperature,
                     true,
                     'Lowering temperature'
                 ],
                 ClimacontrolRegulator::TEMPERATUR_COMFORT_VALUE => [
                     VARIABLETYPE_FLOAT,
-                    '~Temperature.HM',
+                    HeatingPresentation::SetPointTemperature,
                     true,
                     'Comfort temperature'
                 ],
                 ClimacontrolRegulator::PARTY_END_TIME => [
                     VARIABLETYPE_INTEGER,
-                    '~UnixTimestamp',
+                    HeatingPresentation::DateTime,
                     true,
                     'Holiday/Party end'
                 ],
                 ClimacontrolRegulator::TEMPERATUR_PARTY_VALUE => [
                     VARIABLETYPE_FLOAT,
-                    '~Temperature.HM',
+                    HeatingPresentation::SetPointTemperature,
                     true,
                     'Holiday/Party set point temperature'
                 ],
@@ -884,55 +949,55 @@ namespace HMExtended
             DeviceType::HeatingGroupHmIP => [
                 HeatingGroupHmIP::DECALCIFICATION_TIME=> [
                     VARIABLETYPE_INTEGER,
-                    '~UnixTimestampTime',
+                    HeatingPresentation::Time,
                     true,
                     'Decalcification time'
                 ],
                 HeatingGroupHmIP::DECALCIFICATION_WEEKDAY=> [
                     VARIABLETYPE_INTEGER,
-                    'DateTime.DoW.Sunday',
+                    HeatingPresentation::WeekdayFromSunday,
                     true,
                     'Decalcification day'
                 ],
                 HeatingGroupHmIP::BOOST_POSITION=> [
                     VARIABLETYPE_INTEGER,
-                    '~Intensity.100',
+                    HeatingPresentation::Percent,
                     true,
                     'Boost valve opening'
                 ],
                 HeatingGroupHmIP::BOOST_TIME_PERIOD => [
                     VARIABLETYPE_INTEGER,
-                    'DateTime.Time.Minutes.30',
+                    HeatingPresentation::Minutes30,
                     true,
                     'Boost duration'
                 ],
                 HeatingGroupHmIP::TEMPERATURE_COMFORT => [
                     VARIABLETYPE_FLOAT,
-                    'Temperature.Room.Comfort.HmIP',
+                    HeatingPresentation::SetPointTemperature,
                     true,
                     'Comfort temperature'
                 ],
                 HeatingGroupHmIP::TEMPERATURE_COMFORT_COOLING => [
                     VARIABLETYPE_FLOAT,
-                    'Temperature.Room.Lowering.HmIP',
+                    HeatingPresentation::SetPointTemperature,
                     true,
                     'Comfort temperature cooling'
                 ],
                 HeatingGroupHmIP::TEMPERATURE_LOWERING => [
                     VARIABLETYPE_FLOAT,
-                    'Temperature.Room.Lowering.HmIP',
+                    HeatingPresentation::SetPointTemperature,
                     true,
                     'Lowering temperature'
                 ],
                 HeatingGroupHmIP::TEMPERATURE_LOWERING_COOLING => [
                     VARIABLETYPE_FLOAT,
-                    'Temperature.Room.Comfort.HmIP',
+                    HeatingPresentation::SetPointTemperature,
                     true,
                     'Lowering temperature cooling'
                 ],
                 HeatingGroupHmIP::TEMPERATURE_WINDOW_OPEN => [
                     VARIABLETYPE_FLOAT,
-                    '~Temperature.HM',
+                    HeatingPresentation::SetPointTemperature,
                     true,
                     'Window open temperature'
                 ]
@@ -940,80 +1005,80 @@ namespace HMExtended
             DeviceType::HeatingGroup => [
                 HeatingGroup::WEEK_PROGRAM_POINTER => [
                     VARIABLETYPE_INTEGER,
-                    'Heating.Control.Profile.HM',
+                    HeatingPresentation::ProfileHM,
                     true,
                     'Active profile'
                 ],
                 HeatingGroup::DECALCIFICATION_TIME=> [
                     VARIABLETYPE_INTEGER,
-                    '~UnixTimestampTime',
+                    HeatingPresentation::Time,
                     true,
                     'Decalcification time'
                 ],
                 // Die Werteliste der CCU beginnt bei HM-CC-RT-DN und HM-CC-VG-1 mit SATURDAY (bei HmIP mit SUNDAY).
                 HeatingGroup::DECALCIFICATION_WEEKDAY=> [
                     VARIABLETYPE_INTEGER,
-                    'DateTime.DoW.Saturday',
+                    HeatingPresentation::WeekdayFromSaturday,
                     true,
                     'Decalcification day'
                 ],
                 HeatingGroup::BOOST_POSITION=> [
                     VARIABLETYPE_INTEGER,
-                    '~Intensity.100',
+                    HeatingPresentation::Percent,
                     true,
                     'Boost valve opening'
                 ],
                 HeatingGroup::BOOST_TIME_PERIOD => [
                     VARIABLETYPE_INTEGER,
-                    'DateTime.Time.Minutes.30.Steps',
+                    HeatingPresentation::Minutes30Steps,
                     true,
                     'Boost duration'
                 ],
                 HeatingGroup::TEMPERATURE_COMFORT => [
                     VARIABLETYPE_FLOAT,
-                    'Temperature.Room.Comfort.HmIP',
+                    HeatingPresentation::SetPointTemperature,
                     true,
                     'Comfort temperature'
                 ],
                 HeatingGroup::TEMPERATURE_LOWERING => [
                     VARIABLETYPE_FLOAT,
-                    'Temperature.Room.Lowering.HmIP',
+                    HeatingPresentation::SetPointTemperature,
                     true,
                     'Lowering temperature'
                 ],
                 HeatingGroup::BUTTON_LOCK => [
                     VARIABLETYPE_BOOLEAN,
-                    '~Switch',
+                    HeatingPresentation::Switch,
                     true,
                     'Button lock'
                 ],
                 HeatingGroup::GLOBAL_BUTTON_LOCK => [
                     VARIABLETYPE_BOOLEAN,
-                    '~Switch',
+                    HeatingPresentation::Switch,
                     true,
                     'Device lock'
                 ],
                 HeatingGroup::MODUS_BUTTON_LOCK => [
                     VARIABLETYPE_BOOLEAN,
-                    '~Switch',
+                    HeatingPresentation::Switch,
                     true,
                     'Mode locked'
                 ],
                 HeatingGroup::BOOST_AFTER_WINDOW_OPEN => [
                     VARIABLETYPE_BOOLEAN,
-                    '~Switch',
+                    HeatingPresentation::Switch,
                     true,
                     'Boost when window was closed'
                 ],
                 HeatingGroup::TEMPERATUREFALL_WINDOW_OPEN => [
                     VARIABLETYPE_FLOAT,
-                    '~Temperature.HM',
+                    HeatingPresentation::SetPointTemperature,
                     true,
                     'Window open temperature'
                 ],
                 HeatingGroup::TEMPERATUREFALL_WINDOW_OPEN_TIME_PERIOD => [
                     VARIABLETYPE_INTEGER,
-                    'DateTime.Time.Minutes.60.Steps',
+                    HeatingPresentation::Minutes60Steps,
                     true,
                     'Window open duration'
                 ]
@@ -1021,19 +1086,121 @@ namespace HMExtended
         ];
     }
 
-    class Profiles
+    /**
+     * Darstellungen der Messwerte von PowerMeter, Weather, RF- und WR-Interface (seit Version 3.82 statt der Systemprofile `~…`).
+     * Symbol, Suffix und Nachkommastellen entsprechen den bisherigen Systemprofilen. Variablen mit Aktion erhalten keine Darstellung
+     * (bisher ebenfalls kein Profil), Zahlen werden als Wertanzeige dargestellt.
+     */
+    class DatapointPresentation
     {
-        public static $UnitToProfile = [
-            ''   => '',
-            'Wh' => '~Electricity.Wh',
-            'm3' => '~Gas',
-            'kWh'=> '~Electricity',
-            'W'  => '~Watt',
-            'mA' => '~Milliampere.HM',
-            'A'  => '~Ampere',
-            'V'  => '~Volt',
-            'Hz' => '~Hertz'
+        /** Einheit der CCU (UNIT der Paramset-Beschreibung): Symbol, Suffix, Nachkommastellen. */
+        public const Units = [
+            'Wh'  => ['Electricity', ' Wh', 2],
+            'kWh' => ['Electricity', ' kWh', 2],
+            'm3'  => ['Flame', ' m³', 2],
+            'W'   => ['Electricity', ' W', 1],
+            'mA'  => ['Electricity', ' mA', 0],
+            'A'   => ['Electricity', ' A', 1],
+            'V'   => ['Electricity', ' V', 1],
+            'Hz'  => ['Electricity', ' Hz', 2]
         ];
+
+        /**
+         * Datenpunkte mit eigener Darstellung, unabhängig von der Einheit der CCU: Symbol, Suffix, Nachkommastellen (bei Integer immer 0).
+         * Wetterwerte laut CCU-Firmware in °C, %, lx, km/h, °, mm und Minuten.
+         */
+        public const Datapoints = [
+            'ACTUAL_TEMPERATURE' => ['Temperature', ' °C', 1],
+            'HUMIDITY'           => ['Gauge', ' %', 1],
+            'ILLUMINATION'       => ['Sun', ' lx', 1],
+            'WIND_SPEED'         => ['WindSpeed', ' km/h', 1],
+            'WIND_DIR'           => ['WindDirection', '°', 1],
+            'WIND_DIR_RANGE'     => ['WindDirection', '°', 0],
+            'RAIN_COUNTER'       => ['Rainfall', ' mm', 1],
+            'SUNSHINEDURATION'   => ['Sun', ' min', 0],
+            'DUTY_CYCLE'         => ['Intensity', ' %', 0]
+        ];
+
+        /** Boolean-Datenpunkte: Symbol und je Wert Beschriftung und Farbe (-1 = keine). */
+        public const Booleans = [
+            'RAINING'   => ['Rainfall', [[false, 'No rain', -1], [true, 'Rain', 0x0000FF]]],
+            'CONNECTED' => ['Warning', [[false, 'Alarm', 0xFF0000], [true, 'OK', -1]]]
+        ];
+
+        /** Datenpunkte mit Verwendung Temperatur (Wertanzeige: USAGE_TYPE 1). */
+        public const TemperatureDatapoints = ['ACTUAL_TEMPERATURE'];
+
+        /**
+         * Liefert die Darstellung einer Statusvariable.
+         *
+         * @param string $Ident Name des Datenpunktes.
+         * @param string $Unit Einheit laut CCU, leer wenn unbekannt.
+         * @param int $VariableType Typ der Statusvariable.
+         * @param bool $HasAction true, wenn die Variable bedienbar ist.
+         * @param callable $Translate Übersetzt eine Beschriftung (string => string).
+         *
+         * @return array Die Darstellung, leer wenn keine passt.
+         */
+        public static function Get(string $Ident, string $Unit, int $VariableType, bool $HasAction, callable $Translate): array
+        {
+            if ($HasAction) {
+                return [];
+            }
+            if ($VariableType == VARIABLETYPE_BOOLEAN) {
+                if (!array_key_exists($Ident, self::Booleans)) {
+                    return [];
+                }
+                [$Icon, $Entries] = self::Booleans[$Ident];
+                $Options = [];
+                foreach ($Entries as [$Value, $Caption, $Color]) {
+                    $Options[] = [
+                        'Value'              => $Value,
+                        'Caption'            => $Translate($Caption),
+                        'IconActive'         => false,
+                        'IconValue'          => '',
+                        'ColorActive'        => $Color != -1,
+                        'ColorValue'         => $Color,
+                        'ContentColorActive' => false,
+                        'ContentColorValue'  => -1
+                    ];
+                }
+                return ['PRESENTATION' => VARIABLE_PRESENTATION_VALUE_PRESENTATION, 'ICON' => $Icon, 'OPTIONS' => json_encode($Options)];
+            }
+            if (!in_array($VariableType, [VARIABLETYPE_INTEGER, VARIABLETYPE_FLOAT])) {
+                return [];
+            }
+            $Format = self::Datapoints[$Ident] ?? self::Units[$Unit] ?? null;
+            if ($Format === null) {
+                return [];
+            }
+            [$Icon, $Suffix, $Digits] = $Format;
+            $Presentation = [
+                'PRESENTATION' => VARIABLE_PRESENTATION_VALUE_PRESENTATION,
+                'ICON'         => $Icon,
+                'SUFFIX'       => $Suffix,
+                'DIGITS'       => ($VariableType == VARIABLETYPE_INTEGER) ? 0 : $Digits
+            ];
+            if (in_array($Ident, self::TemperatureDatapoints)) {
+                $Presentation['USAGE_TYPE'] = HeatingPresentation::ValueUsageTemperature;
+            }
+            return $Presentation;
+        }
+
+        /**
+         * Beschriftungen, die übersetzt werden müssen.
+         *
+         * @return string[]
+         */
+        public static function Captions(): array
+        {
+            $Captions = [];
+            foreach (self::Booleans as [, $Entries]) {
+                foreach ($Entries as $Entry) {
+                    $Captions[] = $Entry[1];
+                }
+            }
+            return $Captions;
+        }
     }
 }
 

@@ -99,34 +99,34 @@ IPS_ApplyChanges(12345);
 
 Welche Statusvariablen angelegt werden, richtet sich nach dem Gerät und den Optionen der Konfiguration. Die Namen werden in der Systemsprache angezeigt.  
 
-| Name | Ident | Typ | Bedienbar | Optional | Quelle | Profil / Darstellung |
-| :--- | :---- | :-- | :-------- | :------- | :----- | :------------------- |
-| Aktives Zeitprofil | ACTIVE_PROFILE | Integer | ja | ja (an) | Werte | folgt |
-| Temperatur | ACTUAL_TEMPERATURE | Float | nein |  | Werte | folgt |
-| Boost | BOOST_MODE | Boolean | ja | ja (an) | Werte | folgt |
-| Boost Restlaufzeit | BOOST_TIME | Integer | nein | ja (aus) | Werte | folgt |
-| Frostschutz | FROST_PROTECTION | Boolean | nein | ja (aus) | Werte | folgt |
-| Betriebsmodus | HEATING_COOLING | Integer | ja | ja (aus) | Werte | folgt |
-| Feuchtigkeit | HUMIDITY | Integer | nein |  | Werte | folgt |
-| Ventilöffnung | LEVEL | Float | ja | ja (an) | Werte | folgt |
-| Urlaub/Party Solltemperatur | PARTY_SET_POINT_TEMPERATURE | Float | ja | ja (an) | Werte | folgt |
-| Urlaub/Party Ende | PARTY_TIME_END | Integer | ja | ja (an) | Werte | folgt |
-| Urlaub/Party Anfang | PARTY_TIME_START | Integer | ja | ja (an) | Werte | folgt |
-| Modus Solltemperatur | SET_POINT_MODE | Integer | ja |  | Werte | folgt |
-| Solltemperatur | SET_POINT_TEMPERATURE | Float | ja |  | Werte | folgt |
-| Schaltpunkt erreicht | SWITCH_POINT_OCCURED | Boolean | nein | ja (aus) | Werte | folgt |
-| Ventilanpassung | VALVE_ADAPTION | Boolean | ja | ja (aus) | Werte | folgt |
-| Ventilzustand | VALVE_STATE | Integer | nein | ja (an) | Werte | folgt |
-| Fensterzustand | WINDOW_STATE | Integer | ja | ja (an) | Werte | folgt |
-| Entkalkung Uhrzeit | DECALCIFICATION_TIME | Integer | ja | ja (aus) | Parameter | folgt |
-| Entkalkung Wochentag | DECALCIFICATION_WEEKDAY | Integer | ja | ja (aus) | Parameter | folgt |
-| Boost Ventilöffnung | BOOST_POSITION | Integer | ja | ja (aus) | Parameter | folgt |
-| Boostdauer | BOOST_TIME_PERIOD | Integer | ja | ja (aus) | Parameter | folgt |
-| Komforttemperatur | TEMPERATURE_COMFORT | Float | ja | ja (aus) | Parameter | folgt |
-| Komforttemperatur kühlen | TEMPERATURE_COMFORT_COOLING | Float | ja | ja (aus) | Parameter | folgt |
-| Absenktemperatur | TEMPERATURE_LOWERING | Float | ja | ja (aus) | Parameter | folgt |
-| Absenktemperatur kühlen | TEMPERATURE_LOWERING_COOLING | Float | ja | ja (aus) | Parameter | folgt |
-| Fenster offen Temperatur | TEMPERATURE_WINDOW_OPEN | Float | ja | ja (an) | Parameter | folgt |
+| Name | Ident | Typ | Bedienbar | Optional | Quelle | Darstellung |
+| :--- | :---- | :-- | :-------- | :------- | :----- | :---------- |
+| Aktives Zeitprofil | ACTIVE_PROFILE | Integer | ja | ja (an) | Werte | Aufzählung (1 bis 6, Anzahl laut CCU) |
+| Temperatur | ACTUAL_TEMPERATURE | Float | nein |  | Werte | Wertanzeige °C, Verwendung Temperatur |
+| Boost | BOOST_MODE | Boolean | ja | ja (an) | Werte | Schalter |
+| Boost Restlaufzeit | BOOST_TIME | Integer | nein | ja (aus) | Werte | Dauer |
+| Frostschutz | FROST_PROTECTION | Boolean | nein | ja (aus) | Werte | Wertanzeige (Aus/An) |
+| Betriebsmodus | HEATING_COOLING | Integer | ja | ja (aus) | Werte | Aufzählung (Heizen, Kühlen) |
+| Feuchtigkeit | HUMIDITY | Integer | nein |  | Werte | Wertanzeige % |
+| Ventilöffnung | LEVEL | Float | ja | ja (an) | Werte | Schieberegler 0 bis 100 % |
+| Urlaub/Party Solltemperatur | PARTY_SET_POINT_TEMPERATURE | Float | ja | ja (an) | Werte | Schieberegler Temperatur ¹ |
+| Urlaub/Party Ende | PARTY_TIME_END | Integer | ja | ja (an) | Werte | Datum/Uhrzeit |
+| Urlaub/Party Anfang | PARTY_TIME_START | Integer | ja | ja (an) | Werte | Datum/Uhrzeit |
+| Modus Solltemperatur | SET_POINT_MODE | Integer | ja |  | Werte | Aufzählung (Automatik, Manuell, Urlaub/Party) |
+| Solltemperatur | SET_POINT_TEMPERATURE | Float | ja |  | Werte | Schieberegler Temperatur ¹ |
+| Schaltpunkt erreicht | SWITCH_POINT_OCCURED | Boolean | nein | ja (aus) | Werte | Wertanzeige (Aus/An) |
+| Ventilanpassung | VALVE_ADAPTION | Boolean | ja | ja (aus) | Werte | Schalter |
+| Ventilzustand | VALVE_STATE | Integer | nein | ja (an) | Werte | Wertanzeige (Zustand der Ventiladaption) |
+| Fensterzustand | WINDOW_STATE | Integer | ja | ja (an) | Werte | Aufzählung (Geschlossen, Geöffnet) |
+| Entkalkung Uhrzeit | DECALCIFICATION_TIME | Integer | ja | ja (aus) | Parameter | Datum/Uhrzeit (Uhrzeit) |
+| Entkalkung Wochentag | DECALCIFICATION_WEEKDAY | Integer | ja | ja (aus) | Parameter | Aufzählung (Sonntag bis Samstag) |
+| Boost Ventilöffnung | BOOST_POSITION | Integer | ja | ja (aus) | Parameter | Schieberegler 0 bis 100 % |
+| Boostdauer | BOOST_TIME_PERIOD | Integer | ja | ja (aus) | Parameter | Schieberegler 0 bis 30 min |
+| Komforttemperatur | TEMPERATURE_COMFORT | Float | ja | ja (aus) | Parameter | Schieberegler Temperatur ¹ |
+| Komforttemperatur kühlen | TEMPERATURE_COMFORT_COOLING | Float | ja | ja (aus) | Parameter | Schieberegler Temperatur ¹ |
+| Absenktemperatur | TEMPERATURE_LOWERING | Float | ja | ja (aus) | Parameter | Schieberegler Temperatur ¹ |
+| Absenktemperatur kühlen | TEMPERATURE_LOWERING_COOLING | Float | ja | ja (aus) | Parameter | Schieberegler Temperatur ¹ |
+| Fenster offen Temperatur | TEMPERATURE_WINDOW_OPEN | Float | ja | ja (an) | Parameter | Schieberegler Temperatur ¹ |
 
 Zusätzlich werden bei aktivem Wochenplan angelegt:  
 
@@ -136,8 +136,7 @@ Zusätzlich werden bei aktivem Wochenplan angelegt:
 | Zeitplan speichern in Profil | SELECT_NEW_WEEK_PROGRAM | Integer | ja | Zeitprofil der CCU (1 bis 6), in das der Wochenplan gespeichert wird. |
 | Zeitplan speichern | SUBMIT_WEEK_PROGRAM | Integer | ja | Überträgt den Wochenplan in das gewählte Zeitprofil zur CCU. |
 
-> [!NOTE]
-> Die Spalte `Profil / Darstellung` ist noch nicht gefüllt. Die Variablenprofile werden auf Darstellungen umgestellt.  
+¹ Schieberegler mit Verwendung Temperatur, Schrittweite 0,5 °C. Minimum und Maximum liefert die CCU je Gerät (HmIP: 4,5 °C = `Aus` bis 30,5 °C = `An`).  
 
 > [!WARNING]
 > Das Ändern einer Option in der Konfiguration löscht die Statusvariable der abgewählten Option.  
@@ -151,8 +150,6 @@ Zusätzlich werden bei aktivem Wochenplan angelegt:
 ### WebFront Visualisierung
 
 *Screenshot des WebFront folgt.*  
-
-Das klassische WebFront zeigt Font-Awesome-Symbole nicht an.  
 
 ## 7. PHP-Befehlsreferenz
 
@@ -180,12 +177,19 @@ HM_RequestState(12345, 'SET_POINT_TEMPERATURE');
 **Grundsätzlich können alle bedienbaren Statusvariablen als Ziel einer [`Aktion`](https://www.symcon.de/service/dokumentation/konzepte/automationen/ablaufplaene/aktionen/) mit `Auf Wert schalten` angesteuert werden, so dass hier keine speziellen Aktionen benutzt werden müssen.**  
 
 Der Wochenplan hat für jede Temperatur eine Aktion, die beim Auslösen die Parameter der CCU neu liest (`HM_RequestParams`). Die Temperaturen des Wochenplans werden in der Konfiguration unter `Temperaturen anpassen` gepflegt.  
+Beim Speichern werden die Zeiten auf 5 Minuten gerundet (Raster des Gerätes). Ein Tag darf höchstens 13 Schaltpunkte haben, sonst wird nicht gespeichert und eine Meldung ausgegeben. Die Temperaturen liegen zwischen 5 und 30 °C.  
 
 ## 9. Anhang
 
 ### 1. Changelog
 
 Der vollständige Changelog der Library steht in der [Haupt-README](../README.md#2-changelog).  
+
+**Version 3.82:**
+
+- Wochenplan: Die Zeiten werden beim Speichern auf das Raster des Gerätes (5 Minuten) gerundet, bisher schnitt die CCU ab und der Wochenplan in Symcon zeigte andere Zeiten. Mehr als 13 Schaltpunkte an einem Tag werden mit einer Meldung abgelehnt statt mit einem Fehler der CCU.  
+- Die Statusvariablen nutzen Darstellungen statt Variablenprofilen. Variablen und Archivdaten bleiben erhalten. Die Profile der Library werden gelöscht, sobald keine Variable sie mehr nutzt (Spalte `Darstellung`).  
+- Die Temperaturen übernehmen Minimum und Maximum von der CCU, die Anzahl der wählbaren Zeitprofile entspricht dem Gerät.  
 
 **Version 3.81:**
 

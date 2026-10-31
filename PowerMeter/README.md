@@ -109,18 +109,18 @@ IPS_ApplyChanges(12345);
 Eine der folgende Statusvariablen wird automatisch angelegt, je nach verwendeten Gerät.  
 **Statusvariable:**  
 
-|      Name  /  Ident      |  Typ  |    Profil    |
-| :----------------------: | :---: | :----------: |
-|    GAS_VOLUME_TOTAL      | float |     ~Gas     |
-| GAS_ENERGY_COUNTER_TOTAL | float |     ~Gas     |
-| IEC_ENERGY_COUNTER_TOTAL | float | ~Electricity |
-|   ENERGY_COUNTER_TOTAL   | float | ~Electricity |
-| ENERGY_COUNTER_FEED_IN_TOTAL | float | ~Electricity |
+|      Name  /  Ident      |  Typ  |    Darstellung    |
+| :----------------------: | :---: | :---------------: |
+|    GAS_VOLUME_TOTAL      | float |  Wertanzeige m³   |
+| GAS_ENERGY_COUNTER_TOTAL | float |  Wertanzeige m³   |
+| IEC_ENERGY_COUNTER_TOTAL | float | Wertanzeige kWh   |
+|   ENERGY_COUNTER_TOTAL   | float | Wertanzeige kWh   |
+| ENERGY_COUNTER_FEED_IN_TOTAL | float | Wertanzeige kWh |
 
 Die Variablen der Summenzähler werden erst angelegt, wenn die CCU die zugehörige Systemvariable liefert und der Wert nicht 0 ist.  
 
-**Profile:**  
-Es werden die IPS-Profile ~Electricity und ~Gas genutzt, neue Profile werden nicht angelegt.  
+**Darstellungen:**  
+Die Datenpunkte des Kanals erhalten eine Wertanzeige mit der Einheit der CCU (Wh, kWh, m³, W, mA, A, V, Hz). Datenpunkte mit anderer Einheit erhalten keine Darstellung.  
 
 ## 6. Visualisierung
 
@@ -146,6 +146,12 @@ Die direkte Darstellung im WebFront ist möglich, es wird aber empfohlen mit Lin
 ### 1. Changelog
 
 Der vollständige Changelog der Library steht in der [Haupt-README](../README.md#2-changelog).  
+
+**Version 3.82:**
+
+- Die Statusvariablen nutzen Darstellungen statt Variablenprofilen. Variablen und Archivdaten bleiben erhalten. Die Umstellung erfolgt beim nächsten Lesen der Werte von der CCU.  
+- Hatte das Gerät einzelne Werte noch nie gesendet (z.B. HM-ES-TX-WM im Strommodus die Gas-Werte), schlug das Übernehmen mit `Fehler bei getParamset` fehl. Die Werte werden jetzt einzeln gelesen.  
+- Nach einem Fehler beim Erstellen der Instanz blieb der Status auf `wird erstellt` (101).  
 
 **Version 3.81:**
 

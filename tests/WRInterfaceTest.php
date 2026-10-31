@@ -33,7 +33,8 @@ class WRInterfaceTest extends HomematicModuleTestCase
         $this->assertTrue(GetValueBoolean(IPS_GetObjectIDByIdent('CONNECTED', $this->WRId)));
         $this->assertSame(5, GetValueInteger(IPS_GetObjectIDByIdent('DUTY_CYCLE', $this->WRId)));
         $this->assertSame('1.2.3', GetValueString(IPS_GetObjectIDByIdent('FIRMWARE_VERSION', $this->WRId)));
-        $this->assertSame('~Alert.Reversed', IPS_GetVariable(IPS_GetObjectIDByIdent('CONNECTED', $this->WRId))['VariableProfile']);
+        $this->assertSame(VARIABLE_PRESENTATION_VALUE_PRESENTATION, IPS_GetVariable(IPS_GetObjectIDByIdent('CONNECTED', $this->WRId))['VariablePresentation']['PRESENTATION']);
+        $this->assertSame([], IPS_GetVariable(IPS_GetObjectIDByIdent('FIRMWARE_VERSION', $this->WRId))['VariablePresentation']);
     }
 
     public function testEmptyValuesAreIgnored(): void

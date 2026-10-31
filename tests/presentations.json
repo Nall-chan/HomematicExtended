@@ -1,10 +1,11 @@
 {
-    "_source": "IPS_GetPresentation, Symcon 9.1 (Rust-Edition), 2026-10-28. Je Darstellung: erlaubte Variablentypen, Parameter und Parameter der Gruppen je Variablentyp, Felder der Listen (OPTIONS).",
+    "_source": "IPS_GetPresentation, Symcon 9.1 (Rust-Edition), 2026-10-29. Je Darstellung: erlaubte Variablentypen, requestAction (true = nur mit Aktion, false = nur ohne Aktion, null = beides), Parameter, Felder der Listen-Parameter (lists) und Parameter der Gruppen je Variablentyp mit ihren Listenfeldern.",
     "{52D9E126-D7D2-2CBB-5E62-4CF7BA7C5D82}": {
         "caption": "Enumeration",
         "requestAction": true,
         "variableTypes": [0, 1, 2, 3],
         "parameters": ["DISPLAY", "ICON", "LAYOUT"],
+        "lists": {},
         "groups": {
             "0": {"OPTIONS": ["Caption", "Color", "IconActive", "IconValue", "Value"]},
             "1": {"OPTIONS": ["Caption", "Color", "IconActive", "IconValue", "Value"]},
@@ -17,6 +18,7 @@
         "requestAction": true,
         "variableTypes": [0],
         "parameters": ["GLOW_COLOR", "GLOW_INTENSITY", "ICON_FALSE", "ICON_TRUE", "USAGE_TYPE", "USE_ICON_FALSE"],
+        "lists": {},
         "groups": {}
     },
     "{6F477326-1683-A2FD-D2E7-477F366ECB62}": {
@@ -24,6 +26,7 @@
         "requestAction": true,
         "variableTypes": [1, 2, 3],
         "parameters": ["MULTILINE", "PREFIX", "SUFFIX"],
+        "lists": {},
         "groups": {}
     },
     "{3319437D-7CDE-699D-750A-3C6A3841FA75}": {
@@ -31,18 +34,60 @@
         "requestAction": false,
         "variableTypes": [0, 1, 2, 3],
         "parameters": ["COLOR", "CONTENT_COLOR", "DISPLAY_TYPE", "ICON", "PERCENTAGE", "PREFIX", "PREVIEW_STYLE", "SHOW_PREVIEW", "SUFFIX", "USAGE_TYPE"],
+        "lists": {},
         "groups": {
-            "0": {"OPTIONS": ["Caption", "ColorActive", "ColorValue", "ContentColorActive", "ContentColorValue", "IconActive", "IconValue", "Value"]},
-            "1": {"DECIMAL_SEPARATOR": [], "DIGITS": [], "INTERVALS": [], "INTERVALS_ACTIVE": [], "MAX": [], "MIN": [], "THOUSANDS_SEPARATOR": []},
-            "2": {"DECIMAL_SEPARATOR": [], "DIGITS": [], "INTERVALS": [], "INTERVALS_ACTIVE": [], "MAX": [], "MIN": [], "THOUSANDS_SEPARATOR": []},
-            "3": {"MULTILINE": [], "OPTIONS": ["Caption", "ColorActive", "ColorValue", "ContentColorActive", "ContentColorValue", "IconActive", "IconValue", "Value"]}
+            "0": {
+                "OPTIONS": ["Caption", "ColorActive", "ColorValue", "ContentColorActive", "ContentColorValue", "IconActive", "IconValue", "Value"]
+            },
+            "1": {
+                "DECIMAL_SEPARATOR": [],
+                "DIGITS": [],
+                "INTERVALS": ["ColorActive", "ColorValue", "ConstantActive", "ConstantValue", "ContentColorActive", "ContentColorValue", "ConversionFactor", "DigitsActive", "DigitsValue", "IconActive", "IconValue", "IntervalMaxValue", "IntervalMinValue", "PrefixActive", "PrefixValue", "SuffixActive", "SuffixValue"],
+                "INTERVALS_ACTIVE": [],
+                "MAX": [],
+                "MIN": [],
+                "THOUSANDS_SEPARATOR": []
+            },
+            "2": {
+                "DECIMAL_SEPARATOR": [],
+                "DIGITS": [],
+                "INTERVALS": ["ColorActive", "ColorValue", "ConstantActive", "ConstantValue", "ContentColorActive", "ContentColorValue", "ConversionFactor", "DigitsActive", "DigitsValue", "IconActive", "IconValue", "IntervalMaxValue", "IntervalMinValue", "PrefixActive", "PrefixValue", "SuffixActive", "SuffixValue"],
+                "INTERVALS_ACTIVE": [],
+                "MAX": [],
+                "MIN": [],
+                "THOUSANDS_SEPARATOR": []
+            },
+            "3": {
+                "MULTILINE": [],
+                "OPTIONS": ["Caption", "ColorActive", "ColorValue", "ContentColorActive", "ContentColorValue", "IconActive", "IconValue", "Value"]
+            }
         }
     },
     "{497C4845-27FA-6E4F-AE37-5D951D3BDBF9}": {
         "caption": "Date/Time",
-        "requestAction": false,
+        "requestAction": null,
         "variableTypes": [1, 2],
         "parameters": ["DATE", "DAY_OF_THE_WEEK", "MONTH_TEXT", "TIME"],
+        "lists": {},
+        "groups": {}
+    },
+    "{6B9CAEEC-5958-C223-30F7-BD36569FC57A}": {
+        "caption": "Slider",
+        "requestAction": true,
+        "variableTypes": [1, 2],
+        "parameters": ["CUSTOM_GRADIENT", "DECIMAL_SEPARATOR", "DIGITS", "GRADIENT_TYPE", "ICON", "INTERVALS", "INTERVALS_ACTIVE", "MAX", "MIN", "PERCENTAGE", "PREFIX", "STEP_SIZE", "SUFFIX", "THOUSANDS_SEPARATOR", "USAGE_TYPE"],
+        "lists": {
+            "CUSTOM_GRADIENT": ["Color", "Value"],
+            "INTERVALS": ["ConstantActive", "ConstantValue", "ConversionFactor", "DigitsActive", "DigitsValue", "IconActive", "IconValue", "IntervalMaxValue", "IntervalMinValue", "PrefixActive", "PrefixValue", "SuffixActive", "SuffixValue"]
+        },
+        "groups": {}
+    },
+    "{08A6AF76-394E-D354-48D5-BFC690488E4E}": {
+        "caption": "Duration",
+        "requestAction": false,
+        "variableTypes": [1, 2],
+        "parameters": ["COUNTDOWN_TYPE", "FORMAT", "MILLISECONDS"],
+        "lists": {},
         "groups": {}
     }
 }

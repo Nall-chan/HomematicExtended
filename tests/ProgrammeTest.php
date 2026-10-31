@@ -23,8 +23,33 @@ class ProgrammeTest extends HomematicModuleTestCase
     {
         $this->assertSame('Haustürklingel', IPS_GetName(IPS_GetObjectIDByIdent('1234', $this->ProgrammeId)));
         $this->assertSame('Dummy für Tasten', IPS_GetName(IPS_GetObjectIDByIdent('5678', $this->ProgrammeId)));
-        $this->assertSame('Execute.HM', IPS_GetVariable(IPS_GetObjectIDByIdent('1234', $this->ProgrammeId))['VariableProfile']);
+        $Variable = IPS_GetVariable(IPS_GetObjectIDByIdent('1234', $this->ProgrammeId));
+        $this->assertSame('', $Variable['VariableProfile']);
+        $this->assertSame(VARIABLE_PRESENTATION_ENUMERATION, $Variable['VariablePresentation']['PRESENTATION']);
+        $this->assertSame('Start', json_decode($Variable['VariablePresentation']['OPTIONS'], true)[0]['Caption']);
         $this->assertTrue(HasAction(IPS_GetObjectIDByIdent('1234', $this->ProgrammeId)));
+        $this->assertFalse(IPS_VariableProfileExists('Execute.HM'));
+    }
+
+    public function testLegacyProfileIsRemovedAfterMigration(): void
+    {
+        // Stand bis Version 3.81: Profil Execute.HM.
+        IPS_CreateVariableProfile('Execute.HM', VARIABLETYPE_INTEGER);
+        $VariableId = IPS_GetObjectIDByIdent('1234', $this->ProgrammeId);
+        IPS\VariableManager::setVariableProfile($VariableId, 'Execute.HM');
+        IPS_ApplyChanges($this->ProgrammeId);
+        $this->assertSame('', IPS_GetVariable($VariableId)['VariableProfile']);
+        $this->assertFalse(IPS_VariableProfileExists('Execute.HM'));
+    }
+
+    public function testLegacyProfileOfDeletedProgramIsKept(): void
+    {
+        // Die Variable eines auf der CCU gelöschten Programms wird nicht mehr gepflegt und behält ihr Profil.
+        IPS_CreateVariableProfile('Execute.HM', VARIABLETYPE_INTEGER);
+        IPS\VariableManager::setVariableProfile(IPS_GetObjectIDByIdent('5678', $this->ProgrammeId), 'Execute.HM');
+        FakeHomematicIO::$ScriptResponse = "1234\tHaustürklingel\r\n" . $this->xml('');
+        IPS_ApplyChanges($this->ProgrammeId);
+        $this->assertTrue(IPS_VariableProfileExists('Execute.HM'));
     }
 
     public function testInvalidLinesAreIgnored(): void

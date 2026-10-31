@@ -83,14 +83,11 @@ IPS_ApplyChanges(12345);
    Alle von der CCU gemeldeten Datenpunkte der Interfaces werden in IPS dargestellt.  
    Die folgenden Statusvariablen können durchaus variieren.  
 
-| Name  /  Ident |   Typ   | Profil |
-| :------------: | :-----: | :----: |
-|   CONNECTED    | boolean |        |
-|     SERIAL     | string  |        |
-
-**Profile:**  
-
- Es werden keine Profile angelegt.  
+| Name  /  Ident |   Typ   |         Darstellung         |
+| :------------: | :-----: | :-------------------------: |
+|   CONNECTED    | boolean | Wertanzeige (`Alarm`, `OK`) |
+|   DUTY_CYCLE   | integer |        Wertanzeige %        |
+|     SERIAL     | string  |                             |
 
 ## 6. Visualisierung
 
@@ -115,6 +112,11 @@ Die direkte Darstellung im WebFront ist möglich, es wird aber empfohlen mit Lin
 ### 1. Changelog
 
 Der vollständige Changelog der Library steht in der [Haupt-README](../README.md#2-changelog).  
+
+**Version 3.82:**
+
+- Die Statusvariablen nutzen Darstellungen statt Variablenprofilen. Variablen und Archivdaten bleiben erhalten.  
+- Der Duty Cycle wird in % angezeigt.  
 
 **Version 3.78:**
 

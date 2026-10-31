@@ -150,8 +150,35 @@ class HeatingGroupTest extends HeatingTestCase
     {
         // Werteliste der CCU (HM-CC-RT-DN, HM-CC-VG-1): SATURDAY, SUNDAY, MONDAY, …
         $VariableId = $this->variable('DECALCIFICATION_WEEKDAY');
-        $this->assertSame('DateTime.DoW.Saturday', IPS_GetVariable($VariableId)['VariableProfile']);
+        $Presentation = IPS_GetVariable($VariableId)['VariablePresentation'];
+        $this->assertSame(VARIABLE_PRESENTATION_ENUMERATION, $Presentation['PRESENTATION']);
+        $Options = json_decode($Presentation['OPTIONS'], true);
+        $this->assertSame([0, 'Saturday'], [$Options[0]['Value'], $Options[0]['Caption']]);
         $this->assertSame(6, GetValueInteger($VariableId));
+    }
+
+    public function testLegacyProfileIsReplacedByPresentation(): void
+    {
+        // Stand bis Version 3.81: Soll-Temperatur mit eigenem Profil.
+        $VariableId = $this->variable('SET_TEMPERATURE');
+        IPS_CreateVariableProfile('Heating.Control.SetPoint.Temperature.HM', VARIABLETYPE_FLOAT);
+        IPS\VariableManager::setVariableProfile($VariableId, 'Heating.Control.SetPoint.Temperature.HM');
+        IPS_ApplyChanges($this->DeviceId);
+
+        $Variable = IPS_GetVariable($VariableId);
+        $this->assertSame('', $Variable['VariableProfile']);
+        $this->assertSame(VARIABLE_PRESENTATION_SLIDER, $Variable['VariablePresentation']['PRESENTATION']);
+        $this->assertSame($VariableId, $this->variable('SET_TEMPERATURE'), 'Variable (and archive) must be kept');
+        $this->assertFalse(IPS_VariableProfileExists('Heating.Control.SetPoint.Temperature.HM'));
+    }
+
+    public function testLegacyProfileUsedByUserIsKept(): void
+    {
+        IPS_CreateVariableProfile('Heating.Control.SetPoint.Temperature.HM', VARIABLETYPE_FLOAT);
+        $UserVariable = IPS_CreateVariable(VARIABLETYPE_FLOAT);
+        IPS_SetVariableCustomProfile($UserVariable, 'Heating.Control.SetPoint.Temperature.HM');
+        IPS_ApplyChanges($this->DeviceId);
+        $this->assertTrue(IPS_VariableProfileExists('Heating.Control.SetPoint.Temperature.HM'));
     }
 
     public function testPartyPartWithoutTimestampVariableIsIgnored(): void

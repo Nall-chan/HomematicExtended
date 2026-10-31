@@ -28,6 +28,9 @@ class HomeMaticClimateControlRegulator extends HMHeatingDevice
     protected const WeekScheduleIndexTemp = 'TEMPERATUR_%2$s_%1$d';
     protected const WeekScheduleIndexEndTime = 'TIMEOUT_%2$s_%1$d';
     protected const NumberOfTimeSlot = 24;
+    /** CCU-Firmware rf_cc_tc.xml (auch le_v1_9): TIMEOUT 10..1440 min im 10-Minuten-Raster, TEMPERATUR 6,0..30,0 °C. */
+    protected const ScheduleTimeStep = 10;
+    protected const MinScheduleTemperature = 6.0;
     protected const ProtocolId = 0;
 
     //################# PUBLIC

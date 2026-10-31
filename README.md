@@ -169,6 +169,31 @@ Erweitert IPS um die native Unterstützung von:
 
 ### 2. Changelog
 
+**Version 3.82:**  
+
+> [!IMPORTANT]
+> **Heizungsmodule, Powermeter, Weather, Programme, RF-Interface und WR-Interface:** Die Statusvariablen nutzen Darstellungen statt Variablenprofilen. Die Variablen und ihre Archivdaten bleiben erhalten, eigene Darstellungen und Profile des Nutzers bleiben unverändert.
+>
+> - Die Profile der Library (`Heating.Control.…`, `Heating.…`, `Temperature.Room.…`, `Execute.HM` usw.) werden gelöscht, sobald keine Variable sie mehr nutzt. Wer sie für eigene Variablen verwendet, behält sie.
+> - Die Umstellung erfolgt beim nächsten Lesen der Werte von der CCU. Variablen nicht erreichbarer Geräte behalten bis dahin ihr Profil.
+>
+> **HomeMatic Systemvariablen:** `HM_WriteValueBoolean2`, `HM_WriteValueInteger2`, `HM_WriteValueFloat2` und `HM_WriteValueString2` erzeugen keine Warnung mehr im Log.
+
+**Geändertes Verhalten**
+
+* Heizungsmodule: Die Soll-Temperatur ist ein Schieberegler mit Verwendung `Temperatur`. Minimum und Maximum kommen von der CCU und passen zum jeweiligen Gerät (z.B. HM-CC-TC 6 bis 30 °C mit `Ventil geschlossen` und `Ventil offen`, HM-CC-RT-DN und HmIP 4,5 °C = `Aus` bis 30,5 °C = `An`, HM-CC-VG-1 5 bis 30 °C). Die Anzahl der wählbaren Wochenprofile entspricht den Profilen des Geräts.  
+* Heizungsmodule: Werte ohne Bedienung (z.B. Ventilzustand, Fenster, Betriebsart) werden als Wertanzeige dargestellt, bedienbare als Schieberegler, Aufzählung oder Schalter.  
+* HomeMatic Weather: Alle Werte erhalten einheitliche Darstellungen mit Symbol und Einheit.  
+* HomeMatic WR-Interface: Der Duty Cycle wird in % angezeigt.  
+
+**Fehlerbehebungen**
+
+* HomeMatic Powermeter: Hatte das Gerät einzelne Werte noch nie gesendet (z.B. HM-ES-TX-WM im Strommodus die Gas-Werte), schlug das Übernehmen mit `Fehler bei getParamset` fehl und die Statusvariablen wurden nicht gepflegt. Die Werte werden jetzt einzeln gelesen.  
+* HomeMatic Powermeter, Heizungsmodule, Programme und Weather: Nach einem Fehler beim Erstellen der Instanz (z.B. CCU beim Neuladen nicht erreichbar) blieb der Status auf `wird erstellt` (101), auch nach erfolgreichem Übernehmen.  
+* HomeMatic WR-Interface, RF-Interface Splitter, Systemvariablen und Alarmvariable: Beim Start von Symcon meldeten sie `Keine aktive Parent Instanz!`, wenn der Homematic Socket noch nicht verbunden war. Gelesen wird jetzt erst, wenn der Socket aktiv ist.  
+* Heizungsmodule: Das Debug meldete `Unknown variable` auch für bekannte Datenpunkte, deren Statusvariable in der Konfiguration abgewählt ist.  
+* Heizungsmodule, Wochenplan: Die Zeiten werden beim Speichern auf das Raster des Gerätes gerundet (HM-CC-TC 10 Minuten, sonst 5 Minuten), bisher schnitt die CCU ab und der Wochenplan in Symcon zeigte andere Zeiten. Mehr Schaltpunkte an einem Tag, als das Gerät kennt (HM-CC-TC 24, sonst 13), werden mit einer Meldung abgelehnt statt mit einem Fehler der CCU. HM-CC-TC: Temperaturen im Wochenplan erst ab 6 °C.  
+
 **Version 3.81:**  
 
 **Behobene falsche Werte in Statusvariablen**

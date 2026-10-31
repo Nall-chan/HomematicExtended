@@ -17,7 +17,9 @@
             "Sunshine duration yesterday": "Sonnenscheindauer gestern",
             "Rainfall total": "Regenmenge gesamt",
             "Rainfall today": "Regenmenge heute",
-            "Rainfall yesterday": "Regenmenge gestern"
+            "Rainfall yesterday": "Regenmenge gestern",
+            "No rain": "Kein Regen",
+            "Rain": "Regen"
         }
     }
 }

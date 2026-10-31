@@ -100,35 +100,35 @@ Im Debug der Instanz erscheint nach `Übernehmen` je Systemvariable eine Zeile m
 **Werte des Wetterkanals:**  
 Für jeden Datenpunkt des Kanals wird eine Statusvariable mit dem Namen des Datenpunktes angelegt. Status-Werte (`…_STATUS`, Typ `ENUM`) werden nicht abgebildet.  
 
-| Ident / Name                 | Typ     | Profil / Darstellung            | Geräte    |
-| :--------------------------- | :------ | :------------------------------ | :-------- |
-| ACTUAL_TEMPERATURE           | float   | ~Temperature                    | alle      |
-| HUMIDITY                     | integer | ~Humidity                       | alle      |
-| ILLUMINATION                 | float   | ~Illumination.F                 | alle      |
-| SUNSHINEDURATION             | integer | Wertanzeige, Suffix ` min`      | alle      |
-| SUNSHINEDURATION_OVERFLOW    | boolean |                                 | alle      |
-| SUNSHINE_THRESHOLD_OVERRUN   | boolean |                                 | alle      |
-| WIND_SPEED                   | float   | ~WindSpeed.kmh                  | alle      |
-| WIND_THRESHOLD_OVERRUN       | boolean |                                 | alle      |
-| RAINING                      | boolean | ~Raining                        | PL, PR    |
-| RAIN_COUNTER                 | float   | ~Rainfall                       | PL, PR    |
-| RAIN_COUNTER_OVERFLOW        | boolean |                                 | PL, PR    |
-| WIND_DIR                     | integer | ~WindDirection                  | PR        |
-| WIND_DIR_RANGE               | integer | Wertanzeige, Suffix `°`         | PR        |
+| Ident / Name                 | Typ     | Darstellung                                   | Geräte    |
+| :--------------------------- | :------ | :-------------------------------------------- | :-------- |
+| ACTUAL_TEMPERATURE           | float   | Wertanzeige °C, Verwendung Temperatur         | alle      |
+| HUMIDITY                     | integer | Wertanzeige %                                 | alle      |
+| ILLUMINATION                 | float   | Wertanzeige lx                                | alle      |
+| SUNSHINEDURATION             | integer | Wertanzeige min                               | alle      |
+| SUNSHINEDURATION_OVERFLOW    | boolean |                                               | alle      |
+| SUNSHINE_THRESHOLD_OVERRUN   | boolean |                                               | alle      |
+| WIND_SPEED                   | float   | Wertanzeige km/h                              | alle      |
+| WIND_THRESHOLD_OVERRUN       | boolean |                                               | alle      |
+| RAINING                      | boolean | Wertanzeige (`Kein Regen`, `Regen`)           | PL, PR    |
+| RAIN_COUNTER                 | float   | Wertanzeige mm                                | PL, PR    |
+| RAIN_COUNTER_OVERFLOW        | boolean |                                               | PL, PR    |
+| WIND_DIR                     | integer | Wertanzeige °                                 | PR        |
+| WIND_DIR_RANGE               | integer | Wertanzeige °                                 | PR        |
 
-Die Variablentypen richten sich nach der Beschreibung der Datenpunkte, welche die CCU liefert (z.B. `HUMIDITY` als integer mit `~Humidity`, als float mit `~Humidity.F`).  
+Die Variablentypen richten sich nach der Beschreibung der Datenpunkte, welche die CCU liefert. Als float erhalten `HUMIDITY`, `ILLUMINATION` und `WIND_DIR` eine Nachkommastelle.  
 
 **Systemvariablen der CCU:**  
 Eine Statusvariable wird angelegt, sobald die zugehörige Systemvariable auf der CCU existiert.  
 
-| Ident                      | Name                        | Typ   | Profil / Darstellung       | Systemvariable der CCU                      |
-| :------------------------- | :-------------------------- | :---- | :------------------------- | :------------------------------------------ |
-| SUNSHINEDURATION_TOTAL     | Sonnenscheindauer gesamt    | float | Wertanzeige, Suffix ` min` | `svHmIPSunshineCounter_<ID>_<Adresse>`      |
-| SUNSHINEDURATION_TODAY     | Sonnenscheindauer heute     | float | Wertanzeige, Suffix ` min` | `svHmIPSunshineCounterToday_<ID>`           |
-| SUNSHINEDURATION_YESTERDAY | Sonnenscheindauer gestern   | float | Wertanzeige, Suffix ` min` | `svHmIPSunshineCounterYesterday_<ID>`       |
-| RAIN_COUNTER_TOTAL         | Regenmenge gesamt           | float | ~Rainfall                  | `svHmIPRainCounter_<ID>_<Adresse>`          |
-| RAIN_COUNTER_TODAY         | Regenmenge heute            | float | ~Rainfall                  | `svHmIPRainCounterToday_<ID>`               |
-| RAIN_COUNTER_YESTERDAY     | Regenmenge gestern          | float | ~Rainfall                  | `svHmIPRainCounterYesterday_<ID>`           |
+| Ident                      | Name                        | Typ   | Darstellung      | Systemvariable der CCU                      |
+| :------------------------- | :-------------------------- | :---- | :--------------- | :------------------------------------------ |
+| SUNSHINEDURATION_TOTAL     | Sonnenscheindauer gesamt    | float | Wertanzeige min  | `svHmIPSunshineCounter_<ID>_<Adresse>`      |
+| SUNSHINEDURATION_TODAY     | Sonnenscheindauer heute     | float | Wertanzeige min  | `svHmIPSunshineCounterToday_<ID>`           |
+| SUNSHINEDURATION_YESTERDAY | Sonnenscheindauer gestern   | float | Wertanzeige min  | `svHmIPSunshineCounterYesterday_<ID>`       |
+| RAIN_COUNTER_TOTAL         | Regenmenge gesamt           | float | Wertanzeige mm   | `svHmIPRainCounter_<ID>_<Adresse>`          |
+| RAIN_COUNTER_TODAY         | Regenmenge heute            | float | Wertanzeige mm   | `svHmIPRainCounterToday_<ID>`               |
+| RAIN_COUNTER_YESTERDAY     | Regenmenge gestern          | float | Wertanzeige mm   | `svHmIPRainCounterYesterday_<ID>`           |
 
 `<ID>` ist die ReGa-ID des Wetterkanals, `<Adresse>` die Adresse des Kanals.  
 
@@ -162,6 +162,10 @@ Die Statusvariablen der Wetterstation sind nicht bedienbar.
 ### 1. Changelog
 
 Der vollständige Changelog der Library steht in der [Haupt-README](../README.md#2-changelog).  
+
+**Version 3.82:**
+
+- Die Statusvariablen nutzen Darstellungen statt Variablenprofilen. Variablen und Archivdaten bleiben erhalten. Alle Werte erhalten einheitliche Darstellungen mit Symbol und Einheit.  
 
 **Version 3.81:**
 

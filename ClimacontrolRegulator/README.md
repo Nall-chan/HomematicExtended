@@ -72,7 +72,7 @@ Existieren in IPS mehrere Homematic Sockets, so ist der auszuwählen, an dem das
 | Entkalkung Uhrzeit | enable_DECALCIFICATION_TIME | boolean | `false` | Optionale Statusvariable (Bereich „Entkalkung“) |
 | Entkalkung Wochentag | enable_DECALCIFICATION_DAY | boolean | `false` | Optionale Statusvariable (Bereich „Entkalkung“) |
 | Betriebsart Ventil | enable_MODE_TEMPERATUR_VALVE | boolean | `false` | Optionale Statusvariable (Bereich „Ventil“) |
-| Temperaturen anpassen | ScheduleTemps | string (JSON) | 5, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 30 | Temperaturen, die im Wochenplan immer als Aktion zur Verfügung stehen. Maximal 31 Aktionen. Bearbeitung über die Schaltfläche `Temperaturen anpassen`. |
+| Temperaturen anpassen | ScheduleTemps | string (JSON) | 6, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 30 | Temperaturen, die im Wochenplan immer als Aktion zur Verfügung stehen. Maximal 31 Aktionen. Bearbeitung über die Schaltfläche `Temperaturen anpassen`. |
 
 Beispiel (Optionale Statusvariable aktivieren):  
 
@@ -85,17 +85,17 @@ IPS_ApplyChanges(12345);
 
 Welche Statusvariablen angelegt werden, richtet sich nach dem Gerät und den Optionen der Konfiguration. Die Namen werden in der Systemsprache angezeigt.  
 
-| Name | Ident | Typ | Bedienbar | Optional | Quelle | Profil / Darstellung |
-| :--- | :---- | :-- | :-------- | :------- | :----- | :------------------- |
-| Solltemperatur | SETPOINT | Float | ja |  | Werte | folgt |
-| Betriebsart | MODE_TEMPERATUR_REGULATOR | Integer | ja |  | Parameter | folgt |
-| Entkalkung Wochentag | DECALCIFICATION_DAY | Integer | ja | ja (aus) | Parameter | folgt |
-| Entkalkung Uhrzeit | DECALCIFICATION_TIME | Integer | ja | ja (aus) | Parameter | folgt |
-| Betriebsart Ventil | MODE_TEMPERATUR_VALVE | Integer | ja | ja (aus) | Parameter | folgt |
-| Absenktemperatur | TEMPERATUR_LOWERING_VALUE | Float | ja | ja (aus) | Parameter | folgt |
-| Komforttemperatur | TEMPERATUR_COMFORT_VALUE | Float | ja | ja (aus) | Parameter | folgt |
-| Urlaub/Party Ende | PARTY_END_TIME | Integer | ja |  | Parameter | folgt |
-| Urlaub/Party Solltemperatur | TEMPERATUR_PARTY_VALUE | Float | ja |  | Parameter | folgt |
+| Name | Ident | Typ | Bedienbar | Optional | Quelle | Darstellung |
+| :--- | :---- | :-- | :-------- | :------- | :----- | :---------- |
+| Solltemperatur | SETPOINT | Float | ja |  | Werte | Schieberegler Temperatur ¹ |
+| Betriebsart | MODE_TEMPERATUR_REGULATOR | Integer | ja |  | Parameter | Aufzählung (Manuell, Automatik, Zentral, Urlaub/Party) |
+| Entkalkung Wochentag | DECALCIFICATION_DAY | Integer | ja | ja (aus) | Parameter | Aufzählung (Samstag bis Freitag) |
+| Entkalkung Uhrzeit | DECALCIFICATION_TIME | Integer | ja | ja (aus) | Parameter | Datum/Uhrzeit (Uhrzeit) |
+| Betriebsart Ventil | MODE_TEMPERATUR_VALVE | Integer | ja | ja (aus) | Parameter | Aufzählung (Automatik, Geschlossen, Geöffnet) |
+| Absenktemperatur | TEMPERATUR_LOWERING_VALUE | Float | ja | ja (aus) | Parameter | Schieberegler Temperatur ¹ |
+| Komforttemperatur | TEMPERATUR_COMFORT_VALUE | Float | ja | ja (aus) | Parameter | Schieberegler Temperatur ¹ |
+| Urlaub/Party Ende | PARTY_END_TIME | Integer | ja |  | Parameter | Datum/Uhrzeit |
+| Urlaub/Party Solltemperatur | TEMPERATUR_PARTY_VALUE | Float | ja |  | Parameter | Schieberegler Temperatur ¹ |
 
 Zusätzlich werden bei aktivem Wochenplan angelegt:  
 
@@ -104,8 +104,11 @@ Zusätzlich werden bei aktivem Wochenplan angelegt:
 | Wochenplan | WEEK_PROFIL | Ereignis | ja | Wochenplan des aktiven Zeitprofils. Die Aktionen sind die Temperaturen. |
 | Zeitplan speichern | SUBMIT_WEEK_PROGRAM | Integer | ja | Überträgt den Wochenplan in das Zeitprofil des Gerätes zur CCU. |
 
+¹ Schieberegler mit Verwendung Temperatur, Schrittweite 0,5 °C. Minimum, Maximum und Sonderwerte liefert die CCU je Datenpunkt (HM-CC-TC Solltemperatur: 6 bis 30 °C, zusätzlich 0 = `Ventil geschlossen` und 100 = `Ventil offen`).  
+
 > [!NOTE]
-> Die Spalte `Profil / Darstellung` ist noch nicht gefüllt. Die Variablenprofile werden auf Darstellungen umgestellt.  
+> Parameter (Betriebsart, Absenk-, Komfort- und Party-Temperatur, Entkalkung, Wochenplan) übernimmt der HM-CC-TC erst nach einem Druck auf die Anlerntaste. Bis dahin zeigt die CCU, dass Konfigurationsdaten zur Übertragung anstehen.  
+> Ein Setzen der Solltemperatur (`SETPOINT`) übernimmt das Gerät an der aktuellen CCU nicht, auch nicht über die Oberfläche der CCU. Die Statusvariable folgt dem Wert, den das Gerät meldet.  
 
 > [!WARNING]
 > Das Ändern einer Option in der Konfiguration löscht die Statusvariable der abgewählten Option.  
@@ -119,8 +122,6 @@ Zusätzlich werden bei aktivem Wochenplan angelegt:
 ### WebFront Visualisierung
 
 *Screenshot des WebFront folgt.*  
-
-Das klassische WebFront zeigt Font-Awesome-Symbole nicht an.  
 
 ## 7. PHP-Befehlsreferenz
 
@@ -148,12 +149,20 @@ HM_RequestState(12345, 'SETPOINT');
 **Grundsätzlich können alle bedienbaren Statusvariablen als Ziel einer [`Aktion`](https://www.symcon.de/service/dokumentation/konzepte/automationen/ablaufplaene/aktionen/) mit `Auf Wert schalten` angesteuert werden, so dass hier keine speziellen Aktionen benutzt werden müssen.**  
 
 Der Wochenplan hat für jede Temperatur eine Aktion, die beim Auslösen die Parameter der CCU neu liest (`HM_RequestParams`). Die Temperaturen des Wochenplans werden in der Konfiguration unter `Temperaturen anpassen` gepflegt.  
+Beim Speichern werden die Zeiten auf 10 Minuten gerundet (Raster des Gerätes). Ein Tag darf höchstens 24 Schaltpunkte haben, sonst wird nicht gespeichert und eine Meldung ausgegeben. Die Temperaturen liegen zwischen 6 und 30 °C.  
 
 ## 9. Anhang
 
 ### 1. Changelog
 
 Der vollständige Changelog der Library steht in der [Haupt-README](../README.md#2-changelog).  
+
+**Version 3.82:**
+
+- Wochenplan: Die Zeiten werden beim Speichern auf das Raster des Gerätes (10 Minuten) gerundet, bisher schnitt die CCU ab und der Wochenplan in Symcon zeigte andere Zeiten. Mehr als 24 Schaltpunkte an einem Tag werden mit einer Meldung abgelehnt statt mit einem Fehler der CCU.  
+- Wochenplan: Temperaturen erst ab 6 °C (Grenze des Gerätes), auch in der Liste `Temperaturen anpassen`.  
+- Die Statusvariablen nutzen Darstellungen statt Variablenprofilen (Spalte `Darstellung`). Variablen und Archivdaten bleiben erhalten, die Profile der Library werden gelöscht, sobald keine Variable sie mehr nutzt.  
+- Die Temperaturen übernehmen Minimum, Maximum und Sonderwerte von der CCU.  
 
 **Version 3.81:**
 

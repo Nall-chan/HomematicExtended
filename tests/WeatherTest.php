@@ -59,23 +59,27 @@ class WeatherTest extends HomematicModuleTestCase
         $this->assertSame(2, json_decode(IPS_GetConfiguration($this->WeatherId), true)['Protocol']);
     }
 
-    public function testValuesAreReadWithProfiles(): void
+    public function testValuesAreReadWithPresentations(): void
     {
         $Expected = [
-            'ACTUAL_TEMPERATURE' => [12.5, '~Temperature'],
-            'HUMIDITY'           => [80, '~Humidity'],
-            'ILLUMINATION'       => [1500.0, '~Illumination.F'],
-            'WIND_SPEED'         => [10.5, '~WindSpeed.kmh'],
-            'WIND_DIR'           => [270, '~WindDirection'],
-            'RAINING'            => [true, '~Raining'],
-            'RAIN_COUNTER'       => [3.4, '~Rainfall']
+            'ACTUAL_TEMPERATURE' => [12.5, ' °C', 1],
+            'HUMIDITY'           => [80, ' %', 0],
+            'ILLUMINATION'       => [1500.0, ' lx', 1],
+            'WIND_SPEED'         => [10.5, ' km/h', 1],
+            'WIND_DIR'           => [270, '°', 0],
+            'RAIN_COUNTER'       => [3.4, ' mm', 1],
+            'SUNSHINEDURATION'   => [42, ' min', 0]
         ];
-        foreach ($Expected as $Ident => [$Value, $Profile]) {
+        foreach ($Expected as $Ident => [$Value, $Suffix, $Digits]) {
             $VariableId = IPS_GetObjectIDByIdent($Ident, $this->WeatherId);
             $this->assertEquals($Value, GetValue($VariableId), $Ident);
-            $this->assertSame($Profile, IPS_GetVariable($VariableId)['VariableProfile'], $Ident);
+            $Variable = IPS_GetVariable($VariableId);
+            $this->assertSame('', $Variable['VariableProfile'], $Ident);
+            $this->assertSame([$Suffix, $Digits], [$Variable['VariablePresentation']['SUFFIX'], $Variable['VariablePresentation']['DIGITS']], $Ident);
         }
-        $this->assertEquals(42, GetValue(IPS_GetObjectIDByIdent('SUNSHINEDURATION', $this->WeatherId)));
+        $this->assertSame(1, IPS_GetVariable(IPS_GetObjectIDByIdent('ACTUAL_TEMPERATURE', $this->WeatherId))['VariablePresentation']['USAGE_TYPE']);
+        $Options = json_decode(IPS_GetVariable(IPS_GetObjectIDByIdent('RAINING', $this->WeatherId))['VariablePresentation']['OPTIONS'], true);
+        $this->assertSame([[false, 'No rain'], [true, 'Rain']], array_map(fn ($Option) => [$Option['Value'], $Option['Caption']], $Options));
     }
 
     public function testStatusEnumIsSkipped(): void
@@ -96,7 +100,8 @@ class WeatherTest extends HomematicModuleTestCase
         foreach ($Expected as $Ident => $Value) {
             $this->assertEquals($Value, GetValueFloat(IPS_GetObjectIDByIdent($Ident, $this->WeatherId)), $Ident);
         }
-        $this->assertSame('~Rainfall', IPS_GetVariable(IPS_GetObjectIDByIdent('RAIN_COUNTER_TOTAL', $this->WeatherId))['VariableProfile']);
+        $this->assertSame(' mm', IPS_GetVariable(IPS_GetObjectIDByIdent('RAIN_COUNTER_TOTAL', $this->WeatherId))['VariablePresentation']['SUFFIX']);
+        $this->assertSame(' min', IPS_GetVariable(IPS_GetObjectIDByIdent('SUNSHINEDURATION_TODAY', $this->WeatherId))['VariablePresentation']['SUFFIX']);
         $this->assertSame('Sunshine duration today', IPS_GetName(IPS_GetObjectIDByIdent('SUNSHINEDURATION_TODAY', $this->WeatherId)));
     }
 

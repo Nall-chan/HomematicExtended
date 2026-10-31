@@ -48,13 +48,14 @@ class HomeMaticPowermeter extends HMBase
      * Belegt aus der CCU-Firmware (eq-3/occu, WebUI newdevices.htm): HmIP-PSMCO und ELV-SH-PSMCI führen den Einspeisezähler
      * ENERGY_COUNTER_FEED_IN in svEnergyCounterFeedIn_…, das CCU-Programm summiert die Gerätewerte in Wh (Faktor 1000, nicht live geprüft).
      * Annahme (nicht belegt): IEC_ENERGY_COUNTER liefert die Systemvariable in Wh.
+     * Unit: Einheit der Statusvariable nach der Umrechnung (Schlüssel von \HMExtended\DatapointPresentation::Units).
      */
     private const EnergyCounters = [
-        'ENERGY_COUNTER'         => ['Suffix' => '', 'Factor' => 1000, 'Profile' => '~Electricity'],
-        'ENERGY_COUNTER_FEED_IN' => ['Suffix' => 'FeedIn', 'Factor' => 1000, 'Profile' => '~Electricity'],
-        'IEC_ENERGY_COUNTER'     => ['Suffix' => 'IEC', 'Factor' => 1000, 'Profile' => '~Electricity'],
-        'GAS_ENERGY_COUNTER'     => ['Suffix' => 'Gas', 'Factor' => 1, 'Profile' => '~Gas'],
-        'GAS_VOLUME'             => ['Suffix' => '', 'Factor' => 1, 'Profile' => '~Gas']
+        'ENERGY_COUNTER'         => ['Suffix' => '', 'Factor' => 1000, 'Unit' => 'kWh'],
+        'ENERGY_COUNTER_FEED_IN' => ['Suffix' => 'FeedIn', 'Factor' => 1000, 'Unit' => 'kWh'],
+        'IEC_ENERGY_COUNTER'     => ['Suffix' => 'IEC', 'Factor' => 1000, 'Unit' => 'kWh'],
+        'GAS_ENERGY_COUNTER'     => ['Suffix' => 'Gas', 'Factor' => 1, 'Unit' => 'm3'],
+        'GAS_VOLUME'             => ['Suffix' => '', 'Factor' => 1, 'Unit' => 'm3']
     ];
 
     /**
@@ -107,6 +108,8 @@ class HomeMaticPowermeter extends HMBase
     public function ApplyChanges(): void
     {
         parent::ApplyChanges();
+        // Ohne ausdrücklichen Status bliebe die Instanz nach einem Fehler beim Erstellen (z.B. beim Neuladen) in 101 (wird erstellt).
+        $this->SetStatus(IS_ACTIVE);
         $this->SetTimerInterval(\HMExtended\Device\Timer::ReadSystemVariables, 0);
         $this->PendingCounters = [];
         $Address = $this->ReadPropertyString(\HMExtended\Device\Property::Address);
@@ -116,14 +119,17 @@ class HomeMaticPowermeter extends HMBase
             $this->SetReceiveDataFilter('.*9999999999.*');
         }
         if (($Address) && ($this->HasActiveParent())) {
-            // Die Werte zuerst lesen: sie bestimmen die Betriebsart, bevor die Summenzähler gelesen werden.
-            // Ein Fehler (z.B. Gerät nicht erreichbar) wird gemeldet, danach folgt keine weitere Anfrage; die zuletzt erkannte Betriebsart bleibt.
-            $Values = $this->GetParamset(\HMExtended\CCU::VALUES, $Address . static::ValuesChannel);
-            if (count($Values) == 0) {
+            // Ohne Beschreibung ist die CCU oder das Gerät nicht erreichbar: Meldung, danach folgt keine weitere Anfrage.
+            $Description = $this->GetParamsetDescription(\HMExtended\CCU::VALUES, $Address . static::ValuesChannel);
+            if (count($Description) == 0) {
                 return;
             }
-            $this->WriteAttributeBoolean(self::AttributeGasMode, array_key_exists('GAS_VOLUME', $Values) && !array_key_exists('ENERGY_COUNTER', $Values));
-            $this->CreateVariablesFromValues();
+            // Die Werte vor den Summenzählern lesen: sie bestimmen die Betriebsart. Ohne Werte bleibt die zuletzt erkannte Betriebsart.
+            $Values = $this->ReadValues($Description);
+            if (count($Values)) {
+                $this->WriteAttributeBoolean(self::AttributeGasMode, array_key_exists('GAS_VOLUME', $Values) && !array_key_exists('ENERGY_COUNTER', $Values));
+            }
+            $this->CreateVariablesFromValues($Description);
             foreach ($Values as $Ident => $Value) {
                 $this->SetVariable($Ident, $Value);
             }
@@ -207,11 +213,48 @@ class HomeMaticPowermeter extends HMBase
 
     //################# PRIVATE
 
-    private function CreateVariablesFromValues(): void
+    /**
+     * Liest die Werte des Kanals.
+     * Die CCU beantwortet getParamset mit einem Fehler, solange das Gerät einen Datenpunkt noch nie gesendet hat
+     * (z.B. HM-ES-TX-WM: im Strommodus die Gas- und IEC-Werte, live geprüft). Dann wird jeder lesbare Datenpunkt einzeln gelesen,
+     * fehlende Werte erzeugen nur eine Debug-Ausgabe.
+     *
+     * @param array $Description Beschreibung der Datenpunkte laut getParamsetDescription.
+     *
+     * @return array Die Werte je Datenpunkt.
+     */
+    private function ReadValues(array $Description): array
     {
         $AddressWithChannel = $this->ReadPropertyString(\HMExtended\Device\Property::Address) . static::ValuesChannel;
-        $Result = $this->GetParamsetDescription(\HMExtended\CCU::VALUES, $AddressWithChannel);
-        foreach ($Result as $Variable) {
+        $Protocol = $this->ReadPropertyInteger(\HMExtended\Device\Property::Protocol);
+        $Values = $this->SendRPC('getParamset', $Protocol, [$AddressWithChannel, \HMExtended\CCU::VALUES], null, false, true);
+        if (is_array($Values)) {
+            return $Values;
+        }
+        $Values = [];
+        foreach ($Description as $Variable) {
+            $Ident = $Variable['ID'] ?? '';
+            if (($Ident === '') || !(($Variable['OPERATIONS'] ?? 0) & 0b1)) {
+                continue;
+            }
+            $Value = $this->SendRPC('getValue', $Protocol, [$AddressWithChannel, $Ident], null, false, true);
+            if (($Value === null) || ($Value === true)) {
+                $this->SendDebug('No value', $Ident, 0);
+                continue;
+            }
+            $Values[$Ident] = $Value;
+        }
+        return $Values;
+    }
+
+    /**
+     * Legt für alle Datenpunkte des Kanals Statusvariablen an.
+     *
+     * @param array $Description Beschreibung der Datenpunkte laut getParamsetDescription.
+     */
+    private function CreateVariablesFromValues(array $Description): void
+    {
+        foreach ($Description as $Variable) {
             $Ident = $Variable['ID'];
             $HmType = $Variable['TYPE'] ?? '';
             if (!array_key_exists($HmType, \HMExtended\Variables::$HmTypeToIpsType)) {
@@ -219,12 +262,16 @@ class HomeMaticPowermeter extends HMBase
                 continue;
             }
             $VarType = \HMExtended\Variables::$HmTypeToIpsType[$HmType];
-            $Profile = \HMExtended\Profiles::$UnitToProfile[$Variable['UNIT'] ?? ''] ?? '';
-            $this->MaintainVariable($Ident, $Ident, $VarType, $Profile, 0, true);
-            if (($Variable['OPERATIONS'] ?? 0) & 0b10) {
+            $HasAction = (bool) (($Variable['OPERATIONS'] ?? 0) & 0b10);
+            $this->MaintainPresentationVariable($Ident, $Ident, $VarType, \HMExtended\DatapointPresentation::Get($Ident, $Variable['UNIT'] ?? '', $VarType, $HasAction, fn (string $Text): string => $this->Translate($Text)));
+            if ($HasAction) {
                 $this->EnableAction($Ident);
             }
             if (array_key_exists($Ident, self::EnergyCounters)) {
+                // Eine vorhandene Variable des Summenzählers erhält die Darstellung auch dann, wenn die Systemvariable (nicht mehr) existiert.
+                if ($this->FindIDForIdent($Ident . '_TOTAL') > 0) {
+                    $this->MaintainTotalVariable($Ident);
+                }
                 // Die Variable des Summenzählers wird erst angelegt, wenn die CCU einen Wert ungleich 0 liefert.
                 $this->ReadPowerSysVar($Ident);
             }
@@ -282,9 +329,20 @@ class HomeMaticPowermeter extends HMBase
         if (($Value == 0.0) && ($this->FindIDForIdent($Datapoint . '_TOTAL') == 0)) {
             return false;
         }
-        $this->MaintainVariable($Datapoint . '_TOTAL', $Datapoint . '_TOTAL', VARIABLETYPE_FLOAT, $Counter['Profile'], 0, true);
+        $this->MaintainTotalVariable($Datapoint);
         $this->SetVariable($Datapoint . '_TOTAL', $Value);
         return true;
+    }
+
+    /**
+     * Legt die Variable des Summenzählers an bzw. aktualisiert deren Darstellung.
+     *
+     * @param string $Datapoint Datenpunkt des Zählers, ein Schlüssel von EnergyCounters.
+     */
+    private function MaintainTotalVariable(string $Datapoint): void
+    {
+        $Ident = $Datapoint . '_TOTAL';
+        $this->MaintainPresentationVariable($Ident, $Ident, VARIABLETYPE_FLOAT, \HMExtended\DatapointPresentation::Get($Ident, self::EnergyCounters[$Datapoint]['Unit'], VARIABLETYPE_FLOAT, false, fn (string $Text): string => $this->Translate($Text)));
     }
 }
 

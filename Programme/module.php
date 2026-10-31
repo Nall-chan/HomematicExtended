@@ -22,6 +22,9 @@ require_once __DIR__ . '/../libs/HMBase.php';  // HMBase Klasse
 class HomeMaticProgramme extends HMBase
 {
     protected const SummaryShowsHost = true;
+    /** Profil der Programme bis Version 3.81, auch von den Heizungsmodulen genutzt. */
+    private const LegacyProfile = 'Execute.HM';
+
     /**
      * Interne Funktion des SDK.
      */
@@ -38,9 +41,9 @@ class HomeMaticProgramme extends HMBase
      */
     public function Destroy(): void
     {
-        // Das Profil wird auch von den Heizungsmodulen genutzt.
-        if ((!IPS_InstanceExists($this->InstanceID)) && (!$this->ExistInstancesOf(\HMExtended\DeviceType::$HeatingGuids))) {
-            $this->UnregisterProfile('Execute.HM');
+        // Profil bis Version 3.81, UnregisterProfile lässt es stehen, solange andere Variablen es nutzen.
+        if (!IPS_InstanceExists($this->InstanceID)) {
+            $this->UnregisterProfile(self::LegacyProfile);
         }
 
         parent::Destroy();
@@ -52,11 +55,9 @@ class HomeMaticProgramme extends HMBase
     public function ApplyChanges(): void
     {
         parent::ApplyChanges();
+        // Ohne ausdrücklichen Status bliebe die Instanz nach einem Fehler beim Erstellen (z.B. beim Neuladen) in 101 (wird erstellt).
+        $this->SetStatus(IS_ACTIVE);
         $this->SetReceiveDataFilter('.*9999999999.*');
-
-        $this->RegisterProfileIntegerEx('Execute.HM', '', '', '', [
-            [0, 'Start', '', -1]
-        ]);
 
         if (IPS_GetKernelRunlevel() != KR_READY) {
             return;
@@ -149,15 +150,23 @@ class HomeMaticProgramme extends HMBase
         if ($ret === false) {
             return false;
         }
+        $Presentation = \HMExtended\HeatingPresentation::Get(\HMExtended\HeatingPresentation::Execute, VARIABLETYPE_INTEGER, true, [], fn (string $Text): string => $this->Translate($Text));
         // Spalten: ID des Programmes, Name
         foreach (\HMExtended\ScriptParser::ParseTable(\HMExtended\ScriptParser::SplitOutput($ret)[0]) as $data) {
             if ((count($data) < 2) || !ctype_digit($data[0])) {
                 continue;
             }
             $this->SendDebug($data[0], $data[1], 0);
-            $this->MaintainVariable($data[0], $data[1], VARIABLETYPE_INTEGER, 'Execute.HM', 0, true);
+            $this->MaintainPresentationVariable($data[0], $data[1], VARIABLETYPE_INTEGER, $Presentation);
             $this->EnableAction($data[0]);
         }
+        // Variablen gelöschter Programme behalten ihr Profil, es bleibt dann stehen (UnregisterProfile prüft nur fremde Variablen).
+        foreach (IPS_GetChildrenIDs($this->InstanceID) as $ChildId) {
+            if (IPS_VariableExists($ChildId) && (IPS_GetVariable($ChildId)['VariableProfile'] == self::LegacyProfile)) {
+                return true;
+            }
+        }
+        $this->UnregisterProfile(self::LegacyProfile);
         return true;
     }
 

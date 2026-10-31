@@ -48,12 +48,54 @@ class PowerMeterTest extends HomematicModuleTestCase
         IPS_ApplyChanges($this->PowerMeterId);
     }
 
-    public function testUnitsGetProfiles(): void
+    public function testValuesAreReadSinglyWhenParamsetFails(): void
     {
-        $Expected = ['CURRENT' => '~Milliampere.HM', 'FREQUENCY' => '~Hertz', 'VOLTAGE' => '~Volt', 'POWER' => '~Watt', 'ENERGY_COUNTER' => '~Electricity.Wh'];
-        foreach ($Expected as $Ident => $Profile) {
-            $this->assertSame($Profile, IPS_GetVariable(IPS_GetObjectIDByIdent($Ident, $this->PowerMeterId))['VariableProfile'], $Ident);
+        // HM-ES-TX-WM im Strommodus (live): getParamset scheitert, weil die Gas- und IEC-Werte nie gesendet wurden.
+        unset(FakeHomematicIO::$RpcResponses['getParamset']);
+        FakeHomematicIO::$RpcResponses['getValue:ENERGY_COUNTER'] = 1000.0;
+        FakeHomematicIO::$RpcResponses['getValue:POWER'] = 12.5;
+        FakeHomematicIO::$Requests = [];
+        $this->recreateDevice('<xml><exec>/x</exec><sessionId>0</sessionId><httpUserAgent>x</httpUserAgent><Value>1000.0</Value></xml>');
+        $this->assertEquals(1000.0, GetValueFloat(IPS_GetObjectIDByIdent('ENERGY_COUNTER', $this->PowerMeterId)));
+        $this->assertEquals(12.5, GetValueFloat(IPS_GetObjectIDByIdent('POWER', $this->PowerMeterId)));
+        // Datenpunkte ohne Wert werden trotzdem angelegt, die Summe wird gelesen.
+        $this->assertNotFalse(@IPS_GetObjectIDByIdent('GAS_ENERGY_COUNTER', $this->PowerMeterId));
+        $this->assertEquals(1.0, GetValueFloat(IPS_GetObjectIDByIdent('ENERGY_COUNTER_TOTAL', $this->PowerMeterId)));
+        $this->assertSame(IS_ACTIVE, IPS_GetInstance($this->PowerMeterId)['InstanceStatus']);
+        $this->assertCount(1, array_filter(FakeHomematicIO::$Requests, fn ($Request) => ($Request['MethodName'] ?? '') == 'getParamset'));
+    }
+
+    public function testNoRequestAfterMissingDescription(): void
+    {
+        // Die Meldung erzeugt SendRPC (der Fake-Socket kann keinen Fehler liefern, nur eine leere Antwort).
+        unset(FakeHomematicIO::$RpcResponses['getParamsetDescription']);
+        FakeHomematicIO::$Requests = [];
+        IPS_ApplyChanges($this->PowerMeterId);
+        $this->assertCount(1, FakeHomematicIO::$Requests);
+    }
+
+    public function testUnitsGetPresentations(): void
+    {
+        $Expected = ['CURRENT' => ' mA', 'FREQUENCY' => ' Hz', 'VOLTAGE' => ' V', 'POWER' => ' W', 'ENERGY_COUNTER' => ' Wh', 'GAS_VOLUME' => ' m³'];
+        foreach ($Expected as $Ident => $Suffix) {
+            $Variable = IPS_GetVariable(IPS_GetObjectIDByIdent($Ident, $this->PowerMeterId));
+            $this->assertSame('', $Variable['VariableProfile'], $Ident);
+            $this->assertSame([VARIABLE_PRESENTATION_VALUE_PRESENTATION, $Suffix], [$Variable['VariablePresentation']['PRESENTATION'], $Variable['VariablePresentation']['SUFFIX']], $Ident);
         }
+        // Ohne bekannte Einheit keine Darstellung.
+        $this->assertSame([], IPS_GetVariable(IPS_GetObjectIDByIdent('WEIRD_UNIT', $this->PowerMeterId))['VariablePresentation']);
+    }
+
+    public function testLegacyProfileIsReplacedByPresentation(): void
+    {
+        // Stand bis Version 3.81: Systemprofil ~Watt.
+        $VariableId = IPS_GetObjectIDByIdent('POWER', $this->PowerMeterId);
+        IPS\VariableManager::setVariableProfile($VariableId, '~Watt');
+        IPS_ApplyChanges($this->PowerMeterId);
+        $Variable = IPS_GetVariable($VariableId);
+        $this->assertSame('', $Variable['VariableProfile']);
+        $this->assertSame(' W', $Variable['VariablePresentation']['SUFFIX']);
+        $this->assertSame($VariableId, IPS_GetObjectIDByIdent('POWER', $this->PowerMeterId), 'Variable (and archive) must be kept');
     }
 
     public function testVariablesAreCreated(): void
@@ -129,7 +171,7 @@ class PowerMeterTest extends HomematicModuleTestCase
         FakeHomematicIO::$Requests = [];
         $this->recreateDevice('<xml><exec>/x</exec><sessionId>0</sessionId><httpUserAgent>x</httpUserAgent><Value>76558.900000</Value></xml>');
         $this->assertEquals(76558.9, GetValueFloat(IPS_GetObjectIDByIdent('GAS_VOLUME_TOTAL', $this->PowerMeterId)));
-        $this->assertSame('~Gas', IPS_GetVariable(IPS_GetObjectIDByIdent('GAS_VOLUME_TOTAL', $this->PowerMeterId))['VariableProfile']);
+        $this->assertSame(' m³', IPS_GetVariable(IPS_GetObjectIDByIdent('GAS_VOLUME_TOTAL', $this->PowerMeterId))['VariablePresentation']['SUFFIX']);
         $this->assertEquals(2034.4, GetValueFloat(IPS_GetObjectIDByIdent('GAS_VOLUME', $this->PowerMeterId)));
         // Dieselbe Systemvariable wird nicht zusätzlich als kWh ausgewertet.
         $this->assertFalse(@IPS_GetObjectIDByIdent('ENERGY_COUNTER_TOTAL', $this->PowerMeterId));
@@ -167,7 +209,7 @@ class PowerMeterTest extends HomematicModuleTestCase
         $this->recreateDevice('<xml><exec>/x</exec><sessionId>0</sessionId><httpUserAgent>x</httpUserAgent><Value>2500000.0</Value></xml>');
         $this->assertEquals(800.0, GetValueFloat(IPS_GetObjectIDByIdent('ENERGY_COUNTER_FEED_IN', $this->PowerMeterId)));
         $this->assertEquals(2500.0, GetValueFloat(IPS_GetObjectIDByIdent('ENERGY_COUNTER_FEED_IN_TOTAL', $this->PowerMeterId)));
-        $this->assertSame('~Electricity', IPS_GetVariable(IPS_GetObjectIDByIdent('ENERGY_COUNTER_FEED_IN_TOTAL', $this->PowerMeterId))['VariableProfile']);
+        $this->assertSame(' kWh', IPS_GetVariable(IPS_GetObjectIDByIdent('ENERGY_COUNTER_FEED_IN_TOTAL', $this->PowerMeterId))['VariablePresentation']['SUFFIX']);
         $Scripts = array_column(array_filter(FakeHomematicIO::$Requests, fn ($Request) => isset($Request['Content'])), 'Content');
         $FeedInScripts = array_filter($Scripts, fn ($Script) => str_contains($Script, '.ENERGY_COUNTER_FEED_IN"'));
         $this->assertCount(1, $FeedInScripts);

@@ -38,8 +38,8 @@ class HomeMaticWRInterface extends HMBase
 
     /**
      * Interne Funktion des SDK.
-     * Ohne Parent (Instanz mit keinem Homematic Socket verbunden) läuft kein Abruf und es entstehen keine Fehlermeldungen.
-     * Mit Parent wird sofort gelesen, Fehler (Socket inaktiv, Wired nicht aktiviert, CCU antwortet nicht) werden gemeldet.
+     * Ohne aktiven Parent (kein oder inaktiver Homematic Socket) läuft kein Abruf und es entstehen keine Fehlermeldungen.
+     * Mit aktivem Parent wird sofort gelesen, Fehler (Wired nicht aktiviert, CCU antwortet nicht) werden gemeldet.
      */
     public function ApplyChanges(): void
     {
@@ -50,7 +50,9 @@ class HomeMaticWRInterface extends HMBase
         }
 
         $this->CheckConfig();
-        if (($this->GetStatus() == IS_ACTIVE) && $this->HasParent()) {
+        // Timer und Abfrage nur mit aktivem Socket (z.B. nicht beim Start von Symcon, bevor der Socket verbunden ist).
+        // Wird der Socket aktiv, startet IOChangeState über ApplyChanges den Timer.
+        if (($this->GetStatus() == IS_ACTIVE) && $this->HasActiveParent()) {
             $this->SetTimerInterval(\HMExtended\Device\Timer::ReadWRInterface, $this->ReadPropertyInteger(\HMExtended\Device\Property::Interval) * 1000);
             $this->ReadWRInterface();
         } else {
@@ -76,14 +78,6 @@ class HomeMaticWRInterface extends HMBase
             if ($Value === '') {
                 continue;
             }
-            switch ($Ident) {
-                case 'CONNECTED':
-                    $Profile = '~Alert.Reversed';
-                    break;
-                default:
-                    $Profile = '';
-                    break;
-            }
             switch (gettype($Value)) {
                 case 'boolean':
                     $Typ = VARIABLETYPE_BOOLEAN;
@@ -101,7 +95,7 @@ class HomeMaticWRInterface extends HMBase
                 default:
                     continue 2;
             }
-            $this->MaintainVariable($Ident, $Ident, $Typ, $Profile, 0, true);
+            $this->MaintainPresentationVariable($Ident, $Ident, $Typ, \HMExtended\DatapointPresentation::Get($Ident, '', $Typ, false, fn (string $Text): string => $this->Translate($Text)));
             $this->SetValue($Ident, $Value);
         }
         return true;
@@ -120,8 +114,7 @@ class HomeMaticWRInterface extends HMBase
 
     /**
      * Wird ausgeführt wenn sich der Status vom Parent ändert oder die Instanz verbunden bzw. getrennt wird.
-     * Mit Parent wird neu gestartet und gelesen, ein inaktiver Socket wird dabei und bei jedem weiteren Abruf gemeldet.
-     * Ohne Parent (getrennt) hält der Timer ohne Fehlermeldung an.
+     * Mit aktivem Parent wird neu gestartet und gelesen, ohne aktiven Parent hält der Timer ohne Fehlermeldung an.
      */
     protected function IOChangeState(int $State): void
     {
@@ -129,16 +122,6 @@ class HomeMaticWRInterface extends HMBase
     }
 
     //################# PRIVATE
-
-    /**
-     * Prüft, ob die Instanz mit einem Parent (Homematic Socket) verbunden ist.
-     *
-     * @return bool true, wenn ein Parent eingetragen ist (unabhängig von dessen Status).
-     */
-    private function HasParent(): bool
-    {
-        return IPS_GetInstance($this->InstanceID)['ConnectionID'] > 0;
-    }
 
     /**
      * Prüft die Konfiguration und setzt den Status der Instanz.

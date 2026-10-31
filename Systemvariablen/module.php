@@ -51,6 +51,11 @@ class HomeMaticSystemvariablen extends HMSystemVariableBase
      * Version, mit der die veralteten Funktionsnamen entfernt werden.
      */
     private const AliasRemovedIn = '3.90';
+    /**
+     * Symcon-Version, ab der die Funktionen HM_WriteValue… (ohne 2) die gleichnamigen Funktionen des Kernels überschreiben können.
+     * Bis dahin (alle C++-Versionen) bleiben HM_WriteValue…2 die gültigen Funktionen und erzeugen keine Warnung (Vorgabe des Nutzers).
+     */
+    private const NativeWriteValueVersion = '10.0';
 
     /**
      * Interne Funktion des SDK.
@@ -223,38 +228,38 @@ class HomeMaticSystemvariablen extends HMSystemVariableBase
     }
 
     /**
-     * IPS-Instanz-Funktion 'HM_WriteValueBoolean2'. Veraltet, ruft WriteValueBoolean auf.
+     * IPS-Instanz-Funktion 'HM_WriteValueBoolean2'. Ruft WriteValueBoolean auf, ab Symcon 10.0 veraltet.
      */
     public function WriteValueBoolean2(string $Parameter, bool $Value): bool
     {
-        $this->LogAlias('HM_WriteValueBoolean2', 'HM_WriteValueBoolean');
+        $this->LogWriteValueAlias('HM_WriteValueBoolean2', 'HM_WriteValueBoolean');
         return $this->WriteValueBoolean($Parameter, $Value);
     }
 
     /**
-     * IPS-Instanz-Funktion 'HM_WriteValueInteger2'. Veraltet, ruft WriteValueInteger auf.
+     * IPS-Instanz-Funktion 'HM_WriteValueInteger2'. Ruft WriteValueInteger auf, ab Symcon 10.0 veraltet.
      */
     public function WriteValueInteger2(string $Parameter, int $Value): bool
     {
-        $this->LogAlias('HM_WriteValueInteger2', 'HM_WriteValueInteger');
+        $this->LogWriteValueAlias('HM_WriteValueInteger2', 'HM_WriteValueInteger');
         return $this->WriteValueInteger($Parameter, $Value);
     }
 
     /**
-     * IPS-Instanz-Funktion 'HM_WriteValueFloat2'. Veraltet, ruft WriteValueFloat auf.
+     * IPS-Instanz-Funktion 'HM_WriteValueFloat2'. Ruft WriteValueFloat auf, ab Symcon 10.0 veraltet.
      */
     public function WriteValueFloat2(string $Parameter, float $Value): bool
     {
-        $this->LogAlias('HM_WriteValueFloat2', 'HM_WriteValueFloat');
+        $this->LogWriteValueAlias('HM_WriteValueFloat2', 'HM_WriteValueFloat');
         return $this->WriteValueFloat($Parameter, $Value);
     }
 
     /**
-     * IPS-Instanz-Funktion 'HM_WriteValueString2'. Veraltet, ruft WriteValueString auf.
+     * IPS-Instanz-Funktion 'HM_WriteValueString2'. Ruft WriteValueString auf, ab Symcon 10.0 veraltet.
      */
     public function WriteValueString2(string $Parameter, string $Value): bool
     {
-        $this->LogAlias('HM_WriteValueString2', 'HM_WriteValueString');
+        $this->LogWriteValueAlias('HM_WriteValueString2', 'HM_WriteValueString');
         return $this->WriteValueString($Parameter, $Value);
     }
 
@@ -449,6 +454,14 @@ class HomeMaticSystemvariablen extends HMSystemVariableBase
         {
             return $Variable['ValueType'];
         }, $this->ReadAttributeArray(\HMExtended\Device\Attribute::Metadata));
+    }
+
+    /**
+     * True ab Symcon 10.0: Erst dann können die Funktionen HM_WriteValue… (ohne 2) genutzt werden.
+     */
+    protected function HasNativeWriteValue(): bool
+    {
+        return version_compare(IPS_GetKernelVersion(), self::NativeWriteValueVersion, '>=');
     }
 
     //################# PRIVATE
@@ -671,6 +684,17 @@ class HomeMaticSystemvariablen extends HMSystemVariableBase
     private function LogAlias(string $Old, string $New): void
     {
         $this->LogMessage(sprintf($this->Translate('%s is deprecated and will be removed in version %s, use %s.'), $Old, self::AliasRemovedIn, $New), KL_WARNING);
+    }
+
+    /**
+     * Meldet den Aufruf von HM_WriteValue…2 im Log, aber erst ab Symcon 10.0. Davor gibt es keinen Ersatz.
+     */
+    private function LogWriteValueAlias(string $Old, string $New): void
+    {
+        if (!$this->HasNativeWriteValue()) {
+            return;
+        }
+        $this->LogMessage(sprintf($this->Translate('%s is deprecated as of Symcon %s, use %s.'), $Old, self::NativeWriteValueVersion, $New), KL_WARNING);
     }
 }
 

@@ -10,6 +10,14 @@ require_once __DIR__ . '/../HeatingDevice/module.php';
  */
 class TestHeatingDevice extends HomeMaticHeatingDevice
 {
+    /**
+     * Zugang zur Umrechnung des Wochenplans (die Stubs können kein Wochenplan-Ereignis anlegen).
+     */
+    public static function ScheduleParams(array $ScheduleGroups, array $ActionIdToTemp, int $Plan): array|false
+    {
+        return static::ScheduleToParams($ScheduleGroups, $ActionIdToTemp, $Plan);
+    }
+
     protected function ReadPropertyBoolean(string $Name): bool
     {
         return ($Name == \HMExtended\Device\Property::Schedule) ? false : parent::ReadPropertyBoolean($Name);
@@ -48,6 +56,31 @@ class HeatingDeviceTest extends HeatingTestCase
         IPS_SetProperty($this->DeviceId, 'enable_DECALCIFICATION_TIME', true);
         IPS_ApplyChanges($this->DeviceId);
         FakeHomematicIO::$Requests = [];
+    }
+
+    /**
+     * Wochenplan laut CCU-Firmware (rf_cc_rt_dn.xml): ENDTIME_<TAG>_1..13 im 5-Minuten-Raster (5..1440), TEMPERATURE_<TAG>_1..13, ohne Präfix.
+     */
+    public function testScheduleIsConvertedToEndTimesInFiveMinuteSteps(): void
+    {
+        [$Params] = TestHeatingDevice::ScheduleParams([
+            ['Days' => 1, 'Points' => [
+                ['Start' => ['Hour' => 0, 'Minute' => 0], 'ActionID' => 1],
+                ['Start' => ['Hour' => 6, 'Minute' => 7], 'ActionID' => 2]
+            ]]
+        ], [1 => 17.0, 2 => 21.0], 1);
+        $this->assertSame(['ENDTIME_MONDAY_1' => 365, 'TEMPERATURE_MONDAY_1' => 17.0, 'ENDTIME_MONDAY_2' => 1440, 'TEMPERATURE_MONDAY_2' => 21.0], $Params);
+    }
+
+    public function testScheduleAcceptsThirteenPointsPerDay(): void
+    {
+        $Points = [];
+        for ($i = 0; $i < 13; $i++) {
+            $Points[] = ['Start' => ['Hour' => $i, 'Minute' => 0], 'ActionID' => 1];
+        }
+        $this->assertIsArray(TestHeatingDevice::ScheduleParams([['Days' => 1, 'Points' => $Points]], [1 => 20.0], 1));
+        $Points[] = ['Start' => ['Hour' => 20, 'Minute' => 0], 'ActionID' => 1];
+        $this->assertFalse(TestHeatingDevice::ScheduleParams([['Days' => 1, 'Points' => $Points]], [1 => 20.0], 1));
     }
 
     public function testDeviceUsesRadioProtocol(): void

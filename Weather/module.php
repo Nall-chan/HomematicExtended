@@ -53,38 +53,18 @@ class HomeMaticWeather extends HMBase
     ];
 
     /**
-     * Profile der Datenpunkte je Variablentyp (Einheiten laut CCU-Firmware: °C, %, km/h, mm, °).
-     */
-    private const DatapointProfiles = [
-        'ACTUAL_TEMPERATURE' => [VARIABLETYPE_FLOAT => '~Temperature'],
-        'HUMIDITY'           => [VARIABLETYPE_INTEGER => '~Humidity', VARIABLETYPE_FLOAT => '~Humidity.F'],
-        'ILLUMINATION'       => [VARIABLETYPE_INTEGER => '~Illumination', VARIABLETYPE_FLOAT => '~Illumination.F'],
-        'WIND_SPEED'         => [VARIABLETYPE_FLOAT => '~WindSpeed.kmh'],
-        'WIND_DIR'           => [VARIABLETYPE_INTEGER => '~WindDirection', VARIABLETYPE_FLOAT => '~WindDirection.F'],
-        'RAIN_COUNTER'       => [VARIABLETYPE_FLOAT => '~Rainfall'],
-        'RAINING'            => [VARIABLETYPE_BOOLEAN => '~Raining']
-    ];
-
-    /**
-     * Datenpunkte mit Einheit Minuten bzw. Grad, für die es kein passendes Standardprofil gibt (Darstellung Wertanzeige).
-     */
-    private const DatapointSuffix = [
-        'SUNSHINEDURATION' => ' min',
-        'WIND_DIR_RANGE'   => '°'
-    ];
-
-    /**
      * Systemvariablen, welche die CCU beim Anlernen einer HmIP-SWO anlegt (WebUI newdevices.htm der CCU-Firmware).
      * Name: Anfang des Namens, es folgt die ReGa-ID des Kanals und bei `WithAddress` noch `_<Kanaladresse>`.
+     * Datapoint: Datenpunkt mit derselben Darstellung (\HMExtended\DatapointPresentation::Datapoints).
      * Die Regen-Variablen gibt es nur bei HmIP-SWO-PL und -PR. `Today` und `Yesterday` wechseln täglich um 07:00 Uhr.
      */
     private const SystemVariables = [
-        'SUNSHINEDURATION_TOTAL'     => ['Name' => 'svHmIPSunshineCounter_', 'WithAddress' => true, 'Caption' => 'Sunshine duration total', 'Suffix' => ' min'],
-        'SUNSHINEDURATION_TODAY'     => ['Name' => 'svHmIPSunshineCounterToday_', 'WithAddress' => false, 'Caption' => 'Sunshine duration today', 'Suffix' => ' min'],
-        'SUNSHINEDURATION_YESTERDAY' => ['Name' => 'svHmIPSunshineCounterYesterday_', 'WithAddress' => false, 'Caption' => 'Sunshine duration yesterday', 'Suffix' => ' min'],
-        'RAIN_COUNTER_TOTAL'         => ['Name' => 'svHmIPRainCounter_', 'WithAddress' => true, 'Caption' => 'Rainfall total', 'Profile' => '~Rainfall'],
-        'RAIN_COUNTER_TODAY'         => ['Name' => 'svHmIPRainCounterToday_', 'WithAddress' => false, 'Caption' => 'Rainfall today', 'Profile' => '~Rainfall'],
-        'RAIN_COUNTER_YESTERDAY'     => ['Name' => 'svHmIPRainCounterYesterday_', 'WithAddress' => false, 'Caption' => 'Rainfall yesterday', 'Profile' => '~Rainfall']
+        'SUNSHINEDURATION_TOTAL'     => ['Name' => 'svHmIPSunshineCounter_', 'WithAddress' => true, 'Caption' => 'Sunshine duration total', 'Datapoint' => 'SUNSHINEDURATION'],
+        'SUNSHINEDURATION_TODAY'     => ['Name' => 'svHmIPSunshineCounterToday_', 'WithAddress' => false, 'Caption' => 'Sunshine duration today', 'Datapoint' => 'SUNSHINEDURATION'],
+        'SUNSHINEDURATION_YESTERDAY' => ['Name' => 'svHmIPSunshineCounterYesterday_', 'WithAddress' => false, 'Caption' => 'Sunshine duration yesterday', 'Datapoint' => 'SUNSHINEDURATION'],
+        'RAIN_COUNTER_TOTAL'         => ['Name' => 'svHmIPRainCounter_', 'WithAddress' => true, 'Caption' => 'Rainfall total', 'Datapoint' => 'RAIN_COUNTER'],
+        'RAIN_COUNTER_TODAY'         => ['Name' => 'svHmIPRainCounterToday_', 'WithAddress' => false, 'Caption' => 'Rainfall today', 'Datapoint' => 'RAIN_COUNTER'],
+        'RAIN_COUNTER_YESTERDAY'     => ['Name' => 'svHmIPRainCounterYesterday_', 'WithAddress' => false, 'Caption' => 'Rainfall yesterday', 'Datapoint' => 'RAIN_COUNTER']
     ];
 
     /**
@@ -106,6 +86,8 @@ class HomeMaticWeather extends HMBase
     public function ApplyChanges(): void
     {
         parent::ApplyChanges();
+        // Ohne ausdrücklichen Status bliebe die Instanz nach einem Fehler beim Erstellen (z.B. beim Neuladen) in 101 (wird erstellt).
+        $this->SetStatus(IS_ACTIVE);
         $this->SetTimerInterval(\HMExtended\Device\Timer::ReadSystemVariables, 0);
         $Address = $this->ReadPropertyString(\HMExtended\Device\Property::Address);
         if ($Address) {
@@ -201,8 +183,9 @@ class HomeMaticWeather extends HMBase
                 continue;
             }
             $VarType = self::HmTypeToIpsType[$HmType];
-            $this->MaintainVariable($Ident, $Ident, $VarType, $this->GetProfileOrPresentation($Ident, $VarType, $Variable['UNIT'] ?? ''), 0, true);
-            if (($Variable['OPERATIONS'] ?? 0) & 0b10) {
+            $HasAction = (bool) (($Variable['OPERATIONS'] ?? 0) & 0b10);
+            $this->MaintainPresentationVariable($Ident, $Ident, $VarType, $this->Presentation($Ident, $Variable['UNIT'] ?? '', $VarType, $HasAction));
+            if ($HasAction) {
                 $this->EnableAction($Ident);
             }
         }
@@ -210,39 +193,18 @@ class HomeMaticWeather extends HMBase
     }
 
     /**
-     * Liefert Profil bzw. Darstellung eines Datenpunktes.
+     * Liefert die Darstellung eines Datenpunktes.
      *
      * @param string $Ident Name des Datenpunktes.
-     * @param int $VarType Typ der Statusvariable.
      * @param string $Unit Einheit laut CCU.
+     * @param int $VarType Typ der Statusvariable.
+     * @param bool $HasAction true, wenn die Variable bedienbar ist.
      *
-     * @return string|array Name des Profils oder die Darstellung.
+     * @return array Die Darstellung, leer wenn keine passt.
      */
-    private function GetProfileOrPresentation(string $Ident, int $VarType, string $Unit): string|array
+    private function Presentation(string $Ident, string $Unit, int $VarType, bool $HasAction): array
     {
-        if (isset(self::DatapointProfiles[$Ident][$VarType])) {
-            return self::DatapointProfiles[$Ident][$VarType];
-        }
-        if (array_key_exists($Ident, self::DatapointSuffix) && ($VarType != VARIABLETYPE_BOOLEAN)) {
-            return $this->ValuePresentation(self::DatapointSuffix[$Ident]);
-        }
-        return \HMExtended\Profiles::$UnitToProfile[$Unit] ?? '';
-    }
-
-    /**
-     * Darstellung Wertanzeige mit Suffix und ohne Nachkommastellen.
-     *
-     * @param string $Suffix Suffix der Anzeige, z.B. ` min`.
-     *
-     * @return array Die Darstellung.
-     */
-    private function ValuePresentation(string $Suffix): array
-    {
-        return [
-            'PRESENTATION' => VARIABLE_PRESENTATION_VALUE_PRESENTATION,
-            'SUFFIX'       => $Suffix,
-            'DIGITS'       => 0
-        ];
+        return \HMExtended\DatapointPresentation::Get($Ident, $Unit, $VarType, $HasAction, fn (string $Text): string => $this->Translate($Text));
     }
 
     /**
@@ -290,8 +252,7 @@ class HomeMaticWeather extends HMBase
                 continue;
             }
             $this->SendDebug($Ident, $Raw, 0);
-            $Display = isset($SystemVariable['Profile']) ? $SystemVariable['Profile'] : $this->ValuePresentation($SystemVariable['Suffix']);
-            $this->MaintainVariable($Ident, $this->Translate($SystemVariable['Caption']), VARIABLETYPE_FLOAT, $Display, 0, true);
+            $this->MaintainPresentationVariable($Ident, $this->Translate($SystemVariable['Caption']), VARIABLETYPE_FLOAT, $this->Presentation($SystemVariable['Datapoint'], '', VARIABLETYPE_FLOAT, false));
             $this->SetVariable($Ident, (float) $Raw);
         }
         return true;

@@ -47,12 +47,11 @@ class HomeMaticRFInterfaceSplitter extends HMBase
         }
 
         $this->CheckConfig();
-        if ($this->GetStatus() == IS_ACTIVE) {
+        // Timer und Abfrage nur mit aktivem Socket (z.B. nicht beim Start von Symcon, bevor der Socket verbunden ist).
+        // Wird der Socket aktiv, startet IOChangeState über ApplyChanges den Timer.
+        if (($this->GetStatus() == IS_ACTIVE) && $this->HasActiveParent()) {
             $this->SetTimerInterval(\HMExtended\Device\Timer::ReadRFInterfaces, $this->ReadPropertyInteger(\HMExtended\Device\Property::Interval) * 1000);
-            // Ohne Parent keine Abfrage und keine Meldung. Mit Parent werden Fehler (z.B. Socket inaktiv) gemeldet.
-            if (IPS_GetInstance($this->InstanceID)['ConnectionID'] > 0) {
-                $this->ReadRFInterfaces();
-            }
+            $this->ReadRFInterfaces();
         } else {
             $this->SetTimerInterval(\HMExtended\Device\Timer::ReadRFInterfaces, 0);
         }

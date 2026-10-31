@@ -40,7 +40,11 @@ class RFInterfaceTest extends HomematicModuleTestCase
         $this->read();
         $this->assertTrue($this->connected($Interface));
         $this->assertSame(3, GetValueInteger(IPS_GetObjectIDByIdent('DUTY_CYCLE', $Interface)));
-        $this->assertSame('~Alert.Reversed', IPS_GetVariable(IPS_GetObjectIDByIdent('CONNECTED', $Interface))['VariableProfile']);
+        $Connected = IPS_GetVariable(IPS_GetObjectIDByIdent('CONNECTED', $Interface));
+        $this->assertSame('', $Connected['VariableProfile']);
+        $Options = json_decode($Connected['VariablePresentation']['OPTIONS'], true);
+        $this->assertSame([[false, 'Alarm', 0xFF0000], [true, 'OK', -1]], array_map(fn ($Option) => [$Option['Value'], $Option['Caption'], $Option['ColorValue']], $Options));
+        $this->assertSame(' %', IPS_GetVariable(IPS_GetObjectIDByIdent('DUTY_CYCLE', $Interface))['VariablePresentation']['SUFFIX']);
     }
 
     public function testOtherInterfacesAreNotChanged(): void

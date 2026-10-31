@@ -10,6 +10,14 @@ require_once __DIR__ . '/../ClimacontrolRegulator/module.php';
  */
 class TestClimateControlRegulator extends HomeMaticClimateControlRegulator
 {
+    /**
+     * Zugang zur Umrechnung des Wochenplans (die Stubs können kein Wochenplan-Ereignis anlegen).
+     */
+    public static function ScheduleParams(array $ScheduleGroups, array $ActionIdToTemp, int $Plan): array|false
+    {
+        return static::ScheduleToParams($ScheduleGroups, $ActionIdToTemp, $Plan);
+    }
+
     protected function ReadPropertyBoolean(string $Name): bool
     {
         return ($Name == \HMExtended\Device\Property::Schedule) ? false : parent::ReadPropertyBoolean($Name);
@@ -49,6 +57,57 @@ class ClimacontrolRegulatorTest extends HeatingTestCase
         IPS_SetProperty($this->DeviceId, 'enable_DECALCIFICATION_TIME', true);
         IPS_ApplyChanges($this->DeviceId);
         FakeHomematicIO::$Requests = [];
+    }
+
+    /**
+     * Wochenplan laut CCU-Firmware (rf_cc_tc.xml): TIMEOUT_<TAG>_1..24 im 10-Minuten-Raster (10..1440), TEMPERATUR_<TAG>_1..24.
+     */
+    public function testScheduleIsConvertedToTimeoutsInTenMinuteSteps(): void
+    {
+        $Result = TestClimateControlRegulator::ScheduleParams([
+            ['Days' => 32, 'Points' => [
+                ['Start' => ['Hour' => 0, 'Minute' => 0], 'ActionID' => 1],
+                ['Start' => ['Hour' => 6, 'Minute' => 7], 'ActionID' => 2],
+                ['Start' => ['Hour' => 22, 'Minute' => 25], 'ActionID' => 1]
+            ]]
+        ], [1 => 17.0, 2 => 21.5], 1);
+        $this->assertIsArray($Result);
+        [$Params, $Schedule] = $Result;
+        $this->assertSame([
+            'TIMEOUT_SATURDAY_1'    => 370,
+            'TEMPERATUR_SATURDAY_1' => 17.0,
+            'TIMEOUT_SATURDAY_2'    => 1350,
+            'TEMPERATUR_SATURDAY_2' => 21.5,
+            'TIMEOUT_SATURDAY_3'    => 1440,
+            'TEMPERATUR_SATURDAY_3' => 17.0
+        ], $Params);
+        // Das gespeicherte Zeitprofil enthält die gerundeten Zeiten, der Wochenplan zeigt sie nach dem Speichern an.
+        $this->assertSame(['Time' => 370, 'Temp' => 17.0], $Schedule[32][1]);
+    }
+
+    public function testScheduleAcceptsTwentyFourPointsPerDay(): void
+    {
+        $Points = [];
+        for ($i = 0; $i < 24; $i++) {
+            $Points[] = ['Start' => ['Hour' => $i, 'Minute' => 0], 'ActionID' => 1];
+        }
+        $this->assertIsArray(TestClimateControlRegulator::ScheduleParams([['Days' => 1, 'Points' => $Points]], [1 => 20.0], 1));
+        $Points[] = ['Start' => ['Hour' => 23, 'Minute' => 30], 'ActionID' => 1];
+        $this->assertFalse(TestClimateControlRegulator::ScheduleParams([['Days' => 1, 'Points' => $Points]], [1 => 20.0], 1));
+    }
+
+    public function testMissingScheduleParamsCauseNoWarning(): void
+    {
+        // Antwort der CCU ohne die Schaltpunkte 14..24: kein PHP-Fehler beim Einlesen.
+        $Master = FakeHomematicIO::$RpcResponses['getParamset:MASTER'];
+        foreach (array_keys($Master) as $Key) {
+            if (preg_match('/^(TIMEOUT|TEMPERATUR)_[A-Z]+_(1[4-9]|2[0-4])$/', $Key)) {
+                unset($Master[$Key]);
+            }
+        }
+        FakeHomematicIO::$RpcResponses['getParamset:MASTER'] = $Master;
+        IPS_ApplyChanges($this->DeviceId);
+        $this->assertSame('22:30', date('H:i', GetValueInteger($this->variable('DECALCIFICATION_TIME'))));
     }
 
     public function testDecalcificationTimeIsComposedFromHourAndMinute(): void

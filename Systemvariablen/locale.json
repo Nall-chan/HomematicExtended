@@ -41,6 +41,7 @@
             "missing": "fehlt",
             "Deselected system variables are not deleted. After applying the changes their status variables are no longer updated. They can be deleted with the button for status variables without selection.": "Abgewählte Systemvariablen werden nicht gelöscht. Nach dem Übernehmen werden ihre Statusvariablen nicht mehr aktualisiert. Sie können danach unten bei den Aktionen über die Schaltfläche „Statusvariablen ohne Auswahl löschen“ gelöscht werden.",
             "%s is deprecated and will be removed in version %s, use %s.": "%s ist veraltet und wird mit Version %s entfernt, bitte %s verwenden.",
+            "%s is deprecated as of Symcon %s, use %s.": "%s ist ab Symcon %s veraltet, bitte %s verwenden.",
             "Boolean": "Boolean",
             "Integer": "Ganzzahl",
             "Number": "Zahl",

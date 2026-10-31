@@ -62,7 +62,24 @@
             "Variable is disabled in config.": "Variable ist in der Konfiguration deaktiviert.",
             "Invalid Ident.": "Ungültiger Ident.",
             "Invalid Ident for VALUE.": "Ungültiger Ident für VALUE.",
-            "Party is disabled in config.": "Party ist in der Konfiguration deaktiviert."
+            "Party is disabled in config.": "Party ist in der Konfiguration deaktiviert.",
+            "Valve closed": "Ventil geschlossen",
+            "Valve open": "Ventil offen",
+            "Heat": "Heizen",
+            "Cool": "Kühlen",
+            "Central": "Zentral",
+            "Closed": "Geschlossen",
+            "Open": "Geöffnet",
+            "Status unknown": "Status unbekannt",
+            "Run to start position": "Fährt in Startposition",
+            "wait for adaptation": "warte auf Adaptionsfahrt",
+            "Adaptation in progress": "Adaptionsfahrt läuft",
+            "Adaptation done": "Adaptionsfahrt ausgeführt",
+            "Valve too tight": "Ventil schwergängig",
+            "Range too big": "Stellbereich zu groß",
+            "Range too small": "Stellbereich zu klein",
+            "Error position": "Notbetrieb",
+            "A day of the schedule has more than %d switching points.": "Ein Tag des Wochenplans hat mehr als %d Schaltpunkte."
         }
     }
 }
