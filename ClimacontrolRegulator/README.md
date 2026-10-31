@@ -88,6 +88,8 @@ Welche Statusvariablen angelegt werden, richtet sich nach dem Gerät und den Opt
 | Name | Ident | Typ | Bedienbar | Optional | Quelle | Darstellung |
 | :--- | :---- | :-- | :-------- | :------- | :----- | :---------- |
 | Solltemperatur | SETPOINT | Float | ja |  | Werte | Schieberegler Temperatur ¹ |
+| Temperatur | TEMPERATURE | Float | nein |  | Werte (Kanal 1) | Wertanzeige °C, Verwendung Temperatur |
+| Feuchtigkeit | HUMIDITY | Integer | nein |  | Werte (Kanal 1) | Wertanzeige % |
 | Betriebsart | MODE_TEMPERATUR_REGULATOR | Integer | ja |  | Parameter | Aufzählung (Manuell, Automatik, Zentral, Urlaub/Party) |
 | Entkalkung Wochentag | DECALCIFICATION_DAY | Integer | ja | ja (aus) | Parameter | Aufzählung (Samstag bis Freitag) |
 | Entkalkung Uhrzeit | DECALCIFICATION_TIME | Integer | ja | ja (aus) | Parameter | Datum/Uhrzeit (Uhrzeit) |
@@ -117,7 +119,13 @@ Zusätzlich werden bei aktivem Wochenplan angelegt:
 
 ### Kachel Visualisierung
 
-Der HM-CC-TC liefert in diesem Modul keine Ist-Temperatur, die Instanz erscheint daher als Liste:  
+Die Instanz erscheint als Thermostat-Kachel mit Soll- und Ist-Temperatur:  
+
+![Kachel](imgs/tile_instance.png)  
+
+Welche Statusvariablen die Kachel als Soll- und Ist-Temperatur zeigt, wird an der Kachel eingestellt: oben rechts den Stift (Größe und Position der Kacheln anpassen) wählen, dann den Stift der Kachel und unter `Soll Temperatur` die `Solltemperatur` sowie unter `Ist Temperatur` die `Temperatur` auswählen. Mehrere Statusvariablen geben eine Temperatur vor (z.B. Urlaub/Party, Komfort- und Absenktemperatur), ohne diese Einstellung zeigt die Kachel unter Umständen eine davon.  
+
+Maximiert zeigt die Kachel alle Statusvariablen:  
 
 ![Kachel Liste](imgs/tile_list.png)  
 
@@ -161,6 +169,7 @@ Der vollständige Changelog der Library steht in der [Haupt-README](../README.md
 
 **Version 3.82:**
 
+- Neue Statusvariablen `Temperatur` (Ist-Temperatur) und `Feuchtigkeit` aus Kanal 1 des Gerätes. Die Kachel-Visualisierung zeigt die Instanz damit als Thermostat-Kachel.  
 - Wochenplan: Die Zeiten werden beim Speichern auf das Raster des Gerätes (10 Minuten) gerundet, bisher schnitt die CCU ab und der Wochenplan in Symcon zeigte andere Zeiten. Mehr als 24 Schaltpunkte an einem Tag werden mit einer Meldung abgelehnt statt mit einem Fehler der CCU.  
 - Wochenplan: Temperaturen erst ab 6 °C (Grenze des Gerätes), auch in der Liste `Temperaturen anpassen`.  
 - Die Statusvariablen nutzen Darstellungen statt Variablenprofilen (Spalte `Darstellung`). Variablen und Archivdaten bleiben erhalten, die Profile der Library werden gelöscht, sobald keine Variable sie mehr nutzt.  

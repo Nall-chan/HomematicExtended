@@ -25,6 +25,10 @@ class HMHeatingDevice extends HMBase
 {
     protected const ValuesChannel = '';
     protected const ParamChannel = '';
+    /** Weiterer Kanal mit Messwerten im Paramset VALUES (z.B. HM-CC-TC :1), leer wenn keiner. */
+    protected const WeatherChannel = '';
+    /** Datenpunkte des Kanals WeatherChannel. */
+    protected const WeatherDatapoints = [];
     protected const DeviceTyp = '';
 
     protected const WeekScheduleIndexTemp = 'P%3$d_TEMPERATURE_%2$s_%1$d';
@@ -143,7 +147,13 @@ class HMHeatingDevice extends HMBase
 
         $this->WeekProfile = 1;
         $Address = $this->ReadPropertyString(\HMExtended\Device\Property::Address);
-        $this->SetReceiveDataFilter($Address == '' ? '.*9999999999.*' : '.*"DeviceID":"' . $Address . static::ValuesChannel . '.*');
+        if ($Address == '') {
+            $this->SetReceiveDataFilter('.*9999999999.*');
+        } elseif (static::WeatherChannel == '') {
+            $this->SetReceiveDataFilter('.*"DeviceID":"' . $Address . static::ValuesChannel . '.*');
+        } else {
+            $this->SetReceiveDataFilter('.*"DeviceID":"' . $Address . '(' . static::ValuesChannel . '|' . static::WeatherChannel . ')".*');
+        }
 
         foreach (\HMExtended\ValuesSet::$Variables[static::DeviceTyp] as $Ident => $VarData) {
             $Property = isset($VarData[4]) ? $VarData[4] : $Ident;
@@ -173,12 +183,12 @@ class HMHeatingDevice extends HMBase
                     break;
             }
             if ($PresentationSubmitPlan) {
-                $isOld = $this->FindIDForIdent(\HMExtended\Variables::SELECT_NEW_WEEK_PROGRAM);
-                $this->MaintainHeatingVariable(\HMExtended\Variables::SELECT_NEW_WEEK_PROGRAM, $this->Translate('Schedule save in profile'), VARIABLETYPE_INTEGER, $PresentationSubmitPlan, true, []);
-                $this->EnableAction(\HMExtended\Variables::SELECT_NEW_WEEK_PROGRAM);
-                if (!$isOld) {
+                // Darstellung und Anzahl der Profile pflegt MaintainSelectWeekProgram (Beschreibung des aktiven Profils laut CCU).
+                if (!$this->FindIDForIdent(\HMExtended\Variables::SELECT_NEW_WEEK_PROGRAM)) {
+                    $this->MaintainHeatingVariable(\HMExtended\Variables::SELECT_NEW_WEEK_PROGRAM, $this->Translate('Schedule save in profile'), VARIABLETYPE_INTEGER, $PresentationSubmitPlan, true, []);
                     $this->SetValue(\HMExtended\Variables::SELECT_NEW_WEEK_PROGRAM, 1);
                 }
+                $this->EnableAction(\HMExtended\Variables::SELECT_NEW_WEEK_PROGRAM);
             }
             $this->MaintainHeatingVariable(\HMExtended\Variables::SUBMIT_WEEK_PROGRAM, $this->Translate('Schedule save'), VARIABLETYPE_INTEGER, \HMExtended\HeatingPresentation::Execute, true, []);
             $this->EnableAction(\HMExtended\Variables::SUBMIT_WEEK_PROGRAM);
@@ -215,7 +225,7 @@ class HMHeatingDevice extends HMBase
             echo $this->Translate('Invalid Ident for VALUE.') . PHP_EOL;
             return false;
         }
-        $AddressWithChannel = $this->ReadPropertyString(\HMExtended\Device\Property::Address) . static::ValuesChannel;
+        $AddressWithChannel = $this->ReadPropertyString(\HMExtended\Device\Property::Address) . $this->ValuesChannelOf($Ident);
         $Result = $this->SendRPC('getValue', $this->ReadPropertyInteger(\HMExtended\Device\Property::Protocol), [$AddressWithChannel, $Ident]);
         if ($Result === null) {
             return false;
@@ -341,6 +351,38 @@ class HMHeatingDevice extends HMBase
     {
         return array_key_exists($Ident, \HMExtended\ValuesSet::$Variables[static::DeviceTyp] ?? [])
             || array_key_exists($Ident, \HMExtended\ParamSet::$Variables[static::DeviceTyp] ?? []);
+    }
+
+    /**
+     * Liest das Paramset VALUES des Kanals ValuesChannel und, falls vorhanden, des Kanals WeatherChannel.
+     *
+     * @return bool true, wenn die CCU die Werte aller Kanäle geliefert hat.
+     */
+    protected function GetValuesAndSetVariable(): bool
+    {
+        if (!parent::GetValuesAndSetVariable()) {
+            return false;
+        }
+        if (static::WeatherChannel == '') {
+            return true;
+        }
+        $Result = $this->GetParamset(\HMExtended\CCU::VALUES, $this->ReadPropertyString(\HMExtended\Device\Property::Address) . static::WeatherChannel);
+        foreach ($Result as $Ident => $Value) {
+            $this->SetVariable($Ident, $Value);
+        }
+        return count($Result) != 0;
+    }
+
+    /**
+     * Liefert den Kanal, zu dem ein Datenpunkt des Paramsets VALUES gehört.
+     *
+     * @param string $Ident Name des Datenpunktes.
+     *
+     * @return string Der Kanal (z.B. ':2').
+     */
+    protected function ValuesChannelOf(string $Ident): string
+    {
+        return in_array($Ident, static::WeatherDatapoints) ? static::WeatherChannel : static::ValuesChannel;
     }
 
     /**
@@ -584,9 +626,25 @@ class HMHeatingDevice extends HMBase
         $this->RefreshScheduleObject();
     }
 
+    /**
+     * Legt die Statusvariablen für das Paramset VALUES aller Kanäle an (ValuesChannel, WeatherChannel).
+     *
+     * @return bool true, wenn die CCU alle Beschreibungen geliefert hat.
+     */
     private function CreateVariablesFromValues(): bool
     {
-        $AddressWithChannel = $this->ReadPropertyString(\HMExtended\Device\Property::Address) . static::ValuesChannel;
+        $Channels = (static::WeatherChannel == '') ? [static::ValuesChannel] : [static::ValuesChannel, static::WeatherChannel];
+        foreach ($Channels as $Channel) {
+            if (!$this->CreateVariablesFromChannelValues($Channel)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private function CreateVariablesFromChannelValues(string $Channel): bool
+    {
+        $AddressWithChannel = $this->ReadPropertyString(\HMExtended\Device\Property::Address) . $Channel;
         $Result = $this->GetParamsetDescription(\HMExtended\CCU::VALUES, $AddressWithChannel);
         if (count($Result) == 0) {
             return false;
@@ -618,8 +676,26 @@ class HMHeatingDevice extends HMBase
             if ($HasAction) {
                 $this->EnableAction($Ident);
             }
+            if (($Ident == static::SelectedWeekScheduleIdent) && $this->FindIDForIdent(\HMExtended\Variables::SELECT_NEW_WEEK_PROGRAM)) {
+                $this->MaintainSelectWeekProgram($Presentation, $Variable);
+            }
         }
         return true;
+    }
+
+    /**
+     * Gleicht die Auswahl „Zeitplan speichern in Profil“ an die Profile an, die das Gerät laut CCU umschalten kann
+     * (z.B. 1..3 bei einer HmIP-Heizgruppe, obwohl das Paramset MASTER 6 Profile enthält).
+     *
+     * @param string $Presentation Schlüssel der Darstellung des aktiven Profils.
+     * @param array $Description Beschreibung des Datenpunktes für das aktive Profil laut CCU.
+     */
+    private function MaintainSelectWeekProgram(string $Presentation, array $Description): void
+    {
+        $this->MaintainHeatingVariable(\HMExtended\Variables::SELECT_NEW_WEEK_PROGRAM, $this->Translate('Schedule save in profile'), VARIABLETYPE_INTEGER, $Presentation, true, $Description);
+        if (is_numeric($Description['MAX'] ?? null) && ($this->GetValue(\HMExtended\Variables::SELECT_NEW_WEEK_PROGRAM) > (int) $Description['MAX'])) {
+            $this->SetValue(\HMExtended\Variables::SELECT_NEW_WEEK_PROGRAM, 1);
+        }
     }
 
     private function CreateVariablesFromParams(): bool
@@ -665,6 +741,9 @@ class HMHeatingDevice extends HMBase
                 $this->MaintainHeatingVariable($Ident, $Name, $VarType, $Presentation, $HasAction, ($Ident == $Variable['ID']) ? $Variable : []);
                 if ($HasAction) {
                     $this->EnableAction($Ident);
+                }
+                if (($Ident == static::SelectedWeekScheduleIdent) && $this->FindIDForIdent(\HMExtended\Variables::SELECT_NEW_WEEK_PROGRAM)) {
+                    $this->MaintainSelectWeekProgram($Presentation, $Variable);
                 }
             }
         }

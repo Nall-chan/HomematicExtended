@@ -32,8 +32,9 @@ class ClimacontrolRegulatorTest extends HeatingTestCase
         parent::setUp();
         $this->IoId = $this->createFakeIo();
         FakeHomematicIO::$RpcResponses = [
-            'getParamsetDescription:VALUES' => $this->description(['SETPOINT' => 'FLOAT']),
-            'getParamset:VALUES'            => ['SETPOINT' => 21.0],
+            // Die Fake-CCU antwortet je Paramset, Kanal :1 (TEMPERATURE, HUMIDITY) und :2 (SETPOINT) erhalten dieselbe Antwort.
+            'getParamsetDescription:VALUES' => $this->description(['SETPOINT' => 'FLOAT', 'TEMPERATURE' => 'FLOAT', 'HUMIDITY' => 'INTEGER']),
+            'getParamset:VALUES'            => ['SETPOINT' => 21.0, 'TEMPERATURE' => 22.4, 'HUMIDITY' => 55],
             'getParamsetDescription:MASTER' => $this->description([
                 'MODE_TEMPERATUR_REGULATOR' => 'INTEGER',
                 'DECALCIFICATION_DAY'       => 'INTEGER',
@@ -83,6 +84,43 @@ class ClimacontrolRegulatorTest extends HeatingTestCase
         ], $Params);
         // Das gespeicherte Zeitprofil enthält die gerundeten Zeiten, der Wochenplan zeigt sie nach dem Speichern an.
         $this->assertSame(['Time' => 370, 'Temp' => 17.0], $Schedule[32][1]);
+    }
+
+    /**
+     * Kanal :1 (WEATHER, rf_cc_tc.xml) liefert Ist-Temperatur und Luftfeuchte.
+     */
+    public function testWeatherChannelIsCreatedAndRead(): void
+    {
+        IPS_ApplyChanges($this->DeviceId);
+        $Addresses = array_map(fn ($Request) => $Request['Data'][0], $this->requests('getParamset', 'VALUES'));
+        $this->assertSame(['IEQ0000001:2', 'IEQ0000001:1'], $Addresses);
+        $this->assertSame(22.4, GetValueFloat($this->variable('TEMPERATURE')));
+        $this->assertSame(55, GetValueInteger($this->variable('HUMIDITY')));
+        $this->assertFalse(HasAction($this->variable('TEMPERATURE')));
+    }
+
+    public function testReceiveFilterMatchesBothChannels(): void
+    {
+        $Filter = '/' . $this->device()->GetReceiveDataFilter() . '/';
+        $this->assertSame(1, preg_match($Filter, '{"DeviceID":"IEQ0000001:1","VariableName":"TEMPERATURE"}'));
+        $this->assertSame(1, preg_match($Filter, '{"DeviceID":"IEQ0000001:2","VariableName":"SETPOINT"}'));
+        $this->assertSame(0, preg_match($Filter, '{"DeviceID":"IEQ0000001:3","VariableName":"STATE"}'));
+        $this->assertSame(0, preg_match($Filter, '{"DeviceID":"IEQ0000001:12","VariableName":"STATE"}'));
+    }
+
+    public function testWeatherEventSetsVariable(): void
+    {
+        $this->device()->ReceiveData(json_encode(['DeviceID' => 'IEQ0000001:1', 'VariableName' => 'TEMPERATURE', 'VariableValue' => 19.8]));
+        $this->assertSame(19.8, GetValueFloat($this->variable('TEMPERATURE')));
+    }
+
+    public function testRequestStateReadsWeatherDatapointFromChannelOne(): void
+    {
+        FakeHomematicIO::$RpcResponses['getValue'] = 23.1;
+        $this->assertTrue($this->device()->RequestState('TEMPERATURE'));
+        $this->assertSame(['IEQ0000001:1', 'TEMPERATURE'], $this->requests('getValue')[0]['Data']);
+        $this->assertTrue($this->device()->RequestState('SETPOINT'));
+        $this->assertSame(['IEQ0000001:2', 'SETPOINT'], $this->requests('getValue')[1]['Data']);
     }
 
     public function testScheduleAcceptsTwentyFourPointsPerDay(): void

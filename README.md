@@ -179,6 +179,10 @@ Erweitert IPS um die native Unterstützung von:
 >
 > **HomeMatic Systemvariablen:** `HM_WriteValueBoolean2`, `HM_WriteValueInteger2`, `HM_WriteValueFloat2` und `HM_WriteValueString2` erzeugen keine Warnung mehr im Log.
 
+**Neue Statusvariablen**
+
+* HomeMatic Climate Control Regulator (HM-CC-TC): `Temperatur` (Ist-Temperatur) und `Feuchtigkeit` aus Kanal 1 des Gerätes. Damit zeigt die Kachel-Visualisierung die Instanz als Thermostat-Kachel.  
+
 **Geändertes Verhalten**
 
 * Heizungsmodule: Die Soll-Temperatur ist ein Schieberegler mit Verwendung `Temperatur`. Minimum und Maximum kommen von der CCU und passen zum jeweiligen Gerät (z.B. HM-CC-TC 6 bis 30 °C mit `Ventil geschlossen` und `Ventil offen`, HM-CC-RT-DN und HmIP 4,5 °C = `Aus` bis 30,5 °C = `An`, HM-CC-VG-1 5 bis 30 °C). Die Anzahl der wählbaren Wochenprofile entspricht den Profilen des Geräts.  
@@ -191,8 +195,8 @@ Erweitert IPS um die native Unterstützung von:
 * HomeMatic Powermeter: Hatte das Gerät einzelne Werte noch nie gesendet (z.B. HM-ES-TX-WM im Strommodus die Gas-Werte), schlug das Übernehmen mit `Fehler bei getParamset` fehl und die Statusvariablen wurden nicht gepflegt. Die Werte werden jetzt einzeln gelesen.  
 * HomeMatic Powermeter, Heizungsmodule, Programme und Weather: Nach einem Fehler beim Erstellen der Instanz (z.B. CCU beim Neuladen nicht erreichbar) blieb der Status auf `wird erstellt` (101), auch nach erfolgreichem Übernehmen.  
 * HomeMatic WR-Interface, RF-Interface Splitter, Systemvariablen und Alarmvariable: Beim Start von Symcon meldeten sie `Keine aktive Parent Instanz!`, wenn der Homematic Socket noch nicht verbunden war. Gelesen wird jetzt erst, wenn der Socket aktiv ist.  
-* Heizungsmodule: Das Debug meldete `Unknown variable` auch für bekannte Datenpunkte, deren Statusvariable in der Konfiguration abgewählt ist.  
 * Heizungsmodule, Wochenplan: Die Zeiten werden beim Speichern auf das Raster des Gerätes gerundet (HM-CC-TC 10 Minuten, sonst 5 Minuten), bisher schnitt die CCU ab und der Wochenplan in Symcon zeigte andere Zeiten. Mehr Schaltpunkte an einem Tag, als das Gerät kennt (HM-CC-TC 24, sonst 13), werden mit einer Meldung abgelehnt statt mit einem Fehler der CCU. HM-CC-TC: Temperaturen im Wochenplan erst ab 6 °C.  
+* HomeMatic Heating Group HmIP: `Zeitplan speichern in Profil` bot die Profile 1 bis 6 an, die Heizgruppe kann aber nur die Profile 1 bis 3 umschalten. Die Auswahl übernimmt jetzt die Anzahl von `Aktives Zeitprofil`.  
 
 **Version 3.81:**  
 

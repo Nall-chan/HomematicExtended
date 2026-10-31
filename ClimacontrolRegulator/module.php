@@ -24,6 +24,12 @@ class HomeMaticClimateControlRegulator extends HMHeatingDevice
     public const DeviceTyp = \HMExtended\DeviceType::ClimacontrolRegulator;
     public const ValuesChannel = \HMExtended\Channels::Second;
     public const ParamChannel = \HMExtended\Channels::Second;
+    /** Kanal :1 (WEATHER) liefert Ist-Temperatur und Luftfeuchte des Gerätes. */
+    protected const WeatherChannel = \HMExtended\Channels::First;
+    protected const WeatherDatapoints = [
+        \HMExtended\ClimacontrolRegulator::TEMPERATURE,
+        \HMExtended\ClimacontrolRegulator::HUMIDITY
+    ];
 
     protected const WeekScheduleIndexTemp = 'TEMPERATUR_%2$s_%1$d';
     protected const WeekScheduleIndexEndTime = 'TIMEOUT_%2$s_%1$d';

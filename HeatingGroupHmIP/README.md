@@ -133,7 +133,7 @@ Zusätzlich werden bei aktivem Wochenplan angelegt:
 | Name | Ident | Typ | Bedienbar | Beschreibung |
 | :--- | :---- | :-- | :-------- | :----------- |
 | Wochenplan | WEEK_PROFIL | Ereignis | ja | Wochenplan des aktiven Zeitprofils. Die Aktionen sind die Temperaturen. |
-| Zeitplan speichern in Profil | SELECT_NEW_WEEK_PROGRAM | Integer | ja | Zeitprofil der CCU (1 bis 6), in das der Wochenplan gespeichert wird. |
+| Zeitplan speichern in Profil | SELECT_NEW_WEEK_PROGRAM | Integer | ja | Zeitprofil der CCU, in das der Wochenplan gespeichert wird. Die Auswahl entspricht den Profilen von `Aktives Zeitprofil` (Heizgruppe: 1 bis 3). |
 | Zeitplan speichern | SUBMIT_WEEK_PROGRAM | Integer | ja | Überträgt den Wochenplan in das gewählte Zeitprofil zur CCU. |
 
 ¹ Schieberegler mit Verwendung Temperatur, Schrittweite 0,5 °C. Minimum und Maximum liefert die CCU je Gerät (HmIP: 4,5 °C = `Aus` bis 30,5 °C = `An`).  
@@ -198,6 +198,7 @@ Der vollständige Changelog der Library steht in der [Haupt-README](../README.md
 - Wochenplan: Die Zeiten werden beim Speichern auf das Raster des Gerätes (5 Minuten) gerundet, bisher schnitt die CCU ab und der Wochenplan in Symcon zeigte andere Zeiten. Mehr als 13 Schaltpunkte an einem Tag werden mit einer Meldung abgelehnt statt mit einem Fehler der CCU.  
 - Die Statusvariablen nutzen Darstellungen statt Variablenprofilen. Variablen und Archivdaten bleiben erhalten. Die Profile der Library werden gelöscht, sobald keine Variable sie mehr nutzt (Spalte `Darstellung`).  
 - Die Temperaturen übernehmen Minimum und Maximum von der CCU, die Anzahl der wählbaren Zeitprofile entspricht dem Gerät.  
+- `Zeitplan speichern in Profil` bot die Profile 1 bis 6 an, obwohl die Heizgruppe nur 1 bis 3 umschalten kann. Die Auswahl übernimmt jetzt die Anzahl von `Aktives Zeitprofil`.  
 
 **Version 3.81:**
 

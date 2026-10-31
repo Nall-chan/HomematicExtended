@@ -125,6 +125,9 @@ namespace HMExtended
         public const ADJUSTING_DATA = 'ADJUSTING_DATA';
         public const ADJUSTING_COMMAND = 'ADJUSTING_COMMAND';
         public const STATE = 'STATE';
+        //Values Kanal :1 (WEATHER)
+        public const TEMPERATURE = 'TEMPERATURE';
+        public const HUMIDITY = 'HUMIDITY';
         //Params
         public const MODE_TEMPERATUR_REGULATOR = 'MODE_TEMPERATUR_REGULATOR';
         public const DECALCIFICATION_DAY = 'DECALCIFICATION_DAY';
@@ -648,6 +651,19 @@ namespace HMExtended
                 ],
                 ClimacontrolRegulator::STATE => [
                     \HMExtended\Variables::VARIABLETYPE_NONE
+                ],
+                // Kanal :1 (rf_cc_tc.xml, cc_tc_ch_weather_values): TEMPERATURE -40..80 °C, HUMIDITY 0..99 %.
+                ClimacontrolRegulator::TEMPERATURE => [
+                    VARIABLETYPE_FLOAT,
+                    HeatingPresentation::Temperature,
+                    false,
+                    'Temperature'
+                ],
+                ClimacontrolRegulator::HUMIDITY => [
+                    VARIABLETYPE_INTEGER,
+                    HeatingPresentation::Humidity,
+                    false,
+                    'Humidity'
                 ],
             ],
             DeviceType::HeatingGroupHmIP => [
