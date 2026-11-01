@@ -35,6 +35,14 @@ Quelle der Datenpunkte, Bereiche und Einheiten sind die Gerätebeschreibungen de
 
 Das Drücken der Tasten (`PRESS_SHORT`, `PRESS_LONG`) ist als Statusvariable mit Aktion vorhanden. `LEVEL` kann nur geschrieben werden und sendet den Wert an die verknüpften Aktoren. Die Aktion wird auch bei echten Tastern angeboten, dort meldet die Funktion einen Fehler.  
 
+## Fernbedienung mit Display
+
+| Aktion | Datenpunkte | Angeboten bei | Parameter |
+|---|---|---|---|
+| Auf dem Display anzeigen | `TEXT`, `UNIT`, `BEEP`, `BACKLIGHT`, `ALARM_COUNT`, `SERVICE_COUNT`, Symbole (`BULB`, `SWITCH`, `WINDOW`, `DOOR`, `BLIND`, `SCENE`, `PHONE`, `BELL`, `CLOCK`, `ARROW_UP`, `ARROW_DOWN`), `SUBMIT` | Instanz des Kanals `DISPLAY` (Kanal 18) der HM-RC-19, HM-RC-19-B und HM-RC-19-SW | Text, Einheit (keine, %, W, °C, °F), Signalton (keiner, 1 bis 3), Hintergrundlicht (aus, an, langsam und schnell blinkend), Alarm- und Servicemeldungen (0 bis 255), Symbole |
+
+Die Datenpunkte des Displays sind alle nur schreibbar, die Instanz des Kanals hat deshalb keine Statusvariablen, an denen Symcon sie erkennen könnte. Die Aktion wird daher bei jeder Instanz des Homematic-Moduls angeboten und prüft beim Ausführen anhand der Beschreibung der Datenpunkte, ob das Ziel ein Display-Kanal ist (sonst Meldung, ohne zu schreiben). Der Text hat 5 Zeichen, mit Punkt oder Komma 6 Zeichen (längere Texte werden abgeschnitten), reine Zahlen stehen rechtsbündig. Alle Werte werden geschrieben und danach mit `SUBMIT` an das Display übertragen. Die Reihenfolge der Werte stammt aus der Gerätebeschreibung der CCU und einem bewährten Script, die Aktion ist nicht an einem Gerät getestet.
+
 ## HomeMatic IP
 
 Grundlage sind die Parameterlisten aus der Technischen Dokumentation der Homematic-IP-Geräte (`docs/hmip-device-documentation_1.pdf`) und den CCU-Quellen (OCCU). Geprüft ist bisher nur „Einschalten mit Einschaltdauer“ an einem HmIP-Schaltaktor (ON_TIME 10 s, danach schaltet das Gerät von selbst aus), die übrigen Aktionen sind nicht an Geräten getestet.  

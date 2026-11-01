@@ -1,0 +1,209 @@
+{
+    "id": "{DDD6BE6F-2314-4B49-A3D7-D463F580ACF6}",
+    "caption": "Show on display",
+    "description": "Shows text, unit, symbols, beep and backlight on the display of a remote control with display (HM-RC-19). The target is the instance of the DISPLAY channel (channel 18).",
+    "form": [
+        {
+            "type": "ValidationTextBox",
+            "name": "TEXT",
+            "caption": "Text",
+            "value": ""
+        },
+        {
+            "type": "Select",
+            "name": "UNIT",
+            "caption": "Unit",
+            "options": [
+                {
+                    "caption": "No unit",
+                    "value": 0
+                },
+                {
+                    "caption": "%",
+                    "value": 1
+                },
+                {
+                    "caption": "W",
+                    "value": 2
+                },
+                {
+                    "caption": "°C",
+                    "value": 3
+                },
+                {
+                    "caption": "°F",
+                    "value": 4
+                }
+            ],
+            "value": 0
+        },
+        {
+            "type": "Select",
+            "name": "BEEP",
+            "caption": "Beep",
+            "options": [
+                {
+                    "caption": "No beep",
+                    "value": 0
+                },
+                {
+                    "caption": "Tone 1",
+                    "value": 1
+                },
+                {
+                    "caption": "Tone 2",
+                    "value": 2
+                },
+                {
+                    "caption": "Tone 3",
+                    "value": 3
+                }
+            ],
+            "value": 0
+        },
+        {
+            "type": "Select",
+            "name": "BACKLIGHT",
+            "caption": "Backlight",
+            "options": [
+                {
+                    "caption": "Off",
+                    "value": 0
+                },
+                {
+                    "caption": "On",
+                    "value": 1
+                },
+                {
+                    "caption": "Blink slowly",
+                    "value": 2
+                },
+                {
+                    "caption": "Blink fast",
+                    "value": 3
+                }
+            ],
+            "value": 0
+        },
+        {
+            "type": "NumberSpinner",
+            "name": "ALARM_COUNT",
+            "caption": "Alarm messages",
+            "minimum": 0,
+            "maximum": 255,
+            "value": 0
+        },
+        {
+            "type": "NumberSpinner",
+            "name": "SERVICE_COUNT",
+            "caption": "Service messages",
+            "minimum": 0,
+            "maximum": 255,
+            "value": 0
+        },
+        {
+            "type": "CheckBox",
+            "name": "BULB",
+            "caption": "Light bulb"
+        },
+        {
+            "type": "CheckBox",
+            "name": "SWITCH",
+            "caption": "Switch"
+        },
+        {
+            "type": "CheckBox",
+            "name": "WINDOW",
+            "caption": "Window"
+        },
+        {
+            "type": "CheckBox",
+            "name": "DOOR",
+            "caption": "Door"
+        },
+        {
+            "type": "CheckBox",
+            "name": "BLIND",
+            "caption": "Blind"
+        },
+        {
+            "type": "CheckBox",
+            "name": "SCENE",
+            "caption": "Scene"
+        },
+        {
+            "type": "CheckBox",
+            "name": "PHONE",
+            "caption": "Phone"
+        },
+        {
+            "type": "CheckBox",
+            "name": "BELL",
+            "caption": "Bell"
+        },
+        {
+            "type": "CheckBox",
+            "name": "CLOCK",
+            "caption": "Clock"
+        },
+        {
+            "type": "CheckBox",
+            "name": "ARROW_UP",
+            "caption": "Arrow up"
+        },
+        {
+            "type": "CheckBox",
+            "name": "ARROW_DOWN",
+            "caption": "Arrow down"
+        }
+    ],
+    "restrictions": {
+        "objectType": [
+            1
+        ],
+        "moduleID": [
+            "{EE4A81C6-5C90-4DB7-AD2F-F6BBD521412E}"
+        ],
+        "includeEnvironments": [
+            "TestCommands",
+            "Default"
+        ]
+    },
+    "action": "$de = strncmp(IPS_GetSystemLanguage(), 'de', 2) == 0;\n$description = json_decode((string) @HM_GetParamsetDescription($_IPS['TARGET']), true);\nif (!is_array($description) || !isset($description['TEXT'], $description['SUBMIT'])) {\n    echo $de ? 'Das Ziel ist nicht der Kanal DISPLAY einer Fernbedienung mit Display.' : 'The target is not the DISPLAY channel of a remote control with display.';\n    return;\n}\n$text = trim($_IPS['TEXT']);\nif ((strpos($text, '.') !== false) || (strpos($text, ',') !== false)) {\n    $text = substr($text, 0, 6);\n} else {\n    $text = substr($text, 0, 5);\n    if (is_numeric($text)) {\n        $text = str_pad($text, 5, ' ', STR_PAD_LEFT);\n    }\n}\nHM_WriteValueString($_IPS['TARGET'], 'TEXT', $text);\nHM_WriteValueInteger($_IPS['TARGET'], 'UNIT', $_IPS['UNIT']);\nHM_WriteValueInteger($_IPS['TARGET'], 'BEEP', $_IPS['BEEP']);\nHM_WriteValueInteger($_IPS['TARGET'], 'BACKLIGHT', $_IPS['BACKLIGHT']);\nHM_WriteValueInteger($_IPS['TARGET'], 'ALARM_COUNT', $_IPS['ALARM_COUNT']);\nHM_WriteValueInteger($_IPS['TARGET'], 'SERVICE_COUNT', $_IPS['SERVICE_COUNT']);\nforeach (['BULB', 'SWITCH', 'WINDOW', 'DOOR', 'BLIND', 'SCENE', 'PHONE', 'BELL', 'CLOCK', 'ARROW_UP', 'ARROW_DOWN'] as $symbol) {\n    if ($_IPS[$symbol]) {\n        HM_WriteValueBoolean($_IPS['TARGET'], $symbol, true);\n    }\n}\nHM_WriteValueBoolean($_IPS['TARGET'], 'SUBMIT', true);",
+    "locale": {
+        "de": {
+            "Show on display": "Auf dem Display anzeigen",
+            "Shows text, unit, symbols, beep and backlight on the display of a remote control with display (HM-RC-19). The target is the instance of the DISPLAY channel (channel 18).": "Zeigt Text, Einheit, Symbole, Signalton und Hintergrundlicht auf dem Display einer Fernbedienung mit Display (HM-RC-19) an. Ziel ist die Instanz des Kanals DISPLAY (Kanal 18).",
+            "Text": "Text",
+            "Unit": "Einheit",
+            "No unit": "Keine Einheit",
+            "%": "%",
+            "W": "W",
+            "°C": "°C",
+            "°F": "°F",
+            "Beep": "Signalton",
+            "No beep": "Kein Signalton",
+            "Tone 1": "Ton 1",
+            "Tone 2": "Ton 2",
+            "Tone 3": "Ton 3",
+            "Backlight": "Hintergrundlicht",
+            "Off": "Aus",
+            "On": "Ein",
+            "Blink slowly": "Langsam blinken",
+            "Blink fast": "Schnell blinken",
+            "Alarm messages": "Alarmmeldungen",
+            "Service messages": "Servicemeldungen",
+            "Light bulb": "Glühbirne",
+            "Switch": "Schalter",
+            "Window": "Fenster",
+            "Door": "Tür",
+            "Blind": "Jalousie",
+            "Scene": "Szene",
+            "Phone": "Telefon",
+            "Bell": "Glocke",
+            "Clock": "Uhr",
+            "Arrow up": "Pfeil hoch",
+            "Arrow down": "Pfeil runter"
+        }
+    }
+}
