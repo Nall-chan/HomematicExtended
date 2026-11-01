@@ -72,7 +72,12 @@ class ActionsTest extends TestCase
         if (isset($Action['description'])) {
             $Texts[] = $Action['description'];
         }
-        foreach ($Action['form'] as $Element) {
+        // Formulare, die per PHP erzeugt werden, werden für ein gültiges und ein ungültiges Ziel ausgeführt
+        $Elements = array_merge(
+            $this->formElements($Action, '{"TEXT":{},"SUBMIT":{}}'),
+            $this->formElements($Action, '{"STATE":{}}')
+        );
+        foreach ($Elements as $Element) {
             $Texts[] = $Element['caption'];
             foreach ($Element['options'] ?? [] as $Option) {
                 $Texts[] = $Option['caption'];
@@ -82,7 +87,7 @@ class ActionsTest extends TestCase
             $this->assertArrayHasKey($Text, $Translations, 'Nicht übersetzt: ' . $Text);
         }
         // Jeder Parameter der Aktion muss im Formular vorkommen
-        $Names = array_column($Action['form'], 'name');
+        $Names = array_column($this->formElements($Action, '{"TEXT":{},"SUBMIT":{}}'), 'name');
         preg_match_all('/\$_IPS\[\'(?!TARGET)([A-Z0-9_]+)\'\]/', $Action['action'], $Matches);
         foreach (array_unique($Matches[1]) as $Parameter) {
             $this->assertContains($Parameter, $Names, 'Parameter ohne Formularfeld: ' . $Parameter);
@@ -116,6 +121,19 @@ class ActionsTest extends TestCase
         $this->assertSame('Warnu', $Calls[0][2]);
     }
 
+    public function testDisplayFormShowsOnlyAHintForOtherTargets(): void
+    {
+        $Action = json_decode(file_get_contents(__DIR__ . '/../actions/displayShow.json'), true);
+        $Other = $this->formElements($Action, '{"STATE":{}}');
+        $this->assertSame(['Label', 'Label'], array_column($Other, 'type'));
+        $this->assertSame([], array_filter(array_column($Other, 'name')));
+        $Display = $this->formElements($Action, '{"TEXT":{},"SUBMIT":{}}');
+        $this->assertContains('TEXT', array_column($Display, 'name'));
+        $this->assertContains('ARROW_DOWN', array_column($Display, 'name'));
+        // Ohne Antwort der CCU gilt das Ziel als ungültig
+        $this->assertSame(['Label', 'Label'], array_column($this->formElements($Action, 'invalid'), 'type'));
+    }
+
     public function testDisplayActionRejectsOtherChannels(): void
     {
         [$Calls, $Output] = $this->runAction('displayShow.json', $this->displayParams(), '{"STATE":{}}');
@@ -130,6 +148,27 @@ class ActionsTest extends TestCase
             $Ids[] = json_decode(file_get_contents($File), true)['id'];
         }
         $this->assertSame(count($Ids), count(array_unique($Ids)));
+    }
+
+    /**
+     * Elemente des Formulars einer Aktion. Besteht das Formular aus PHP-Code, wird er mit simulierten Funktionen ausgeführt.
+     *
+     * @param array $Action Die Aktion.
+     * @param string $Description Beschreibung der Datenpunkte des Ziels (Antwort von HM_GetParamsetDescription).
+     */
+    private function formElements(array $Action, string $Description): array
+    {
+        if (!is_string($Action['form'][0] ?? null)) {
+            return $Action['form'];
+        }
+        $Code = implode("\n", $Action['form']);
+        token_get_all('<?php ' . $Code, TOKEN_PARSE);
+        FakeHmFunctions::$Description = $Description;
+        $Run = function (array $_IPS) use ($Code): array
+        {
+            return eval(str_replace('HM_', 'FakeHm_', $Code));
+        };
+        return $Run(['TARGET' => 12345]);
     }
 
     /**

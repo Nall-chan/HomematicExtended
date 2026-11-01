@@ -1,161 +1,170 @@
 {
     "id": "{DDD6BE6F-2314-4B49-A3D7-D463F580ACF6}",
     "caption": "Show on display",
-    "description": "Shows text, unit, symbols, beep and backlight on the display of a remote control with display (HM-RC-19). The target is the instance of the DISPLAY channel (channel 18).",
+    "description": "Shows text, unit, symbols, beep and backlight on the display of a remote control with display (HM-RC-19). The target is the instance of the DISPLAY channel (channel 18). The form shows a hint for other targets.",
     "form": [
-        {
-            "type": "ValidationTextBox",
-            "name": "TEXT",
-            "caption": "Text",
-            "value": ""
-        },
-        {
-            "type": "Select",
-            "name": "UNIT",
-            "caption": "Unit",
-            "options": [
-                {
-                    "caption": "No unit",
-                    "value": 0
-                },
-                {
-                    "caption": "%",
-                    "value": 1
-                },
-                {
-                    "caption": "W",
-                    "value": 2
-                },
-                {
-                    "caption": "°C",
-                    "value": 3
-                },
-                {
-                    "caption": "°F",
-                    "value": 4
-                }
-            ],
-            "value": 0
-        },
-        {
-            "type": "Select",
-            "name": "BEEP",
-            "caption": "Beep",
-            "options": [
-                {
-                    "caption": "No beep",
-                    "value": 0
-                },
-                {
-                    "caption": "Tone 1",
-                    "value": 1
-                },
-                {
-                    "caption": "Tone 2",
-                    "value": 2
-                },
-                {
-                    "caption": "Tone 3",
-                    "value": 3
-                }
-            ],
-            "value": 0
-        },
-        {
-            "type": "Select",
-            "name": "BACKLIGHT",
-            "caption": "Backlight",
-            "options": [
-                {
-                    "caption": "Off",
-                    "value": 0
-                },
-                {
-                    "caption": "On",
-                    "value": 1
-                },
-                {
-                    "caption": "Blink slowly",
-                    "value": 2
-                },
-                {
-                    "caption": "Blink fast",
-                    "value": 3
-                }
-            ],
-            "value": 0
-        },
-        {
-            "type": "NumberSpinner",
-            "name": "ALARM_COUNT",
-            "caption": "Alarm messages",
-            "minimum": 0,
-            "maximum": 255,
-            "value": 0
-        },
-        {
-            "type": "NumberSpinner",
-            "name": "SERVICE_COUNT",
-            "caption": "Service messages",
-            "minimum": 0,
-            "maximum": 255,
-            "value": 0
-        },
-        {
-            "type": "CheckBox",
-            "name": "BULB",
-            "caption": "Light bulb"
-        },
-        {
-            "type": "CheckBox",
-            "name": "SWITCH",
-            "caption": "Switch"
-        },
-        {
-            "type": "CheckBox",
-            "name": "WINDOW",
-            "caption": "Window"
-        },
-        {
-            "type": "CheckBox",
-            "name": "DOOR",
-            "caption": "Door"
-        },
-        {
-            "type": "CheckBox",
-            "name": "BLIND",
-            "caption": "Blind"
-        },
-        {
-            "type": "CheckBox",
-            "name": "SCENE",
-            "caption": "Scene"
-        },
-        {
-            "type": "CheckBox",
-            "name": "PHONE",
-            "caption": "Phone"
-        },
-        {
-            "type": "CheckBox",
-            "name": "BELL",
-            "caption": "Bell"
-        },
-        {
-            "type": "CheckBox",
-            "name": "CLOCK",
-            "caption": "Clock"
-        },
-        {
-            "type": "CheckBox",
-            "name": "ARROW_UP",
-            "caption": "Arrow up"
-        },
-        {
-            "type": "CheckBox",
-            "name": "ARROW_DOWN",
-            "caption": "Arrow down"
-        }
+        "$description = json_decode((string) @HM_GetParamsetDescription($_IPS['TARGET']), true);",
+        "if (!is_array($description) || !isset($description['TEXT'], $description['SUBMIT'])) {",
+        "    return [",
+        "        ['type' => 'Label', 'caption' => 'This target is not the DISPLAY channel of a remote control with display.'],",
+        "        ['type' => 'Label', 'caption' => 'Choose the instance of channel 18 (DISPLAY) of an HM-RC-19, HM-RC-19-B or HM-RC-19-SW.']",
+        "    ];",
+        "}",
+        "return [",
+        "    [",
+        "        'type' => 'ValidationTextBox',",
+        "        'name' => 'TEXT',",
+        "        'caption' => 'Text',",
+        "        'value' => ''",
+        "    ],",
+        "    [",
+        "        'type' => 'Select',",
+        "        'name' => 'UNIT',",
+        "        'caption' => 'Unit',",
+        "        'options' => [",
+        "            [",
+        "                'caption' => 'No unit',",
+        "                'value' => 0",
+        "            ],",
+        "            [",
+        "                'caption' => '%',",
+        "                'value' => 1",
+        "            ],",
+        "            [",
+        "                'caption' => 'W',",
+        "                'value' => 2",
+        "            ],",
+        "            [",
+        "                'caption' => '°C',",
+        "                'value' => 3",
+        "            ],",
+        "            [",
+        "                'caption' => '°F',",
+        "                'value' => 4",
+        "            ]",
+        "        ],",
+        "        'value' => 0",
+        "    ],",
+        "    [",
+        "        'type' => 'Select',",
+        "        'name' => 'BEEP',",
+        "        'caption' => 'Beep',",
+        "        'options' => [",
+        "            [",
+        "                'caption' => 'No beep',",
+        "                'value' => 0",
+        "            ],",
+        "            [",
+        "                'caption' => 'Tone 1',",
+        "                'value' => 1",
+        "            ],",
+        "            [",
+        "                'caption' => 'Tone 2',",
+        "                'value' => 2",
+        "            ],",
+        "            [",
+        "                'caption' => 'Tone 3',",
+        "                'value' => 3",
+        "            ]",
+        "        ],",
+        "        'value' => 0",
+        "    ],",
+        "    [",
+        "        'type' => 'Select',",
+        "        'name' => 'BACKLIGHT',",
+        "        'caption' => 'Backlight',",
+        "        'options' => [",
+        "            [",
+        "                'caption' => 'Off',",
+        "                'value' => 0",
+        "            ],",
+        "            [",
+        "                'caption' => 'On',",
+        "                'value' => 1",
+        "            ],",
+        "            [",
+        "                'caption' => 'Blink slowly',",
+        "                'value' => 2",
+        "            ],",
+        "            [",
+        "                'caption' => 'Blink fast',",
+        "                'value' => 3",
+        "            ]",
+        "        ],",
+        "        'value' => 0",
+        "    ],",
+        "    [",
+        "        'type' => 'NumberSpinner',",
+        "        'name' => 'ALARM_COUNT',",
+        "        'caption' => 'Alarm messages',",
+        "        'minimum' => 0,",
+        "        'maximum' => 255,",
+        "        'value' => 0",
+        "    ],",
+        "    [",
+        "        'type' => 'NumberSpinner',",
+        "        'name' => 'SERVICE_COUNT',",
+        "        'caption' => 'Service messages',",
+        "        'minimum' => 0,",
+        "        'maximum' => 255,",
+        "        'value' => 0",
+        "    ],",
+        "    [",
+        "        'type' => 'CheckBox',",
+        "        'name' => 'BULB',",
+        "        'caption' => 'Light bulb'",
+        "    ],",
+        "    [",
+        "        'type' => 'CheckBox',",
+        "        'name' => 'SWITCH',",
+        "        'caption' => 'Switch'",
+        "    ],",
+        "    [",
+        "        'type' => 'CheckBox',",
+        "        'name' => 'WINDOW',",
+        "        'caption' => 'Window'",
+        "    ],",
+        "    [",
+        "        'type' => 'CheckBox',",
+        "        'name' => 'DOOR',",
+        "        'caption' => 'Door'",
+        "    ],",
+        "    [",
+        "        'type' => 'CheckBox',",
+        "        'name' => 'BLIND',",
+        "        'caption' => 'Blind'",
+        "    ],",
+        "    [",
+        "        'type' => 'CheckBox',",
+        "        'name' => 'SCENE',",
+        "        'caption' => 'Scene'",
+        "    ],",
+        "    [",
+        "        'type' => 'CheckBox',",
+        "        'name' => 'PHONE',",
+        "        'caption' => 'Phone'",
+        "    ],",
+        "    [",
+        "        'type' => 'CheckBox',",
+        "        'name' => 'BELL',",
+        "        'caption' => 'Bell'",
+        "    ],",
+        "    [",
+        "        'type' => 'CheckBox',",
+        "        'name' => 'CLOCK',",
+        "        'caption' => 'Clock'",
+        "    ],",
+        "    [",
+        "        'type' => 'CheckBox',",
+        "        'name' => 'ARROW_UP',",
+        "        'caption' => 'Arrow up'",
+        "    ],",
+        "    [",
+        "        'type' => 'CheckBox',",
+        "        'name' => 'ARROW_DOWN',",
+        "        'caption' => 'Arrow down'",
+        "    ]",
+        "];"
     ],
     "restrictions": {
         "objectType": [
@@ -173,7 +182,6 @@
     "locale": {
         "de": {
             "Show on display": "Auf dem Display anzeigen",
-            "Shows text, unit, symbols, beep and backlight on the display of a remote control with display (HM-RC-19). The target is the instance of the DISPLAY channel (channel 18).": "Zeigt Text, Einheit, Symbole, Signalton und Hintergrundlicht auf dem Display einer Fernbedienung mit Display (HM-RC-19) an. Ziel ist die Instanz des Kanals DISPLAY (Kanal 18).",
             "Text": "Text",
             "Unit": "Einheit",
             "No unit": "Keine Einheit",
@@ -203,7 +211,10 @@
             "Bell": "Glocke",
             "Clock": "Uhr",
             "Arrow up": "Pfeil hoch",
-            "Arrow down": "Pfeil runter"
+            "Arrow down": "Pfeil runter",
+            "This target is not the DISPLAY channel of a remote control with display.": "Dieses Ziel ist nicht der Kanal DISPLAY einer Fernbedienung mit Display.",
+            "Choose the instance of channel 18 (DISPLAY) of an HM-RC-19, HM-RC-19-B or HM-RC-19-SW.": "Bitte die Instanz des Kanals 18 (DISPLAY) einer HM-RC-19, HM-RC-19-B oder HM-RC-19-SW wählen.",
+            "Shows text, unit, symbols, beep and backlight on the display of a remote control with display (HM-RC-19). The target is the instance of the DISPLAY channel (channel 18). The form shows a hint for other targets.": "Zeigt Text, Einheit, Symbole, Signalton und Hintergrundlicht auf dem Display einer Fernbedienung mit Display (HM-RC-19) an. Ziel ist die Instanz des Kanals DISPLAY (Kanal 18). Bei anderen Zielen zeigt das Formular einen Hinweis."
         }
     }
 }
