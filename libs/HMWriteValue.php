@@ -37,92 +37,92 @@ trait HMWriteValueFunctions
      * IPS-Instanz-Funktion 'HM_WriteValueBoolean'.
      * Schreibt einen Wert in eine bedienbare Statusvariable vom Typ Boolean.
      *
-     * @param string $Ident Ident der Statusvariable.
+     * @param string $Parameter Ident der Statusvariable.
      * @param bool $Value Der Wert.
      *
      * @return bool True bei Erfolg, sonst false (die Meldung erhält der Aufrufer).
      */
-    public function WriteValueBoolean(string $Ident, bool $Value): bool
+    public function WriteValueBoolean(string $Parameter, bool $Value): bool
     {
-        return $this->WriteVariableValue($Ident, $Value, VARIABLETYPE_BOOLEAN);
+        return $this->WriteVariableValue($Parameter, $Value, VARIABLETYPE_BOOLEAN);
     }
 
     /**
      * IPS-Instanz-Funktion 'HM_WriteValueInteger'.
      * Schreibt einen Wert in eine bedienbare Statusvariable vom Typ Integer (auch Aufzählungen).
      *
-     * @param string $Ident Ident der Statusvariable.
+     * @param string $Parameter Ident der Statusvariable.
      * @param int $Value Der Wert.
      *
      * @return bool True bei Erfolg, sonst false (die Meldung erhält der Aufrufer).
      */
-    public function WriteValueInteger(string $Ident, int $Value): bool
+    public function WriteValueInteger(string $Parameter, int $Value): bool
     {
-        return $this->WriteVariableValue($Ident, $Value, VARIABLETYPE_INTEGER);
+        return $this->WriteVariableValue($Parameter, $Value, VARIABLETYPE_INTEGER);
     }
 
     /**
      * IPS-Instanz-Funktion 'HM_WriteValueFloat'.
      * Schreibt einen Wert in eine bedienbare Statusvariable vom Typ Float.
      *
-     * @param string $Ident Ident der Statusvariable.
+     * @param string $Parameter Ident der Statusvariable.
      * @param float $Value Der Wert.
      *
      * @return bool True bei Erfolg, sonst false (die Meldung erhält der Aufrufer).
      */
-    public function WriteValueFloat(string $Ident, float $Value): bool
+    public function WriteValueFloat(string $Parameter, float $Value): bool
     {
-        return $this->WriteVariableValue($Ident, $Value, VARIABLETYPE_FLOAT);
+        return $this->WriteVariableValue($Parameter, $Value, VARIABLETYPE_FLOAT);
     }
 
     /**
      * IPS-Instanz-Funktion 'HM_WriteValueString'.
      * Schreibt einen Wert in eine bedienbare Statusvariable vom Typ String.
      *
-     * @param string $Ident Ident der Statusvariable.
+     * @param string $Parameter Ident der Statusvariable.
      * @param string $Value Der Wert.
      *
      * @return bool True bei Erfolg, sonst false (die Meldung erhält der Aufrufer).
      */
-    public function WriteValueString(string $Ident, string $Value): bool
+    public function WriteValueString(string $Parameter, string $Value): bool
     {
-        return $this->WriteVariableValue($Ident, $Value, VARIABLETYPE_STRING);
+        return $this->WriteVariableValue($Parameter, $Value, VARIABLETYPE_STRING);
     }
 
     /**
      * IPS-Instanz-Funktion 'HM_WriteValueBoolean2'. Ruft WriteValueBoolean auf, ab Symcon 10.0 veraltet.
      */
-    public function WriteValueBoolean2(string $Ident, bool $Value): bool
+    public function WriteValueBoolean2(string $Parameter, bool $Value): bool
     {
         $this->LogWriteValueAlias('HM_WriteValueBoolean2', 'HM_WriteValueBoolean');
-        return $this->WriteValueBoolean($Ident, $Value);
+        return $this->WriteValueBoolean($Parameter, $Value);
     }
 
     /**
      * IPS-Instanz-Funktion 'HM_WriteValueInteger2'. Ruft WriteValueInteger auf, ab Symcon 10.0 veraltet.
      */
-    public function WriteValueInteger2(string $Ident, int $Value): bool
+    public function WriteValueInteger2(string $Parameter, int $Value): bool
     {
         $this->LogWriteValueAlias('HM_WriteValueInteger2', 'HM_WriteValueInteger');
-        return $this->WriteValueInteger($Ident, $Value);
+        return $this->WriteValueInteger($Parameter, $Value);
     }
 
     /**
      * IPS-Instanz-Funktion 'HM_WriteValueFloat2'. Ruft WriteValueFloat auf, ab Symcon 10.0 veraltet.
      */
-    public function WriteValueFloat2(string $Ident, float $Value): bool
+    public function WriteValueFloat2(string $Parameter, float $Value): bool
     {
         $this->LogWriteValueAlias('HM_WriteValueFloat2', 'HM_WriteValueFloat');
-        return $this->WriteValueFloat($Ident, $Value);
+        return $this->WriteValueFloat($Parameter, $Value);
     }
 
     /**
      * IPS-Instanz-Funktion 'HM_WriteValueString2'. Ruft WriteValueString auf, ab Symcon 10.0 veraltet.
      */
-    public function WriteValueString2(string $Ident, string $Value): bool
+    public function WriteValueString2(string $Parameter, string $Value): bool
     {
         $this->LogWriteValueAlias('HM_WriteValueString2', 'HM_WriteValueString');
-        return $this->WriteValueString($Ident, $Value);
+        return $this->WriteValueString($Parameter, $Value);
     }
 
     /**

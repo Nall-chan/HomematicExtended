@@ -55,6 +55,31 @@ class PublicFunctionsTest extends TestCase
         }
     }
 
+    /**
+     * Symcon verlangt, dass alle Instanz-Funktionen gleichen Namens (PREFIX_Funktion) in der Library dieselbe Signatur haben,
+     * auch dieselben Namen und Typen der Parameter und denselben Rückgabetyp. Sonst lässt sich die Funktion nicht registrieren
+     * ("Cannot register function … Parameter 1 does not match").
+     */
+    public function testFunctionsWithTheSameNameHaveTheSameSignature(): void
+    {
+        $Signatures = [];
+        foreach (self::moduleProvider() as [$Folder, $Class]) {
+            require_once $Folder . '/module.php';
+            foreach (self::functions($Folder, $Class) as $Name) {
+                $Method = new ReflectionMethod($Class, $Name);
+                $Parameters = array_map(fn (ReflectionParameter $Parameter): string => $Parameter->getType() . ' $' . $Parameter->getName(), $Method->getParameters());
+                $Signatures[$Name][basename($Folder)] = $Name . '(' . implode(', ', $Parameters) . '): ' . $Method->getReturnType();
+            }
+        }
+        foreach ($Signatures as $Name => $Modules) {
+            $this->assertCount(1, array_unique($Modules), $Name . ' has different signatures: ' . json_encode($Modules));
+            // Die Funktionen WriteValue… gibt es auch im Standardmodul von Symcon (Parameter: Instanz, Parameter, Value), die Namen müssen übereinstimmen
+            if (preg_match('/^WriteValue(Boolean|Integer|Float|String)2?$/', $Name) === 1) {
+                $this->assertStringContainsString('$Parameter, ', (string) reset($Modules), $Name);
+            }
+        }
+    }
+
     private static function functions(string $Folder, string $Class): array
     {
         require_once $Folder . '/module.php';
