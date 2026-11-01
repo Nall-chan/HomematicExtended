@@ -30,13 +30,14 @@ Erweitert IPS um die native Unterstützung von:
   - [HomeMatic Alarmvariable:](#homematic-alarmvariable)
   - [HomeMatic Powermeter:](#homematic-powermeter)
   - [HomeMatic Weather:](#homematic-weather)
-  - [HomeMatic LED16:](#homematic-led16)
-  - [HomeMatic IP Weekly Program:](#homematic-ip-weekly-program)
   - [HomeMatic Programme:](#homematic-programme)
   - [HomeMatic RemoteScript Interface:](#homematic-remotescript-interface)
   - [HomeMatic Dis-WM55:](#homematic-dis-wm55)
   - [HomeMatic Dis-EP-WM55:](#homematic-dis-ep-wm55)
   - [HomeMatic Heizungsgeräte:](#homematic-heizungsgeräte)
+  - [HomeMatic LED16:](#homematic-led16)
+  - [HomeMatic IP Weekly Program:](#homematic-ip-weekly-program)
+  - [Aktionen für Homematic-Geräte:](#aktionen-für-homematic-geräte)
   - [HomeMatic Extended Konfigurator:](#homematic-extended-konfigurator)
   - [HomeMatic RF-Interface Splitter:](#homematic-rf-interface-splitter)
   - [HomeMatic RF-Interface:](#homematic-rf-interface)
@@ -187,24 +188,13 @@ Erweitert IPS um die native Unterstützung von:
 
 **Version 3.83:**
 
-**Neue Module**
-
 * [HomeMatic LED16](LED16/): LED-Anzeige HM-OU-LED16 mit allen 16 Kanälen und dem Wartungskanal in einer Instanz (LED-Status, Tastendrücke, Wartungswerte als Statusvariablen, `HM_SetAllLEDs`). Der Extended Konfigurator listet die Geräte. Bisher nur an einer HM-OU-LED16 getestet.  
 * [HomeMatic IP Weekly Program](WeeklyProgramHmIP/): Wochenprogramm (Schaltzeitpunkte) der HomeMatic IP Aktoren lesen, anzeigen und bearbeiten. Die Kachel-Visualisierung zeigt Wochenübersicht und Liste, den Modus der Schaltkanäle (manuell/automatisch) und erlaubt das Bearbeiten (in der Instanz abschaltbar). Bisher nur an einem HmIP-Schaltaktor getestet, Dimmer, Rollläden, Universal-Licht und Servo werden nach der Beschreibung des Gerätes bedient, aber nicht getestet. Der Extended Konfigurator erkennt die Kanäle `*_WEEK_PROFILE`.
-
-**Neue Funktionen und Aktionen**
-
 * HomeMatic IP Weekly Program: `HM_ReadWeeklyProgram`, `HM_WriteWeeklyProgram`, `HM_ReadWeeklyProgramModes`, `HM_SetWeeklyProgramMode`.
-* `HM_RequestState` (einzelnen Wert von der CCU lesen) für Powermeter, Weather, LED16 und Systemvariablen (Systemvariable der CCU lesen).
-* `HM_WriteValueBoolean2`, `…Integer2`, `…Float2` und `…String2` (ab Symcon 10.0 auch ohne `2`) für die Heizungsmodule und LED16: Wert in eine bedienbare Statusvariable schreiben, über deren Ident.
 * HomeMatic Systemvariablen: Die veraltete Funktion `HM_AlarmReceipt` dieses Moduls wurde entfernt, `HM_AlarmReceipt` des Moduls HomeMatic Alarmvariable ersetzt sie.
-* Aktionen für Homematic-Geräte (Ordner `actions`, [actions.md](actions.md)): Einschalten mit Einschaltdauer, Dimmen mit Einschaltdauer und/oder Rampenzeit, Dimmen stoppen, Rollladen und Fensterantriebe anhalten, Fenster mit Geschwindigkeit fahren, Türschloss öffnen, Wert mit virtueller Taste senden, Wochenprogramm-Modus einstellen, Text und Symbole auf dem Display einer Fernbedienung mit Display (HM-RC-19) anzeigen, alle 16 LEDs einer HM-OU-LED16 setzen sowie für HomeMatic IP: Einschalten mit Dauer, Dimmen mit Rampe und Dauer, Rollladen anhalten, Alarm der Sirene, Garagentor, Türschloss, Bewegungs- und Präsenzmelder zurücksetzen. Die Aktionen werden nur bei passenden Instanzen angeboten.
-
-**Geändertes Verhalten**
-
+* [Aktionen für Homematic-Geräte](actions.md)): Einschalten mit Einschaltdauer, Dimmen mit Einschaltdauer und/oder Rampenzeit, Dimmen stoppen, Rollladen und Fensterantriebe anhalten, Fenster mit Geschwindigkeit fahren, Türschloss öffnen, Wert mit virtueller Taste senden, Wochenprogramm-Modus einstellen, Text und Symbole auf dem Display einer Fernbedienung mit Display (HM-RC-19) anzeigen, alle 16 LEDs einer HM-OU-LED16 setzen sowie für HomeMatic IP: Einschalten mit Dauer, Dimmen mit Rampe und Dauer, Rollladen anhalten, Alarm der Sirene, Garagentor, Türschloss, Bewegungs- und Präsenzmelder zurücksetzen. Die Aktionen werden nur bei passenden Instanzen angeboten.
 * HomeMatic Weather: Die Statusvariablen der Datenpunkte erhalten sprechende, übersetzte Namen (z.B. `Windgeschwindigkeit` statt `WIND_SPEED`). Bestehende Variablen behalten ihren Namen.
 * Die Aktion „Setze den Aktor auf den vorherigen Wert“ wird nur noch bei Dimmern angeboten, bisher bei jedem Gerät mit schaltbarer Variable.
-* Die interne Funktion `HM_ModulErrorHandler` (alle Module) und `HM_RequestState` (alle Module außer den Heizungsmodulen) werden nicht mehr als Instanz-Funktionen angeboten, sie standen bisher in der Funktionsliste von Aktionen und Skripten.
 
 **Version 3.82:**  
 
