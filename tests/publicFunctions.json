@@ -7,7 +7,15 @@
     ],
     "ClimacontrolRegulator": [
         "RequestParams",
-        "RequestState"
+        "RequestState",
+        "WriteValueBoolean",
+        "WriteValueBoolean2",
+        "WriteValueFloat",
+        "WriteValueFloat2",
+        "WriteValueInteger",
+        "WriteValueInteger2",
+        "WriteValueString",
+        "WriteValueString2"
     ],
     "DisplayStatusAnzeige": [
         "ResetTimer"
@@ -15,23 +23,58 @@
     "ExtendedConfigurator": [],
     "HeatingDevice": [
         "RequestParams",
-        "RequestState"
+        "RequestState",
+        "WriteValueBoolean",
+        "WriteValueBoolean2",
+        "WriteValueFloat",
+        "WriteValueFloat2",
+        "WriteValueInteger",
+        "WriteValueInteger2",
+        "WriteValueString",
+        "WriteValueString2"
     ],
     "HeatingGroup": [
         "RequestParams",
-        "RequestState"
+        "RequestState",
+        "WriteValueBoolean",
+        "WriteValueBoolean2",
+        "WriteValueFloat",
+        "WriteValueFloat2",
+        "WriteValueInteger",
+        "WriteValueInteger2",
+        "WriteValueString",
+        "WriteValueString2"
     ],
     "HeatingGroupHmIP": [
         "RequestParams",
-        "RequestState"
+        "RequestState",
+        "WriteValueBoolean",
+        "WriteValueBoolean2",
+        "WriteValueFloat",
+        "WriteValueFloat2",
+        "WriteValueInteger",
+        "WriteValueInteger2",
+        "WriteValueString",
+        "WriteValueString2"
     ],
     "HomeMaticScript": [
         "RunScript"
     ],
     "LED16": [
-        "SetAllLEDs"
+        "RequestState",
+        "SetAllLEDs",
+        "WriteValueBoolean",
+        "WriteValueBoolean2",
+        "WriteValueFloat",
+        "WriteValueFloat2",
+        "WriteValueInteger",
+        "WriteValueInteger2",
+        "WriteValueString",
+        "WriteValueString2"
     ],
-    "PowerMeter": [],
+    "PowerMeter": [
+        "RequestState"
+    ],
     "Programme": [
         "ReadPrograms",
         "StartProgram"
@@ -41,9 +84,11 @@
         "ReadRFInterfaces"
     ],
     "Systemvariablen": [
+        "AlarmReceipt",
         "CreateCCUProgram",
         "DeleteCCUProgram",
         "ReadSystemVariables",
+        "RequestState",
         "SystemVariablesTimer",
         "WriteValueBoolean",
         "WriteValueBoolean2",
@@ -57,7 +102,9 @@
     "WRInterface": [
         "ReadWRInterface"
     ],
-    "Weather": [],
+    "Weather": [
+        "RequestState"
+    ],
     "WeeklyProgramHmIP": [
         "ReadWeeklyProgram",
         "ReadWeeklyProgramModes",

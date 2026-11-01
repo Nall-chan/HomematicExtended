@@ -154,6 +154,16 @@ bool HM_ReadSystemVariables(integer $InstanzID);
    Liest alle gewählten Systemvariablen von der CCU. Liefert `true` bei Erfolg.  
 
 ```php
+bool HM_RequestState(integer $InstanzID, string $Ident);
+```
+
+   Liest eine einzelne Systemvariable von der CCU und schreibt sie in die Statusvariable. `$Ident` ist die CCU-ID der Systemvariable als Text. Liefert `true`, wenn die CCU den Wert geliefert hat.  
+
+```php
+HM_RequestState(12345, '29612');
+```
+
+```php
 bool HM_WriteValueBoolean2(integer $InstanzID, string $Ident, bool $Value);
 bool HM_WriteValueInteger2(integer $InstanzID, string $Ident, int $Value);
 bool HM_WriteValueFloat2(integer $InstanzID, string $Ident, float $Value);

@@ -32,7 +32,9 @@
             "Rainfall (device counter)": "Regenmenge (Gerätezähler)",
             "Rainfall counter overflow": "Überlauf Zähler Regenmenge",
             "No rain": "Kein Regen",
-            "Rain": "Regen"
+            "Rain": "Regen",
+            "Ident %s does not exist.": "Ident %s existiert nicht.",
+            "The value of %s could not be read.": "Der Wert von %s konnte nicht gelesen werden."
         }
     }
 }

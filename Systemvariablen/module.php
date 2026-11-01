@@ -172,6 +172,38 @@ class HomeMaticSystemvariablen extends HMSystemVariableBase
     }
 
     /**
+     * IPS-Instanz-Funktion 'HM_RequestState'.
+     * Liest eine Systemvariable von der CCU und schreibt sie in die Statusvariable.
+     *
+     * @param string $Ident Ident der Statusvariable (= CCU-ID der Systemvariable).
+     *
+     * @return bool True bei Erfolg, sonst false (die Meldung erhält der Aufrufer).
+     */
+    public function RequestState(string $Ident): bool
+    {
+        $VariableId = ctype_digit($Ident) ? $this->FindIDForIdent($Ident) : 0;
+        if ($VariableId == 0) {
+            echo sprintf($this->Translate('Ident %s does not exist.'), $Ident) . PHP_EOL;
+            return false;
+        }
+        $Output = $this->RunScript(\HMExtended\SystemVariables::ReadScript([(int) $Ident]));
+        if ($Output === false) {
+            return false;
+        }
+        $Value = \HMExtended\SystemVariables::ParseRead($Output)['Values'][(int) $Ident] ?? null;
+        if ($Value === null) {
+            echo sprintf($this->Translate('The value of %s could not be read.'), $Ident) . PHP_EOL;
+            return false;
+        }
+        if (IPS_GetVariable($VariableId)['VariableType'] != (\HMExtended\SystemVariables::VariableTypes[$Value['ValueType']] ?? -1)) {
+            echo sprintf($this->Translate('Wrong data type for %s.'), $Ident) . PHP_EOL;
+            return false;
+        }
+        $this->SetValue($Ident, $Value['Value']);
+        return true;
+    }
+
+    /**
      * IPS-Instanz-Funktion 'HM_WriteValueBoolean'.
      * Schreibt einen bool-Wert in eine Systemvariable der CCU.
      *

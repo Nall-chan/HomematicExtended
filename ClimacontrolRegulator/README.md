@@ -154,6 +154,20 @@ Liefert `true`, wenn die CCU den Wert geliefert hat, sonst `false`.
 HM_RequestState(12345, 'SETPOINT');
 ```
 
+**`bool HM_WriteValueBoolean2(integer $InstanzID, string $Ident, bool $Wert);`**
+**`bool HM_WriteValueInteger2(integer $InstanzID, string $Ident, int $Wert);`**
+**`bool HM_WriteValueFloat2(integer $InstanzID, string $Ident, float $Wert);`**
+**`bool HM_WriteValueString2(integer $InstanzID, string $Ident, string $Wert);`**
+
+Schreibt einen Wert in eine bedienbare Statusvariable (Spalte `Aktion` in der Tabelle der Statusvariablen). Die Funktion entspricht der Bedienung der Variable: Der Wert wird wie dort verarbeitet und an die CCU gesendet.
+`$Ident` ist der Ident der Statusvariable, z.B. `SETPOINT`. Ein unbekannter Ident, eine nicht bedienbare Variable oder ein Wert, dessen Typ nicht zur Variable passt, wird mit einer Fehlermeldung abgelehnt (Funktion für Boolean bei Boolean-Variablen, Integer auch für Aufzählungen, Float für Fließkommazahlen, String für Texte).
+Liefert `true`, wenn der Wert angenommen wurde, sonst `false`.
+Ab Symcon 10.0 stehen dieselben Funktionen auch ohne `2` zur Verfügung (`HM_WriteValueBoolean` usw.). Ein Modul kann diese Namen erst ab Symcon 10.0 belegen, bis dahin sind die Funktionen mit `2` zu verwenden. Ab Symcon 10.0 erzeugt ein Aufruf der Funktionen mit `2` eine Warnung im Log.
+
+```php
+HM_WriteValueFloat2(12345, 'SETPOINT', 21.0);
+```
+
 ## 8. Aktionen
 
 **Grundsätzlich können alle bedienbaren Statusvariablen als Ziel einer [`Aktion`](https://www.symcon.de/service/dokumentation/konzepte/automationen/ablaufplaene/aktionen/) mit `Auf Wert schalten` angesteuert werden, so dass hier keine speziellen Aktionen benutzt werden müssen.**  

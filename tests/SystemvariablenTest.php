@@ -407,6 +407,20 @@ class SystemvariablenTest extends HomematicModuleTestCase
         $this->expectOutputString('');
     }
 
+    public function testRequestStateReadsOneSystemVariable(): void
+    {
+        $Id = $this->createSystemVariables([950, 27598]);
+        FakeHomematicIO::$Requests = [];
+        FakeHomematicIO::$ScriptResponse = "@@2026-10-28 08:21:00\r\n27598\t4\t2026-10-28 08:20:59\t12.500000\r\n" . self::Xml;
+        $this->assertTrue(HMSV_RequestState($Id, '27598'));
+        $this->assertStringContainsString('foreach (sId, "27598")', $this->scripts()[0]);
+        $this->assertEquals(12.5, GetValueFloat(IPS_GetObjectIDByIdent('27598', $Id)));
+        ob_start();
+        $this->assertFalse(HMSV_RequestState($Id, '1234'));
+        $this->assertFalse(HMSV_RequestState($Id, 'abc'));
+        $this->assertStringContainsString('does not exist', ob_get_clean());
+    }
+
     private function registerSystemVariablesModule(): void
     {
         $this->registerTestModule(HomeMaticSystemvariablen::class, \HMExtended\GUID::Systemvariablen, MODULETYPE_DEVICE, 'HMSV', [

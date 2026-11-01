@@ -14,6 +14,7 @@ declare(strict_types=1);
  * @version       3.75
  */
 require_once __DIR__ . '/../libs/HMBase.php';  // HMBase Klasse
+require_once __DIR__ . '/../libs/HMReadValue.php';  // Datenpunkt in Statusvariable lesen
 
 /**
  * HomeMaticPowermeter ist die Klasse für das IPS-Modul 'HomeMatic PowerMeter'.
@@ -23,6 +24,8 @@ require_once __DIR__ . '/../libs/HMBase.php';  // HMBase Klasse
  */
 class HomeMaticPowermeter extends HMBase
 {
+    use HMReadValueFunctions;
+
     protected const ValuesChannel = '';
 
     /**
@@ -166,6 +169,27 @@ class HomeMaticPowermeter extends HMBase
             $this->SetTimerInterval(\HMExtended\Device\Timer::ReadSystemVariables, self::ReadDelay);
         }
         return '';
+    }
+
+    /**
+     * IPS-Instanz-Funktion 'HM_RequestState'.
+     * Liest einen Wert von der CCU und schreibt ihn in die Statusvariable: einen Datenpunkt des Kanals oder, bei
+     * `<Datenpunkt>_TOTAL`, den Summenzähler aus der Systemvariable der CCU.
+     *
+     * @param string $Ident Ident der Statusvariable.
+     *
+     * @return bool true, wenn der Wert gelesen wurde (sonst die Meldung für den Aufrufer).
+     */
+    public function RequestState(string $Ident): bool
+    {
+        if (str_ends_with($Ident, '_TOTAL') && array_key_exists(substr($Ident, 0, -6), self::EnergyCounters)) {
+            if (!$this->ReadPowerSysVar(substr($Ident, 0, -6))) {
+                echo sprintf($this->Translate('The value of %s could not be read.'), $Ident) . PHP_EOL;
+                return false;
+            }
+            return true;
+        }
+        return $this->ReadDatapointToVariable($Ident, $this->ReadPropertyString(\HMExtended\Device\Property::Address) . static::ValuesChannel, $Ident);
     }
 
     //################# protected

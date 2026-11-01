@@ -14,6 +14,7 @@ declare(strict_types=1);
  * @version       3.78
  */
 require_once __DIR__ . '/../libs/HMBase.php';  // HMBase Klasse
+require_once __DIR__ . '/../libs/HMReadValue.php';  // Datenpunkt in Statusvariable lesen
 
 /**
  * HomeMaticWeather ist die Klasse für das IPS-Modul 'HomeMatic Weather'.
@@ -23,6 +24,8 @@ require_once __DIR__ . '/../libs/HMBase.php';  // HMBase Klasse
  */
 class HomeMaticWeather extends HMBase
 {
+    use HMReadValueFunctions;
+
     protected const ProtocolId = \HMExtended\CCU::ProtocolHmIP;
     protected const ValuesChannel = '';
 
@@ -140,6 +143,27 @@ class HomeMaticWeather extends HMBase
             $this->SetTimerInterval(\HMExtended\Device\Timer::ReadSystemVariables, self::ReadDelay);
         }
         return '';
+    }
+
+    /**
+     * IPS-Instanz-Funktion 'HM_RequestState'.
+     * Liest einen Wert von der CCU und schreibt ihn in die Statusvariable: einen Datenpunkt des Wetterkanals oder die Summen-,
+     * Tages- und Vortageswerte (`…_TOTAL`, `…_TODAY`, `…_YESTERDAY`) aus den Systemvariablen der CCU.
+     *
+     * @param string $Ident Ident der Statusvariable.
+     *
+     * @return bool true, wenn der Wert gelesen wurde (sonst die Meldung für den Aufrufer).
+     */
+    public function RequestState(string $Ident): bool
+    {
+        if (array_key_exists($Ident, self::SystemVariables)) {
+            if (!$this->ReadSystemVariables() || ($this->FindIDForIdent($Ident) == 0)) {
+                echo sprintf($this->Translate('The value of %s could not be read.'), $Ident) . PHP_EOL;
+                return false;
+            }
+            return true;
+        }
+        return $this->ReadDatapointToVariable($Ident, $this->ReadPropertyString(\HMExtended\Device\Property::Address) . static::ValuesChannel, $Ident);
     }
 
     //################# protected

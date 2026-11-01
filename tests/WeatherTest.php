@@ -163,6 +163,26 @@ class WeatherTest extends HomematicModuleTestCase
         $this->assertSame(0, $this->timerInterval());
     }
 
+    public function testRequestStateReadsADatapointAndTheSystemVariables(): void
+    {
+        FakeHomematicIO::$RpcResponses['getValue:ACTUAL_TEMPERATURE'] = 15.5;
+        $this->assertTrue(HMWE_RequestState($this->WeatherId, 'ACTUAL_TEMPERATURE'));
+        $this->assertEquals(15.5, GetValueFloat(IPS_GetObjectIDByIdent('ACTUAL_TEMPERATURE', $this->WeatherId)));
+        FakeHomematicIO::$ScriptResponse = $this->scriptResponse([
+            'SUNSHINEDURATION_TOTAL'     => '2000.000000',
+            'SUNSHINEDURATION_TODAY'     => '50.000000',
+            'SUNSHINEDURATION_YESTERDAY' => '300.000000',
+            'RAIN_COUNTER_TOTAL'         => '600.000000',
+            'RAIN_COUNTER_TODAY'         => '1.000000',
+            'RAIN_COUNTER_YESTERDAY'     => '4.500000'
+        ]);
+        $this->assertTrue(HMWE_RequestState($this->WeatherId, 'SUNSHINEDURATION_TOTAL'));
+        $this->assertEquals(2000.0, GetValueFloat(IPS_GetObjectIDByIdent('SUNSHINEDURATION_TOTAL', $this->WeatherId)));
+        ob_start();
+        $this->assertFalse(HMWE_RequestState($this->WeatherId, 'UNKNOWN'));
+        $this->assertStringContainsString('does not exist', ob_get_clean());
+    }
+
     private function createWeather(): int
     {
         $Id = $this->createDevice(HomeMaticWeather::class, \HMExtended\GUID::Weather, 'HMWE', $this->IoId);

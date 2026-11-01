@@ -14,6 +14,7 @@ declare(strict_types=1);
  * @version       3.75
  */
 require_once __DIR__ . '/HMBase.php';  // HMBase Klasse
+require_once __DIR__ . '/HMWriteValue.php';  // HM_WriteValue… über die Bedienung der Statusvariable
 
 /**
  * HMHeatingDevice
@@ -23,6 +24,8 @@ require_once __DIR__ . '/HMBase.php';  // HMBase Klasse
  */
 class HMHeatingDevice extends HMBase
 {
+    use HMWriteValueFunctions;
+
     protected const ValuesChannel = '';
     protected const ParamChannel = '';
     /** Weiterer Kanal mit Messwerten im Paramset VALUES (z.B. HM-CC-TC :1), leer wenn keiner. */

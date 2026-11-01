@@ -353,6 +353,21 @@ class PowerMeterTest extends HomematicModuleTestCase
         $this->assertSame('invalid', $Interface->Migrate('invalid'));
     }
 
+    public function testRequestStateReadsADatapointAndTheTotal(): void
+    {
+        FakeHomematicIO::$RpcResponses['getValue:POWER'] = 99.5;
+        FakeHomematicIO::$Requests = [];
+        $this->assertTrue(HMPM_RequestState($this->PowerMeterId, 'POWER'));
+        $this->assertEquals(99.5, GetValueFloat(IPS_GetObjectIDByIdent('POWER', $this->PowerMeterId)));
+        // Summenzähler aus der Systemvariable der CCU
+        FakeHomematicIO::$ScriptResponse = '<xml><exec>/x</exec><sessionId>0</sessionId><httpUserAgent>x</httpUserAgent><Value>6000000.0</Value></xml>';
+        $this->assertTrue(HMPM_RequestState($this->PowerMeterId, 'ENERGY_COUNTER_TOTAL'));
+        $this->assertEquals(6000.0, GetValueFloat(IPS_GetObjectIDByIdent('ENERGY_COUNTER_TOTAL', $this->PowerMeterId)));
+        ob_start();
+        $this->assertFalse(HMPM_RequestState($this->PowerMeterId, 'UNKNOWN'));
+        $this->assertStringContainsString('does not exist', ob_get_clean());
+    }
+
     /**
      * Löst den Timer aus, der nach einem Ereignis die Summenzähler liest.
      */

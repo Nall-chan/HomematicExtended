@@ -13,6 +13,8 @@ declare(strict_types=1);
  * @version       3.83
  */
 require_once __DIR__ . '/HMBase.php';  // HMBase Klasse
+require_once __DIR__ . '/HMWriteValue.php';  // HM_WriteValue… über die Bedienung der Statusvariable
+require_once __DIR__ . '/HMReadValue.php';  // Datenpunkt in Statusvariable lesen
 
 /**
  * HMAllChannels ist die Basisklasse für Module, die ein Gerät mit allen Kanälen in einer Instanz abbilden.
@@ -27,6 +29,9 @@ require_once __DIR__ . '/HMBase.php';  // HMBase Klasse
  */
 abstract class HMAllChannels extends HMBase
 {
+    use HMWriteValueFunctions;
+    use HMReadValueFunctions;
+
     /**
      * Anzahl der Kanäle (ohne Wartungskanal 0), wenn die CCU die Kanäle nicht liefert.
      */
@@ -135,6 +140,29 @@ abstract class HMAllChannels extends HMBase
         }
         $this->SetValue($Ident, $this->Convert($Datapoints[$Ident][2], $Event['VariableValue']));
         return '';
+    }
+
+    /**
+     * IPS-Instanz-Funktion 'HM_RequestState'.
+     * Liest einen Datenpunkt von der CCU und schreibt ihn in die Statusvariable.
+     *
+     * @param string $Ident Ident der Statusvariable (`<Datenpunkt>_<Kanal>`, beim Kanal 0 nur der Datenpunkt).
+     *
+     * @return bool true, wenn die CCU den Wert geliefert hat (sonst die Meldung für den Aufrufer).
+     */
+    public function RequestState(string $Ident): bool
+    {
+        $Known = $this->Datapoints[$Ident] ?? null;
+        if ($Known === null) {
+            echo sprintf($this->Translate('Ident %s does not exist.'), $Ident) . PHP_EOL;
+            return false;
+        }
+        // Ereignisse (Typ ACTION) haben keinen lesbaren Wert
+        if ($Known[2] == 'ACTION') {
+            echo sprintf($this->Translate('The value of %s could not be read.'), $Ident) . PHP_EOL;
+            return false;
+        }
+        return $this->ReadDatapointToVariable($Ident, $this->ReadPropertyString(\HMExtended\Device\Property::Address) . ':' . $Known[0], $Known[1]);
     }
 
     //################# protected

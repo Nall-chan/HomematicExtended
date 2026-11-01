@@ -145,6 +145,58 @@ class LED16Test extends HomematicModuleTestCase
         $this->assertSame([], $this->setValueRequests());
     }
 
+    public function testRequestStateReadsTheDatapointOfTheChannel(): void
+    {
+        FakeHomematicIO::$RpcResponses['getValue'] = 3;
+        FakeHomematicIO::$Requests = [];
+        $this->assertTrue(HMLED_RequestState($this->Id, 'LED_STATUS_6'));
+        $Get = array_values(array_filter(FakeHomematicIO::$Requests, fn ($Request) => ($Request['MethodName'] ?? '') == 'getValue'));
+        $this->assertSame([self::Address . ':6', 'LED_STATUS'], $Get[0]['Data']);
+        $this->assertSame(3, GetValueInteger($this->variable('LED_STATUS_6')));
+        $this->assertSame(2, GetValueInteger($this->variable('LED_STATUS_7')));
+    }
+
+    public function testRequestStateRejectsUnknownIdentsAndEvents(): void
+    {
+        FakeHomematicIO::$Requests = [];
+        ob_start();
+        $this->assertFalse(HMLED_RequestState($this->Id, 'LED_STATUS_99'));
+        $this->assertFalse(HMLED_RequestState($this->Id, 'PRESS_SHORT_1'));
+        $Output = ob_get_clean();
+        $this->assertStringContainsString('does not exist', $Output);
+        $this->assertStringContainsString('could not be read', $Output);
+        $this->assertSame([], array_filter(FakeHomematicIO::$Requests, fn ($Request) => ($Request['MethodName'] ?? '') == 'getValue'));
+    }
+
+    public function testWriteValueFunctionsUseTheActionOfTheVariable(): void
+    {
+        FakeHomematicIO::$Requests = [];
+        $this->assertTrue(HMLED_WriteValueInteger($this->Id, 'LED_STATUS_3', 2));
+        $this->assertTrue(HMLED_WriteValueInteger2($this->Id, 'LED_STATUS_4', 1));
+        $this->assertTrue(HMLED_WriteValueBoolean($this->Id, 'PRESS_SHORT_5', true));
+        $Set = $this->setValueRequests();
+        $this->assertCount(3, $Set);
+        $this->assertSame([self::Address . ':3', 'LED_STATUS'], array_slice($Set[0]['Data'], 0, 2));
+        $this->assertSame('2', (string) $Set[0]['Data'][2]);
+        $this->assertSame([self::Address . ':4', 'LED_STATUS'], array_slice($Set[1]['Data'], 0, 2));
+        $this->assertSame([self::Address . ':5', 'PRESS_SHORT'], array_slice($Set[2]['Data'], 0, 2));
+        $this->assertSame(2, GetValueInteger($this->variable('LED_STATUS_3')));
+    }
+
+    public function testWriteValueFunctionsCheckIdentOperabilityAndType(): void
+    {
+        FakeHomematicIO::$Requests = [];
+        ob_start();
+        $this->assertFalse(HMLED_WriteValueInteger($this->Id, 'LED_STATUS_99', 1));
+        $this->assertFalse(HMLED_WriteValueInteger($this->Id, 'RSSI_DEVICE', 1));
+        $this->assertFalse(HMLED_WriteValueBoolean($this->Id, 'LED_STATUS_3', true));
+        $Output = ob_get_clean();
+        $this->assertStringContainsString('does not exist', $Output);
+        $this->assertStringContainsString('cannot be operated', $Output);
+        $this->assertStringContainsString('Wrong data type', $Output);
+        $this->assertSame([], $this->setValueRequests());
+    }
+
     private function variable(string $Ident): int
     {
         return IPS_GetObjectIDByIdent($Ident, $this->Id);

@@ -105,6 +105,30 @@ $Farben[2] = 1;
 HM_SetAllLEDs(12345, json_encode($Farben));
 ```
 
+**`bool HM_RequestState(integer $InstanzID, string $Ident);`**
+
+Liest den Wert eines Datenpunktes von der CCU (RPC `getValue`) und schreibt ihn in die Statusvariable.
+`$Ident` ist der Ident der Statusvariable, z.B. `LED_STATUS_3` (Datenpunkt `LED_STATUS` des Kanals 3), beim Wartungskanal 0 nur der Datenpunkt, z.B. `RSSI_DEVICE`. Ereignisse wie `PRESS_SHORT_<n>` haben keinen lesbaren Wert und werden mit einer Fehlermeldung abgelehnt.
+Liefert `true`, wenn die CCU den Wert geliefert hat, sonst `false`.
+
+```php
+HM_RequestState(12345, 'LED_STATUS_3');
+```
+
+**`bool HM_WriteValueBoolean2(integer $InstanzID, string $Ident, bool $Wert);`**
+**`bool HM_WriteValueInteger2(integer $InstanzID, string $Ident, int $Wert);`**
+**`bool HM_WriteValueFloat2(integer $InstanzID, string $Ident, float $Wert);`**
+**`bool HM_WriteValueString2(integer $InstanzID, string $Ident, string $Wert);`**
+
+Schreibt einen Wert in eine bedienbare Statusvariable (Spalte `Aktion` in der Tabelle der Statusvariablen). Die Funktion entspricht der Bedienung der Variable: Der Wert wird wie dort verarbeitet und an die CCU gesendet.
+`$Ident` ist der Ident der Statusvariable, z.B. `LED_STATUS_3` (die Funktion rechnet ihn in Datenpunkt und Kanal um); `PRESS_SHORT_<n>` löst einen Tastendruck aus (Boolean, Wert `true`). Ein unbekannter Ident, eine nicht bedienbare Variable oder ein Wert, dessen Typ nicht zur Variable passt, wird mit einer Fehlermeldung abgelehnt (Funktion für Boolean bei Boolean-Variablen, Integer auch für Aufzählungen, Float für Fließkommazahlen, String für Texte).
+Liefert `true`, wenn der Wert angenommen wurde, sonst `false`.
+Ab Symcon 10.0 stehen dieselben Funktionen auch ohne `2` zur Verfügung (`HM_WriteValueBoolean` usw.). Ein Modul kann diese Namen erst ab Symcon 10.0 belegen, bis dahin sind die Funktionen mit `2` zu verwenden. Ab Symcon 10.0 erzeugt ein Aufruf der Funktionen mit `2` eine Warnung im Log.
+
+```php
+HM_WriteValueInteger2(12345, 'LED_STATUS_3', 2);
+```
+
 ## 8. Aktionen
 
 **Grundsätzlich können alle bedienbaren Statusvariablen als Ziel einer [`Aktion`](https://www.symcon.de/service/dokumentation/konzepte/automationen/ablaufplaene/aktionen/) mit `Auf Wert schalten` angesteuert werden, so dass hier keine speziellen Aktionen benutzt werden müssen.**

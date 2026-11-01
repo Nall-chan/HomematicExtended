@@ -135,7 +135,15 @@ Die direkte Darstellung im WebFront ist möglich, es wird aber empfohlen mit Lin
 
 ## 7. PHP-Befehlsreferenz
 
-   Es existieren keine PHP-Befehle für dieses Modul.  
+**`bool HM_RequestState(integer $InstanzID, string $Ident);`**
+
+Liest einen Wert von der CCU und schreibt ihn in die Statusvariable.
+`$Ident` ist der Ident der Statusvariable, z.B. `POWER`. Für `<Datenpunkt>_TOTAL` (Summenzähler) wird die Systemvariable der CCU neu gelesen, die Variable wird dabei bei Bedarf angelegt, sobald der Wert ungleich 0 ist. Ein unbekannter Ident wird mit einer Fehlermeldung abgelehnt.
+Liefert `true`, wenn der Wert gelesen wurde, sonst `false`.
+
+```php
+HM_RequestState(12345, 'POWER');
+```
 
 ## 8. Aktionen
 

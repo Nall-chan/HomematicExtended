@@ -126,4 +126,22 @@ class HeatingDeviceTest extends HeatingTestCase
         $this->assertStringContainsString('Invalid Ident.', $this->action('UNKNOWN', 1));
         $this->assertCount(0, $this->requests('putParamset'));
     }
+
+    public function testWriteValueFunctionsUseTheActionOfTheVariable(): void
+    {
+        $this->assertTrue(HMHD_WriteValueFloat($this->DeviceId, 'SET_TEMPERATURE', 22.5));
+        $this->assertTrue(HMHD_WriteValueInteger2($this->DeviceId, 'CONTROL_MODE', 0));
+        $Requests = $this->requests('setValue');
+        $this->assertSame('SET_TEMPERATURE', $Requests[0]['Data'][1]);
+        $this->assertSame(22.5, $Requests[0]['Data'][2]);
+        $this->assertSame('AUTO_MODE', $Requests[1]['Data'][1]); // CONTROL_MODE 0 wird wie bei der Bedienung auf AUTO_MODE abgebildet
+        FakeHomematicIO::$Requests = [];
+        ob_start();
+        $this->assertFalse(HMHD_WriteValueInteger($this->DeviceId, 'SET_TEMPERATURE', 1));
+        $this->assertFalse(HMHD_WriteValueFloat($this->DeviceId, 'UNKNOWN', 1.0));
+        $Output = ob_get_clean();
+        $this->assertStringContainsString('Wrong data type', $Output);
+        $this->assertStringContainsString('does not exist', $Output);
+        $this->assertSame([], $this->requests('setValue'));
+    }
 }

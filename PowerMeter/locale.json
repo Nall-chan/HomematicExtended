@@ -16,7 +16,9 @@
             "Radio": "Funk",
             "Wired": "Kabelgebunden",
             "IP": "IP",
-            "Group": "Gruppe"
+            "Group": "Gruppe",
+            "Ident %s does not exist.": "Ident %s existiert nicht.",
+            "The value of %s could not be read.": "Der Wert von %s konnte nicht gelesen werden."
         }
     }
 }
