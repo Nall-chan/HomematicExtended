@@ -171,7 +171,7 @@ Die Statusvariablen der Wetterstation sind nicht bedienbar.
 
 Der vollständige Changelog der Library steht in der [Haupt-README](../README.md#2-changelog).  
 
-**Version 3.83:**
+**Version 3.90:**
 
 - Die Statusvariablen der Datenpunkte erhalten sprechende, übersetzte Namen (z.B. `Windgeschwindigkeit` statt `WIND_SPEED`). Bestehende Variablen behalten ihren Namen.  
 

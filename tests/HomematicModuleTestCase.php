@@ -40,8 +40,9 @@ class FakeHomematicIO extends IPSModuleStrict
         if ($Data['DataID'] == \HMExtended\GUID::SendScriptToIO) {
             return self::$ScriptResponses ? array_shift(self::$ScriptResponses) : self::$ScriptResponse;
         }
-        // Antworten können je Methode und Protokoll ('listDevices@2'), je Methode und Paramset ('getParamset:MASTER') oder je Methode hinterlegt werden.
+        // Antworten können je Methode und Protokoll ('listDevices@2'), je Methode, Adresse und Paramset ('getParamset:ABC1234567:2:VALUES'), je Methode und Paramset ('getParamset:MASTER') oder je Methode hinterlegt werden.
         $Response = self::$RpcResponses[$Data['MethodName'] . '@' . ($Data['Protocol'] ?? '')]
+            ?? self::$RpcResponses[$Data['MethodName'] . ':' . ($Data['Data'][0] ?? '') . ':' . ($Data['Data'][1] ?? '')]
             ?? self::$RpcResponses[$Data['MethodName'] . ':' . ($Data['Data'][1] ?? '')]
             ?? self::$RpcResponses[$Data['MethodName']]
             ?? false;

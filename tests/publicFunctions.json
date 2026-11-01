@@ -79,6 +79,21 @@
         "ReadPrograms",
         "StartProgram"
     ],
+    "RGBW": [
+        "ReadWhiteBalance",
+        "RequestState",
+        "SetColor",
+        "SetLevel",
+        "SetWhiteBalance",
+        "WriteValueBoolean",
+        "WriteValueBoolean2",
+        "WriteValueFloat",
+        "WriteValueFloat2",
+        "WriteValueInteger",
+        "WriteValueInteger2",
+        "WriteValueString",
+        "WriteValueString2"
+    ],
     "RFInterface": [],
     "RFInterfaceSplitter": [
         "ReadRFInterfaces"

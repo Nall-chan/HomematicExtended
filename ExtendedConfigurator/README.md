@@ -70,6 +70,7 @@ Die Instanz besitzt keine einstellbaren Eigenschaften, die Liste der Geräte wir
 | HmIP-Wetterstation `HmIP-SWO-…`       | [HomeMatic Weather](../Weather/)                                         | HmIP          | Gerät mit Kanal 1                    |
 | HmIP-Aktoren mit Wochenprogramm       | [HomeMatic IP Weekly Program](../WeeklyProgramHmIP/)                     | HmIP          | Kanal `*_WEEK_PROFILE` (z.B. Kanal 6) |
 | `HM-OU-LED16`                         | [HomeMatic LED16](../LED16/)                                             | Funk          | Gerät                                |
+| `HM-LC-RGBW-WM`                       | [HomeMatic RGBW](../RGBW/)                                               | Funk          | Gerät                                |
 | `HM-Dis-WM55`                         | [HomeMatic Dis-WM55](../DisplayStatusAnzeige/)                           | Funk          | Gerät mit Kanal 1                    |
 | `HM-Dis-EP-WM55`                      | [HomeMatic Dis-EP-WM55](../ePaperStatusAnzeige/)                         | Funk          | Gerät mit Kanal 3                    |
 | `HM-CC-RT-DN`                         | [HomeMatic Heating Device](../HeatingDevice/)                            | Funk          | Gerät                                |
@@ -123,9 +124,10 @@ Die Instanz besitzt keine Statusvariablen und keine speziellen Aktionen.
 
 Der vollständige Changelog der Library steht in der [Haupt-README](../README.md#2-changelog).  
 
-**Version 3.83:**
+**Version 3.90:**
 
 - Neue Zeile für die LED-Anzeige HM-OU-LED16 (`HomeMatic LED16`).  
+- Neue Zeile für den Funk-RGBW-Controller HM-LC-RGBW-WM (`HomeMatic RGBW`).  
 - Neue Zeilen für das Wochenprogramm der HmIP-Aktoren (`HomeMatic IP Weekly Program`, Kanäle `*_WEEK_PROFILE`).  
 
 **Version 3.80:**

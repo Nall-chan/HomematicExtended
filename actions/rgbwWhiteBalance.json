@@ -1,0 +1,57 @@
+{
+    "id": "{6D1F3A52-8C47-4E9B-A3D0-27B5E94C1F68}",
+    "caption": "Set white balance",
+    "description": "Sets the white balance of the RGB outputs of an HM-LC-RGBW-WM (the three trimmers of the device, here without opening it). The form shows the current values if the Homematic Socket is connected and the device is reachable.",
+    "form": [
+        "$target = $_IPS['TARGET'];",
+        "$instance = IPS_GetInstance($target);",
+        "// Das Formular liest das Gerät nur, wenn die Instanz aktiv, der Homematic Socket verbunden und das Gerät erreichbar ist",
+        "$ready = ($instance['InstanceStatus'] == 102) && ($instance['ConnectionID'] > 0) && (IPS_GetInstance($instance['ConnectionID'])['InstanceStatus'] == 102);",
+        "$unreach = @IPS_GetObjectIDByIdent('UNREACH', $target);",
+        "if ($ready && ($unreach !== false)) {",
+        "    $ready = !GetValueBoolean($unreach);",
+        "}",
+        "$values = null;",
+        "if ($ready) {",
+        "    ob_start();",
+        "    $json = HM_ReadWhiteBalance($target);",
+        "    ob_end_clean();",
+        "    $values = is_string($json) ? json_decode($json, true) : null;",
+        "}",
+        "if (!is_array($values)) {",
+        "    return [",
+        "        ['type' => 'Label', 'caption' => 'The white balance can only be set if the Homematic Socket is connected and the device is reachable.']",
+        "    ];",
+        "}",
+        "return [",
+        "    ['type' => 'Label', 'caption' => 'Values of the white balance of the RGB outputs (100 % = full output).'],",
+        "    ['type' => 'NumberSpinner', 'name' => 'RED', 'caption' => 'Red', 'minimum' => 0, 'maximum' => 100, 'suffix' => ' %', 'value' => (int) $values['Red']],",
+        "    ['type' => 'NumberSpinner', 'name' => 'GREEN', 'caption' => 'Green', 'minimum' => 0, 'maximum' => 100, 'suffix' => ' %', 'value' => (int) $values['Green']],",
+        "    ['type' => 'NumberSpinner', 'name' => 'BLUE', 'caption' => 'Blue', 'minimum' => 0, 'maximum' => 100, 'suffix' => ' %', 'value' => (int) $values['Blue']]",
+        "];"
+    ],
+    "restrictions": {
+        "objectType": [
+            1
+        ],
+        "moduleID": [
+            "{B9AB52A2-96AE-499E-A5A6-7A1E316FC90D}"
+        ],
+        "includeEnvironments": [
+            "TestCommands",
+            "Default"
+        ]
+    },
+    "action": "HM_SetWhiteBalance($_IPS['TARGET'], (int) $_IPS['RED'], (int) $_IPS['GREEN'], (int) $_IPS['BLUE']);",
+    "locale": {
+        "de": {
+            "Set white balance": "Weißabgleich einstellen",
+            "Sets the white balance of the RGB outputs of an HM-LC-RGBW-WM (the three trimmers of the device, here without opening it). The form shows the current values if the Homematic Socket is connected and the device is reachable.": "Stellt den Weißabgleich der RGB-Ausgänge eines HM-LC-RGBW-WM ein (die drei Trimmer des Gerätes, hier ohne das Gerät zu öffnen). Das Formular zeigt die aktuellen Werte, wenn der Homematic Socket verbunden und das Gerät erreichbar ist.",
+            "The white balance can only be set if the Homematic Socket is connected and the device is reachable.": "Der Weißabgleich kann nur eingestellt werden, wenn der Homematic Socket verbunden und das Gerät erreichbar ist.",
+            "Values of the white balance of the RGB outputs (100 % = full output).": "Werte des Weißabgleichs der RGB-Ausgänge (100 % = volle Ausgangsleistung).",
+            "Red": "Rot",
+            "Green": "Grün",
+            "Blue": "Blau"
+        }
+    }
+}

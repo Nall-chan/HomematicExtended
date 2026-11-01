@@ -15,6 +15,34 @@ class FakeHmFunctions
     /** @var array<int, array{address: string, led: ?int}> Instanzen des Homematic-Moduls (ID => Adresse und Zustand der LED, null = keine Variable LED_STATUS) */
     public static array $Instances = [];
     public static array $Requests = [];
+    /** Status der Zielinstanz und des Homematic Sockets, Zustand von UNREACH und Antwort von HM_ReadWhiteBalance (RGBW). */
+    public static int $InstanceStatus = 102;
+    public static int $ParentStatus = 102;
+    public static bool $Unreach = false;
+    public static string|false $WhiteBalance = '{"Red":90,"Green":80,"Blue":100}';
+}
+
+function FakeHm_ReadWhiteBalance(int $InstanceID): string|false
+{
+    return FakeHmFunctions::$WhiteBalance;
+}
+
+function FakeHm_SetWhiteBalance(int $InstanceID, int $Red, int $Green, int $Blue): bool
+{
+    FakeHmFunctions::$Calls[] = ['WhiteBalance', $Red, $Green, $Blue];
+    return true;
+}
+
+function FakeIps_GetInstance(int $InstanceID): array
+{
+    return $InstanceID == 12345
+        ? ['InstanceStatus' => FakeHmFunctions::$InstanceStatus, 'ConnectionID' => 99]
+        : ['InstanceStatus' => FakeHmFunctions::$ParentStatus, 'ConnectionID' => 0];
+}
+
+function FakeGetValueBoolean(int $VariableID): bool
+{
+    return FakeHmFunctions::$Unreach;
 }
 
 function FakeHm_GetParamsetDescription(int $InstanceID): string
@@ -58,6 +86,9 @@ function FakeIps_GetInstanceListByModuleID(string $Guid): array
 
 function FakeIps_GetObjectIDByIdent(string $Ident, int $InstanceID): int|false
 {
+    if ($Ident == 'UNREACH') {
+        return 99999;
+    }
     return isset(FakeHmFunctions::$Instances[$InstanceID]['led']) ? 100000 + $InstanceID : false;
 }
 
@@ -123,7 +154,7 @@ class ActionsTest extends TestCase
         }
         // Der Code der Aktion muss gültiges PHP sein und Funktionen des Homematic-Moduls aufrufen
         token_get_all('<?php ' . $Action['action'], TOKEN_PARSE);
-        $this->assertStringContainsString('HM_WriteValue', $Action['action']);
+        $this->assertMatchesRegularExpression('/HM_(WriteValue|SetWhiteBalance)/', $Action['action']);
     }
 
     public function testDisplayActionWritesValuesAndSubmitsLast(): void
@@ -238,6 +269,35 @@ class ActionsTest extends TestCase
         $this->assertStringContainsString('DISPLAY', $Output);
     }
 
+    public function testWhiteBalanceFormShowsTheCurrentValues(): void
+    {
+        $Action = json_decode(file_get_contents(__DIR__ . '/../actions/rgbwWhiteBalance.json'), true);
+        $Elements = $this->formElements($Action, '');
+        $this->assertSame(['RED', 'GREEN', 'BLUE'], array_values(array_filter(array_column($Elements, 'name'))));
+        $this->assertSame([90, 80, 100], array_values(array_filter(array_column($Elements, 'value'), 'is_int')));
+        [$Calls] = $this->runAction('rgbwWhiteBalance.json', ['RED' => 95, 'GREEN' => 85, 'BLUE' => 75], '');
+        $this->assertSame([['WhiteBalance', 95, 85, 75]], $Calls);
+    }
+
+    public function testWhiteBalanceFormDoesNotReadTheDeviceWithoutSocketOrDevice(): void
+    {
+        $Action = json_decode(file_get_contents(__DIR__ . '/../actions/rgbwWhiteBalance.json'), true);
+        foreach ([['ParentStatus', 104], ['InstanceStatus', 104], ['Unreach', true]] as [$Property, $Value]) {
+            $Default = FakeHmFunctions::$$Property;
+            FakeHmFunctions::$$Property = $Value;
+            FakeHmFunctions::$WhiteBalance = false;
+            $Elements = $this->formElements($Action, '');
+            FakeHmFunctions::$$Property = $Default;
+            FakeHmFunctions::$WhiteBalance = '{"Red":90,"Green":80,"Blue":100}';
+            $this->assertSame(['Label'], array_column($Elements, 'type'), $Property);
+        }
+        // Auch ein Fehler beim Lesen führt nur zu einem Hinweis
+        FakeHmFunctions::$WhiteBalance = false;
+        $Elements = $this->formElements($Action, '');
+        FakeHmFunctions::$WhiteBalance = '{"Red":90,"Green":80,"Blue":100}';
+        $this->assertSame(['Label'], array_column($Elements, 'type'));
+    }
+
     public function testIdsAreUnique(): void
     {
         $Ids = [];
@@ -261,7 +321,7 @@ class ActionsTest extends TestCase
      */
     private function fakeFunctions(string $Code): string
     {
-        return str_replace(['HM_', 'IPS_', 'GetValueInteger'], ['FakeHm_', 'FakeIps_', 'FakeGetValueInteger'], $Code);
+        return str_replace(['HM_', 'IPS_', 'GetValueInteger', 'GetValueBoolean'], ['FakeHm_', 'FakeIps_', 'FakeGetValueInteger', 'FakeGetValueBoolean'], $Code);
     }
 
     /**

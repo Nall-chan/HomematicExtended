@@ -141,7 +141,7 @@ Zusätzlich bietet die Library die Aktion `Alle LEDs setzen` für die Tastenkan�
 
 Der vollständige Changelog der Library steht in der [Haupt-README](../README.md#2-changelog).
 
-**Version 3.83:**
+**Version 3.90:**
 
 - Neues Modul: HM-OU-LED16 mit allen Kanälen in einer Instanz, Funktion `HM_SetAllLEDs`.
 

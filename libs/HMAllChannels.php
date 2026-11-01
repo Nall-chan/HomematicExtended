@@ -10,7 +10,7 @@ declare(strict_types=1);
  * @author        Michael Tröger <nall4chan@gmail.com>
  * @copyright     2015-2026 Michael Tröger
  * @license       Custom Non-Commercial Share-Alike License (see LICENSE)
- * @version       3.83
+ * @version       3.90
  */
 require_once __DIR__ . '/HMBase.php';  // HMBase Klasse
 require_once __DIR__ . '/HMWriteValue.php';  // HM_WriteValue… über die Bedienung der Statusvariable
@@ -236,6 +236,45 @@ abstract class HMAllChannels extends HMBase
         return $Channel == 0 ? $Datapoint : $Datapoint . '_' . $Channel;
     }
 
+    /**
+     * Darstellung eines Datenpunktes: Aufzählungen mit den Werten der CCU, Schalter und Anzeigen für Boolean, Ereignisse (ACTION) ohne besondere Darstellung.
+     *
+     * @return array Die Darstellung, leer wenn keine passt.
+     */
+    protected function Presentation(string $Datapoint, string $Type, bool $HasAction, array $Parameter): array
+    {
+        $Translate = fn (string $Text): string => $this->Translate($Text);
+        switch ($Type) {
+            case 'ACTION':
+                // Eine Aufzählung einer Boolean-Variable braucht beide Werte. Jede Bedienung löst die Aktion aus, gesetzt wird die Variable vom Ereignis des Gerätes.
+                return $HasAction ? ['PRESENTATION' => VARIABLE_PRESENTATION_ENUMERATION, 'OPTIONS' => json_encode([
+                    ['Value' => false, 'Caption' => $this->Translate('Waiting'), 'IconActive' => false, 'IconValue' => '', 'Color' => -1],
+                    ['Value' => true, 'Caption' => $this->Translate('Pressed'), 'IconActive' => false, 'IconValue' => '', 'Color' => -1]
+                ])] : [];
+            case 'BOOL':
+                return \HMExtended\DatapointPresentation::Get($Datapoint, '', VARIABLETYPE_BOOLEAN, $HasAction, $Translate)
+                    ?: ($HasAction ? ['PRESENTATION' => VARIABLE_PRESENTATION_SWITCH] : []);
+            case 'ENUM':
+                $Options = [];
+                foreach (array_values((array) ($Parameter['VALUE_LIST'] ?? [])) as $Value => $Name) {
+                    $Caption = $this->Translate(ucfirst(strtolower(str_replace('_', ' ', (string) $Name))));
+                    $Color = static::EnumColors[$Datapoint][$Value] ?? -1;
+                    // Die Wertanzeige für Zahlen kennt keine Optionen, die Texte der Werte sind Intervalle mit genau einem Wert
+                    $Options[] = $HasAction
+                        ? ['Value' => $Value, 'Caption' => $Caption, 'IconActive' => false, 'IconValue' => '', 'Color' => $Color]
+                        : ['IntervalMinValue' => $Value, 'IntervalMaxValue' => $Value, 'ConstantActive' => true, 'ConstantValue' => $Caption, 'ColorActive' => $Color != -1, 'ColorValue' => $Color];
+                }
+                if (!count($Options)) {
+                    return [];
+                }
+                return $HasAction
+                    ? ['PRESENTATION' => VARIABLE_PRESENTATION_ENUMERATION, 'OPTIONS' => json_encode($Options)]
+                    : ['PRESENTATION' => VARIABLE_PRESENTATION_VALUE_PRESENTATION, 'INTERVALS_ACTIVE' => true, 'INTERVALS' => json_encode($Options)];
+            default:
+                return \HMExtended\DatapointPresentation::Get($Datapoint, (string) ($Parameter['UNIT'] ?? ''), self::HmTypeToIpsType[$Type], $HasAction, $Translate);
+        }
+    }
+
     //################# private
 
     /**
@@ -335,42 +374,6 @@ abstract class HMAllChannels extends HMBase
             ? $this->Translate(static::Captions[$Datapoint])
             : ucfirst(strtolower(str_replace('_', ' ', $Datapoint)));
         return $Channel == 0 ? $Caption : $Caption . ' ' . $Channel;
-    }
-
-    /**
-     * Darstellung eines Datenpunktes: Aufzählungen mit den Werten der CCU, Schalter und Anzeigen für Boolean, Ereignisse (ACTION) ohne besondere Darstellung.
-     *
-     * @return array Die Darstellung, leer wenn keine passt.
-     */
-    private function Presentation(string $Datapoint, string $Type, bool $HasAction, array $Parameter): array
-    {
-        $Translate = fn (string $Text): string => $this->Translate($Text);
-        switch ($Type) {
-            case 'ACTION':
-                // Eine Aufzählung einer Boolean-Variable braucht beide Werte. Jede Bedienung löst die Aktion aus, gesetzt wird die Variable vom Ereignis des Gerätes.
-                return $HasAction ? ['PRESENTATION' => VARIABLE_PRESENTATION_ENUMERATION, 'OPTIONS' => json_encode([
-                    ['Value' => false, 'Caption' => $this->Translate('Waiting'), 'IconActive' => false, 'IconValue' => '', 'Color' => -1],
-                    ['Value' => true, 'Caption' => $this->Translate('Pressed'), 'IconActive' => false, 'IconValue' => '', 'Color' => -1]
-                ])] : [];
-            case 'BOOL':
-                return \HMExtended\DatapointPresentation::Get($Datapoint, '', VARIABLETYPE_BOOLEAN, $HasAction, $Translate)
-                    ?: ($HasAction ? ['PRESENTATION' => VARIABLE_PRESENTATION_SWITCH] : []);
-            case 'ENUM':
-                $Options = [];
-                foreach (array_values((array) ($Parameter['VALUE_LIST'] ?? [])) as $Value => $Name) {
-                    $Caption = $this->Translate(ucfirst(strtolower(str_replace('_', ' ', (string) $Name))));
-                    $Color = static::EnumColors[$Datapoint][$Value] ?? -1;
-                    $Options[] = $HasAction
-                        ? ['Value' => $Value, 'Caption' => $Caption, 'IconActive' => false, 'IconValue' => '', 'Color' => $Color]
-                        : ['Value' => $Value, 'Caption' => $Caption, 'IconActive' => false, 'IconValue' => '', 'ColorActive' => $Color != -1, 'ColorValue' => $Color, 'ContentColorActive' => false, 'ContentColorValue' => -1];
-                }
-                if (!count($Options)) {
-                    return [];
-                }
-                return ['PRESENTATION' => $HasAction ? VARIABLE_PRESENTATION_ENUMERATION : VARIABLE_PRESENTATION_VALUE_PRESENTATION, 'OPTIONS' => json_encode($Options)];
-            default:
-                return \HMExtended\DatapointPresentation::Get($Datapoint, (string) ($Parameter['UNIT'] ?? ''), self::HmTypeToIpsType[$Type], $HasAction, $Translate);
-        }
     }
 }
 

@@ -51,6 +51,14 @@ Die Datenpunkte des Displays sind alle nur schreibbar, die Instanz des Kanals ha
 
 Die 16 LEDs werden in einem Telegramm gesetzt. `ALL_LEDS` erwartet eine Dezimalzahl als Text: LED n liegt auf den Bits 2(n-1) und 2(n-1)+1, 0 = aus, 1 = rot, 2 = grün, 3 = orange (z.B. `35` = LED 1 orange, LED 3 grün; alle LEDs orange = `4294967295`). Hexadezimale Werte (`0x…`) setzen falsche LEDs. Am Gerät geprüft. Das Gerät kann bei `ALL_LEDS` keine LED auslassen, jedes Telegramm enthält alle 16 Farben. Die Auswahl `Unverändert` gibt es deshalb nur für LEDs, deren Kanal als Instanz in Symcon vorhanden ist (die Aktion liest den aktuellen Zustand aus der Variable `LED_STATUS`, nachdem sie ihn von der CCU abgefragt hat). Fehlt die Instanz, steht nur Aus, Rot, Grün und Orange zur Verfügung. Die Instanzen aller Kanäle legt der Konfigurator von Symcon (`HomeMatic Konfigurator`) an. Einzelne LEDs lassen sich mit der Statusvariable `LED_STATUS` des jeweiligen Kanals (0 bis 3) schalten, der Schlafmodus `LED_SLEEP_MODE` kommt in der Firmware des Testgerätes nicht vor. Der Datenpunkt `LED_STATUS` des Kanals 0 (Wartung) setzt ebenfalls alle LEDs mit demselben Wert, hat aber keine Statusvariable.
 
+## Funk-RGBW-Controller HM-LC-RGBW-WM
+
+| Aktion | Datenpunkte | Angeboten bei | Parameter |
+|---|---|---|---|
+| Weißabgleich einstellen | `WHITE_ADJUSTMENT_VALUE_RED/GREEN/BLUE` (Paramset MASTER, Kanal 2) | Instanzen des Moduls [HomeMatic RGBW](RGBW/) | Rot, Grün, Blau in Prozent (0 bis 100) |
+
+Das Formular zeigt die aktuellen Werte des Gerätes. Es liest sie nur, wenn die Instanz aktiv, der Homematic Socket verbunden und das Gerät erreichbar ist, sonst erscheint ein Hinweis statt eines Fehlers.
+
 ## HomeMatic IP
 
 Grundlage sind die Parameterlisten aus der Technischen Dokumentation der Homematic-IP-Geräte (`docs/hmip-device-documentation_1.pdf`) und den CCU-Quellen (OCCU). Geprüft ist bisher nur „Einschalten mit Einschaltdauer“ an einem HmIP-Schaltaktor (ON_TIME 10 s, danach schaltet das Gerät von selbst aus), die übrigen Aktionen sind nicht an Geräten getestet.  
@@ -80,5 +88,5 @@ Hinweise:
 ## Noch nicht umgesetzt
 
 * HM-Sec-Sir-WM, Kanal 4 (Scharfschaltung): Wirkung von `ON_TIME` ist noch ungeprüft.
-* HM-LC-RGBW-WM, HM-OU-LED16 und weitere Geräte mit komplexen Parametern: Umsetzung noch offen.
+* Weitere Geräte mit komplexen Parametern: Umsetzung noch offen.
 * HomeMatic IP Rauchmelder (`SMOKE_DETECTOR_COMMAND`), Selbstkalibrierung, Display (HmIP-WRCD), Lüftungssteuerung und Heizungsgeräte: Die Heizungsgeräte deckt das Modul Heating Device ab, für die anderen fehlen verlässliche Wertetabellen.

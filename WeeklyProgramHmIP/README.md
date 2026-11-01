@@ -206,7 +206,7 @@ Die Schaltzeitpunkte und der Modus werden über die Funktionen aus der PHP-Befeh
 
 Der vollständige Changelog der Library steht in der [Haupt-README](../README.md#2-changelog).
 
-**Version 3.83:**
+**Version 3.90:**
 
 - Neues Modul: Wochenprogramm der HomeMatic IP Aktoren lesen und schreiben, Kachel mit Wochenübersicht, Liste, Modus der Schaltkanäle und Bearbeiten (in der Instanz abschaltbar).
 
