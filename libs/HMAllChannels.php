@@ -20,7 +20,8 @@ require_once __DIR__ . '/HMBase.php';  // HMBase Klasse
  *
  * Für jeden lesbaren oder bedienbaren Datenpunkt des Paramsets VALUES wird eine Statusvariable angelegt.
  * Ident der Variable: `<Datenpunkt>_<Kanal>`, beim Kanal 0 (Wartung) nur `<Datenpunkt>`.
- * Datenpunkte vom Typ ACTION (z.B. PRESS_SHORT) erhalten eine Integer-Variable mit der Darstellung `Start`, ein Ereignis des Gerätes setzt sie auf 0.
+ * Datenpunkte vom Typ ACTION (z.B. PRESS_SHORT) sind Ereignisse: Boolean-Variable, jedes Ereignis des Gerätes setzt sie (erneut) auf true.
+ * Ob eine Variable bedienbar ist, bestimmt die Beschreibung des Gerätes (OPERATIONS). Bei einer Aktion löst die Bedienung den Datenpunkt aus (true).
  *
  * @property array $Datapoints Ident => [Kanal, Datenpunkt, Typ der CCU, bedienbar] der angelegten Statusvariablen.
  */
@@ -34,7 +35,7 @@ abstract class HMAllChannels extends HMBase
     /**
      * Datenpunkte, die nicht als Statusvariable angelegt werden.
      */
-    protected const IgnoredDatapoints = ['AES_KEY'];
+    protected const IgnoredDatapoints = ['AES_KEY', 'INSTALL_TEST'];
 
     /**
      * Beschriftungen der Datenpunkte (englischer Text, übersetzt über locale.json). Unbekannte Datenpunkte erhalten den lesbar geschriebenen Namen.
@@ -59,7 +60,7 @@ abstract class HMAllChannels extends HMBase
     protected const EnumColors = [];
 
     /**
-     * Datentypen der CCU, für die Statusvariablen angelegt werden (ACTION wird als Integer mit der Darstellung `Start` abgebildet).
+     * Datentypen der CCU, für die Statusvariablen angelegt werden (ACTION ist ein Ereignis und wird als Boolean abgebildet).
      */
     private const HmTypeToIpsType = [
         'BOOL'    => VARIABLETYPE_BOOLEAN,
@@ -67,7 +68,7 @@ abstract class HMAllChannels extends HMBase
         'FLOAT'   => VARIABLETYPE_FLOAT,
         'ENUM'    => VARIABLETYPE_INTEGER,
         'STRING'  => VARIABLETYPE_STRING,
-        'ACTION'  => VARIABLETYPE_INTEGER
+        'ACTION'  => VARIABLETYPE_BOOLEAN
     ];
 
     /**
@@ -128,7 +129,8 @@ abstract class HMAllChannels extends HMBase
             return '';
         }
         if ($Datapoints[$Ident][2] == 'ACTION') {
-            $this->SetValue($Ident, 0);
+            // Ereignis (z.B. Tastendruck): jedes Ereignis setzt die Variable erneut auf true
+            $this->SetValue($Ident, true);
             return '';
         }
         $this->SetValue($Ident, $this->Convert($Datapoints[$Ident][2], $Event['VariableValue']));
@@ -172,8 +174,10 @@ abstract class HMAllChannels extends HMBase
             return;
         }
         [$Channel, $Datapoint, $Type] = $Datapoints[$Ident];
-        $Done = $this->WriteDatapoint($Channel, $Datapoint, $Type == 'ACTION' ? true : $this->Convert($Type, $Value));
-        if ($Done && ($Type != 'ACTION')) {
+        if ($Type == 'ACTION') {
+            // Die Aktion wird ausgelöst, die Variable setzt das Ereignis des Gerätes
+            $this->WriteDatapoint($Channel, $Datapoint, true);
+        } elseif ($this->WriteDatapoint($Channel, $Datapoint, $this->Convert($Type, $Value))) {
             $this->SetValue($Ident, $this->Convert($Type, $Value));
         }
         $done = true;
@@ -240,11 +244,8 @@ abstract class HMAllChannels extends HMBase
                 if (in_array($Datapoint, static::IgnoredDatapoints) || !array_key_exists($Type, self::HmTypeToIpsType)) {
                     continue;
                 }
-                // Nur schreibbare Datenpunkte ohne Ereignis (z.B. ALL_LEDS) sind keine Statusvariablen, ausgenommen Aktionen
-                if (!$Readable && !$HasAction) {
-                    continue;
-                }
-                if (!$Readable && ($Type != 'ACTION')) {
+                // Nicht lesbare Datenpunkte (z.B. ALL_LEDS) sind keine Statusvariablen, Aktionen (Typ ACTION) nur mit Ereignis
+                if (!$Readable || (($Type == 'ACTION') && !($Operations & 0b100))) {
                     continue;
                 }
                 $Ident = $this->IdentOf($Channel, $Datapoint);
@@ -309,7 +310,7 @@ abstract class HMAllChannels extends HMBase
     }
 
     /**
-     * Darstellung eines Datenpunktes: Aktionen als `Start`, Aufzählungen mit den Werten der CCU, Schalter und Anzeigen für Boolean.
+     * Darstellung eines Datenpunktes: Aufzählungen mit den Werten der CCU, Schalter und Anzeigen für Boolean, Ereignisse (ACTION) ohne besondere Darstellung.
      *
      * @return array Die Darstellung, leer wenn keine passt.
      */
@@ -318,7 +319,8 @@ abstract class HMAllChannels extends HMBase
         $Translate = fn (string $Text): string => $this->Translate($Text);
         switch ($Type) {
             case 'ACTION':
-                return \HMExtended\HeatingPresentation::Get(\HMExtended\HeatingPresentation::Execute, VARIABLETYPE_INTEGER, true, [], $Translate);
+                // Ein Eintrag zum Auslösen, solange die Variable false ist, ist nichts gewählt
+                return $HasAction ? ['PRESENTATION' => VARIABLE_PRESENTATION_ENUMERATION, 'OPTIONS' => json_encode([['Value' => true, 'Caption' => $this->Translate('Press'), 'IconActive' => false, 'IconValue' => '', 'Color' => -1]])] : [];
             case 'BOOL':
                 return \HMExtended\DatapointPresentation::Get($Datapoint, '', VARIABLETYPE_BOOLEAN, $HasAction, $Translate)
                     ?: ($HasAction ? ['PRESENTATION' => VARIABLE_PRESENTATION_SWITCH] : []);

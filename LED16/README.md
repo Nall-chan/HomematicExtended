@@ -33,11 +33,11 @@ LED-Anzeige `HM-OU-LED16` mit allen 16 Tastenkanälen und dem Wartungskanal in e
 ## 1. Funktionsumfang
 
 - Eine Instanz für das ganze Gerät: Die Adresse ist die Geräteadresse ohne Kanal, die Instanz empfängt die Ereignisse aller Kanäle.
-- Je Kanal werden die Datenpunkte als Statusvariablen angelegt: LED-Status (bedienbar), Tastendruck und Installationstest der Kanäle 1 bis 16 sowie die Werte des Wartungskanals (Erreichbarkeit, Signalstärke usw.).
+- Je Kanal werden die Datenpunkte als Statusvariablen angelegt: LED-Status (bedienbar), Tastendruck der Kanäle 1 bis 16 sowie die Werte des Wartungskanals (Erreichbarkeit, Signalstärke usw.).
 - Alle 16 LEDs lassen sich in einem Telegramm setzen, einzelne LEDs können dabei unverändert bleiben.
 
 > [!NOTE]
-> Das Modul ist neu und bisher nur an einer HM-OU-LED16 getestet. Das Setzen der LEDs und das Lesen der Werte sind geprüft, das Verhalten der Variablen `PRESS_SHORT_<n>` bei einem Tastendruck am Gerät ist noch nicht an der Hardware bestätigt.
+> Das Modul ist neu und bisher nur an einer HM-OU-LED16 getestet. Das Setzen der LEDs, das Lesen der Werte und der Empfang der Tastendrücke sind am Gerät geprüft.
 
 ## 2. Voraussetzungen
 
@@ -71,13 +71,12 @@ Der Ident einer Statusvariable ist `<Datenpunkt>_<Kanal>`, beim Wartungskanal 0 
 | Ident                                        | Name (Beispiel)    | Typ     | Darstellung                                      | Aktion | Beschreibung                                                                                                             |
 | :------------------------------------------- | :----------------- | :------ | :----------------------------------------------- | :----: | :----------------------------------------------------------------------------------------------------------------------- |
 | LED_STATUS_1 bis LED_STATUS_16               | LED-Status 3       | integer | Aufzählung: Aus, Rot (rot), Grün (grün), Orange  | ja     | Farbe der LED des Kanals, wird bei einem Ereignis des Gerätes aktualisiert.                                              |
-| PRESS_SHORT_1 bis PRESS_SHORT_16             | Taste kurz 3       | integer | Aufzählung `Start`                               | ja     | Löst einen Tastendruck des Kanals aus. Ein Tastendruck am Gerät setzt die Variable auf 0 (nützlich als Ereignis `Bei Aktualisierung`). |
-| INSTALL_TEST_1 bis INSTALL_TEST_16           | Installationstest 3 | integer | Aufzählung `Start`                              | ja     | Installationstest des Kanals (schaltet die LED um).                                                                      |
+| PRESS_SHORT_1 bis PRESS_SHORT_16             | Taste kurz 3       | boolean | Aufzählung `Drücken`                             | ja     | Ereignis: Jeder Tastendruck des Kanals am Gerät setzt die Variable (erneut) auf `true`. Als Auslöser dient das Ereignis `Bei Aktualisierung`. Die Bedienung löst einen Tastendruck aus (sofern die Beschreibung des Gerätes den Datenpunkt als schreibbar meldet). |
 | UNREACH, STICKY_UNREACH                      | Nicht erreichbar   | boolean |                                                  | STICKY_UNREACH | Das Gerät ist nicht erreichbar.                                                                                  |
 | CONFIG_PENDING, UPDATE_PENDING, DEVICE_IN_BOOTLOADER | Konfiguration steht aus | boolean |                                  |        | Zustände des Gerätes.                                                                                                    |
 | RSSI_DEVICE, RSSI_PEER                       | Signalstärke (Gerät) | integer |                                                |        | Empfangsstärke.                                                                                                          |
 
-Welche Variablen angelegt werden, richtet sich nach der Beschreibung der Datenpunkte, welche die CCU liefert. Nicht lesbare Datenpunkte (z.B. `ALL_LEDS`) und der Schlüssel `AES_KEY` werden nicht angelegt.
+Welche Variablen angelegt werden, richtet sich nach der Beschreibung der Datenpunkte, welche die CCU liefert. Nicht lesbare Datenpunkte (z.B. `ALL_LEDS`), der Schlüssel `AES_KEY` und der Installationstest `INSTALL_TEST` werden nicht angelegt. Ob eine Variable bedienbar ist, bestimmt die Beschreibung des Gerätes.
 
 ## 6. Visualisierung
 

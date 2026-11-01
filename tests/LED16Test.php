@@ -43,7 +43,7 @@ class LED16Test extends HomematicModuleTestCase
     public function testVariablesOfAllChannelsAreCreated(): void
     {
         foreach ([1, 7, 16] as $Led) {
-            foreach (['LED_STATUS', 'PRESS_SHORT', 'INSTALL_TEST'] as $Datapoint) {
+            foreach (['LED_STATUS', 'PRESS_SHORT'] as $Datapoint) {
                 $this->assertGreaterThan(0, $this->variable($Datapoint . '_' . $Led), $Datapoint . '_' . $Led);
             }
         }
@@ -55,6 +55,10 @@ class LED16Test extends HomematicModuleTestCase
         $this->assertSame('LED status 3', IPS_GetName($this->variable('LED_STATUS_3')));
         $this->assertSame('Key press short 16', IPS_GetName($this->variable('PRESS_SHORT_16')));
         $this->assertTrue(HasAction($this->variable('LED_STATUS_3')));
+        // Der Tastendruck ist ein Ereignis (Boolean), bedienbar, weil die Beschreibung des Gerätes ihn als schreibbar meldet; der Installationstest wird nicht angelegt
+        $this->assertSame(VARIABLETYPE_BOOLEAN, IPS_GetVariable($this->variable('PRESS_SHORT_3'))['VariableType']);
+        $this->assertTrue(HasAction($this->variable('PRESS_SHORT_3')));
+        $this->assertFalse(@IPS_GetObjectIDByIdent('INSTALL_TEST_3', $this->Id));
         $this->assertFalse(HasAction($this->variable('RSSI_DEVICE_1')));
     }
 
@@ -84,10 +88,10 @@ class LED16Test extends HomematicModuleTestCase
         $this->assertSame(2, GetValueInteger($this->variable('LED_STATUS_4')));
         $Instance->ReceiveData(json_encode(['DeviceID' => self::Address . ':0', 'VariableName' => 'UNREACH', 'VariableValue' => true]));
         $this->assertTrue(GetValueBoolean($this->variable('UNREACH')));
-        // Tastendruck: die Variable wird aktualisiert (Wert 0, Verwendung als Auslöser „bei Aktualisierung“)
+        // Tastendruck: jedes Ereignis setzt die Variable erneut auf true (Auslöser „bei Aktualisierung“)
         $Before = IPS_GetVariable($this->variable('PRESS_SHORT_5'))['VariableUpdated'];
         $Instance->ReceiveData(json_encode(['DeviceID' => self::Address . ':5', 'VariableName' => 'PRESS_SHORT', 'VariableValue' => true]));
-        $this->assertSame(0, GetValueInteger($this->variable('PRESS_SHORT_5')));
+        $this->assertTrue(GetValueBoolean($this->variable('PRESS_SHORT_5')));
         $this->assertGreaterThanOrEqual($Before, IPS_GetVariable($this->variable('PRESS_SHORT_5'))['VariableUpdated']);
     }
 
@@ -100,10 +104,13 @@ class LED16Test extends HomematicModuleTestCase
         $this->assertSame([self::Address . ':4', 'LED_STATUS'], array_slice($Set[0]['Data'], 0, 2));
         $this->assertSame('3', (string) $Set[0]['Data'][2]);
         $this->assertSame(3, GetValueInteger($this->variable('LED_STATUS_4')));
+        // Bedienen des Tastendrucks löst den Datenpunkt aus (true), die Variable setzt erst das Ereignis des Gerätes
         FakeHomematicIO::$Requests = [];
-        RequestAction($this->variable('PRESS_SHORT_9'), 0);
+        RequestAction($this->variable('PRESS_SHORT_9'), false);
         $Set = $this->setValueRequests();
         $this->assertSame([self::Address . ':9', 'PRESS_SHORT'], array_slice($Set[0]['Data'], 0, 2));
+        $this->assertTrue($Set[0]['Data'][2]);
+        $this->assertFalse(GetValueBoolean($this->variable('PRESS_SHORT_9')));
     }
 
     public function testSetAllLedsSendsOneTelegramAndKeepsUnchangedLeds(): void
