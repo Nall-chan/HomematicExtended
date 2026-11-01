@@ -197,6 +197,7 @@ Erweitert IPS um die native Unterstützung von:
 * HomeMatic IP Weekly Program: `HM_ReadWeeklyProgram`, `HM_WriteWeeklyProgram`, `HM_ReadWeeklyProgramModes`, `HM_SetWeeklyProgramMode`.
 * `HM_RequestState` (einzelnen Wert von der CCU lesen) für Powermeter, Weather, LED16 und Systemvariablen (Systemvariable der CCU lesen).
 * `HM_WriteValueBoolean2`, `…Integer2`, `…Float2` und `…String2` (ab Symcon 10.0 auch ohne `2`) für die Heizungsmodule und LED16: Wert in eine bedienbare Statusvariable schreiben, über deren Ident.
+* HomeMatic Systemvariablen: Die veraltete Funktion `HM_AlarmReceipt` dieses Moduls wurde entfernt, `HM_AlarmReceipt` des Moduls HomeMatic Alarmvariable ersetzt sie.
 * Aktionen für Homematic-Geräte (Ordner `actions`, [actions.md](actions.md)): Einschalten mit Einschaltdauer, Dimmen mit Einschaltdauer und/oder Rampenzeit, Dimmen stoppen, Rollladen und Fensterantriebe anhalten, Fenster mit Geschwindigkeit fahren, Türschloss öffnen, Wert mit virtueller Taste senden, Wochenprogramm-Modus einstellen, Text und Symbole auf dem Display einer Fernbedienung mit Display (HM-RC-19) anzeigen, alle 16 LEDs einer HM-OU-LED16 setzen sowie für HomeMatic IP: Einschalten mit Dauer, Dimmen mit Rampe und Dauer, Rollladen anhalten, Alarm der Sirene, Garagentor, Türschloss, Bewegungs- und Präsenzmelder zurücksetzen. Die Aktionen werden nur bei passenden Instanzen angeboten.
 
 **Geändertes Verhalten**

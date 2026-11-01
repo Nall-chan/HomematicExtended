@@ -185,7 +185,7 @@ string HM_DeleteCCUProgram(integer $InstanzID);
 
    Legt das CCU-Programm für die gespeicherte Auswahl und Taste an (ein vorhandenes Programm der Instanz wird ersetzt) bzw. löscht es. Liefert eine Meldung für den Nutzer.  
 
-   Veraltete Funktionen (werden mit Version 3.90 entfernt, ein Aufruf erzeugt eine Warnung im Log): `HM_SystemVariablesTimer` (ersetzt durch `HM_ReadSystemVariables`) und `HM_AlarmReceipt` dieses Moduls (ersetzt durch `HM_AlarmReceipt` des Moduls [HomeMatic Alarmvariable](../Alarmvariable/)).  
+   Veraltete Funktionen (werden mit Version 3.90 entfernt, ein Aufruf erzeugt eine Warnung im Log): `HM_SystemVariablesTimer` (ersetzt durch `HM_ReadSystemVariables`).  
 
 ## 8. Aktionen
 

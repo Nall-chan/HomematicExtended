@@ -84,7 +84,6 @@
         "ReadRFInterfaces"
     ],
     "Systemvariablen": [
-        "AlarmReceipt",
         "CreateCCUProgram",
         "DeleteCCUProgram",
         "ReadSystemVariables",

@@ -295,28 +295,6 @@ class HomeMaticSystemvariablen extends HMSystemVariableBase
         return $this->WriteValueString($Parameter, $Value);
     }
 
-    /**
-     * IPS-Instanz-Funktion 'HM_AlarmReceipt'.
-     * Veraltet: Alarmvariablen bildet das Modul 'HomeMatic Alarmvariable' ab. Quittiert den Alarm einer alten Alarmvariable (Ident `AlDP<CCU-ID>`).
-     *
-     * @param string $Ident Ident der alten Alarmvariable.
-     *
-     * @return bool True wenn quittiert wurde, sonst false.
-     */
-    public function AlarmReceipt(string $Ident): bool
-    {
-        $this->LogAlias('HM_AlarmReceipt', 'HM_AlarmReceipt (HomeMatic Alarmvariable)');
-        if (!str_starts_with($Ident, self::LegacyAlarmPrefix) || !ctype_digit(substr($Ident, strlen(self::LegacyAlarmPrefix)))) {
-            echo sprintf($this->Translate('Ident %s does not exist.'), $Ident) . PHP_EOL;
-            return false;
-        }
-        $Output = $this->RunScript(\HMExtended\SystemVariables::AlarmReceiptScript((int) substr($Ident, strlen(self::LegacyAlarmPrefix))));
-        if ($Output === false) {
-            return false;
-        }
-        return trim($Output) === 'true';
-    }
-
     //################# protected
 
     /**
