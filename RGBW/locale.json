@@ -30,15 +30,8 @@
             "Working": "Arbeitet",
             "Direction": "Richtung",
             "Inhibit": "Sperre",
-            "On time": "Einschaltdauer",
-            "Ramp time": "Rampenzeit",
-            "Program brightness": "Programm Helligkeit",
-            "Program hue start": "Programm Farbton Start",
-            "Program hue end": "Programm Farbton Ende",
             "State": "Status",
             "Color": "Farbe",
-            "Ramp time 1": "Rampenzeit 1",
-            "On time 1": "Einschaltdauer 1",
             "Off": "Aus",
             "Slow color change": "Langsamer Farbdurchlauf",
             "Normal color change": "Normaler Farbdurchlauf",
@@ -55,7 +48,11 @@
             "The hue must be between 0 and 360 and the saturation between 0 and 100.": "Der Farbton muss zwischen 0 und 360 und die Sättigung zwischen 0 und 100 liegen.",
             "The device did not return the white balance.": "Das Gerät hat den Weißabgleich nicht geliefert.",
             "The white balance values must be between 0 and 100.": "Die Werte des Weißabgleichs müssen zwischen 0 und 100 liegen.",
-            "Invalid color.": "Ungültige Farbe."
+            "Invalid color.": "Ungültige Farbe.",
+            "Ramp brightness": "Rampe Helligkeit",
+            "On time brightness": "Einschaltzeit Helligkeit",
+            "Ramp program": "Rampe Programm",
+            "On time program": "Einschaltzeit Programm"
         }
     }
 }

@@ -48,10 +48,6 @@ class HomeMaticSystemvariablen extends HMSystemVariableBase
     private const ActionDeleteLegacyAlarms = 'DeleteLegacyAlarmVariables';
     private const ActionVariableEdited = 'VariableEdited';
     /**
-     * Version, mit der die veralteten Funktionsnamen entfernt werden.
-     */
-    private const AliasRemovedIn = '3.90';
-    /**
      * Symcon-Version, ab der die Funktionen HM_WriteValue… (ohne 2) die gleichnamigen Funktionen des Kernels überschreiben können.
      * Bis dahin (alle C++-Versionen) bleiben HM_WriteValue…2 die gültigen Funktionen und erzeugen keine Warnung (Vorgabe des Nutzers).
      */
@@ -159,16 +155,6 @@ class HomeMaticSystemvariablen extends HMSystemVariableBase
             return false;
         }
         return $this->ReadValues(true);
-    }
-
-    /**
-     * IPS-Instanz-Funktion 'HM_SystemVariablesTimer'.
-     * Veraltet, ruft ReadSystemVariables auf.
-     */
-    public function SystemVariablesTimer(): bool
-    {
-        $this->LogAlias('HM_SystemVariablesTimer', 'HM_ReadSystemVariables');
-        return $this->ReadSystemVariables();
     }
 
     /**
@@ -686,14 +672,6 @@ class HomeMaticSystemvariablen extends HMSystemVariableBase
             // Anzeige in der Liste: Ja bzw. leer
             'Internal' => (($Variable !== null) && $Variable['Internal']) ? $this->Translate('Yes') : ''
         ];
-    }
-
-    /**
-     * Meldet den Aufruf einer veralteten Funktion im Log. Das Ergebnis der Funktion kommt trotzdem beim Aufrufer an.
-     */
-    private function LogAlias(string $Old, string $New): void
-    {
-        $this->LogMessage(sprintf($this->Translate('%s is deprecated and will be removed in version %s, use %s.'), $Old, self::AliasRemovedIn, $New), KL_WARNING);
     }
 
     /**

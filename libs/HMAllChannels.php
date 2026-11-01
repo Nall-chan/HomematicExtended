@@ -275,6 +275,17 @@ abstract class HMAllChannels extends HMBase
         }
     }
 
+    /**
+     * Name der Statusvariable: Beschriftung des Datenpunktes, bei Kanälen mit Kanalnummer.
+     */
+    protected function VariableName(int $Channel, string $Datapoint): string
+    {
+        $Caption = array_key_exists($Datapoint, static::Captions)
+            ? $this->Translate(static::Captions[$Datapoint])
+            : ucfirst(strtolower(str_replace('_', ' ', $Datapoint)));
+        return $Channel == 0 ? $Caption : $Caption . ' ' . $Channel;
+    }
+
     //################# private
 
     /**
@@ -363,17 +374,6 @@ abstract class HMAllChannels extends HMBase
             VARIABLETYPE_FLOAT   => (float) $Value,
             default              => (string) $Value
         };
-    }
-
-    /**
-     * Name der Statusvariable: Beschriftung des Datenpunktes, bei Kanälen mit Kanalnummer.
-     */
-    private function VariableName(int $Channel, string $Datapoint): string
-    {
-        $Caption = array_key_exists($Datapoint, static::Captions)
-            ? $this->Translate(static::Captions[$Datapoint])
-            : ucfirst(strtolower(str_replace('_', ' ', $Datapoint)));
-        return $Channel == 0 ? $Caption : $Caption . ' ' . $Channel;
     }
 }
 

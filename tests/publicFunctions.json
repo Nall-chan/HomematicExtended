@@ -103,7 +103,6 @@
         "DeleteCCUProgram",
         "ReadSystemVariables",
         "RequestState",
-        "SystemVariablesTimer",
         "WriteValueBoolean",
         "WriteValueBoolean2",
         "WriteValueFloat",

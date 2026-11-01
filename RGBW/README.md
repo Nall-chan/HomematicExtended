@@ -90,15 +90,13 @@ Der Ident einer Statusvariable ist `<Datenpunkt>_<Kanal>`, beim Wartungskanal 0 
 | COLOR_HSV | Farbe | string | Farbe (HSV) | ja | Farbwähler. Aus dem Farbton wird `{"h":…,"s":100,"v":100}` abgeleitet (Farbton in Grad, Sättigung und Helligkeit in Prozent) (Weiß: `s` 0). Eine gewählte Farbe mit Sättigung unter 50 % wird zu Weiß, die Helligkeit ändert der Farbwähler nicht. |
 | COLOR_2 | Farbton 2 | integer | Schieberegler 0 bis 200 mit Farbverlauf | ja | Der Datenpunkt `COLOR`: 0 bis 199 Farbkreis, 200 Weiß. |
 | PROGRAM_3 | Programm 3 | integer | Aufzählung: Aus, Langsamer/Normaler/Schneller Farbdurchlauf, Lagerfeuer, Wasserfall, TV-Simulation | ja | Programm. Ein Farbbefehl beendet es, die Variable zeigt dann `Aus`. |
-| ACT_MIN_BOARDER_3, ACT_MAX_BOARDER_3 | Programm Farbton Start/Ende 3 | integer | Schieberegler 0 bis 255 | ja | Grenzen des Farbbereichs der Programme. |
-| ACT_BRIGHTNESS_3 | Programm Helligkeit 3 | integer | Schieberegler 0 bis 255 | ja | Helligkeit des Programms. |
-| RAMP_TIME_1, ON_TIME_1 | Rampenzeit 1, Einschaltdauer 1 | float | Werteingabe in Sekunden | ja | **Vorgabe** für den nächsten Schaltbefehl (Standard 0,5 s und 0 s = unbegrenzt). Das Gerät liefert die Werte nicht zurück. |
-| RAMP_TIME_3, ON_TIME_3 | Rampenzeit 3, Einschaltdauer 3 | float | Werteingabe in Sekunden | ja | Zeiten der Programme. |
+| RAMP_TIME_1, ON_TIME_1 | Rampe Helligkeit, Einschaltzeit Helligkeit | float | Werteingabe in Sekunden | ja | **Vorgabe** für den nächsten Schaltbefehl (Standard 0,5 s und 0 s = unbegrenzt). Das Gerät liefert die Werte nicht zurück. |
+| RAMP_TIME_3, ON_TIME_3 | Rampe Programm, Einschaltzeit Programm | float | Werteingabe in Sekunden | ja | Zeiten der Programme. |
 | WORKING_1, DIRECTION_1 | Arbeitet 1, Richtung 1 | boolean, integer | | | Zustand der Helligkeitsänderung. |
 | INHIBIT_1 bis INHIBIT_3 | Sperre | boolean | Schalter | ja | Sperrt den Kanal. |
-| UNREACH, STICKY_UNREACH, CONFIG_PENDING, UPDATE_PENDING, DEVICE_IN_BOOTLOADER, LOWBAT, DUTYCYCLE, RSSI_DEVICE, RSSI_PEER | | | | | Werte des Wartungskanals (Erreichbarkeit, Signalstärke usw.). |
+| UNREACH, STICKY_UNREACH, CONFIG_PENDING, UPDATE_PENDING, DEVICE_IN_BOOTLOADER, DUTYCYCLE, RSSI_DEVICE, RSSI_PEER | | | | | Werte des Wartungskanals (Erreichbarkeit, Signalstärke usw.). |
 
-Welche Variablen angelegt werden, richtet sich nach der Beschreibung der Datenpunkte, welche die CCU liefert. Nicht lesbare Datenpunkte (z.B. `OLD_LEVEL`, `RAMP_STOP`, die Datenpunkte `ACT_HSV_COLOR_VALUE`, `USER_COLOR` und `USER_PROGRAM`), der Schlüssel `AES_KEY` und der Installationstest `INSTALL_TEST` werden nicht angelegt.
+Welche Variablen angelegt werden, richtet sich nach der Beschreibung der Datenpunkte, welche die CCU liefert. Nicht lesbare Datenpunkte (z.B. `OLD_LEVEL`, `RAMP_STOP`, die Datenpunkte `ACT_HSV_COLOR_VALUE`, `USER_COLOR` und `USER_PROGRAM`), die Sollwerte der Programme (`ACT_BRIGHTNESS`, `ACT_MIN_BOARDER`, `ACT_MAX_BOARDER`, ohne erkennbare Wirkung), `LOWBAT` (das Gerät hat keine Batterie), der Schlüssel `AES_KEY` und der Installationstest `INSTALL_TEST` werden nicht angelegt.
 
 ## 6. Visualisierung
 

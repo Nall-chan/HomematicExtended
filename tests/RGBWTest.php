@@ -27,6 +27,7 @@ class RGBWTest extends HomematicModuleTestCase
             'getParamsetDescription:' . self::Address . ':0:VALUES' => [
                 'UNREACH'      => ['ID' => 'UNREACH', 'TYPE' => 'BOOL', 'OPERATIONS' => 5],
                 'AES_KEY'      => ['ID' => 'AES_KEY', 'TYPE' => 'INTEGER', 'OPERATIONS' => 1],
+                'LOWBAT'       => ['ID' => 'LOWBAT', 'TYPE' => 'BOOL', 'OPERATIONS' => 5],
                 'RSSI_DEVICE'  => ['ID' => 'RSSI_DEVICE', 'TYPE' => 'INTEGER', 'OPERATIONS' => 5]
             ],
             'getParamsetDescription:' . self::Address . ':1:VALUES' => [
@@ -49,6 +50,8 @@ class RGBWTest extends HomematicModuleTestCase
             'getParamsetDescription:' . self::Address . ':3:VALUES' => [
                 'PROGRAM'         => ['ID' => 'PROGRAM', 'TYPE' => 'INTEGER', 'OPERATIONS' => 7],
                 'ACT_MIN_BOARDER' => ['ID' => 'ACT_MIN_BOARDER', 'TYPE' => 'INTEGER', 'OPERATIONS' => 3],
+                'ACT_BRIGHTNESS'  => ['ID' => 'ACT_BRIGHTNESS', 'TYPE' => 'INTEGER', 'OPERATIONS' => 3],
+                'ACT_MAX_BOARDER' => ['ID' => 'ACT_MAX_BOARDER', 'TYPE' => 'INTEGER', 'OPERATIONS' => 3],
                 'ON_TIME'         => ['ID' => 'ON_TIME', 'TYPE' => 'FLOAT', 'OPERATIONS' => 3],
                 'RAMP_TIME'       => ['ID' => 'RAMP_TIME', 'TYPE' => 'FLOAT', 'OPERATIONS' => 3]
             ],
@@ -67,14 +70,18 @@ class RGBWTest extends HomematicModuleTestCase
 
     public function testVariablesAreCreated(): void
     {
-        foreach (['LEVEL_1', 'WORKING_1', 'DIRECTION_1', 'INHIBIT_1', 'COLOR_2', 'INHIBIT_2', 'PROGRAM_3', 'ON_TIME_3', 'RAMP_TIME_3', 'ACT_MIN_BOARDER_3', 'UNREACH', 'RSSI_DEVICE', 'STATE', 'COLOR_HSV', 'RAMP_TIME_1', 'ON_TIME_1'] as $Ident) {
+        foreach (['LEVEL_1', 'WORKING_1', 'DIRECTION_1', 'INHIBIT_1', 'COLOR_2', 'INHIBIT_2', 'PROGRAM_3', 'ON_TIME_3', 'RAMP_TIME_3', 'UNREACH', 'RSSI_DEVICE', 'STATE', 'COLOR_HSV', 'RAMP_TIME_1', 'ON_TIME_1'] as $Ident) {
             $this->assertGreaterThan(0, $this->variable($Ident), $Ident);
         }
         // Nur schreibbare Datenpunkte, Installationstest und Schlüssel sind keine Variablen
-        foreach (['OLD_LEVEL_1', 'RAMP_STOP_1', 'INSTALL_TEST_1', 'USER_COLOR_2', 'ACT_HSV_COLOR_VALUE_2', 'AES_KEY'] as $Ident) {
+        foreach (['OLD_LEVEL_1', 'RAMP_STOP_1', 'INSTALL_TEST_1', 'USER_COLOR_2', 'ACT_HSV_COLOR_VALUE_2', 'AES_KEY', 'LOWBAT', 'ACT_MIN_BOARDER_3', 'ACT_MAX_BOARDER_3', 'ACT_BRIGHTNESS_3'] as $Ident) {
             $this->assertFalse(@IPS_GetObjectIDByIdent($Ident, $this->Id), $Ident);
         }
         $this->assertSame('Brightness 1', IPS_GetName($this->variable('LEVEL_1')));
+        $this->assertSame('Ramp program', IPS_GetName($this->variable('RAMP_TIME_3')));
+        $this->assertSame('On time program', IPS_GetName($this->variable('ON_TIME_3')));
+        $this->assertSame('Ramp brightness', IPS_GetName($this->variable('RAMP_TIME_1')));
+        $this->assertSame('On time brightness', IPS_GetName($this->variable('ON_TIME_1')));
         $this->assertSame(VARIABLETYPE_BOOLEAN, IPS_GetVariable($this->variable('STATE'))['VariableType']);
         $this->assertSame(VARIABLETYPE_STRING, IPS_GetVariable($this->variable('COLOR_HSV'))['VariableType']);
         foreach (['STATE', 'COLOR_HSV', 'RAMP_TIME_1', 'ON_TIME_1', 'LEVEL_1', 'COLOR_2', 'PROGRAM_3'] as $Ident) {

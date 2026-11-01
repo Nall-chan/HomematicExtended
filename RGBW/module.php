@@ -40,13 +40,13 @@ class HomeMaticRGBW extends HMAllChannels
         'PROGRAM'         => 'Program',
         'WORKING'         => 'Working',
         'DIRECTION'       => 'Direction',
-        'INHIBIT'         => 'Inhibit',
-        'ON_TIME'         => 'On time',
-        'RAMP_TIME'       => 'Ramp time',
-        'ACT_BRIGHTNESS'  => 'Program brightness',
-        'ACT_MIN_BOARDER' => 'Program hue start',
-        'ACT_MAX_BOARDER' => 'Program hue end'
+        'INHIBIT'         => 'Inhibit'
     ];
+
+    /**
+     * Datenpunkte ohne Statusvariable: Das Gerät hat keine Batterie, die ACT_-Datenpunkte (Sollwerte der Programme) werden nicht verwendet.
+     */
+    protected const IgnoredDatapoints = [...parent::IgnoredDatapoints, 'LOWBAT', 'ACT_BRIGHTNESS', 'ACT_MIN_BOARDER', 'ACT_MAX_BOARDER'];
 
     /**
      * Idents der Variablen, die das Modul zusätzlich zu den Datenpunkten anlegt, und der Datenpunkte mit besonderer Behandlung.
@@ -64,6 +64,7 @@ class HomeMaticRGBW extends HMAllChannels
      */
     private const ChannelDimmer = 1;
     private const ChannelColor = 2;
+    private const ChannelProgram = 3;
 
     /**
      * Größter Farbton des Farbkreises (entspricht 360 Grad), 200 ist Weiß.
@@ -316,17 +317,6 @@ class HomeMaticRGBW extends HMAllChannels
                     'CUSTOM_GRADIENT' => json_encode(self::HueGradient()),
                     'USAGE_TYPE'      => 5
                 ];
-            case 'ACT_BRIGHTNESS':
-            case 'ACT_MIN_BOARDER':
-            case 'ACT_MAX_BOARDER':
-                return [
-                    'PRESENTATION' => VARIABLE_PRESENTATION_SLIDER,
-                    'MIN'          => 0,
-                    'MAX'          => 255,
-                    'STEP_SIZE'    => 1,
-                    'DIGITS'       => 0,
-                    'USAGE_TYPE'   => 5
-                ];
             case 'PROGRAM':
                 $Options = [];
                 foreach (self::Programs as $Value => $Caption) {
@@ -338,6 +328,22 @@ class HomeMaticRGBW extends HMAllChannels
                 return $this->TimePresentation();
         }
         return parent::Presentation($Datapoint, $Type, $HasAction, $Parameter);
+    }
+
+    /**
+     * Name der Statusvariable: Die Zeiten des Kanals 3 gehören zu den Programmen.
+     */
+    protected function VariableName(int $Channel, string $Datapoint): string
+    {
+        if ($Channel == self::ChannelProgram) {
+            if ($Datapoint == 'RAMP_TIME') {
+                return $this->Translate('Ramp program');
+            }
+            if ($Datapoint == 'ON_TIME') {
+                return $this->Translate('On time program');
+            }
+        }
+        return parent::VariableName($Channel, $Datapoint);
     }
 
     //################# private
@@ -414,7 +420,7 @@ class HomeMaticRGBW extends HMAllChannels
         $this->EnableAction(self::IdentState);
         $this->MaintainPresentationVariable(self::IdentHsvColor, $this->Translate('Color'), VARIABLETYPE_STRING, ['PRESENTATION' => VARIABLE_PRESENTATION_COLOR, 'ENCODING' => COLOR_ENCODING_HSV], 1001);
         $this->EnableAction(self::IdentHsvColor);
-        foreach ([self::IdentRampTime => ['Ramp time 1', self::DefaultRampTime], self::IdentOnTime => ['On time 1', 0.0]] as $Ident => [$Name, $Default]) {
+        foreach ([self::IdentRampTime => ['Ramp brightness', self::DefaultRampTime], self::IdentOnTime => ['On time brightness', 0.0]] as $Ident => [$Name, $Default]) {
             $New = $this->FindIDForIdent($Ident) == 0;
             $this->MaintainPresentationVariable($Ident, $this->Translate($Name), VARIABLETYPE_FLOAT, $this->TimePresentation(), 1002);
             $this->EnableAction($Ident);

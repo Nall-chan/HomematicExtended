@@ -185,8 +185,6 @@ string HM_DeleteCCUProgram(integer $InstanzID);
 
    Legt das CCU-Programm für die gespeicherte Auswahl und Taste an (ein vorhandenes Programm der Instanz wird ersetzt) bzw. löscht es. Liefert eine Meldung für den Nutzer.  
 
-   Veraltete Funktionen (werden mit Version 3.90 entfernt, ein Aufruf erzeugt eine Warnung im Log): `HM_SystemVariablesTimer` (ersetzt durch `HM_ReadSystemVariables`).  
-
 ## 8. Aktionen
 
 **Grundsätzlich können alle bedienbaren Statusvariablen als Ziel einer [`Aktion`](https://www.symcon.de/service/dokumentation/konzepte/automationen/ablaufplaene/aktionen/) mit `Auf Wert schalten` angesteuert werden, so dass hier keine speziellen Aktionen benutzt werden müssen.**  
