@@ -37,7 +37,7 @@ LED-Anzeige `HM-OU-LED16` mit allen 16 Tastenkanälen und dem Wartungskanal in e
 - Alle 16 LEDs lassen sich in einem Telegramm setzen, einzelne LEDs können dabei unverändert bleiben.
 
 > [!NOTE]
-> Das Modul ist neu und bisher nur an einer HM-OU-LED16 getestet.
+> Das Modul ist neu und bisher nur an einer HM-OU-LED16 getestet. Das Setzen der LEDs und das Lesen der Werte sind geprüft, das Verhalten der Variablen `PRESS_SHORT_<n>` bei einem Tastendruck am Gerät ist noch nicht an der Hardware bestätigt.
 
 ## 2. Voraussetzungen
 
