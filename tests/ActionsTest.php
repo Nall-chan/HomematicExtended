@@ -12,6 +12,9 @@ class FakeHmFunctions
 {
     public static array $Calls = [];
     public static string $Description = '';
+    /** @var array<int, array{address: string, led: ?int}> Instanzen des Homematic-Moduls (ID => Adresse und Zustand der LED, null = keine Variable LED_STATUS) */
+    public static array $Instances = [];
+    public static array $Requests = [];
 }
 
 function FakeHm_GetParamsetDescription(int $InstanceID): string
@@ -35,6 +38,32 @@ function FakeHm_WriteValueBoolean(int $InstanceID, string $Ident, bool $Value): 
 {
     FakeHmFunctions::$Calls[] = ['Boolean', $Ident, $Value];
     return true;
+}
+
+function FakeHm_RequestStatus(int $InstanceID, string $Ident): bool
+{
+    FakeHmFunctions::$Requests[] = [$InstanceID, $Ident];
+    return true;
+}
+
+function FakeIps_GetProperty(int $InstanceID, string $Name): string
+{
+    return $InstanceID == 12345 ? 'JEQ0087605:1' : (FakeHmFunctions::$Instances[$InstanceID]['address'] ?? '');
+}
+
+function FakeIps_GetInstanceListByModuleID(string $Guid): array
+{
+    return array_keys(FakeHmFunctions::$Instances);
+}
+
+function FakeIps_GetObjectIDByIdent(string $Ident, int $InstanceID): int|false
+{
+    return isset(FakeHmFunctions::$Instances[$InstanceID]['led']) ? 100000 + $InstanceID : false;
+}
+
+function FakeGetValueInteger(int $VariableID): int
+{
+    return FakeHmFunctions::$Instances[$VariableID - 100000]['led'];
 }
 
 function FakeIps_GetSystemLanguage(): string
@@ -146,6 +175,52 @@ class ActionsTest extends TestCase
         $this->assertSame('4294967295', $Calls[0][2]);
     }
 
+    public function testLedActionKeepsUnchangedLeds(): void
+    {
+        // Kanäle 2 (rot) und 3 (grün) sind als Instanzen vorhanden, Kanal 1 ist die Instanz des Ziels ohne Variable
+        FakeHmFunctions::$Instances = [
+            21 => ['address' => 'JEQ0087605:2', 'led' => 1],
+            22 => ['address' => 'JEQ0087605:3', 'led' => 2],
+            23 => ['address' => 'XXX0000001:2', 'led' => 3]
+        ];
+        [$Calls] = $this->runAction('ledSetAll.json', $this->ledParams([1 => 3, 2 => 4, 3 => 4, 4 => 1]), '{"ALL_LEDS":{}}');
+        // LED 1 orange (3), LED 2 unverändert rot (1 << 2), LED 3 unverändert grün (2 << 4), LED 4 rot (1 << 6)
+        $this->assertSame([['String', 'ALL_LEDS', (string) (3 | (1 << 2) | (2 << 4) | (1 << 6))]], $Calls);
+        $this->assertSame([[21, 'LED_STATUS'], [22, 'LED_STATUS']], FakeHmFunctions::$Requests);
+        FakeHmFunctions::$Instances = [];
+    }
+
+    public function testLedActionDoesNotWriteWhenAnUnchangedLedHasNoInstance(): void
+    {
+        FakeHmFunctions::$Instances = [];
+        [$Calls, $Output] = $this->runAction('ledSetAll.json', $this->ledParams([5 => 4]), '{"ALL_LEDS":{}}');
+        $this->assertSame([], $Calls);
+        $this->assertStringContainsString('LED 5', $Output);
+    }
+
+    public function testLedFormOffersUnchangedOnlyForExistingChannels(): void
+    {
+        FakeHmFunctions::$Instances = [
+            21 => ['address' => 'JEQ0087605:2', 'led' => 0],
+            22 => ['address' => 'JEQ0087605:7', 'led' => 0],
+            23 => ['address' => 'JEQ0087605:9', 'led' => null]
+        ];
+        $Action = json_decode(file_get_contents(__DIR__ . '/../actions/ledSetAll.json'), true);
+        $Elements = $this->formElements($Action, '{"ALL_LEDS":{}}');
+        FakeHmFunctions::$Instances = [];
+        $this->assertCount(16, $Elements);
+        $WithUnchanged = [];
+        foreach ($Elements as $Element) {
+            if (in_array(4, array_column($Element['options'], 'value'), true)) {
+                $WithUnchanged[] = $Element['name'];
+                $this->assertSame(4, $Element['value']);
+            } else {
+                $this->assertSame(0, $Element['value']);
+            }
+        }
+        $this->assertSame(['LED2', 'LED7'], $WithUnchanged);
+    }
+
     public function testLedActionRejectsTargetsWithoutAllLeds(): void
     {
         [$Calls, $Output] = $this->runAction('ledSetAll.json', $this->ledParams([1 => 1]), '{"STATE":{}}');
@@ -182,6 +257,14 @@ class ActionsTest extends TestCase
     }
 
     /**
+     * Ersetzt die Funktionen von Symcon und des Homematic-Moduls im Code einer Aktion durch die simulierten Funktionen.
+     */
+    private function fakeFunctions(string $Code): string
+    {
+        return str_replace(['HM_', 'IPS_', 'GetValueInteger'], ['FakeHm_', 'FakeIps_', 'FakeGetValueInteger'], $Code);
+    }
+
+    /**
      * Elemente des Formulars einer Aktion. Besteht das Formular aus PHP-Code, wird er mit simulierten Funktionen ausgeführt.
      *
      * @param array $Action Die Aktion.
@@ -195,9 +278,10 @@ class ActionsTest extends TestCase
         $Code = implode("\n", $Action['form']);
         token_get_all('<?php ' . $Code, TOKEN_PARSE);
         FakeHmFunctions::$Description = $Description;
+        $Code = $this->fakeFunctions($Code);
         $Run = function (array $_IPS) use ($Code): array
         {
-            return eval(str_replace('HM_', 'FakeHm_', $Code));
+            return eval($Code);
         };
         return $Run(['TARGET' => 12345]);
     }
@@ -211,8 +295,9 @@ class ActionsTest extends TestCase
     {
         $Action = json_decode(file_get_contents(__DIR__ . '/../actions/' . $File), true);
         FakeHmFunctions::$Calls = [];
+        FakeHmFunctions::$Requests = [];
         FakeHmFunctions::$Description = $Description;
-        $Code = str_replace(['HM_', 'IPS_GetSystemLanguage'], ['FakeHm_', 'FakeIps_GetSystemLanguage'], $Action['action']);
+        $Code = $this->fakeFunctions($Action['action']);
         $Run = function (array $_IPS) use ($Code): void
         {
             eval($Code);
