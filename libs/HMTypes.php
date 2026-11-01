@@ -9,6 +9,7 @@ namespace HMExtended
         public const Powermeter = '{400F9193-FE79-4086-8D76-958BF9C1B357}';
         public const Weather = '{0877F1DB-2277-4B74-BCD9-E10D81015C31}';
         public const WeeklyProgramHmIP = '{9B7A7ED0-D77F-4F5B-B747-68B75B55686A}';
+        public const LED16 = '{3F6C1D8E-2B54-4A0F-9C7E-5D8A1B6E4F32}';
         public const Systemvariablen = '{AF50C42B-7183-4992-B04A-FAFB07BB1B90}';
         public const Alarmvariable = '{72A9F016-A988-430D-B678-E787CC106449}';
         public const Programme = '{A5010577-C443-4A85-ABF2-3F2D6CDD2465}';
@@ -71,6 +72,8 @@ namespace HMExtended
         public const WeeklyProgram_UniversalLight = 'UNIVERSAL_LIGHT_WEEK_PROFILE';
         public const WeeklyProgram_Servo = 'SERVO_WEEK_PROFILE';
 
+        public const LED16 = 'HM-OU-LED16';
+
         public const Dis_WM55 = 'HM-Dis-WM55'; // HM-Dis-WM55
         public const Dis_EP_WM55 = 'HM-Dis-EP-WM55'; // HM-Dis-EP-WM55
 
@@ -108,6 +111,7 @@ namespace HMExtended
             GUID::Powermeter                     => [self::Powermeter, self::Powermeter_IEC1, self::Powermeter_IEC2, self::Powermeter_IGL, self::Powermeter_HmIP],
             GUID::Weather                        => [self::Weather_HmIP],
             GUID::WeeklyProgramHmIP              => [self::WeeklyProgram_Switch, self::WeeklyProgram_Dimmer, self::WeeklyProgram_DimmerOutputBehaviour, self::WeeklyProgram_Blind, self::WeeklyProgram_UniversalLight, self::WeeklyProgram_Servo],
+            GUID::LED16                          => [self::LED16],
             GUID::Dis_WM55                       => [self::Dis_WM55],
             GUID::Dis_EP_WM55                    => [self::Dis_EP_WM55],
             // Konfigurator fertig

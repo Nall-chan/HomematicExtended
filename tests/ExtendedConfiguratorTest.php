@@ -78,6 +78,8 @@ class ExtendedConfiguratorTest extends HomematicModuleTestCase
             ['ADDRESS' => 'NEQ0711565', 'TYPE' => 'HM-Dis-EP-WM55'],
             ['ADDRESS' => 'KEQ0971739:2', 'TYPE' => 'POWERMETER'],
             ['ADDRESS' => 'IEQ0242934', 'TYPE' => 'HM-CC-TC'],
+            ['ADDRESS' => 'JEQ0087605', 'TYPE' => 'HM-OU-LED16'],
+            ['ADDRESS' => 'JEQ0087605:1', 'TYPE' => 'KEY'],
         ]);
         FakeHomematicIO::$ScriptResponse = "BidCos-RF\tLEQ1323301\tMein Display\r\nBidCos-RF\tNEQ0711565\tePaper Flur\tFlur\r\n<xml><exec>/x</exec><sessionId></sessionId><httpUserAgent>x</httpUserAgent></xml>";
         $this->ConfiguratorId = $this->createDevice(HomeMaticExtendedConfigurator::class, \HMExtended\GUID::ExtendedConfigurator, 'HMEC', $this->IoId, MODULETYPE_CONFIGURATOR);
@@ -92,6 +94,15 @@ class ExtendedConfiguratorTest extends HomematicModuleTestCase
         }
         $this->assertSame('HM-Dis-WM55', $Rows['LEQ1323301']['type']);
         $this->assertSame('HM-Dis-EP-WM55', $Rows['NEQ0711565']['type']);
+    }
+
+    public function testLed16IsListedWithTheAddressOfTheDevice(): void
+    {
+        $Rows = $this->rowsByAddress();
+        $this->assertSame(\HMExtended\GUID::LED16, $Rows['JEQ0087605']['create']['moduleID']);
+        $this->assertSame('JEQ0087605', $Rows['JEQ0087605']['create']['configuration']['Address']);
+        $this->assertSame(0, $Rows['JEQ0087605']['create']['configuration']['Protocol']);
+        $this->assertArrayNotHasKey('JEQ0087605:1', $Rows);
     }
 
     public function testCreateConfigurationContainsChannelOfOutput(): void

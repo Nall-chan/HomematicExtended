@@ -30,6 +30,7 @@ Erweitert IPS um die native Unterstützung von:
   - [HomeMatic Alarmvariable:](#homematic-alarmvariable)
   - [HomeMatic Powermeter:](#homematic-powermeter)
   - [HomeMatic Weather:](#homematic-weather)
+  - [HomeMatic LED16:](#homematic-led16)
   - [HomeMatic IP Weekly Program:](#homematic-ip-weekly-program)
   - [HomeMatic Programme:](#homematic-programme)
   - [HomeMatic RemoteScript Interface:](#homematic-remotescript-interface)
@@ -103,6 +104,10 @@ Erweitert IPS um die native Unterstützung von:
    Party-/Urlaubsmodus, der Modus der Soll-Temperatur, die Entkalkung und weitere Parameter der Geräte stehen als Variablen zur Verfügung.
    Welche Variablen angelegt werden, lässt sich in der Konfiguration der Instanz einstellen.
 
+### [HomeMatic LED16:](LED16/)  
+
+   LED-Anzeige HM-OU-LED16 mit allen Kanälen in einer Instanz: LED-Status, Tastendrücke und Wartungswerte als Statusvariablen, alle 16 LEDs in einem Telegramm setzen.  
+
 ### [HomeMatic IP Weekly Program:](WeeklyProgramHmIP/)  
 
    Wochenprogramm (Schaltzeitpunkte) der HomeMatic IP Aktoren lesen und schreiben, bisher als Grundgerüst ohne Visualisierung.  
@@ -163,6 +168,7 @@ Erweitert IPS um die native Unterstützung von:
 |       HomeMatic Alarmvariable       |    Device    | {72A9F016-A988-430D-B678-E787CC106449} |
 |        HomeMatic Powermeter         |    Device    | {400F9193-FE79-4086-8D76-958BF9C1B357} |
 |     HomeMatic IP Weekly Program     |    Device    | {9B7A7ED0-D77F-4F5B-B747-68B75B55686A} |
+|           HomeMatic LED16           |    Device    | {3F6C1D8E-2B54-4A0F-9C7E-5D8A1B6E4F32} |
 |          HomeMatic Weather          |    Device    | {0877F1DB-2277-4B74-BCD9-E10D81015C31} |
 |         HomeMatic Programme         |    Device    | {A5010577-C443-4A85-ABF2-3F2D6CDD2465} |
 |  HomeMatic RemoteScript Interface   |    Device    | {246EDB89-70BC-403B-A1FA-3B3B1B540401} |
@@ -183,6 +189,7 @@ Erweitert IPS um die native Unterstützung von:
 
 **Neue Module**
 
+* [HomeMatic LED16](LED16/): LED-Anzeige HM-OU-LED16 mit allen 16 Kanälen und dem Wartungskanal in einer Instanz (LED-Status, Tastendrücke, Wartungswerte als Statusvariablen, `HM_SetAllLEDs`). Der Extended Konfigurator listet die Geräte. Bisher nur an einer HM-OU-LED16 getestet.  
 * [HomeMatic IP Weekly Program](WeeklyProgramHmIP/): Wochenprogramm (Schaltzeitpunkte) der HomeMatic IP Aktoren lesen, anzeigen und bearbeiten. Die Kachel-Visualisierung zeigt Wochenübersicht und Liste, den Modus der Schaltkanäle (manuell/automatisch) und erlaubt das Bearbeiten (in der Instanz abschaltbar). Bisher nur an einem HmIP-Schaltaktor getestet, Dimmer, Rollläden, Universal-Licht und Servo werden nach der Beschreibung des Gerätes bedient, aber nicht getestet. Der Extended Konfigurator erkennt die Kanäle `*_WEEK_PROFILE`.
 
 **Neue Funktionen und Aktionen**

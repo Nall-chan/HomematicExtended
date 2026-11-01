@@ -1,0 +1,31 @@
+{
+    "translations": {
+        "de": {
+            "This module is free for non-commercial use,\r\nDonations in support of the author are accepted here:": "Dieses Modul ist für die nicht kommerzielle Nutzung kostenlos,\r\nSchenkungen als Unterstützung für den Autor werden hier akzeptiert:",
+            "Instance has no active parent instance!": "Keine aktive Parent Instanz!",
+            "Error on %s": "Fehler bei %s",
+            "Address": "Adresse",
+            "Unreachable": "Nicht erreichbar",
+            "Unreachable (sticky)": "Nicht erreichbar (gespeichert)",
+            "Configuration pending": "Konfiguration steht aus",
+            "Update pending": "Update steht aus",
+            "Device in bootloader": "Gerät im Bootloader",
+            "Battery low": "Batterie schwach",
+            "Signal strength (device)": "Signalstärke (Gerät)",
+            "Signal strength (peer)": "Signalstärke (Gegenstelle)",
+            "Key press short": "Taste kurz",
+            "Key press long": "Taste lang",
+            "Installation test": "Installationstest",
+            "LED status": "LED-Status",
+            "Start": "Start",
+            "Off": "Aus",
+            "Red": "Rot",
+            "Green": "Grün",
+            "Orange": "Orange",
+            "Expected a JSON array with 16 values.": "Erwartet wird ein JSON-Array mit 16 Werten.",
+            "Invalid color, allowed are 0 (off), 1 (red), 2 (green), 3 (orange) and 4 (unchanged).": "Ungültige Farbe, erlaubt sind 0 (aus), 1 (rot), 2 (grün), 3 (orange) und 4 (unverändert).",
+            "Invalid response from CCU.": "Ungültige Antwort der CCU.",
+            "The CCU did not answer the HM-Script.": "Die CCU hat das HM-Script nicht beantwortet."
+        }
+    }
+}
