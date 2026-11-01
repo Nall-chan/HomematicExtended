@@ -331,10 +331,16 @@ class HomeMaticRGBW extends HMAllChannels
     }
 
     /**
-     * Name der Statusvariable: Die Zeiten des Kanals 3 gehören zu den Programmen.
+     * Name der Statusvariable: Die Sperre gehört zum Kanal (Helligkeit, Farbe, Programm), die Zeiten des Kanals 3 zu den Programmen.
      */
     protected function VariableName(int $Channel, string $Datapoint): string
     {
+        if ($Datapoint == 'INHIBIT') {
+            $Name = [self::ChannelDimmer => 'Inhibit brightness', self::ChannelColor => 'Inhibit color', self::ChannelProgram => 'Inhibit program'][$Channel] ?? null;
+            if ($Name !== null) {
+                return $this->Translate($Name);
+            }
+        }
         if ($Channel == self::ChannelProgram) {
             if ($Datapoint == 'RAMP_TIME') {
                 return $this->Translate('Ramp program');

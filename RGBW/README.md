@@ -93,7 +93,7 @@ Der Ident einer Statusvariable ist `<Datenpunkt>_<Kanal>`, beim Wartungskanal 0 
 | RAMP_TIME_1, ON_TIME_1 | Rampe Helligkeit, Einschaltzeit Helligkeit | float | Werteingabe in Sekunden | ja | **Vorgabe** für den nächsten Schaltbefehl (Standard 0,5 s und 0 s = unbegrenzt). Das Gerät liefert die Werte nicht zurück. |
 | RAMP_TIME_3, ON_TIME_3 | Rampe Programm, Einschaltzeit Programm | float | Werteingabe in Sekunden | ja | Zeiten der Programme. |
 | WORKING_1, DIRECTION_1 | Arbeitet 1, Richtung 1 | boolean, integer | | | Zustand der Helligkeitsänderung. |
-| INHIBIT_1 bis INHIBIT_3 | Sperre | boolean | Schalter | ja | Sperrt den Kanal. |
+| INHIBIT_1 bis INHIBIT_3 | Sperre Helligkeit, Sperre Farbe, Sperre Programm | boolean | Schalter | ja | Sperrt den jeweiligen Kanal (1 Helligkeit, 2 Farbe, 3 Programm). |
 | UNREACH, STICKY_UNREACH, CONFIG_PENDING, UPDATE_PENDING, DEVICE_IN_BOOTLOADER, DUTYCYCLE, RSSI_DEVICE, RSSI_PEER | | | | | Werte des Wartungskanals (Erreichbarkeit, Signalstärke usw.). |
 
 Welche Variablen angelegt werden, richtet sich nach der Beschreibung der Datenpunkte, welche die CCU liefert. Nicht lesbare Datenpunkte (z.B. `OLD_LEVEL`, `RAMP_STOP`, die Datenpunkte `ACT_HSV_COLOR_VALUE`, `USER_COLOR` und `USER_PROGRAM`), die Sollwerte der Programme (`ACT_BRIGHTNESS`, `ACT_MIN_BOARDER`, `ACT_MAX_BOARDER`, ohne erkennbare Wirkung), `LOWBAT` (das Gerät hat keine Batterie), der Schlüssel `AES_KEY` und der Installationstest `INSTALL_TEST` werden nicht angelegt.

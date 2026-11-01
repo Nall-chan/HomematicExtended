@@ -49,6 +49,7 @@ class RGBWTest extends HomematicModuleTestCase
             ],
             'getParamsetDescription:' . self::Address . ':3:VALUES' => [
                 'PROGRAM'         => ['ID' => 'PROGRAM', 'TYPE' => 'INTEGER', 'OPERATIONS' => 7],
+                'INHIBIT'         => ['ID' => 'INHIBIT', 'TYPE' => 'BOOL', 'OPERATIONS' => 7],
                 'ACT_MIN_BOARDER' => ['ID' => 'ACT_MIN_BOARDER', 'TYPE' => 'INTEGER', 'OPERATIONS' => 3],
                 'ACT_BRIGHTNESS'  => ['ID' => 'ACT_BRIGHTNESS', 'TYPE' => 'INTEGER', 'OPERATIONS' => 3],
                 'ACT_MAX_BOARDER' => ['ID' => 'ACT_MAX_BOARDER', 'TYPE' => 'INTEGER', 'OPERATIONS' => 3],
@@ -78,6 +79,9 @@ class RGBWTest extends HomematicModuleTestCase
             $this->assertFalse(@IPS_GetObjectIDByIdent($Ident, $this->Id), $Ident);
         }
         $this->assertSame('Brightness 1', IPS_GetName($this->variable('LEVEL_1')));
+        $this->assertSame('Inhibit brightness', IPS_GetName($this->variable('INHIBIT_1')));
+        $this->assertSame('Inhibit color', IPS_GetName($this->variable('INHIBIT_2')));
+        $this->assertSame('Inhibit program', IPS_GetName($this->variable('INHIBIT_3')));
         $this->assertSame('Ramp program', IPS_GetName($this->variable('RAMP_TIME_3')));
         $this->assertSame('On time program', IPS_GetName($this->variable('ON_TIME_3')));
         $this->assertSame('Ramp brightness', IPS_GetName($this->variable('RAMP_TIME_1')));

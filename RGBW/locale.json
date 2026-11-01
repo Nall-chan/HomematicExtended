@@ -52,7 +52,10 @@
             "Ramp brightness": "Rampe Helligkeit",
             "On time brightness": "Einschaltzeit Helligkeit",
             "Ramp program": "Rampe Programm",
-            "On time program": "Einschaltzeit Programm"
+            "On time program": "Einschaltzeit Programm",
+            "Inhibit brightness": "Sperre Helligkeit",
+            "Inhibit color": "Sperre Farbe",
+            "Inhibit program": "Sperre Programm"
         }
     }
 }
