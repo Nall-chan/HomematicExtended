@@ -188,7 +188,7 @@ Erweitert IPS um die native Unterstützung von:
 **Neue Funktionen und Aktionen**
 
 * HomeMatic IP Weekly Program: `HM_ReadWeeklyProgram`, `HM_WriteWeeklyProgram`, `HM_ReadWeeklyProgramModes`, `HM_SetWeeklyProgramMode`.
-* Aktionen für Homematic-Geräte (Ordner `actions`, [actions.md](actions.md)): Einschalten mit Einschaltdauer, Dimmen mit Einschaltdauer und/oder Rampenzeit, Dimmen stoppen, Rollladen und Fensterantriebe anhalten, Fenster mit Geschwindigkeit fahren, Türschloss öffnen, Wert mit virtueller Taste senden, Wochenprogramm-Modus einstellen, Text und Symbole auf dem Display einer Fernbedienung mit Display (HM-RC-19) anzeigen sowie für HomeMatic IP: Einschalten mit Dauer, Dimmen mit Rampe und Dauer, Rollladen anhalten, Alarm der Sirene, Garagentor, Türschloss, Bewegungs- und Präsenzmelder zurücksetzen. Die Aktionen werden nur bei passenden Instanzen angeboten.
+* Aktionen für Homematic-Geräte (Ordner `actions`, [actions.md](actions.md)): Einschalten mit Einschaltdauer, Dimmen mit Einschaltdauer und/oder Rampenzeit, Dimmen stoppen, Rollladen und Fensterantriebe anhalten, Fenster mit Geschwindigkeit fahren, Türschloss öffnen, Wert mit virtueller Taste senden, Wochenprogramm-Modus einstellen, Text und Symbole auf dem Display einer Fernbedienung mit Display (HM-RC-19) anzeigen, alle 16 LEDs einer HM-OU-LED16 setzen sowie für HomeMatic IP: Einschalten mit Dauer, Dimmen mit Rampe und Dauer, Rollladen anhalten, Alarm der Sirene, Garagentor, Türschloss, Bewegungs- und Präsenzmelder zurücksetzen. Die Aktionen werden nur bei passenden Instanzen angeboten.
 
 **Geändertes Verhalten**
 

@@ -43,6 +43,14 @@ Das Drücken der Tasten (`PRESS_SHORT`, `PRESS_LONG`) ist als Statusvariable mit
 
 Die Datenpunkte des Displays sind alle nur schreibbar, die Instanz des Kanals hat deshalb keine Statusvariablen, an denen Symcon sie erkennen könnte. Die Aktion wird daher bei jeder Instanz des Homematic-Moduls angeboten. Das Formular prüft beim Öffnen anhand der Beschreibung der Datenpunkte, ob das Ziel ein Display-Kanal ist, und zeigt sonst nur einen Hinweis statt der Eingabefelder. Beim Ausführen wird erneut geprüft (sonst Meldung, ohne zu schreiben). Der Text hat 5 Zeichen, mit Punkt oder Komma 6 Zeichen (längere Texte werden abgeschnitten), reine Zahlen stehen rechtsbündig. Alle Werte werden geschrieben und danach mit `SUBMIT` an das Display übertragen. Die Reihenfolge der Werte stammt aus der Gerätebeschreibung der CCU und einem bewährten Script, die Aktion ist nicht an einem Gerät getestet.
 
+## LED-Anzeige HM-OU-LED16
+
+| Aktion | Datenpunkte | Angeboten bei Instanzen mit den Variablen (Ident) | Parameter |
+|---|---|---|---|
+| Alle LEDs setzen | `ALL_LEDS` | `LED_STATUS`, `PRESS_SHORT` (Tastenkanäle der HM-OU-LED16, z.B. Kanal 1) | Farbe je LED 1 bis 16 (aus, rot, grün, orange) |
+
+Die 16 LEDs werden in einem Telegramm gesetzt. `ALL_LEDS` erwartet eine Dezimalzahl als Text: LED n liegt auf den Bits 2(n-1) und 2(n-1)+1, 0 = aus, 1 = rot, 2 = grün, 3 = orange (z.B. `35` = LED 1 orange, LED 3 grün; alle LEDs orange = `4294967295`). Hexadezimale Werte (`0x…`) setzen falsche LEDs. Am Gerät geprüft. Einzelne LEDs lassen sich mit der Statusvariable `LED_STATUS` des jeweiligen Kanals (0 bis 3) schalten, der Schlafmodus `LED_SLEEP_MODE` kommt in der Firmware des Testgerätes nicht vor. Der Datenpunkt `LED_STATUS` des Kanals 0 (Wartung) setzt ebenfalls alle LEDs mit demselben Wert, hat aber keine Statusvariable.
+
 ## HomeMatic IP
 
 Grundlage sind die Parameterlisten aus der Technischen Dokumentation der Homematic-IP-Geräte (`docs/hmip-device-documentation_1.pdf`) und den CCU-Quellen (OCCU). Geprüft ist bisher nur „Einschalten mit Einschaltdauer“ an einem HmIP-Schaltaktor (ON_TIME 10 s, danach schaltet das Gerät von selbst aus), die übrigen Aktionen sind nicht an Geräten getestet.  

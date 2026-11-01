@@ -134,6 +134,28 @@ class ActionsTest extends TestCase
         $this->assertSame(['Label', 'Label'], array_column($this->formElements($Action, 'invalid'), 'type'));
     }
 
+    public function testLedActionCalculatesTheValueOfAllLeds(): void
+    {
+        // Belegt am HM-OU-LED16: LED n liegt auf den Bits 2(n-1) und 2(n-1)+1, 0 aus, 1 rot, 2 grün, 3 orange (Wert 35 = LED 1 orange, LED 3 grün)
+        [$Calls, $Output] = $this->runAction('ledSetAll.json', $this->ledParams([1 => 3, 3 => 2]), '{"ALL_LEDS":{}}');
+        $this->assertSame('', $Output);
+        $this->assertSame([['String', 'ALL_LEDS', '35']], $Calls);
+        [$Calls] = $this->runAction('ledSetAll.json', $this->ledParams([2 => 1]), '{"ALL_LEDS":{}}');
+        $this->assertSame('4', $Calls[0][2]);
+        [$Calls] = $this->runAction('ledSetAll.json', $this->ledParams(array_fill(1, 16, 3)), '{"ALL_LEDS":{}}');
+        $this->assertSame('4294967295', $Calls[0][2]);
+    }
+
+    public function testLedActionRejectsTargetsWithoutAllLeds(): void
+    {
+        [$Calls, $Output] = $this->runAction('ledSetAll.json', $this->ledParams([1 => 1]), '{"STATE":{}}');
+        $this->assertSame([], $Calls);
+        $this->assertStringContainsString('all LEDs', $Output);
+        $Action = json_decode(file_get_contents(__DIR__ . '/../actions/ledSetAll.json'), true);
+        $this->assertSame(['Label', 'Label'], array_column($this->formElements($Action, '{"STATE":{}}'), 'type'));
+        $this->assertCount(16, $this->formElements($Action, '{"ALL_LEDS":{}}'));
+    }
+
     public function testDisplayActionRejectsOtherChannels(): void
     {
         [$Calls, $Output] = $this->runAction('displayShow.json', $this->displayParams(), '{"STATE":{}}');
@@ -148,6 +170,15 @@ class ActionsTest extends TestCase
             $Ids[] = json_decode(file_get_contents($File), true)['id'];
         }
         $this->assertSame(count($Ids), count(array_unique($Ids)));
+    }
+
+    private function ledParams(array $Colors): array
+    {
+        $Params = [];
+        for ($Led = 1; $Led <= 16; $Led++) {
+            $Params['LED' . $Led] = $Colors[$Led] ?? 0;
+        }
+        return $Params;
     }
 
     /**
