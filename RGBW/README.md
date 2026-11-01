@@ -86,13 +86,13 @@ Der Ident einer Statusvariable ist `<Datenpunkt>_<Kanal>`, beim Wartungskanal 0 
 | Ident | Name | Typ | Darstellung | Aktion | Beschreibung |
 | :---- | :--- | :-- | :---------- | :----: | :----------- |
 | STATE | Status | boolean | Schalter (An/Aus) | ja | Zustand des Streifens, an, wenn die Helligkeit größer 0 ist. Einschalten stellt die vorherige Helligkeit des Gerätes wieder her. |
-| LEVEL_1 | Helligkeit 1 | float | Schieberegler 0 bis 100 % (Verwendung Intensität) | ja | Helligkeit, die Rampenzeit und die Einschaltdauer der Vorgaben gelten dabei. |
+| LEVEL_1 | Helligkeit | float | Schieberegler 0 bis 100 % (Verwendung Intensität) | ja | Helligkeit, die Rampenzeit und die Einschaltdauer der Vorgaben gelten dabei. |
 | COLOR_HSV | Farbe | string | Farbe (HSV) | ja | Farbwähler. Aus dem Farbton wird `{"h":…,"s":100,"v":100}` abgeleitet (Farbton in Grad, Sättigung und Helligkeit in Prozent) (Weiß: `s` 0). Eine gewählte Farbe mit Sättigung unter 50 % wird zu Weiß, die Helligkeit ändert der Farbwähler nicht. |
-| COLOR_2 | Farbton 2 | integer | Schieberegler 0 bis 200 mit Farbverlauf | ja | Der Datenpunkt `COLOR`: 0 bis 199 Farbkreis, 200 Weiß. |
-| PROGRAM_3 | Programm 3 | integer | Aufzählung: Aus, Langsamer/Normaler/Schneller Farbdurchlauf, Lagerfeuer, Wasserfall, TV-Simulation | ja | Programm. Ein Farbbefehl beendet es, die Variable zeigt dann `Aus`. |
+| COLOR_2 | Farbton | integer | Schieberegler 0 bis 200 mit Farbverlauf | ja | Der Datenpunkt `COLOR`: 0 bis 199 Farbkreis, 200 Weiß. |
+| PROGRAM_3 | Programm | integer | Aufzählung: Aus, Langsamer/Normaler/Schneller Farbdurchlauf, Lagerfeuer, Wasserfall, TV-Simulation | ja | Programm. Ein Farbbefehl beendet es, die Variable zeigt dann `Aus`. |
 | RAMP_TIME_1, ON_TIME_1 | Rampe Helligkeit, Einschaltzeit Helligkeit | float | Werteingabe in Sekunden | ja | **Vorgabe** für den nächsten Schaltbefehl (Standard 0,5 s und 0 s = unbegrenzt). Das Gerät liefert die Werte nicht zurück. |
 | RAMP_TIME_3, ON_TIME_3 | Rampe Programm, Einschaltzeit Programm | float | Werteingabe in Sekunden | ja | Zeiten der Programme. |
-| WORKING_1, DIRECTION_1 | Arbeitet 1, Richtung 1 | boolean, integer | | | Zustand der Helligkeitsänderung. |
+| WORKING_1, DIRECTION_1 | Arbeitet, Richtung | boolean, integer | | | Zustand der Helligkeitsänderung. |
 | INHIBIT_1 bis INHIBIT_3 | Sperre Helligkeit, Sperre Farbe, Sperre Programm | boolean | Schalter | ja | Sperrt den jeweiligen Kanal (1 Helligkeit, 2 Farbe, 3 Programm). |
 | UNREACH, STICKY_UNREACH, CONFIG_PENDING, UPDATE_PENDING, DEVICE_IN_BOOTLOADER, DUTYCYCLE, RSSI_DEVICE, RSSI_PEER | | | | | Werte des Wartungskanals (Erreichbarkeit, Signalstärke usw.). |
 

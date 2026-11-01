@@ -331,7 +331,7 @@ class HomeMaticRGBW extends HMAllChannels
     }
 
     /**
-     * Name der Statusvariable: Die Sperre gehört zum Kanal (Helligkeit, Farbe, Programm), die Zeiten des Kanals 3 zu den Programmen.
+     * Name der Statusvariable ohne Kanalnummer: Die Sperre gehört zum Kanal (Helligkeit, Farbe, Programm), die Zeiten des Kanals 3 zu den Programmen.
      */
     protected function VariableName(int $Channel, string $Datapoint): string
     {
@@ -349,7 +349,8 @@ class HomeMaticRGBW extends HMAllChannels
                 return $this->Translate('On time program');
             }
         }
-        return parent::VariableName($Channel, $Datapoint);
+        // Die Bezeichnungen sind eindeutig, die Kanalnummer entfällt (nur der Wartungskanal 0 hat keine)
+        return preg_replace('/ ' . $Channel . '$/', '', parent::VariableName($Channel, $Datapoint));
     }
 
     //################# private

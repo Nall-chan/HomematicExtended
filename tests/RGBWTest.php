@@ -78,7 +78,10 @@ class RGBWTest extends HomematicModuleTestCase
         foreach (['OLD_LEVEL_1', 'RAMP_STOP_1', 'INSTALL_TEST_1', 'USER_COLOR_2', 'ACT_HSV_COLOR_VALUE_2', 'AES_KEY', 'LOWBAT', 'ACT_MIN_BOARDER_3', 'ACT_MAX_BOARDER_3', 'ACT_BRIGHTNESS_3'] as $Ident) {
             $this->assertFalse(@IPS_GetObjectIDByIdent($Ident, $this->Id), $Ident);
         }
-        $this->assertSame('Brightness 1', IPS_GetName($this->variable('LEVEL_1')));
+        $this->assertSame('Brightness', IPS_GetName($this->variable('LEVEL_1')));
+        $this->assertSame('Hue', IPS_GetName($this->variable('COLOR_2')));
+        $this->assertSame('Program', IPS_GetName($this->variable('PROGRAM_3')));
+        $this->assertSame('Direction', IPS_GetName($this->variable('DIRECTION_1')));
         $this->assertSame('Inhibit brightness', IPS_GetName($this->variable('INHIBIT_1')));
         $this->assertSame('Inhibit color', IPS_GetName($this->variable('INHIBIT_2')));
         $this->assertSame('Inhibit program', IPS_GetName($this->variable('INHIBIT_3')));
