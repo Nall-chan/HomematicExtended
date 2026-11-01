@@ -1,0 +1,41 @@
+{
+    "id": "{96E44AF3-2006-46AA-9114-D94887F09CC0}",
+    "caption": "Send level with virtual key",
+    "description": "Sends the level to all actors linked to the virtual key of the central.",
+    "form": [
+        {
+            "type": "NumberSpinner",
+            "name": "LEVEL",
+            "caption": "Level",
+            "suffix": "%",
+            "minimum": 0,
+            "maximum": 100,
+            "digits": 1,
+            "value": 100
+        }
+    ],
+    "restrictions": {
+        "objectType": [
+            1
+        ],
+        "moduleID": [
+            "{EE4A81C6-5C90-4DB7-AD2F-F6BBD521412E}"
+        ],
+        "hasIdent": [
+            "PRESS_SHORT",
+            "PRESS_LONG"
+        ],
+        "includeEnvironments": [
+            "TestCommands",
+            "Default"
+        ]
+    },
+    "action": "HM_WriteValueFloat($_IPS['TARGET'], 'LEVEL', $_IPS['LEVEL'] / 100);",
+    "locale": {
+        "de": {
+            "Send level with virtual key": "Wert mit virtueller Taste senden",
+            "Sends the level to all actors linked to the virtual key of the central.": "Sendet den Wert an alle Aktoren, die mit der virtuellen Taste der Zentrale verknüpft sind.",
+            "Level": "Wert"
+        }
+    }
+}

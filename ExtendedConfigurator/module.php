@@ -185,6 +185,7 @@ class HomeMaticExtendedConfigurator extends HMBase
         if (@IPS_GetProperty($ParentId, self::IOIPOpen)) {
             $RadioAndIp[] = \HMExtended\CCU::ProtocolHmIP;
             $Form['actions'][0]['values'] = array_merge($Form['actions'][0]['values'], $this->GetConfigRows(\HMExtended\CCU::ProtocolHmIP, \HMExtended\GUID::Weather));
+            $Form['actions'][0]['values'] = array_merge($Form['actions'][0]['values'], $this->GetConfigRows(\HMExtended\CCU::ProtocolHmIP, \HMExtended\GUID::WeeklyProgramHmIP));
         }
         if (count($RadioAndIp)) {
             $Form['actions'][0]['values'] = array_merge($Form['actions'][0]['values'], $this->GetConfigRows($RadioAndIp, \HMExtended\GUID::Powermeter));

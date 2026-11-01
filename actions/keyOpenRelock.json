@@ -1,0 +1,44 @@
+{
+    "id": "{834A468E-3CC9-4D4E-8B6C-CDFA0F6F09FD}",
+    "caption": "Open door lock with relock delay",
+    "description": "Opens the door lock and locks it again after the relock delay.",
+    "form": [
+        {
+            "type": "NumberSpinner",
+            "name": "RELOCK_DELAY",
+            "caption": "Relock delay",
+            "suffix": "s",
+            "minimum": 0,
+            "maximum": 65535,
+            "digits": 0,
+            "value": 5
+        }
+    ],
+    "restrictions": {
+        "objectType": [
+            1
+        ],
+        "moduleID": [
+            "{EE4A81C6-5C90-4DB7-AD2F-F6BBD521412E}"
+        ],
+        "hasIdent": [
+            "STATE",
+            "STATE_UNCERTAIN",
+            "ERROR",
+            "DIRECTION",
+            "INHIBIT"
+        ],
+        "includeEnvironments": [
+            "TestCommands",
+            "Default"
+        ]
+    },
+    "action": "HM_WriteValueFloat($_IPS['TARGET'], 'RELOCK_DELAY', $_IPS['RELOCK_DELAY']);\nHM_WriteValueBoolean($_IPS['TARGET'], 'OPEN', true);",
+    "locale": {
+        "de": {
+            "Open door lock with relock delay": "Türschloss mit Wiederverriegelungsverzögerung öffnen",
+            "Opens the door lock and locks it again after the relock delay.": "Öffnet das Türschloss und verriegelt es nach der Verzögerung wieder.",
+            "Relock delay": "Wiederverriegelungsverzögerung"
+        }
+    }
+}

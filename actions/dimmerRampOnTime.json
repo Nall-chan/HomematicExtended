@@ -1,0 +1,66 @@
+{
+    "id": "{AEBDE9CA-422A-428D-BB06-98EAF4935C03}",
+    "caption": "Dim with ramp time and on time",
+    "description": "Sets the level within the ramp time and switches the dimmer off again after the on time.",
+    "form": [
+        {
+            "type": "NumberSpinner",
+            "name": "LEVEL",
+            "caption": "Level",
+            "suffix": "%",
+            "minimum": 0,
+            "maximum": 100,
+            "digits": 1,
+            "value": 100
+        },
+        {
+            "type": "NumberSpinner",
+            "name": "RAMP_TIME",
+            "caption": "Ramp time",
+            "suffix": "s",
+            "minimum": 0,
+            "maximum": 85825945.6,
+            "digits": 1,
+            "value": 0
+        },
+        {
+            "type": "NumberSpinner",
+            "name": "DURATION",
+            "caption": "Duration",
+            "suffix": "s",
+            "minimum": 0,
+            "maximum": 85825945.6,
+            "digits": 1,
+            "value": 0
+        }
+    ],
+    "restrictions": {
+        "objectType": [
+            1
+        ],
+        "moduleID": [
+            "{EE4A81C6-5C90-4DB7-AD2F-F6BBD521412E}"
+        ],
+        "hasActionStatusVariables": true,
+        "hasIdent": [
+            "LEVEL",
+            "DIRECTION",
+            "INHIBIT",
+            "WORKING"
+        ],
+        "includeEnvironments": [
+            "TestCommands",
+            "Default"
+        ]
+    },
+    "action": "HM_WriteValueFloat($_IPS['TARGET'], 'RAMP_TIME', $_IPS['RAMP_TIME']);\nHM_WriteValueFloat($_IPS['TARGET'], 'ON_TIME', $_IPS['DURATION']);\nHM_WriteValueFloat($_IPS['TARGET'], 'LEVEL', $_IPS['LEVEL'] / 100);",
+    "locale": {
+        "de": {
+            "Dim with ramp time and on time": "Dimmen mit Rampenzeit und Einschaltdauer",
+            "Sets the level within the ramp time and switches the dimmer off again after the on time.": "Setzt den Wert innerhalb der Rampenzeit und schaltet den Dimmer nach Ablauf der Einschaltdauer wieder aus.",
+            "Level": "Wert",
+            "Ramp time": "Rampenzeit",
+            "Duration": "Dauer"
+        }
+    }
+}

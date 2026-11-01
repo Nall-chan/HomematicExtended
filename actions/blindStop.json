@@ -1,0 +1,39 @@
+{
+    "id": "{3AF7BD3F-3938-4D07-8281-2592E1251005}",
+    "caption": "Stop blind movement",
+    "description": "Stops the movement of a blind or shutter.",
+    "form": [],
+    "restrictions": {
+        "objectType": [
+            1
+        ],
+        "moduleID": [
+            "{EE4A81C6-5C90-4DB7-AD2F-F6BBD521412E}"
+        ],
+        "hasActionStatusVariables": true,
+        "hasIdent": [
+            "LEVEL",
+            "DIRECTION",
+            "INHIBIT",
+            "WORKING"
+        ],
+        "hasNoIdent": [
+            "LEVEL_REAL",
+            "ERROR",
+            "ERROR_OVERHEAT",
+            "ERROR_OVERLOAD",
+            "ERROR_REDUCED"
+        ],
+        "includeEnvironments": [
+            "TestCommands",
+            "Default"
+        ]
+    },
+    "action": "HM_WriteValueBoolean($_IPS['TARGET'], 'STOP', true);",
+    "locale": {
+        "de": {
+            "Stop blind movement": "Rollladen oder Jalousie anhalten",
+            "Stops the movement of a blind or shutter.": "Hält die Bewegung eines Rollladens oder einer Jalousie an."
+        }
+    }
+}

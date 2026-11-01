@@ -1,0 +1,29 @@
+{
+    "id": "{4861BF52-1769-4BDD-A3EC-23752AE577D6}",
+    "caption": "HomeMatic IP: Reset motion detection",
+    "description": "Resets the motion state of the motion detector.",
+    "form": [],
+    "restrictions": {
+        "objectType": [
+            1
+        ],
+        "moduleID": [
+            "{EE4A81C6-5C90-4DB7-AD2F-F6BBD521412E}"
+        ],
+        "hasIdent": [
+            "MOTION",
+            "MOTION_DETECTION_ACTIVE"
+        ],
+        "includeEnvironments": [
+            "TestCommands",
+            "Default"
+        ]
+    },
+    "action": "HM_WriteValueBoolean($_IPS['TARGET'], 'RESET_MOTION', true);",
+    "locale": {
+        "de": {
+            "HomeMatic IP: Reset motion detection": "HomeMatic IP: Bewegungserkennung zurücksetzen",
+            "Resets the motion state of the motion detector.": "Setzt den Bewegungszustand des Bewegungsmelders zurück."
+        }
+    }
+}

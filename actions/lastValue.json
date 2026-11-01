@@ -6,10 +6,16 @@
         "objectType": [
             1
         ],
-        "hasActionStatusVariables": true,
+        "hasIdent": [
+            "LEVEL",
+            "DIRECTION",
+            "INHIBIT",
+            "WORKING"
+        ],
         "moduleID": [
             "{EE4A81C6-5C90-4DB7-AD2F-F6BBD521412E}"
         ],
+        "hasActionStatusVariables": true,
         "includeEnvironments": [
             "TestCommands",
             "Default"

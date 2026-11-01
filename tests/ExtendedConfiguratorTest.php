@@ -285,7 +285,9 @@ class ExtendedConfiguratorTest extends HomematicModuleTestCase
         FakeHomematicIO::$RpcResponses['listDevices@2'] = [
             ['ADDRESS' => '0001D3C99C1234:1', 'TYPE' => 'WEATHER_TRANSMIT'],
             ['ADDRESS' => '0001D3C99C1234:2', 'TYPE' => 'COND_SWITCH_TRANSMITTER_WIND_SPEED'],
-            ['ADDRESS' => '0001DA49A00001:6', 'TYPE' => 'ENERGIE_METER_TRANSMITTER']
+            ['ADDRESS' => '0001DA49A00001:6', 'TYPE' => 'ENERGIE_METER_TRANSMITTER'],
+            ['ADDRESS' => '002560C99B959A:6', 'TYPE' => 'SWITCH_WEEK_PROFILE'],
+            ['ADDRESS' => '002560C99B959A:3', 'TYPE' => 'SWITCH_VIRTUAL_RECEIVER']
         ];
         $this->assertArrayNotHasKey('0001D3C99C1234:1', $this->rowsByAddress());
         IPS_SetProperty($this->IoId, 'IPOpen', true);
@@ -294,6 +296,10 @@ class ExtendedConfiguratorTest extends HomematicModuleTestCase
         $this->assertSame(\HMExtended\GUID::Weather, $Rows['0001D3C99C1234:1']['create']['moduleID']);
         $this->assertSame(2, $Rows['0001D3C99C1234:1']['create']['configuration']['Protocol']);
         $this->assertArrayNotHasKey('0001D3C99C1234:2', $Rows);
+        // Das Wochenprogramm wird über den Kanaltyp erkannt, die Schaltkanäle des Aktors nicht.
+        $this->assertSame(\HMExtended\GUID::WeeklyProgramHmIP, $Rows['002560C99B959A:6']['create']['moduleID']);
+        $this->assertSame(2, $Rows['002560C99B959A:6']['create']['configuration']['Protocol']);
+        $this->assertArrayNotHasKey('002560C99B959A:3', $Rows);
         $this->assertSame(\HMExtended\GUID::Powermeter, $Rows['0001DA49A00001:6']['create']['moduleID']);
         $this->assertSame(2, $Rows['0001DA49A00001:6']['create']['configuration']['Protocol']);
         // Der BidCos-Powermeter bleibt auf Funk.

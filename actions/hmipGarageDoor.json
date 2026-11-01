@@ -1,0 +1,58 @@
+{
+    "id": "{BB3681BD-40C2-4D5A-A76D-E2B7086A62FE}",
+    "caption": "HomeMatic IP: Garage door command",
+    "description": "Sends a command to the garage door drive.",
+    "form": [
+        {
+            "type": "Select",
+            "name": "COMMAND",
+            "caption": "Command",
+            "options": [
+                {
+                    "caption": "Open",
+                    "value": 1
+                },
+                {
+                    "caption": "Stop",
+                    "value": 2
+                },
+                {
+                    "caption": "Close",
+                    "value": 3
+                },
+                {
+                    "caption": "Partial open",
+                    "value": 4
+                }
+            ],
+            "value": 1
+        }
+    ],
+    "restrictions": {
+        "objectType": [
+            1
+        ],
+        "moduleID": [
+            "{EE4A81C6-5C90-4DB7-AD2F-F6BBD521412E}"
+        ],
+        "hasIdent": [
+            "DOOR_STATE"
+        ],
+        "includeEnvironments": [
+            "TestCommands",
+            "Default"
+        ]
+    },
+    "action": "HM_WriteValueInteger($_IPS['TARGET'], 'DOOR_COMMAND', $_IPS['COMMAND']);",
+    "locale": {
+        "de": {
+            "HomeMatic IP: Garage door command": "HomeMatic IP: Garagentor-Befehl",
+            "Sends a command to the garage door drive.": "Sendet einen Befehl an den Garagentorantrieb.",
+            "Command": "Befehl",
+            "Open": "Öffnen",
+            "Stop": "Stopp",
+            "Close": "Schließen",
+            "Partial open": "Teilweise öffnen"
+        }
+    }
+}

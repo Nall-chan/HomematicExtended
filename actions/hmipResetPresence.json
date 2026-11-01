@@ -1,0 +1,28 @@
+{
+    "id": "{A56FB3A7-749E-43C9-BD00-D7D9085462DE}",
+    "caption": "HomeMatic IP: Reset presence detection",
+    "description": "Resets the presence state of the presence detector.",
+    "form": [],
+    "restrictions": {
+        "objectType": [
+            1
+        ],
+        "moduleID": [
+            "{EE4A81C6-5C90-4DB7-AD2F-F6BBD521412E}"
+        ],
+        "hasIdent": [
+            "PRESENCE_DETECTION_STATE"
+        ],
+        "includeEnvironments": [
+            "TestCommands",
+            "Default"
+        ]
+    },
+    "action": "HM_WriteValueBoolean($_IPS['TARGET'], 'RESET_PRESENCE', true);",
+    "locale": {
+        "de": {
+            "HomeMatic IP: Reset presence detection": "HomeMatic IP: Präsenzerkennung zurücksetzen",
+            "Resets the presence state of the presence detector.": "Setzt den Präsenzzustand des Präsenzmelders zurück."
+        }
+    }
+}

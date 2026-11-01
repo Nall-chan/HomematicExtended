@@ -1,0 +1,32 @@
+{
+    "id": "{2EFD6635-5BAB-45AD-A8B5-2AA4BB5CFC95}",
+    "caption": "Open door lock",
+    "description": "Unlocks and opens the door lock.",
+    "form": [],
+    "restrictions": {
+        "objectType": [
+            1
+        ],
+        "moduleID": [
+            "{EE4A81C6-5C90-4DB7-AD2F-F6BBD521412E}"
+        ],
+        "hasIdent": [
+            "STATE",
+            "STATE_UNCERTAIN",
+            "ERROR",
+            "DIRECTION",
+            "INHIBIT"
+        ],
+        "includeEnvironments": [
+            "TestCommands",
+            "Default"
+        ]
+    },
+    "action": "HM_WriteValueBoolean($_IPS['TARGET'], 'OPEN', true);",
+    "locale": {
+        "de": {
+            "Open door lock": "Türschloss öffnen",
+            "Unlocks and opens the door lock.": "Entriegelt und öffnet das Türschloss."
+        }
+    }
+}

@@ -1,0 +1,38 @@
+{
+    "id": "{E80B4AB8-6003-4648-B1F7-B7B66F7D8166}",
+    "caption": "HomeMatic IP: Stop blind movement",
+    "description": "Stops the movement of a blind or shutter.",
+    "form": [],
+    "restrictions": {
+        "objectType": [
+            1
+        ],
+        "moduleID": [
+            "{EE4A81C6-5C90-4DB7-AD2F-F6BBD521412E}"
+        ],
+        "hasActionStatusVariables": true,
+        "hasIdent": [
+            "LEVEL",
+            "ACTIVITY_STATE",
+            "PROCESS",
+            "SECTION"
+        ],
+        "hasNoIdent": [
+            "COLOR",
+            "HUE",
+            "COLOR_TEMPERATURE",
+            "SOUNDFILE"
+        ],
+        "includeEnvironments": [
+            "TestCommands",
+            "Default"
+        ]
+    },
+    "action": "HM_WriteValueBoolean($_IPS['TARGET'], 'STOP', true);",
+    "locale": {
+        "de": {
+            "HomeMatic IP: Stop blind movement": "HomeMatic IP: Rollladen oder Jalousie anhalten",
+            "Stops the movement of a blind or shutter.": "Hält die Bewegung eines Rollladens oder einer Jalousie an."
+        }
+    }
+}

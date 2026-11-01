@@ -53,6 +53,26 @@ class HomeMaticWeather extends HMBase
     ];
 
     /**
+     * Namen der Statusvariablen für die Datenpunkte des Wetterkanals (englischer Text, wird übersetzt).
+     * Unbekannte Datenpunkte behalten ihren Ident als Namen. Bestehende Variablen werden nicht umbenannt.
+     */
+    private const DatapointCaptions = [
+        'ACTUAL_TEMPERATURE'         => 'Temperature',
+        'HUMIDITY'                   => 'Humidity',
+        'ILLUMINATION'               => 'Illumination',
+        'SUNSHINEDURATION'           => 'Sunshine duration (device counter)',
+        'SUNSHINEDURATION_OVERFLOW'  => 'Sunshine duration counter overflow',
+        'SUNSHINE_THRESHOLD_OVERRUN' => 'Sunshine threshold exceeded',
+        'WIND_SPEED'                 => 'Wind speed',
+        'WIND_THRESHOLD_OVERRUN'     => 'Wind threshold exceeded',
+        'WIND_DIR'                   => 'Wind direction',
+        'WIND_DIR_RANGE'             => 'Wind direction fluctuation',
+        'RAINING'                    => 'Raining',
+        'RAIN_COUNTER'               => 'Rainfall (device counter)',
+        'RAIN_COUNTER_OVERFLOW'      => 'Rainfall counter overflow'
+    ];
+
+    /**
      * Systemvariablen, welche die CCU beim Anlernen einer HmIP-SWO anlegt (WebUI newdevices.htm der CCU-Firmware).
      * Name: Anfang des Namens, es folgt die ReGa-ID des Kanals und bei `WithAddress` noch `_<Kanaladresse>`.
      * Datapoint: Datenpunkt mit derselben Darstellung (\HMExtended\DatapointPresentation::Datapoints).
@@ -184,7 +204,7 @@ class HomeMaticWeather extends HMBase
             }
             $VarType = self::HmTypeToIpsType[$HmType];
             $HasAction = (bool) (($Variable['OPERATIONS'] ?? 0) & 0b10);
-            $this->MaintainPresentationVariable($Ident, $Ident, $VarType, $this->Presentation($Ident, $Variable['UNIT'] ?? '', $VarType, $HasAction));
+            $this->MaintainPresentationVariable($Ident, array_key_exists($Ident, self::DatapointCaptions) ? $this->Translate(self::DatapointCaptions[$Ident]) : $Ident, $VarType, $this->Presentation($Ident, $Variable['UNIT'] ?? '', $VarType, $HasAction));
             if ($HasAction) {
                 $this->EnableAction($Ident);
             }

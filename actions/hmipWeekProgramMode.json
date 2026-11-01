@@ -1,0 +1,101 @@
+{
+    "id": "{BD8B28AC-C132-4CFE-8371-83CECA4D050E}",
+    "caption": "Set week program mode",
+    "description": "Sets the mode of the week program (manual or automatic) for the selected virtual channels of the actor.",
+    "form": [
+        {
+            "type": "Select",
+            "name": "MODE",
+            "caption": "Mode",
+            "options": [
+                {
+                    "caption": "Manual mode",
+                    "value": "MANU_MODE"
+                },
+                {
+                    "caption": "Automatic mode (without reset)",
+                    "value": "AUTO_MODE_WITHOUT_RESET"
+                },
+                {
+                    "caption": "Automatic mode (with reset)",
+                    "value": "AUTO_MODE_WITH_RESET"
+                }
+            ],
+            "value": "AUTO_MODE_WITHOUT_RESET"
+        },
+        {
+            "type": "CheckBox",
+            "name": "CH1",
+            "caption": "Virtual channel 1"
+        },
+        {
+            "type": "CheckBox",
+            "name": "CH2",
+            "caption": "Virtual channel 2"
+        },
+        {
+            "type": "CheckBox",
+            "name": "CH3",
+            "caption": "Virtual channel 3"
+        },
+        {
+            "type": "CheckBox",
+            "name": "CH4",
+            "caption": "Virtual channel 4"
+        },
+        {
+            "type": "CheckBox",
+            "name": "CH5",
+            "caption": "Virtual channel 5"
+        },
+        {
+            "type": "CheckBox",
+            "name": "CH6",
+            "caption": "Virtual channel 6"
+        },
+        {
+            "type": "CheckBox",
+            "name": "CH7",
+            "caption": "Virtual channel 7"
+        },
+        {
+            "type": "CheckBox",
+            "name": "CH8",
+            "caption": "Virtual channel 8"
+        }
+    ],
+    "restrictions": {
+        "objectType": [
+            1
+        ],
+        "moduleID": [
+            "{EE4A81C6-5C90-4DB7-AD2F-F6BBD521412E}"
+        ],
+        "hasIdent": [
+            "WEEK_PROGRAM_CHANNEL_LOCKS"
+        ],
+        "includeEnvironments": [
+            "TestCommands",
+            "Default"
+        ]
+    },
+    "action": "HM_WriteValueString($_IPS['TARGET'], 'WEEK_PROGRAM_TARGET_CHANNEL_LOCK', $_IPS['MODE']);\nHM_WriteValueInteger($_IPS['TARGET'], 'WEEK_PROGRAM_TARGET_CHANNEL_LOCKS', (($_IPS['CH1'] ? 1 : 0) << 0) | (($_IPS['CH2'] ? 1 : 0) << 3) | (($_IPS['CH3'] ? 1 : 0) << 6) | (($_IPS['CH4'] ? 1 : 0) << 9) | (($_IPS['CH5'] ? 1 : 0) << 12) | (($_IPS['CH6'] ? 1 : 0) << 15) | (($_IPS['CH7'] ? 1 : 0) << 18) | (($_IPS['CH8'] ? 1 : 0) << 21));",
+    "locale": {
+        "de": {
+            "Set week program mode": "Wochenprogramm-Modus einstellen",
+            "Sets the mode of the week program (manual or automatic) for the selected virtual channels of the actor.": "Stellt den Modus des Wochenprogramms (manuell oder automatisch) für die gewählten virtuellen Kanäle des Aktors ein.",
+            "Mode": "Modus",
+            "Manual mode": "Manu-Modus",
+            "Automatic mode (without reset)": "Auto-Modus (ohne Zurücksetzen)",
+            "Automatic mode (with reset)": "Auto-Modus (mit Zurücksetzen)",
+            "Virtual channel 1": "Virtueller Kanal 1",
+            "Virtual channel 2": "Virtueller Kanal 2",
+            "Virtual channel 3": "Virtueller Kanal 3",
+            "Virtual channel 4": "Virtueller Kanal 4",
+            "Virtual channel 5": "Virtueller Kanal 5",
+            "Virtual channel 6": "Virtueller Kanal 6",
+            "Virtual channel 7": "Virtueller Kanal 7",
+            "Virtual channel 8": "Virtueller Kanal 8"
+        }
+    }
+}

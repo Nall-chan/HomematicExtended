@@ -98,23 +98,23 @@ Im Debug der Instanz erscheint nach `Übernehmen` je Systemvariable eine Zeile m
 ## 5. Statusvariablen
 
 **Werte des Wetterkanals:**  
-Für jeden Datenpunkt des Kanals wird eine Statusvariable mit dem Namen des Datenpunktes angelegt. Status-Werte (`…_STATUS`, Typ `ENUM`) werden nicht abgebildet.  
+Für jeden Datenpunkt des Kanals wird eine Statusvariable angelegt. Der Name der Variable steht in der Tabelle, für unbekannte Datenpunkte ist es der Name des Datenpunktes. Bereits vorhandene Variablen werden nicht umbenannt. Status-Werte (`…_STATUS`, Typ `ENUM`) werden nicht abgebildet.  
 
-| Ident / Name                 | Typ     | Darstellung                                   | Geräte    |
-| :--------------------------- | :------ | :-------------------------------------------- | :-------- |
-| ACTUAL_TEMPERATURE           | float   | Wertanzeige °C, Verwendung Temperatur         | alle      |
-| HUMIDITY                     | integer | Wertanzeige %                                 | alle      |
-| ILLUMINATION                 | float   | Wertanzeige lx                                | alle      |
-| SUNSHINEDURATION             | integer | Wertanzeige min                               | alle      |
-| SUNSHINEDURATION_OVERFLOW    | boolean |                                               | alle      |
-| SUNSHINE_THRESHOLD_OVERRUN   | boolean |                                               | alle      |
-| WIND_SPEED                   | float   | Wertanzeige km/h                              | alle      |
-| WIND_THRESHOLD_OVERRUN       | boolean |                                               | alle      |
-| RAINING                      | boolean | Wertanzeige (`Kein Regen`, `Regen`)           | PL, PR    |
-| RAIN_COUNTER                 | float   | Wertanzeige mm                                | PL, PR    |
-| RAIN_COUNTER_OVERFLOW        | boolean |                                               | PL, PR    |
-| WIND_DIR                     | integer | Wertanzeige °                                 | PR        |
-| WIND_DIR_RANGE               | integer | Wertanzeige °                                 | PR        |
+| Ident                        | Name                                  | Typ     | Darstellung                                   | Geräte    |
+| :--------------------------- | :------------------------------------ | :------ | :-------------------------------------------- | :-------- |
+| ACTUAL_TEMPERATURE           | Temperatur                            | float   | Wertanzeige °C, Verwendung Temperatur         | alle      |
+| HUMIDITY                     | Feuchtigkeit                          | integer | Wertanzeige %                                 | alle      |
+| ILLUMINATION                 | Helligkeit                            | float   | Wertanzeige lx                                | alle      |
+| SUNSHINEDURATION             | Sonnenscheindauer (Gerätezähler)    | integer | Wertanzeige min                               | alle      |
+| SUNSHINEDURATION_OVERFLOW    | Überlauf Zähler Sonnenscheindauer   | boolean |                                               | alle      |
+| SUNSHINE_THRESHOLD_OVERRUN   | Sonnenschein-Schwellwert überschritten | boolean |                                               | alle      |
+| WIND_SPEED                   | Windgeschwindigkeit                   | float   | Wertanzeige km/h                              | alle      |
+| WIND_THRESHOLD_OVERRUN       | Wind-Schwellwert überschritten       | boolean |                                               | alle      |
+| RAINING                      | Es regnet                             | boolean | Wertanzeige (`Kein Regen`, `Regen`)           | PL, PR    |
+| RAIN_COUNTER                 | Regenmenge (Gerätezähler)           | float   | Wertanzeige mm                                | PL, PR    |
+| RAIN_COUNTER_OVERFLOW        | Überlauf Zähler Regenmenge          | boolean |                                               | PL, PR    |
+| WIND_DIR                     | Windrichtung                          | integer | Wertanzeige °                                 | PR        |
+| WIND_DIR_RANGE               | Schwankung der Windrichtung           | integer | Wertanzeige °                                 | PR        |
 
 Die Variablentypen richten sich nach der Beschreibung der Datenpunkte, welche die CCU liefert. Als float erhalten `HUMIDITY`, `ILLUMINATION` und `WIND_DIR` eine Nachkommastelle.  
 
@@ -133,7 +133,7 @@ Eine Statusvariable wird angelegt, sobald die zugehörige Systemvariable auf der
 `<ID>` ist die ReGa-ID des Wetterkanals, `<Adresse>` die Adresse des Kanals.  
 
 > [!IMPORTANT]
-> Der Tag der CCU wechselt um 07:00 Uhr: Dann übernimmt die CCU den Wert von `heute` nach `gestern` und setzt `heute` auf 0. Die Instanz zeigt den neuen Stand mit der nächsten Meldung der Wetterstation.  
+> Der Tag der CCU wechselt um 07:00 Uhr: Dann übernimmt die CCU den Wert von `heute` nach `gestern` und setzt `heute` auf 0 (`heute` zählt also von 07:00 bis 07:00 Uhr, nicht vom Kalendertag). Die Instanz zeigt den neuen Stand mit der nächsten Meldung der Wetterstation.  
 
 Weitere Eigenheiten der CCU-Programme: Die Summen werden nur fortgeschrieben, wenn der Gerätezähler nicht 0 ist. Der Tageswert wird bei 1440 oder mehr auf 0 gesetzt. Das passt für die Sonnenscheindauer (1440 min = 24 h), gilt in der CCU aber auch für die Regenmenge in mm.  
 
@@ -162,6 +162,10 @@ Die Statusvariablen der Wetterstation sind nicht bedienbar.
 ### 1. Changelog
 
 Der vollständige Changelog der Library steht in der [Haupt-README](../README.md#2-changelog).  
+
+**Version 3.83:**
+
+- Die Statusvariablen der Datenpunkte erhalten sprechende, übersetzte Namen (z.B. `Windgeschwindigkeit` statt `WIND_SPEED`). Bestehende Variablen behalten ihren Namen.  
 
 **Version 3.82:**
 

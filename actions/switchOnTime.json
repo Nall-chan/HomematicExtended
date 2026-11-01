@@ -1,0 +1,43 @@
+{
+    "id": "{6310163D-38E5-48E5-8DE6-99FFE00B41E9}",
+    "caption": "Switch on with on time",
+    "description": "Switches the actor on and off again automatically after the on time.",
+    "form": [
+        {
+            "type": "NumberSpinner",
+            "name": "DURATION",
+            "caption": "Duration",
+            "suffix": "s",
+            "minimum": 0,
+            "maximum": 85825945.6,
+            "digits": 1,
+            "value": 0
+        }
+    ],
+    "restrictions": {
+        "objectType": [
+            1
+        ],
+        "moduleID": [
+            "{EE4A81C6-5C90-4DB7-AD2F-F6BBD521412E}"
+        ],
+        "hasActionStatusVariables": true,
+        "hasIdent": [
+            "STATE",
+            "INHIBIT",
+            "WORKING"
+        ],
+        "includeEnvironments": [
+            "TestCommands",
+            "Default"
+        ]
+    },
+    "action": "HM_WriteValueFloat($_IPS['TARGET'], 'ON_TIME', $_IPS['DURATION']);\nHM_WriteValueBoolean($_IPS['TARGET'], 'STATE', true);",
+    "locale": {
+        "de": {
+            "Switch on with on time": "Einschalten mit Einschaltdauer",
+            "Switches the actor on and off again automatically after the on time.": "Schaltet den Aktor ein und nach Ablauf der Einschaltdauer automatisch wieder aus.",
+            "Duration": "Dauer"
+        }
+    }
+}

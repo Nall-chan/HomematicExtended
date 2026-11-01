@@ -1,0 +1,32 @@
+{
+    "id": "{D47BFF6E-DF9E-4C48-AA19-A3CFBF135491}",
+    "caption": "Stop window movement",
+    "description": "Stops the movement of a window drive.",
+    "form": [],
+    "restrictions": {
+        "objectType": [
+            1
+        ],
+        "moduleID": [
+            "{EE4A81C6-5C90-4DB7-AD2F-F6BBD521412E}"
+        ],
+        "hasIdent": [
+            "STATE_UNCERTAIN",
+            "LEVEL",
+            "DIRECTION",
+            "INHIBIT",
+            "WORKING"
+        ],
+        "includeEnvironments": [
+            "TestCommands",
+            "Default"
+        ]
+    },
+    "action": "HM_WriteValueBoolean($_IPS['TARGET'], 'STOP', true);",
+    "locale": {
+        "de": {
+            "Stop window movement": "Fensterantrieb anhalten",
+            "Stops the movement of a window drive.": "Hält die Bewegung eines Fensterantriebs an."
+        }
+    }
+}

@@ -1,0 +1,217 @@
+{
+    "id": "{60681BA5-9461-40AE-8958-48F233BA7262}",
+    "caption": "HomeMatic IP: Switch on alarm",
+    "description": "Starts the acoustic and optical alarm of the siren for the given duration.",
+    "form": [
+        {
+            "type": "Select",
+            "name": "ACOUSTIC",
+            "caption": "Acoustic signal",
+            "options": [
+                {
+                    "caption": "Disable acoustic signal",
+                    "value": 0
+                },
+                {
+                    "caption": "Frequency rising",
+                    "value": 1
+                },
+                {
+                    "caption": "Frequency falling",
+                    "value": 2
+                },
+                {
+                    "caption": "Frequency rising and falling",
+                    "value": 3
+                },
+                {
+                    "caption": "Frequency alternating low/high",
+                    "value": 4
+                },
+                {
+                    "caption": "Frequency alternating low/mid/high",
+                    "value": 5
+                },
+                {
+                    "caption": "Frequency high on/off",
+                    "value": 6
+                },
+                {
+                    "caption": "Frequency high on/long off",
+                    "value": 7
+                },
+                {
+                    "caption": "Frequency low on/off, high on/off",
+                    "value": 8
+                },
+                {
+                    "caption": "Frequency low on/long off, high on/long off",
+                    "value": 9
+                },
+                {
+                    "caption": "Low battery",
+                    "value": 10
+                },
+                {
+                    "caption": "Disarmed",
+                    "value": 11
+                },
+                {
+                    "caption": "Internally armed",
+                    "value": 12
+                },
+                {
+                    "caption": "Externally armed",
+                    "value": 13
+                },
+                {
+                    "caption": "Delayed internally armed",
+                    "value": 14
+                },
+                {
+                    "caption": "Delayed externally armed",
+                    "value": 15
+                },
+                {
+                    "caption": "Event",
+                    "value": 16
+                },
+                {
+                    "caption": "Error",
+                    "value": 17
+                }
+            ],
+            "value": 1
+        },
+        {
+            "type": "Select",
+            "name": "OPTICAL",
+            "caption": "Optical signal",
+            "options": [
+                {
+                    "caption": "Disable optical signal",
+                    "value": 0
+                },
+                {
+                    "caption": "Blinking alternately, repeating",
+                    "value": 1
+                },
+                {
+                    "caption": "Blinking both, repeating",
+                    "value": 2
+                },
+                {
+                    "caption": "Double flashing, repeating",
+                    "value": 3
+                },
+                {
+                    "caption": "Flashing both, repeating",
+                    "value": 4
+                },
+                {
+                    "caption": "Confirmation signal 0",
+                    "value": 5
+                },
+                {
+                    "caption": "Confirmation signal 1",
+                    "value": 6
+                },
+                {
+                    "caption": "Confirmation signal 2",
+                    "value": 7
+                }
+            ],
+            "value": 1
+        },
+        {
+            "type": "NumberSpinner",
+            "name": "DURATION_VALUE",
+            "caption": "Duration value",
+            "suffix": "",
+            "minimum": 0,
+            "maximum": 16343,
+            "digits": 0,
+            "value": 10
+        },
+        {
+            "type": "Select",
+            "name": "DURATION_UNIT",
+            "caption": "Duration unit",
+            "options": [
+                {
+                    "caption": "Seconds",
+                    "value": 0
+                },
+                {
+                    "caption": "Minutes",
+                    "value": 1
+                },
+                {
+                    "caption": "Hours",
+                    "value": 2
+                }
+            ],
+            "value": 0
+        }
+    ],
+    "restrictions": {
+        "objectType": [
+            1
+        ],
+        "moduleID": [
+            "{EE4A81C6-5C90-4DB7-AD2F-F6BBD521412E}"
+        ],
+        "hasIdent": [
+            "ACOUSTIC_ALARM_ACTIVE",
+            "OPTICAL_ALARM_ACTIVE"
+        ],
+        "includeEnvironments": [
+            "TestCommands",
+            "Default"
+        ]
+    },
+    "action": "HM_WriteValueInteger($_IPS['TARGET'], 'DURATION_UNIT', $_IPS['DURATION_UNIT']);\nHM_WriteValueInteger($_IPS['TARGET'], 'DURATION_VALUE', $_IPS['DURATION_VALUE']);\nHM_WriteValueInteger($_IPS['TARGET'], 'OPTICAL_ALARM_SELECTION', $_IPS['OPTICAL']);\nHM_WriteValueInteger($_IPS['TARGET'], 'ACOUSTIC_ALARM_SELECTION', $_IPS['ACOUSTIC']);",
+    "locale": {
+        "de": {
+            "Seconds": "Sekunden",
+            "Minutes": "Minuten",
+            "Hours": "Stunden",
+            "10 milliseconds": "10 Millisekunden",
+            "Level": "Wert",
+            "Duration": "Dauer",
+            "Ramp time": "Rampenzeit",
+            "Disable acoustic signal": "Akustisches Signal aus",
+            "Frequency rising": "Frequenz steigend",
+            "Frequency falling": "Frequenz fallend",
+            "Frequency rising and falling": "Frequenz steigend und fallend",
+            "Frequency alternating low/high": "Frequenz wechselnd tief/hoch",
+            "Frequency alternating low/mid/high": "Frequenz wechselnd tief/mittel/hoch",
+            "Frequency high on/off": "Frequenz hoch an/aus",
+            "Frequency high on/long off": "Frequenz hoch an/lang aus",
+            "Frequency low on/off, high on/off": "Frequenz tief an/aus, hoch an/aus",
+            "Frequency low on/long off, high on/long off": "Frequenz tief an/lang aus, hoch an/lang aus",
+            "Low battery": "Batterie schwach",
+            "Disarmed": "Unscharf",
+            "Internally armed": "Intern scharf",
+            "Externally armed": "Extern scharf",
+            "Delayed internally armed": "Verzögert intern scharf",
+            "Delayed externally armed": "Verzögert extern scharf",
+            "Event": "Ereignis",
+            "Error": "Fehler",
+            "Disable optical signal": "Optisches Signal aus",
+            "Blinking alternately, repeating": "Abwechselnd blinken, wiederholend",
+            "Blinking both, repeating": "Beide blinken, wiederholend",
+            "Double flashing, repeating": "Doppelblitz, wiederholend",
+            "Flashing both, repeating": "Beide blitzen, wiederholend",
+            "Confirmation signal 0": "Bestätigungssignal 0",
+            "Confirmation signal 1": "Bestätigungssignal 1",
+            "Confirmation signal 2": "Bestätigungssignal 2",
+            "HomeMatic IP: Switch on alarm": "HomeMatic IP: Alarm auslösen",
+            "Starts the acoustic and optical alarm of the siren for the given duration.": "Startet den akustischen und optischen Alarm der Sirene für die angegebene Dauer.",
+            "Acoustic signal": "Akustisches Signal",
+            "Optical signal": "Optisches Signal",
+            "Duration value": "Wert der Dauer",
+            "Duration unit": "Einheit der Dauer"
+        }
+    }
+}

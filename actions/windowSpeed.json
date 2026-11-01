@@ -1,0 +1,56 @@
+{
+    "id": "{390D058B-BA80-4644-AC37-25FBA593E996}",
+    "caption": "Move window with speed",
+    "description": "Sets the level of the window drive with the given speed.",
+    "form": [
+        {
+            "type": "NumberSpinner",
+            "name": "LEVEL",
+            "caption": "Level",
+            "suffix": "%",
+            "minimum": 0,
+            "maximum": 100,
+            "digits": 1,
+            "value": 100
+        },
+        {
+            "type": "NumberSpinner",
+            "name": "SPEED",
+            "caption": "Speed",
+            "suffix": "%",
+            "minimum": 0,
+            "maximum": 100,
+            "digits": 1,
+            "value": 50
+        }
+    ],
+    "restrictions": {
+        "objectType": [
+            1
+        ],
+        "moduleID": [
+            "{EE4A81C6-5C90-4DB7-AD2F-F6BBD521412E}"
+        ],
+        "hasActionStatusVariables": true,
+        "hasIdent": [
+            "STATE_UNCERTAIN",
+            "LEVEL",
+            "DIRECTION",
+            "INHIBIT",
+            "WORKING"
+        ],
+        "includeEnvironments": [
+            "TestCommands",
+            "Default"
+        ]
+    },
+    "action": "HM_WriteValueFloat($_IPS['TARGET'], 'SPEED', $_IPS['SPEED'] / 100);\nHM_WriteValueFloat($_IPS['TARGET'], 'LEVEL', $_IPS['LEVEL'] / 100);",
+    "locale": {
+        "de": {
+            "Move window with speed": "Fenster mit Geschwindigkeit fahren",
+            "Sets the level of the window drive with the given speed.": "Setzt den Wert des Fensterantriebs mit der angegebenen Geschwindigkeit.",
+            "Level": "Wert",
+            "Speed": "Geschwindigkeit"
+        }
+    }
+}

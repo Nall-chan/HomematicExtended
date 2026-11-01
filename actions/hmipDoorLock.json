@@ -1,0 +1,53 @@
+{
+    "id": "{5C502D19-2827-44AD-B968-D9D3E3D2D646}",
+    "caption": "HomeMatic IP: Door lock command",
+    "description": "Locks, unlocks or opens the door lock.",
+    "form": [
+        {
+            "type": "Select",
+            "name": "TARGET_LEVEL",
+            "caption": "Target state",
+            "options": [
+                {
+                    "caption": "Locked",
+                    "value": 0
+                },
+                {
+                    "caption": "Unlocked",
+                    "value": 1
+                },
+                {
+                    "caption": "Open",
+                    "value": 2
+                }
+            ],
+            "value": 0
+        }
+    ],
+    "restrictions": {
+        "objectType": [
+            1
+        ],
+        "moduleID": [
+            "{EE4A81C6-5C90-4DB7-AD2F-F6BBD521412E}"
+        ],
+        "hasIdent": [
+            "LOCK_STATE"
+        ],
+        "includeEnvironments": [
+            "TestCommands",
+            "Default"
+        ]
+    },
+    "action": "HM_WriteValueInteger($_IPS['TARGET'], 'LOCK_TARGET_LEVEL', $_IPS['TARGET_LEVEL']);",
+    "locale": {
+        "de": {
+            "HomeMatic IP: Door lock command": "HomeMatic IP: Türschloss-Befehl",
+            "Locks, unlocks or opens the door lock.": "Verriegelt, entriegelt oder öffnet das Türschloss.",
+            "Target state": "Zielzustand",
+            "Locked": "Verriegelt",
+            "Unlocked": "Entriegelt",
+            "Open": "Öffnen"
+        }
+    }
+}

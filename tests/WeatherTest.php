@@ -105,6 +105,10 @@ class WeatherTest extends HomematicModuleTestCase
         $this->assertSame('Sunshine duration today', IPS_GetName(IPS_GetObjectIDByIdent('SUNSHINEDURATION_TODAY', $this->WeatherId)));
     }
 
+    public function testDatapointVariablesGetReadableNames(): void
+    {
+        $this->assertSame('Temperature', IPS_GetName(IPS_GetObjectIDByIdent('ACTUAL_TEMPERATURE', $this->WeatherId)));
+    }
     public function testScriptUsesSystemVariableNamesOfTheCcu(): void
     {
         FakeHomematicIO::$Requests = [];

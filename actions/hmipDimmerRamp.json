@@ -1,0 +1,77 @@
+{
+    "id": "{86D34DD4-51C3-4A4F-B328-25839940F883}",
+    "caption": "HomeMatic IP: Dim with ramp time and on time",
+    "description": "Sets the level within the ramp time and switches the dimmer off again after the on time (0 s = permanently).",
+    "form": [
+        {
+            "type": "NumberSpinner",
+            "name": "LEVEL",
+            "caption": "Level",
+            "suffix": "%",
+            "minimum": 0,
+            "maximum": 100,
+            "digits": 1,
+            "value": 100
+        },
+        {
+            "type": "NumberSpinner",
+            "name": "RAMP_TIME",
+            "caption": "Ramp time",
+            "suffix": "s",
+            "minimum": 0,
+            "maximum": 8580000,
+            "digits": 1,
+            "value": 0
+        },
+        {
+            "type": "NumberSpinner",
+            "name": "DURATION",
+            "caption": "Duration",
+            "suffix": "s",
+            "minimum": 0,
+            "maximum": 8580000,
+            "digits": 1,
+            "value": 0
+        }
+    ],
+    "restrictions": {
+        "objectType": [
+            1
+        ],
+        "moduleID": [
+            "{EE4A81C6-5C90-4DB7-AD2F-F6BBD521412E}"
+        ],
+        "hasActionStatusVariables": true,
+        "hasIdent": [
+            "LEVEL",
+            "ACTIVITY_STATE",
+            "PROCESS",
+            "SECTION"
+        ],
+        "hasNoIdent": [
+            "LEVEL_2",
+            "COLOR",
+            "HUE",
+            "COLOR_TEMPERATURE",
+            "SOUNDFILE"
+        ],
+        "includeEnvironments": [
+            "TestCommands",
+            "Default"
+        ]
+    },
+    "action": "HM_WriteValueFloat($_IPS['TARGET'], 'RAMP_TIME', $_IPS['RAMP_TIME']);\nHM_WriteValueFloat($_IPS['TARGET'], 'ON_TIME', $_IPS['DURATION']);\nHM_WriteValueFloat($_IPS['TARGET'], 'LEVEL', $_IPS['LEVEL'] / 100);",
+    "locale": {
+        "de": {
+            "Seconds": "Sekunden",
+            "Minutes": "Minuten",
+            "Hours": "Stunden",
+            "10 milliseconds": "10 Millisekunden",
+            "Level": "Wert",
+            "Duration": "Dauer",
+            "Ramp time": "Rampenzeit",
+            "HomeMatic IP: Dim with ramp time and on time": "HomeMatic IP: Dimmen mit Rampenzeit und Einschaltdauer",
+            "Sets the level within the ramp time and switches the dimmer off again after the on time (0 s = permanently).": "Setzt den Wert innerhalb der Rampenzeit und schaltet den Dimmer nach Ablauf der Einschaltdauer wieder aus (0 s = dauerhaft)."
+        }
+    }
+}

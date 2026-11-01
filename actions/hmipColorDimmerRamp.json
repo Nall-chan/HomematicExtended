@@ -1,0 +1,123 @@
+{
+    "id": "{8E4643E5-4DC1-4704-B0DC-2A54524EF00E}",
+    "caption": "HomeMatic IP: Dim color light with ramp time and duration",
+    "description": "Sets the level of a light with color output within the ramp time and for the given duration.",
+    "form": [
+        {
+            "type": "NumberSpinner",
+            "name": "LEVEL",
+            "caption": "Level",
+            "suffix": "%",
+            "minimum": 0,
+            "maximum": 100,
+            "digits": 1,
+            "value": 100
+        },
+        {
+            "type": "NumberSpinner",
+            "name": "RAMP_VALUE",
+            "caption": "Ramp time value",
+            "suffix": "",
+            "minimum": 0,
+            "maximum": 16343,
+            "digits": 0,
+            "value": 0
+        },
+        {
+            "type": "Select",
+            "name": "RAMP_UNIT",
+            "caption": "Ramp time unit",
+            "options": [
+                {
+                    "caption": "Seconds",
+                    "value": 0
+                },
+                {
+                    "caption": "Minutes",
+                    "value": 1
+                },
+                {
+                    "caption": "Hours",
+                    "value": 2
+                },
+                {
+                    "caption": "10 milliseconds",
+                    "value": 3
+                }
+            ],
+            "value": 0
+        },
+        {
+            "type": "NumberSpinner",
+            "name": "DURATION_VALUE",
+            "caption": "Duration value",
+            "suffix": "",
+            "minimum": 0,
+            "maximum": 16343,
+            "digits": 0,
+            "value": 0
+        },
+        {
+            "type": "Select",
+            "name": "DURATION_UNIT",
+            "caption": "Duration unit",
+            "options": [
+                {
+                    "caption": "Seconds",
+                    "value": 0
+                },
+                {
+                    "caption": "Minutes",
+                    "value": 1
+                },
+                {
+                    "caption": "Hours",
+                    "value": 2
+                },
+                {
+                    "caption": "10 milliseconds",
+                    "value": 3
+                }
+            ],
+            "value": 0
+        }
+    ],
+    "restrictions": {
+        "objectType": [
+            1
+        ],
+        "moduleID": [
+            "{EE4A81C6-5C90-4DB7-AD2F-F6BBD521412E}"
+        ],
+        "hasActionStatusVariables": true,
+        "hasIdent": [
+            "LEVEL",
+            "ACTIVITY_STATE",
+            "PROCESS",
+            "SECTION",
+            "COLOR"
+        ],
+        "includeEnvironments": [
+            "TestCommands",
+            "Default"
+        ]
+    },
+    "action": "HM_WriteValueInteger($_IPS['TARGET'], 'RAMP_TIME_UNIT', $_IPS['RAMP_UNIT']);\nHM_WriteValueInteger($_IPS['TARGET'], 'RAMP_TIME_VALUE', $_IPS['RAMP_VALUE']);\nHM_WriteValueInteger($_IPS['TARGET'], 'DURATION_UNIT', $_IPS['DURATION_UNIT']);\nHM_WriteValueInteger($_IPS['TARGET'], 'DURATION_VALUE', $_IPS['DURATION_VALUE']);\nHM_WriteValueFloat($_IPS['TARGET'], 'LEVEL', $_IPS['LEVEL'] / 100);",
+    "locale": {
+        "de": {
+            "Seconds": "Sekunden",
+            "Minutes": "Minuten",
+            "Hours": "Stunden",
+            "10 milliseconds": "10 Millisekunden",
+            "Level": "Wert",
+            "Duration": "Dauer",
+            "Ramp time": "Rampenzeit",
+            "HomeMatic IP: Dim color light with ramp time and duration": "HomeMatic IP: Farbleuchte mit Rampenzeit und Dauer dimmen",
+            "Sets the level of a light with color output within the ramp time and for the given duration.": "Setzt den Wert einer Leuchte mit Farbausgabe innerhalb der Rampenzeit und für die angegebene Dauer.",
+            "Ramp time value": "Wert der Rampenzeit",
+            "Ramp time unit": "Einheit der Rampenzeit",
+            "Duration value": "Wert der Dauer",
+            "Duration unit": "Einheit der Dauer"
+        }
+    }
+}

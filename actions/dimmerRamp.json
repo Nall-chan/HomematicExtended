@@ -1,0 +1,55 @@
+{
+    "id": "{DC178FF7-8BEB-44A2-94F8-49E73FF65BC7}",
+    "caption": "Dim with ramp time",
+    "description": "Sets the level and reaches it within the ramp time.",
+    "form": [
+        {
+            "type": "NumberSpinner",
+            "name": "LEVEL",
+            "caption": "Level",
+            "suffix": "%",
+            "minimum": 0,
+            "maximum": 100,
+            "digits": 1,
+            "value": 100
+        },
+        {
+            "type": "NumberSpinner",
+            "name": "RAMP_TIME",
+            "caption": "Ramp time",
+            "suffix": "s",
+            "minimum": 0,
+            "maximum": 85825945.6,
+            "digits": 1,
+            "value": 0
+        }
+    ],
+    "restrictions": {
+        "objectType": [
+            1
+        ],
+        "moduleID": [
+            "{EE4A81C6-5C90-4DB7-AD2F-F6BBD521412E}"
+        ],
+        "hasActionStatusVariables": true,
+        "hasIdent": [
+            "LEVEL",
+            "DIRECTION",
+            "INHIBIT",
+            "WORKING"
+        ],
+        "includeEnvironments": [
+            "TestCommands",
+            "Default"
+        ]
+    },
+    "action": "HM_WriteValueFloat($_IPS['TARGET'], 'RAMP_TIME', $_IPS['RAMP_TIME']);\nHM_WriteValueFloat($_IPS['TARGET'], 'LEVEL', $_IPS['LEVEL'] / 100);",
+    "locale": {
+        "de": {
+            "Dim with ramp time": "Dimmen mit Rampenzeit",
+            "Sets the level and reaches it within the ramp time.": "Setzt den Wert und erreicht ihn innerhalb der Rampenzeit.",
+            "Level": "Wert",
+            "Ramp time": "Rampenzeit"
+        }
+    }
+}

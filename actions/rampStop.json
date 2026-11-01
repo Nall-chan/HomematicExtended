@@ -1,0 +1,32 @@
+{
+    "id": "{E786A01C-0C9A-4D74-98E7-1E569DD4A56A}",
+    "caption": "Stop dimming",
+    "description": "Stops a running dimming ramp.",
+    "form": [],
+    "restrictions": {
+        "objectType": [
+            1
+        ],
+        "moduleID": [
+            "{EE4A81C6-5C90-4DB7-AD2F-F6BBD521412E}"
+        ],
+        "hasActionStatusVariables": true,
+        "hasIdent": [
+            "LEVEL",
+            "DIRECTION",
+            "INHIBIT",
+            "WORKING"
+        ],
+        "includeEnvironments": [
+            "TestCommands",
+            "Default"
+        ]
+    },
+    "action": "HM_WriteValueBoolean($_IPS['TARGET'], 'RAMP_STOP', true);",
+    "locale": {
+        "de": {
+            "Stop dimming": "Dimmen stoppen",
+            "Stops a running dimming ramp.": "Stoppt eine laufende Dimmrampe."
+        }
+    }
+}

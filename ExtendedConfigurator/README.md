@@ -68,6 +68,7 @@ Die Instanz besitzt keine einstellbaren Eigenschaften, die Liste der Geräte wir
 | :------------------------------------ | :----------------------------------------------------------------------- | :------------ | :----------------------------------- |
 | Schaltaktor mit Leistungsmessung u.ä. | [HomeMatic Powermeter](../PowerMeter/)                                   | Funk, HmIP    | Gerät mit Kanal des Zählers          |
 | HmIP-Wetterstation `HmIP-SWO-…`       | [HomeMatic Weather](../Weather/)                                         | HmIP          | Gerät mit Kanal 1                    |
+| HmIP-Aktoren mit Wochenprogramm       | [HomeMatic IP Weekly Program](../WeeklyProgramHmIP/)                     | HmIP          | Kanal `*_WEEK_PROFILE` (z.B. Kanal 6) |
 | `HM-Dis-WM55`                         | [HomeMatic Dis-WM55](../DisplayStatusAnzeige/)                           | Funk          | Gerät mit Kanal 1                    |
 | `HM-Dis-EP-WM55`                      | [HomeMatic Dis-EP-WM55](../ePaperStatusAnzeige/)                         | Funk          | Gerät mit Kanal 3                    |
 | `HM-CC-RT-DN`                         | [HomeMatic Heating Device](../HeatingDevice/)                            | Funk          | Gerät                                |
@@ -120,6 +121,10 @@ Die Instanz besitzt keine Statusvariablen und keine speziellen Aktionen.
 ### 1. Changelog
 
 Der vollständige Changelog der Library steht in der [Haupt-README](../README.md#2-changelog).  
+
+**Version 3.83:**
+
+- Neue Zeilen für das Wochenprogramm der HmIP-Aktoren (`HomeMatic IP Weekly Program`, Kanäle `*_WEEK_PROFILE`).  
 
 **Version 3.80:**
 
