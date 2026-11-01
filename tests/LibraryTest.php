@@ -62,6 +62,14 @@ class LibraryTest extends TestCaseSymconValidation
     {
         $this->validateModule(__DIR__ . '/../Systemvariablen');
     }
+    public function testValidateLED16(): void
+    {
+        $this->validateModule(__DIR__ . '/../LED16');
+    }
+    public function testValidateWeeklyProgramHmIP(): void
+    {
+        $this->validateModule(__DIR__ . '/../WeeklyProgramHmIP');
+    }
     public function testValidateWRInterface(): void
     {
         $this->validateModule(__DIR__ . '/../WRInterface');

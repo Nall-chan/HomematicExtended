@@ -152,31 +152,12 @@ abstract class HMBase extends IPSModuleStrict
      */
     public function RequestAction(string $Ident, mixed $Value, bool &$done = false): void
     {
-        set_error_handler([$this, 'ModulErrorHandler'], E_USER_NOTICE | E_USER_WARNING);
+        set_error_handler(\Closure::fromCallable([$this, 'ModulErrorHandler']), E_USER_NOTICE | E_USER_WARNING);
         try {
             $this->ProcessRequestAction($Ident, $Value, $done);
         } finally {
             restore_error_handler();
         }
-    }
-
-    /**
-     * Gibt Warnungen (z.B. von Kernel-Funktionen) während einer Bedienaktion per echo aus, ohne Dateiname und Zeile.
-     *
-     * @param int    $ErrLevel
-     * @param string $ErrMsg
-     *
-     * @return bool Immer true, die Meldung gilt damit als behandelt.
-     */
-    public function ModulErrorHandler(int $ErrLevel, string $ErrMsg): bool
-    {
-        // Mit @ unterdrückte Meldungen (z.B. @GetIDForIdent in FindIDForIdent) nicht ausgeben: PHP ruft den Handler auch für diese auf.
-        // Seit PHP 8 beschränkt @ error_reporting auf die fatalen Fehler (Schnittmenge mit der globalen Einstellung).
-        if ((error_reporting() & ~(E_ERROR | E_PARSE | E_CORE_ERROR | E_COMPILE_ERROR | E_USER_ERROR | E_RECOVERABLE_ERROR)) === 0) {
-            return true;
-        }
-        echo $ErrMsg;
-        return true;
     }
 
     /**
@@ -195,13 +176,32 @@ abstract class HMBase extends IPSModuleStrict
     }
 
     /**
+     * Gibt Warnungen (z.B. von Kernel-Funktionen) während einer Bedienaktion per echo aus, ohne Dateiname und Zeile.
+     *
+     * @param int    $ErrLevel
+     * @param string $ErrMsg
+     *
+     * @return bool Immer true, die Meldung gilt damit als behandelt.
+     */
+    protected function ModulErrorHandler(int $ErrLevel, string $ErrMsg): bool
+    {
+        // Mit @ unterdrückte Meldungen (z.B. @GetIDForIdent in FindIDForIdent) nicht ausgeben: PHP ruft den Handler auch für diese auf.
+        // Seit PHP 8 beschränkt @ error_reporting auf die fatalen Fehler (Schnittmenge mit der globalen Einstellung).
+        if ((error_reporting() & ~(E_ERROR | E_PARSE | E_CORE_ERROR | E_COMPILE_ERROR | E_USER_ERROR | E_RECOVERABLE_ERROR)) === 0) {
+            return true;
+        }
+        echo $ErrMsg;
+        return true;
+    }
+
+    /**
      * Liest einen Wert von der CCU und schreibt ihn in die Statusvariable. Die Basisklasse bietet das nicht an.
      *
      * @param string $Ident Ident der Statusvariable.
      *
-     * @return bool Immer false, abgeleitete Klassen überschreiben die Methode.
+     * @return bool Immer false, abgeleitete Klassen überschreiben die Methode und machen sie bei Bedarf öffentlich (Instanz-Funktion `RequestState`).
      */
-    public function RequestState(string $Ident): bool
+    protected function RequestState(string $Ident): bool
     {
         return false;
     }

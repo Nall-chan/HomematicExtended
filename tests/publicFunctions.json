@@ -1,0 +1,74 @@
+{
+    "Alarmvariable": [
+        "AlarmReceipt",
+        "CreateCCUProgram",
+        "DeleteCCUProgram",
+        "ReadAlarm"
+    ],
+    "ClimacontrolRegulator": [
+        "RequestParams",
+        "RequestState"
+    ],
+    "DisplayStatusAnzeige": [
+        "ResetTimer"
+    ],
+    "ExtendedConfigurator": [],
+    "HeatingDevice": [
+        "RequestParams",
+        "RequestState"
+    ],
+    "HeatingGroup": [
+        "RequestParams",
+        "RequestState"
+    ],
+    "HeatingGroupHmIP": [
+        "RequestParams",
+        "RequestState"
+    ],
+    "HomeMaticScript": [
+        "RunScript"
+    ],
+    "LED16": [
+        "SetAllLEDs"
+    ],
+    "PowerMeter": [],
+    "Programme": [
+        "ReadPrograms",
+        "StartProgram"
+    ],
+    "RFInterface": [],
+    "RFInterfaceSplitter": [
+        "ReadRFInterfaces"
+    ],
+    "Systemvariablen": [
+        "CreateCCUProgram",
+        "DeleteCCUProgram",
+        "ReadSystemVariables",
+        "SystemVariablesTimer",
+        "WriteValueBoolean",
+        "WriteValueBoolean2",
+        "WriteValueFloat",
+        "WriteValueFloat2",
+        "WriteValueInteger",
+        "WriteValueInteger2",
+        "WriteValueString",
+        "WriteValueString2"
+    ],
+    "WRInterface": [
+        "ReadWRInterface"
+    ],
+    "Weather": [],
+    "WeeklyProgramHmIP": [
+        "ReadWeeklyProgram",
+        "ReadWeeklyProgramModes",
+        "SetWeeklyProgramMode",
+        "WriteWeeklyProgram"
+    ],
+    "ePaperStatusAnzeige": [
+        "WriteValueDisplay",
+        "WriteValueDisplayEx",
+        "WriteValueDisplayLine",
+        "WriteValueDisplayLineEx",
+        "WriteValueDisplayNotify"
+    ]
+}

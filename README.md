@@ -201,6 +201,7 @@ Erweitert IPS um die native Unterstützung von:
 
 * HomeMatic Weather: Die Statusvariablen der Datenpunkte erhalten sprechende, übersetzte Namen (z.B. `Windgeschwindigkeit` statt `WIND_SPEED`). Bestehende Variablen behalten ihren Namen.
 * Die Aktion „Setze den Aktor auf den vorherigen Wert“ wird nur noch bei Dimmern angeboten, bisher bei jedem Gerät mit schaltbarer Variable.
+* Die interne Funktion `HM_ModulErrorHandler` (alle Module) und `HM_RequestState` (alle Module außer den Heizungsmodulen) werden nicht mehr als Instanz-Funktionen angeboten, sie standen bisher in der Funktionsliste von Aktionen und Skripten.
 
 **Version 3.82:**  
 
