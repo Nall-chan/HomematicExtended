@@ -24,7 +24,8 @@
             "Invalid color, allowed are 0 (off), 1 (red), 2 (green), 3 (orange) and 4 (unchanged).": "Ungültige Farbe, erlaubt sind 0 (aus), 1 (rot), 2 (grün), 3 (orange) und 4 (unverändert).",
             "Invalid response from CCU.": "Ungültige Antwort der CCU.",
             "The CCU did not answer the HM-Script.": "Die CCU hat das HM-Script nicht beantwortet.",
-            "Press": "Drücken"
+            "Waiting": "Bereit",
+            "Pressed": "Gedrückt"
         }
     }
 }

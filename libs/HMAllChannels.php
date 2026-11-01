@@ -319,8 +319,11 @@ abstract class HMAllChannels extends HMBase
         $Translate = fn (string $Text): string => $this->Translate($Text);
         switch ($Type) {
             case 'ACTION':
-                // Ein Eintrag zum Auslösen, solange die Variable false ist, ist nichts gewählt
-                return $HasAction ? ['PRESENTATION' => VARIABLE_PRESENTATION_ENUMERATION, 'OPTIONS' => json_encode([['Value' => true, 'Caption' => $this->Translate('Press'), 'IconActive' => false, 'IconValue' => '', 'Color' => -1]])] : [];
+                // Eine Aufzählung einer Boolean-Variable braucht beide Werte. Jede Bedienung löst die Aktion aus, gesetzt wird die Variable vom Ereignis des Gerätes.
+                return $HasAction ? ['PRESENTATION' => VARIABLE_PRESENTATION_ENUMERATION, 'OPTIONS' => json_encode([
+                    ['Value' => false, 'Caption' => $this->Translate('Waiting'), 'IconActive' => false, 'IconValue' => '', 'Color' => -1],
+                    ['Value' => true, 'Caption' => $this->Translate('Pressed'), 'IconActive' => false, 'IconValue' => '', 'Color' => -1]
+                ])] : [];
             case 'BOOL':
                 return \HMExtended\DatapointPresentation::Get($Datapoint, '', VARIABLETYPE_BOOLEAN, $HasAction, $Translate)
                     ?: ($HasAction ? ['PRESENTATION' => VARIABLE_PRESENTATION_SWITCH] : []);

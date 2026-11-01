@@ -59,6 +59,9 @@ class LED16Test extends HomematicModuleTestCase
         $this->assertSame(VARIABLETYPE_BOOLEAN, IPS_GetVariable($this->variable('PRESS_SHORT_3'))['VariableType']);
         $this->assertTrue(HasAction($this->variable('PRESS_SHORT_3')));
         $this->assertFalse(@IPS_GetObjectIDByIdent('INSTALL_TEST_3', $this->Id));
+        // Die Aufzählung einer Boolean-Variable enthält beide Werte
+        $Options = json_decode(IPS_GetVariable($this->variable('PRESS_SHORT_3'))['VariablePresentation']['OPTIONS'], true);
+        $this->assertSame([false, true], array_column($Options, 'Value'));
         $this->assertFalse(HasAction($this->variable('RSSI_DEVICE_1')));
     }
 
