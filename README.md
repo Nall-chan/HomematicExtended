@@ -192,6 +192,10 @@ Erweitert IPS um die native Unterstützung von:
 
 ### 2. Changelog
 
+**Version 4.00:**
+
+* HomeMatic IP Heating Group, HomeMatic Heating Group und HomeMatic Heating Device: Eigene Kachel für die Kachel-Visualisierung im Design der Thermostat- und Licht-Darstellung von Symcon. Wählrad für die Solltemperatur, Umschalter Automatik / Manuell / Party, Boost, Anzeige von Ventil und Fenster. Ab einer größeren Kachel zeigt sie den Wochenplan, maximiert mit Schnellwahl, Party-Formular und dem Bearbeiten des Wochenplans. Abgewählte Statusvariablen blendet die Kachel aus. Die Instanz-Kachel zeigt nicht mehr die Liste der Statusvariablen, diese stehen weiterhin einzeln zur Verfügung.
+
 **Version 3.91:**
 
 * HomeMatic Heating Device (HM-CC-RT-DN) und HomeMatic Heating Group (HM-CC-VG-1): Neue optionale Statusvariablen `Ventilöffnung`, `Batteriespannung`, `Störung` und `Boost Restlaufzeit` (Bereich „Status“, standardmäßig aus; die virtuelle Heizgruppe liefert diese Werte nicht).

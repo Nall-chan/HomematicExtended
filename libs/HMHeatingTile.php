@@ -1,0 +1,314 @@
+<?php
+
+declare(strict_types=1);
+/**
+ * @addtogroup HomeMaticExtended
+ * @{
+ *
+ * @package       HomematicExtended
+ * @file          HMHeatingTile.php
+ * @author        Michael Tröger <nall4chan@gmail.com>
+ * @copyright     2015-2026 Michael Tröger
+ * @license       Custom Non-Commercial Share-Alike License (see LICENSE)
+ * @version       4.00
+ */
+
+/**
+ * Kachel der Heizungsmodule für die Kachel-Visualisierung (HTML-SDK).
+ *
+ * Die Kachel ist für alle Heizungsmodule dieselbe (`libs/tile`). Jedes Modul ordnet über die Konstante `TileRoles` den Rollen der Kachel
+ * (Soll, Ist, Modus, Boost …) die Idents seiner Statusvariablen zu. Eine Rolle ohne Statusvariable, z.B. weil sie in der Konfiguration
+ * abgewählt wurde, fehlt in den Daten, und die Kachel blendet das zugehörige Bedienelement aus und nutzt den Platz anders.
+ * Bedient wird über `RequestAction` der Statusvariablen (Aktionen des Moduls), nur der Wochenplan hat eine eigene Aktion (`TileSave`).
+ *
+ * @property array $WeekSchedules
+ * @property int $WeekProfile
+ */
+trait HMHeatingTileFunctions
+{
+    /**
+     * Aktion der Kachel: Wochenplan des aktiven Zeitprofils schreiben (JSON mit `days`).
+     */
+    protected const TileActionSave = 'TileSave';
+
+    /**
+     * Aktion der Kachel: Werte und Wochenplan neu zur Kachel senden.
+     */
+    protected const TileActionReload = 'TileReload';
+
+    /**
+     * Flags für JSON, das in eine Script-Umgebung der Kachel eingebettet wird.
+     */
+    private const TileJsonFlags = JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES;
+
+    /**
+     * Texte der Kachel (Schlüssel = englischer Text, übersetzt über locale.json).
+     */
+    private const TileTexts = [
+        'Automatic', 'Manual', 'Party', 'Boost', 'Window open', 'Window', 'Window state open', 'Window state closed', 'Valve', 'Actual', 'Cooling',
+        'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday',
+        'Comfort', 'Lowering', 'Presets', 'Off', 'On', 'min', 'Begin', 'End', 'Temperature', 'Start party', 'End party',
+        'Profile', 'Add switching point', 'Remove', 'Apply', 'Discard', 'Saving…', 'until',
+        'Copy to all days', 'Copy to weekdays', 'Copy to weekend', 'Weekly program'
+    ];
+
+    /**
+     * Interne Funktion des SDK.
+     * Liefert die Kachel. Die Kachel bekommt die vorhandenen Rollen mit den aktuellen Werten und den Wochenplan.
+     */
+    public function GetVisualizationTile(): string
+    {
+        $Config = [
+            'instance'  => $this->InstanceID,
+            'boostMode' => static::TileBoostMode,
+            'texts'     => $this->GetTileTexts()
+        ] + $this->GetTileState();
+        return strtr((string) file_get_contents(__DIR__ . '/tile/heating.html'), [
+            '/*CONFIG*/null' => json_encode($Config, self::TileJsonFlags),
+            '/*STYLE*/'      => (string) file_get_contents(__DIR__ . '/tile/heating.css'),
+            '/*CORE*/'       => (string) file_get_contents(__DIR__ . '/tile/heating.js')
+        ]);
+    }
+
+    /**
+     * Meldet die Instanz als Kachel an, wenn das Modul Rollen für die Kachel kennt. Normale und maximierte Kachel über das HTML-SDK
+     * gibt es erst ab Symcon 9.1, davor nur die normale Kachel.
+     */
+    protected function RegisterHeatingTile(): void
+    {
+        if (count(static::TileRoles) == 0) {
+            return;
+        }
+        $this->SetVisualizationType(defined('INSTANCE_VISUALIZATION_TYPE_HTML_FULLSCREEN') ? constant('INSTANCE_VISUALIZATION_TYPE_HTML_FULLSCREEN') : INSTANCE_VISUALIZATION_TYPE_HTML);
+    }
+
+    /**
+     * Bedienaktionen, die nur die Kachel nutzt.
+     *
+     * @param string $Ident Aktion.
+     * @param mixed $Value Wert der Aktion.
+     *
+     * @return bool true, wenn die Aktion zur Kachel gehörte.
+     */
+    protected function ProcessTileAction(string $Ident, mixed $Value): bool
+    {
+        switch ($Ident) {
+            case self::TileActionSave:
+                // Fehlermeldungen der Prüfung erscheinen in der Kachel
+                ob_start();
+                $Result = $this->SaveScheduleFromTile((string) $Value);
+                $Error = trim((string) ob_get_clean());
+                if (!$Result) {
+                    $this->UpdateVisualizationValue(json_encode(['type' => 'error', 'text' => $Error !== '' ? $Error : $this->Translate('The weekly program could not be written.')], self::TileJsonFlags));
+                }
+                return true;
+            case self::TileActionReload:
+                $this->PushTileValues();
+                $this->PushTileSchedule();
+                return true;
+        }
+        return false;
+    }
+
+    /**
+     * Sendet die aktuellen Werte der Rollen an die Kachel.
+     */
+    protected function PushTileValues(): void
+    {
+        if (count(static::TileRoles) == 0) {
+            return;
+        }
+        $this->UpdateVisualizationValue(json_encode(['type' => 'state'] + $this->GetTileState(), self::TileJsonFlags));
+    }
+
+    /**
+     * Sendet den Wochenplan an die Kachel.
+     */
+    protected function PushTileSchedule(): void
+    {
+        if (count(static::TileRoles) == 0) {
+            return;
+        }
+        $this->UpdateVisualizationValue(json_encode(['type' => 'schedule', 'schedule' => $this->GetTileSchedule()], self::TileJsonFlags));
+    }
+
+    /**
+     * Wandelt die Zeitpunkte des Wochenplans aus der Kachel in die Parameter eines Zeitprofils der CCU.
+     * Jeder Eintrag eines Tages ist [Endzeit in Minuten, Temperatur]; der letzte Eintrag eines Tages gilt bis 24:00 (1440).
+     * Die Endzeiten werden auf das Raster des Gerätes gerundet (ScheduleTimeStep), die Temperaturen auf 0,5 °C.
+     *
+     * @param array $Days Sieben Tage von Montag bis Sonntag.
+     * @param int $Plan Nummer des Zeitprofils auf der CCU (beginnt bei 1).
+     *
+     * @return array|string [Parameter, Zeitprofil je Tag (Bit des Wochentags => Nummer => [Zeit, Temperatur])] oder der englische Text des Fehlers.
+     */
+    protected static function SlotsToParams(array $Days, int $Plan): array|string
+    {
+        if (count($Days) != 7) {
+            return 'Invalid weekly program.';
+        }
+        $Params = [];
+        $Schedule = [];
+        foreach (array_values($Days) as $Index => $Slots) {
+            $Bit = 1 << $Index;
+            if (!is_array($Slots) || (count($Slots) < 1)) {
+                return 'Invalid weekly program.';
+            }
+            if (count($Slots) > static::NumberOfTimeSlot) {
+                return 'A day of the schedule has more than %d switching points.';
+            }
+            $Slots = array_values($Slots);
+            $Last = 0;
+            foreach ($Slots as $Number => $Slot) {
+                if (!is_array($Slot) || !isset($Slot[0], $Slot[1]) || !is_numeric($Slot[0]) || !is_numeric($Slot[1])) {
+                    return 'Invalid weekly program.';
+                }
+                $Minutes = ($Number == count($Slots) - 1) ? 1440 : (int) (round((float) $Slot[0] / static::ScheduleTimeStep) * static::ScheduleTimeStep);
+                $Temperature = round((float) $Slot[1] * 2) / 2;
+                if (($Minutes <= $Last) || ($Minutes > 1440)) {
+                    return 'The end times of a day must be in ascending order.';
+                }
+                if (($Temperature < static::MinScheduleTemperature) || ($Temperature > static::MaxScheduleTemperature)) {
+                    return 'The temperature of a switching point is out of range.';
+                }
+                $Last = $Minutes;
+                $TimeIndex = sprintf(static::WeekScheduleIndexEndTime, $Number + 1, static::$Weekdays[$Bit], $Plan);
+                $TempIndex = sprintf(static::WeekScheduleIndexTemp, $Number + 1, static::$Weekdays[$Bit], $Plan);
+                $Params[$TimeIndex] = $Minutes;
+                $Params[$TempIndex] = $Temperature;
+                $Schedule[$Bit][$Number + 1] = [self::TIME => $Minutes, self::TEMP => $Temperature];
+            }
+        }
+        return [$Params, $Schedule];
+    }
+
+    /**
+     * Schreibt den in der Kachel bearbeiteten Wochenplan in das aktive Zeitprofil des Gerätes.
+     *
+     * @param string $Json JSON mit `days`: sieben Tage (Montag bis Sonntag) mit Einträgen [Endzeit in Minuten, Temperatur].
+     *
+     * @return bool true, wenn die CCU den Wochenplan angenommen hat. Fehler werden per echo gemeldet.
+     */
+    private function SaveScheduleFromTile(string $Json): bool
+    {
+        if (!$this->ReadPropertyBoolean(\HMExtended\Device\Property::Schedule)) {
+            echo $this->Translate('The weekly program is disabled in config.') . PHP_EOL;
+            return false;
+        }
+        $Request = json_decode($Json, true);
+        if (!is_array($Request) || !isset($Request['days']) || !is_array($Request['days'])) {
+            echo $this->Translate('Invalid weekly program.') . PHP_EOL;
+            return false;
+        }
+        $Plan = static::SelectedWeekScheduleIdent ? $this->WeekProfile : 1;
+        $Result = static::SlotsToParams($Request['days'], $Plan);
+        if (is_string($Result)) {
+            echo sprintf($this->Translate($Result), static::NumberOfTimeSlot) . PHP_EOL;
+            return false;
+        }
+        [$Params, $Schedule] = $Result;
+        if (!$this->PutParamSet($Params)) {
+            return false;
+        }
+        $Schedules = $this->WeekSchedules;
+        $Schedules[$Plan] = $Schedule;
+        $this->WeekSchedules = $Schedules;
+        // Auch beim aktiven Zeitprofil neu aufbauen: Die Zeiten wurden auf das Raster des Gerätes gerundet.
+        $this->RefreshScheduleObject();
+        return true;
+    }
+
+    /**
+     * Werte der vorhandenen Rollen und die Eigenschaften der Kachel.
+     *
+     * @return array `roles` (Rolle => Ident der Statusvariable), `actions` (Rollen mit Aktion), `values` (Rolle => Wert),
+     *               `limits` (Grenzen der Solltemperatur) und `schedule`.
+     */
+    private function GetTileState(): array
+    {
+        $Roles = [];
+        $Actions = [];
+        $Values = [];
+        foreach (static::TileRoles as $Role => $Ident) {
+            $VariableId = $this->FindIDForIdent($Ident);
+            if ($VariableId == 0) {
+                continue;
+            }
+            $Roles[$Role] = $Ident;
+            // Bedienbar, wenn die Variable eine Aktion hat und der Nutzer die Standardaktion nicht deaktiviert hat
+            if (HasAction($VariableId) && (IPS_GetVariable($VariableId)['VariableCustomAction'] != VARIABLE_ACTION_DISABLED)) {
+                $Actions[] = $Role;
+            }
+            $Value = $this->GetValue($Ident);
+            $Values[$Role] = is_bool($Value) ? $Value : (is_numeric($Value) ? $Value * (static::TileFactors[$Role] ?? 1) : $Value);
+        }
+        $Limits = ['min' => 4.5, 'max' => 30.5, 'step' => 0.5];
+        $SetId = $this->FindIDForIdent(static::TileRoles['set'] ?? '');
+        if ($SetId != 0) {
+            $Presentation = IPS_GetVariable($SetId)['VariablePresentation'] ?? [];
+            $Limits['min'] = (float) ($Presentation['MIN'] ?? $Limits['min']);
+            $Limits['max'] = (float) ($Presentation['MAX'] ?? $Limits['max']);
+            $Limits['step'] = (float) ($Presentation['STEP_SIZE'] ?? $Limits['step']);
+        }
+        return [
+            'roles'    => $Roles,
+            'actions'  => $Actions,
+            'values'   => $Values,
+            'limits'   => $Limits,
+            'schedule' => $this->GetTileSchedule()
+        ];
+    }
+
+    /**
+     * Wochenplan des aktiven Zeitprofils für die Kachel. Ohne Wochenplan (Eigenschaft oder noch nicht gelesen) null.
+     *
+     * @return array|null `days` (sieben Tage von Montag bis Sonntag mit [Endzeit in Minuten, Temperatur]), `plan`, `plans`, `step`, `min`, `max`, `slots`.
+     */
+    private function GetTileSchedule(): ?array
+    {
+        if (!$this->ReadPropertyBoolean(\HMExtended\Device\Property::Schedule)) {
+            return null;
+        }
+        $Plan = static::SelectedWeekScheduleIdent ? $this->WeekProfile : 1;
+        $Schedules = $this->WeekSchedules;
+        if (!isset($Schedules[$Plan])) {
+            return null;
+        }
+        $Days = [];
+        foreach (array_keys(static::$Weekdays) as $Bit) {
+            $Slots = [];
+            foreach ($Schedules[$Plan][$Bit] ?? [] as $Slot) {
+                $Slots[] = [$Slot[self::TIME], $Slot[self::TEMP]];
+                if ($Slot[self::TIME] >= 1440) {
+                    break;
+                }
+            }
+            $Days[] = $Slots;
+        }
+        return [
+            'days'  => $Days,
+            'plan'  => $Plan,
+            'plans' => static::NumberOfWeekSchedules,
+            'step'  => static::ScheduleTimeStep,
+            'min'   => static::MinScheduleTemperature,
+            'max'   => static::MaxScheduleTemperature,
+            'slots' => static::NumberOfTimeSlot
+        ];
+    }
+
+    /**
+     * Übersetzte Texte der Kachel.
+     *
+     * @return string[] Englischer Text => übersetzter Text.
+     */
+    private function GetTileTexts(): array
+    {
+        $Texts = [];
+        foreach (self::TileTexts as $Text) {
+            $Texts[$Text] = $this->Translate($Text);
+        }
+        return $Texts;
+    }
+}
+
+/* @} */

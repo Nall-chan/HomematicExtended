@@ -30,6 +30,27 @@ class HomeMaticIPHeatingGroup extends HMHeatingDevice
     protected const SelectedWeekScheduleIdent = \HMExtended\HeatingGroupHmIP::ACTIVE_PROFILE;
     protected const ProtocolId = 3;
 
+    protected const TileRoles = [
+        'set'        => \HMExtended\HeatingGroupHmIP::SET_POINT_TEMPERATURE,
+        'actual'     => \HMExtended\HeatingGroupHmIP::ACTUAL_TEMPERATURE,
+        'humidity'   => \HMExtended\HeatingGroupHmIP::HUMIDITY,
+        'mode'       => \HMExtended\HeatingGroupHmIP::SET_POINT_MODE,
+        'boost'      => \HMExtended\HeatingGroupHmIP::BOOST_MODE,
+        'boostRemain'=> \HMExtended\HeatingGroupHmIP::BOOST_TIME,
+        'valve'      => \HMExtended\HeatingGroupHmIP::LEVEL,
+        'window'     => \HMExtended\HeatingGroupHmIP::WINDOW_STATE,
+        'cooling'    => \HMExtended\HeatingGroupHmIP::HEATING_COOLING,
+        'partyStart' => \HMExtended\HeatingGroupHmIP::PARTY_TIME_START,
+        'partyEnd'   => \HMExtended\HeatingGroupHmIP::PARTY_TIME_END,
+        'partyTemp'  => \HMExtended\HeatingGroupHmIP::PARTY_SET_POINT_TEMPERATURE,
+        'comfort'    => \HMExtended\HeatingGroupHmIP::TEMPERATURE_COMFORT,
+        'lowering'   => \HMExtended\HeatingGroupHmIP::TEMPERATURE_LOWERING,
+        'windowTemp' => \HMExtended\HeatingGroupHmIP::TEMPERATURE_WINDOW_OPEN,
+        'profile'    => \HMExtended\HeatingGroupHmIP::ACTIVE_PROFILE
+    ];
+    // LEVEL ist ein Anteil von 0 bis 1, BOOST_TIME in Sekunden
+    protected const TileFactors = ['valve' => 100, 'boostRemain' => 1 / 60];
+
     //################# PUBLIC
 
     /**

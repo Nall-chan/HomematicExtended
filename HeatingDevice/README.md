@@ -145,15 +145,23 @@ Zusätzlich werden bei aktivem Wochenplan angelegt:
 
 ### Kachel Visualisierung
 
-Die Instanz erscheint als Thermostat-Kachel mit Soll- und Ist-Temperatur:  
+Die Instanz hat eine eigene Kachel (HTML-SDK), die sich nach ihrer Größe richtet:
 
-![Kachel](imgs/tile_instance.png)  
+| Größe der Kachel | Inhalt |
+| --- | --- |
+| Klein | Wählrad mit Solltemperatur und Betriebsart, darin Ist-Temperatur und Luftfeuchte |
+| Mittel | zusätzlich die Tasten `-` und `+`, der Umschalter `Automatik` / `Manuell` / `Party`, der Boost-Schalter mit Restlaufzeit sowie Ventilöffnung und Fensterzustand |
+| Groß (ab etwa 560 × 300 Pixel) | Wählrad links, rechts Umschalter, Wochenplan des aktiven Zeitprofils (Ansicht) und Statusanzeigen |
+| Maximiert (ab etwa 880 × 520 Pixel) | zusätzlich Schnellwahl (Komfort-, Absenk-Temperatur), Party-Formular und der Wochenplan zum Bearbeiten |
 
-Welche Statusvariablen die Kachel als Soll- und Ist-Temperatur zeigt, wird an der Kachel eingestellt: oben rechts den Stift (Größe und Position der Kacheln anpassen) wählen, dann den Stift der Kachel und unter `Soll Temperatur` die `Solltemperatur` sowie unter `Ist Temperatur` die `Temperatur` auswählen. Mehrere Statusvariablen geben eine Temperatur vor (z.B. Urlaub/Party, Fenster offen), ohne diese Einstellung zeigt die Kachel unter Umständen eine davon.  
-
-Maximiert zeigt die Kachel alle Statusvariablen:  
-
-![Kachel Liste](imgs/tile_list.png)  
+* Die Solltemperatur wird am Wählrad gezogen oder mit `-` / `+` in den Schritten der Statusvariable geändert. Wie bei der Statusvariable schaltet das Ändern in der Betriebsart Automatik auf Manuell, sofern die Option in der Konfiguration aktiv ist.
+* Statusvariablen, die in der Instanz abgewählt sind (z.B. Party, Boost-Restlaufzeit, Ventilöffnung, Komfort- und Absenk-Temperatur), zeigt die Kachel nicht. Die übrigen Bedienelemente nutzen den frei gewordenen Platz.
+* Elemente, deren Statusvariable keine Aktion hat oder bei der der Nutzer die Standardaktion deaktiviert hat (`VariableCustomAction` = `VARIABLE_ACTION_DISABLED`), zeigt die Kachel abgedunkelt und nicht bedienbar (z.B. das Wählrad, wenn die Solltemperatur nicht bedient werden darf).
+* Der Fensterzustand (nur HomematicIP) zeigt Symbol und Zustand; ist die Statusvariable bedienbar, schaltet ein Klick den Zustand um.
+* Die maximierte Kachel gliedert das Bedienfeld in die Gruppen `Schnellwahl`, `Wochenplan` (mit den Schaltpunkten des gewählten Tages) und `Party`. Ein Klick auf die Überschrift klappt die Gruppe ein oder aus, die Party ist zunächst eingeklappt. Der Zustand wird im Browser gemerkt.
+* Party: Beginn, Ende und Temperatur werden im maximierten Formular eingegeben. `Party starten` überträgt alles in einem Aufruf an die CCU.
+* Wochenplan bearbeiten: Tag wählen, Zeiten und Temperaturen ändern, Schaltpunkte hinzufügen oder entfernen, auf andere Tage kopieren. `Übernehmen` schreibt das aktive Zeitprofil in einem Aufruf in das Gerät (Endzeiten im Raster des Gerätes, Temperaturen in 0,5 °C), vorher gelten die Änderungen nur als Entwurf in der Kachel. Der Wochenplan ist nur vorhanden, wenn er in der Konfiguration aktiviert ist.
+* Die Kachel zeigt die Werte der Statusvariablen der Instanz; Änderungen von der CCU erscheinen sofort.
 
 ### WebFront Visualisierung
 

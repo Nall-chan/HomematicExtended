@@ -62,8 +62,9 @@ svg { width: 1em; height: 1em; fill: currentColor; display: block; }
 .when { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .state { flex: none; font-weight: 600; }
 .state.off { color: var(--muted); }
-.chev { flex: none; font-size: 16px; color: var(--muted); transition: transform .15s; }
-.item.open .chev { transform: rotate(180deg); }
+/* Pfeil: zu = nach rechts, auf = nach unten (wie die Gruppen der Heizungskachel) */
+.chev { flex: none; font-size: 16px; color: var(--muted); transition: transform .15s; transform: rotate(-90deg); }
+.item.open .chev { transform: none; }
 .item.sel .row { color: var(--accent); }
 .detail { display: none; padding: 2px 12px 10px 42px; grid-template-columns: max-content 1fr; gap: 3px 14px; }
 .item.open .detail { display: grid; }

@@ -15,6 +15,7 @@ declare(strict_types=1);
  */
 require_once __DIR__ . '/HMBase.php';  // HMBase Klasse
 require_once __DIR__ . '/HMWriteValue.php';  // HM_WriteValue… über die Bedienung der Statusvariable
+require_once __DIR__ . '/HMHeatingTile.php';  // Kachel der Heizungsmodule
 
 /**
  * HMHeatingDevice
@@ -25,6 +26,7 @@ require_once __DIR__ . '/HMWriteValue.php';  // HM_WriteValue… über die Bedie
 class HMHeatingDevice extends HMBase
 {
     use HMWriteValueFunctions;
+    use HMHeatingTileFunctions;
 
     protected const ValuesChannel = '';
     protected const ParamChannel = '';
@@ -43,6 +45,12 @@ class HMHeatingDevice extends HMBase
     protected const MinScheduleTemperature = 5.0;
     protected const MaxScheduleTemperature = 30.0;
     protected const SelectedWeekScheduleIdent = '';
+    /** Rollen der Kachel => Ident der Statusvariable (leer: das Modul hat keine Kachel). Siehe HMHeatingTile.php. */
+    protected const TileRoles = [];
+    /** Faktor je Rolle, um den Wert der Statusvariable in die Einheit der Kachel umzurechnen (Ventil in %, Boost-Restzeit in min). */
+    protected const TileFactors = [];
+    /** Wert des Modus, der den Boost anzeigt und startet, bei Geräten ohne eigenen Datenpunkt für den Boost. */
+    protected const TileBoostMode = null;
 
     protected const EVENT = 'WEEK_PROFIL';
     protected const EnablePrefix = 'enable_';
@@ -125,6 +133,7 @@ class HMHeatingDevice extends HMBase
          */
         $this->WeekSchedules = [];
         $this->WeekProfile = 1;
+        $this->RegisterHeatingTile();
     }
 
     /**
@@ -213,6 +222,7 @@ class HMHeatingDevice extends HMBase
             }
         }
         $this->RemoveLegacyProfiles();
+        $this->PushTileValues();
     }
 
     /**
@@ -249,9 +259,26 @@ class HMHeatingDevice extends HMBase
 
     /**
      * Interne Funktion des SDK.
+     * Nach jeder Bedienung bekommt die Kachel die aktuellen Werte (auch wenn nur die Statusvariable gesetzt wurde).
+     */
+    public function RequestAction(string $Ident, mixed $Value, bool &$done = false): void
+    {
+        try {
+            parent::RequestAction($Ident, $Value, $done);
+        } finally {
+            $this->PushTileValues();
+        }
+    }
+
+    /**
+     * Interne Funktion des SDK.
      */
     protected function ProcessRequestAction(string $Ident, mixed $Value, bool &$done = false): void
     {
+        if ($this->ProcessTileAction($Ident, $Value)) {
+            $done = true;
+            return;
+        }
         parent::ProcessRequestAction($Ident, $Value, $done);
         if ($done) {
             return;
@@ -341,6 +368,7 @@ class HMHeatingDevice extends HMBase
             return;
         }
         parent::SetVariable($Ident, $Value);
+        $this->PushTileValues();
     }
 
     /**
@@ -550,6 +578,7 @@ class HMHeatingDevice extends HMBase
     private function RefreshScheduleObject(): void
     {
         $this->SendDebug(__FUNCTION__, '', 0);
+        $this->PushTileSchedule();
         if (!$this->ReadPropertyBoolean(\HMExtended\Device\Property::Schedule)) {
             return;
         }

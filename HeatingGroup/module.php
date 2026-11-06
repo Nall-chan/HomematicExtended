@@ -29,6 +29,23 @@ class HomeMaticHeatingGroup extends HMHeatingDevice
     protected const SelectedWeekScheduleIdent = \HMExtended\HeatingGroup::WEEK_PROGRAM_POINTER;
     protected const ProtocolId = 3;
 
+    protected const TileRoles = [
+        'set'        => \HMExtended\HeatingGroup::SET_TEMPERATURE,
+        'actual'     => \HMExtended\HeatingGroup::ACTUAL_TEMPERATURE,
+        'humidity'   => \HMExtended\HeatingGroup::ACTUAL_HUMIDITY,
+        'mode'       => \HMExtended\HeatingGroup::CONTROL_MODE,
+        'boostRemain'=> \HMExtended\HeatingGroup::BOOST_STATE,
+        'valve'      => \HMExtended\HeatingGroup::VALVE_STATE,
+        'partyStart' => \HMExtended\HeatingGroup::PARTY_START_TIME,
+        'partyEnd'   => \HMExtended\HeatingGroup::PARTY_STOP_TIME,
+        'partyTemp'  => \HMExtended\HeatingGroup::PARTY_TEMPERATURE,
+        'comfort'    => \HMExtended\HeatingGroup::TEMPERATURE_COMFORT,
+        'lowering'   => \HMExtended\HeatingGroup::TEMPERATURE_LOWERING,
+        'profile'    => \HMExtended\HeatingGroup::WEEK_PROGRAM_POINTER
+    ];
+    // Der Boost ist beim Gerät ein Wert des Modus (CONTROL_MODE 3)
+    protected const TileBoostMode = 3;
+
     //################# PUBLIC
 
     /**

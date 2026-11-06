@@ -1,0 +1,143 @@
+/* Heizungsmodule – Kachel. Farben aus dem Thema der Visualisierung: die Kachel-Visu stellt nur --accent-color, --content-color und
+   --card-color sowie die Schrift Poppins bereit, alles andere wird daraus abgeleitet. Größenstufen setzt heating.js als Klasse
+   (size-mini, size-compact, size-wide, size-full) nach der Größe der Kachel. */
+:root {
+  --accent: var(--accent-color, #00cdab);
+  --text: var(--content-color, #1d1d1f);
+  --card: var(--card-color, #fff);
+  --muted: color-mix(in srgb, var(--text) 60%, transparent);
+  --surface: color-mix(in srgb, var(--text) 8%, transparent);
+  --line: color-mix(in srgb, var(--text) 20%, transparent);
+  --hot: #e5604f;
+  /* Platz für den Maximieren-Pfeil oben rechts (0, wenn die Kachel eine Überschrift hat; heating.js) */
+  --corner: 34px;
+}
+html, body { margin: 0; height: 100%; overflow: hidden; }
+body { box-sizing: border-box; padding-top: var(--title-space, 0px); font: 14px/1.35 Poppins, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: var(--text); }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+button:disabled { cursor: default; opacity: .5; }
+[hidden] { display: none !important; }
+* { scrollbar-width: thin; scrollbar-color: var(--line) transparent; box-sizing: border-box; }
+svg.i { width: 1em; height: 1em; fill: currentColor; display: block; }
+.muted { color: var(--muted); }
+.app { height: 100%; display: flex; flex-direction: column; gap: 8px; padding: 8px 12px 12px; }
+
+/* Kopfzeile: Betriebsart links, rechts Platz für den Maximieren-Pfeil der Visu */
+.head { display: flex; align-items: center; gap: 8px; min-height: 24px; padding-right: var(--corner); flex: none; }
+.pill { font-size: 11px; padding: 1px 9px; border-radius: 999px; background: color-mix(in srgb, var(--accent) 22%, transparent); white-space: nowrap; }
+.pill.warn { background: #ffb02e55; }
+.pill.hot { background: color-mix(in srgb, var(--hot) 30%, transparent); }
+.notice { font-size: 12px; color: var(--hot); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Wählrad wie die Thermostat-Darstellung von Symcon */
+.dialwrap { position: relative; flex: 1; min-height: 0; display: grid; place-items: center; }
+.dial { width: 100%; height: 100%; touch-action: none; }
+.dial .track { fill: none; stroke: url(#htg); stroke-width: 7; stroke-linecap: round; opacity: .38; }
+.dial .active { fill: none; stroke: url(#htg); stroke-width: 7; stroke-linecap: round; }
+.dial .knob { stroke: var(--card); stroke-width: 2; cursor: grab; }
+.dial .actual { fill: var(--text); opacity: .75; }
+.center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; text-align: center; }
+.center .set { font-size: clamp(26px, 15cqmin, 54px); font-weight: 300; line-height: 1; }
+.center .set small { font-size: .42em; font-weight: 400; }
+.center .is { margin-top: 4px; font-size: 12px; }
+.center .is b { font-weight: 500; }
+.center .sub { margin-top: 3px; font-size: 11px; }
+.dialwrap { container-type: size; }
+.nudge { position: absolute; bottom: 2%; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-size: 22px; background: var(--surface); }
+.nudge:hover { background: var(--line); }
+.nudge.minus { left: 18%; }
+.nudge.plus { right: 18%; }
+.size-mini .nudge, .size-mini .center .is { display: none; }
+
+/* Umschalter wie bei der RGB-Kachel: Segmente und Chips */
+.seg { display: flex; border-radius: 999px; background: var(--surface); padding: 3px; gap: 2px; flex: none; }
+.seg button { flex: 1; padding: 5px 6px; border-radius: 999px; font-size: 13px; display: flex; align-items: center; justify-content: center; gap: 5px; white-space: nowrap; min-width: 0; }
+.seg button.on { background: var(--accent); color: #fff; box-shadow: 0 1px 3px #0003; }
+.seg button:hover:not(.on):not(:disabled) { background: var(--line); }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; flex: none; }
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border-radius: 999px; font-size: 12.5px; background: var(--surface); white-space: nowrap; }
+button.chip:hover { background: var(--line); }
+.chip.on { background: var(--hot); color: #fff; }
+.chip.warn { background: #ffb02e55; }
+.chip svg { font-size: 15px; }
+.chip.grow { flex: 1; justify-content: center; }
+
+/* Spalten bei breiter Kachel */
+.cols { flex: 1; min-height: 0; display: flex; gap: 18px; }
+.col { display: flex; flex-direction: column; gap: 8px; min-width: 0; min-height: 0; }
+.col.a { flex: 0 0 38%; }
+.size-full .col.a { flex: 0 0 32%; }
+.col.b { flex: 1; }
+.size-full .col.b { overflow: auto; gap: 10px; padding-right: 2px; }
+.size-wide .app, .size-full .app { padding-right: 14px; }
+
+h4 { margin: 0 0 4px; font-weight: 500; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.presets { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 6px; }
+.preset { padding: 8px 10px; border-radius: 10px; background: var(--surface); text-align: left; display: flex; flex-direction: column; }
+.preset span:first-child { font-size: 11.5px; color: var(--muted); }
+.preset span:last-child { font-size: 17px; }
+.preset.on { outline: 2px solid var(--accent); }
+.preset:hover:not(:disabled) { background: var(--line); }
+.form { display: grid; grid-template-columns: max-content 1fr max-content 1fr; gap: 6px 10px; align-items: center; }
+.form label { color: var(--muted); font-size: 12.5px; }
+input, select { font: inherit; color: var(--text); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 3px 8px; min-width: 0; color-scheme: light dark; }
+select option { background: var(--card); color: var(--text); }
+.tool { padding: 4px 12px; border-radius: 8px; background: var(--surface); font-size: 13px; white-space: nowrap; flex: none; }
+.tool:hover:not(:disabled) { background: var(--line); }
+.tool.primary { background: var(--accent); color: #fff; }
+.btnrow { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+/* Wochenplan (Vorlage: Weekly Program) */
+.weekbox { display: flex; flex-direction: column; gap: 6px; flex: 1; min-height: 0; }
+.size-full .weekbox { flex: 0 0 190px; }
+.week { display: grid; grid-template-columns: 30px repeat(7, 1fr); grid-template-rows: auto 1fr; gap: 0 4px; font-size: 12px; flex: 1; min-height: 0; }
+.week .dh { text-align: center; padding-bottom: 2px; border-radius: 6px; color: var(--muted); }
+.week .dh.today { color: var(--accent); font-weight: 600; }
+.week .dh.sel { background: var(--surface); }
+.week .hours { position: relative; color: var(--muted); }
+.week .hours span { position: absolute; right: 3px; transform: translateY(-50%); font-size: 10px; }
+.week .day { position: relative; border-radius: 6px; background: var(--surface); overflow: hidden; }
+.size-full .week .day, .size-full .week .dh { cursor: pointer; }
+.week .day.today { outline: 1px solid color-mix(in srgb, var(--accent) 60%, transparent); }
+.week .day.sel { outline: 2px solid var(--text); outline-offset: 1px; }
+.week .seg1 { position: absolute; left: 2px; right: 2px; border-radius: 4px; font-size: 10px; display: grid; place-items: center; color: #fff; overflow: hidden; text-shadow: 0 0 2px #0006; }
+.week .now { position: absolute; left: 0; right: 0; height: 2px; background: var(--text); z-index: 2; }
+.legend { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--muted); flex: none; }
+.legend i { flex: 1; height: 6px; border-radius: 3px; background: linear-gradient(90deg, #0aa5f0, #8f86a8, #ffb3a6, #e5604f); }
+.dayrow { display: flex; align-items: center; gap: 8px; flex: none; }
+.dayrow .title { flex: 1; font-weight: 500; }
+.plist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 5px; }
+.prow { display: flex; align-items: center; gap: 8px; padding: 4px 10px; border-radius: 10px; background: var(--surface); }
+.prow .nr { color: var(--muted); font-size: 12px; width: 20px; }
+.prow .dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+.prow .t { flex: 1; color: var(--muted); white-space: nowrap; }
+.prow input[type=time] { width: 92px; }
+.prow input[type=number] { width: 68px; }
+.prow .del { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: 16px; color: var(--muted); }
+.prow .del:hover { background: var(--line); }
+.hint { font-size: 12px; color: var(--muted); }
+
+/* Statusvariable ohne Aktion (oder vom Nutzer deaktiviert): Element abgedunkelt und nicht bedienbar */
+.dialwrap.inactive .dial { opacity: .45; }
+.dialwrap.inactive .dial .knob { cursor: default; }
+.chip.dim, .preset:disabled, input:disabled, select:disabled, .seg button:disabled { opacity: .5; }
+button.chip:disabled:hover, .tool:disabled:hover { background: var(--surface); }
+.chip.on:disabled { background: var(--hot); }
+
+/* Gruppen der maximierten Kachel: Karten mit Überschriftenzeile, einklappbar */
+.group { flex: none; background: color-mix(in srgb, var(--text) 4%, transparent); border: 1px solid var(--line); border-radius: 12px; padding: 4px 10px 10px; }
+.group.closed { padding-bottom: 4px; }
+.ghead { width: 100%; display: flex; align-items: center; gap: 8px; padding: 6px 0; text-align: left; font-weight: 500; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.ghead:hover { color: var(--text); }
+.ghead > span:first-child { flex: 1; }
+.ghead .chev { font-size: 20px; display: grid; transition: transform .15s; }
+.group.closed .chev { transform: rotate(-90deg); }
+.gbody { display: flex; flex-direction: column; gap: 8px; padding-top: 4px; }
+.group.closed .gbody { display: none; }
+.gdiv { border-top: 1px solid var(--line); margin: 2px 0; }
+.size-full .col.b { gap: 10px; }
+
+/* Breite Kachel: Die Betriebsart steht über dem Wählrad, die rechte Spalte beginnt oben (nur der Maximieren-Pfeil bleibt frei) */
+.col .head { padding-right: 0; }
+.size-wide .col.b, .size-full .col.b { padding-top: var(--corner); }
+.size-wide .app, .size-full .app { padding-top: 4px; }
