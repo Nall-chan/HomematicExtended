@@ -52,6 +52,11 @@ class HomeMaticHeatingGroup extends HMHeatingDevice
                     $CalcHour = (int) $d->format('H');
                     $Time = ($CalcHour * 60) + ($CalcMin >= 30 ? 30 : 0);
                     $d->setTime($CalcHour, ($CalcMin >= 30 ? 30 : 0), 0, 0);
+                    // Ohne laufende Party nur merken, gesendet wird beim Start der Party.
+                    if ($this->GetValue(\HMExtended\HeatingGroup::CONTROL_MODE) != 2) {
+                        $this->SetValue($Ident, $d->getTimestamp());
+                        return;
+                    }
                     if ($this->PutValueSet(
                         [
                             \HMExtended\HeatingGroup::PARTY_START_TIME  => $Time,
@@ -69,6 +74,11 @@ class HomeMaticHeatingGroup extends HMHeatingDevice
                     $CalcHour = (int) $d->format('H');
                     $Time = ($CalcHour * 60) + ($CalcMin >= 30 ? 30 : 0);
                     $d->setTime($CalcHour, ($CalcMin >= 30 ? 30 : 0), 0, 0);
+                    // Ohne laufende Party nur merken, gesendet wird beim Start der Party.
+                    if ($this->GetValue(\HMExtended\HeatingGroup::CONTROL_MODE) != 2) {
+                        $this->SetValue($Ident, $d->getTimestamp());
+                        return;
+                    }
                     if ($this->PutValueSet(
                         [
                             \HMExtended\HeatingGroup::PARTY_STOP_TIME  => $Time,
@@ -81,23 +91,10 @@ class HomeMaticHeatingGroup extends HMHeatingDevice
                     }
                     return;
                 case \HMExtended\HeatingGroup::PARTY_TEMPERATURE:
+                    // Ohne laufende Party nur merken, gesendet wird beim Start der Party.
                     if ($this->GetValue(\HMExtended\HeatingGroup::CONTROL_MODE) != 2) {
-                        $start = (new DateTime())->setTimestamp((int) $this->GetValue(\HMExtended\HeatingGroup::PARTY_START_TIME));
-                        $StartTime = ((int) $start->format('H') * 60) + ((int) $start->format('i') >= 30 ? 30 : 0);
-                        $stop = (new DateTime())->setTimestamp((int) $this->GetValue(\HMExtended\HeatingGroup::PARTY_STOP_TIME));
-                        $StopTime = ((int) $stop->format('H') * 60) + ((int) $stop->format('i') >= 30 ? 30 : 0);
-                        $this->PutValueSet(
-                            [
-                                \HMExtended\HeatingGroup::PARTY_START_TIME  => $StartTime,
-                                \HMExtended\HeatingGroup::PARTY_START_DAY   => (int) $start->format('j'),
-                                \HMExtended\HeatingGroup::PARTY_START_MONTH => (int) $start->format('n'),
-                                \HMExtended\HeatingGroup::PARTY_START_YEAR  => (int) $start->format('y'),
-                                \HMExtended\HeatingGroup::PARTY_STOP_TIME   => $StopTime,
-                                \HMExtended\HeatingGroup::PARTY_STOP_DAY    => (int) $stop->format('j'),
-                                \HMExtended\HeatingGroup::PARTY_STOP_MONTH  => (int) $stop->format('n'),
-                                \HMExtended\HeatingGroup::PARTY_STOP_YEAR   => (int) $stop->format('y')
-                            ]
-                        );
+                        $this->SetValue($Ident, (float) $Value);
+                        return;
                     }
                     break;
                 case \HMExtended\HeatingGroup::SET_TEMPERATURE:
@@ -135,7 +132,7 @@ class HomeMaticHeatingGroup extends HMHeatingDevice
                             if ($this->GetValue(\HMExtended\HeatingGroup::CONTROL_MODE) == 2) {
                                 return;
                             }
-                            $Value = (float) $this->GetValue(\HMExtended\HeatingGroup::SET_TEMPERATURE);
+                            $Value = (float) $this->GetValue(\HMExtended\HeatingGroup::PARTY_TEMPERATURE);
                             $start = (new DateTime())->setTimestamp((int) $this->GetValue(\HMExtended\HeatingGroup::PARTY_START_TIME));
                             $StartTime = ((int) $start->format('H') * 60) + ((int) $start->format('i') >= 30 ? 30 : 0);
                             $stop = (new DateTime())->setTimestamp((int) $this->GetValue(\HMExtended\HeatingGroup::PARTY_STOP_TIME));

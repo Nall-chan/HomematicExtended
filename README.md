@@ -194,6 +194,11 @@ Erweitert IPS um die native Unterstützung von:
 
 **Version 3.91:**
 
+* HomeMatic Heating Device (HM-CC-RT-DN) und HomeMatic Heating Group (HM-CC-VG-1): Neue optionale Statusvariablen `Ventilöffnung`, `Batteriespannung`, `Störung` und `Boost Restlaufzeit` (Bereich „Status“, standardmäßig aus; die virtuelle Heizgruppe liefert diese Werte nicht).
+* HomeMatic Heating Device und Heating Group: Urlaub/Party Zeiten und Solltemperatur werden ohne laufende Party nur in den Statusvariablen gemerkt und nicht mehr einzeln an die CCU gesendet. Beim Starten der Party (Modus Urlaub/Party) werden beide Zeiten und die Party-Solltemperatur in einem Aufruf übertragen; bisher wurde dabei die aktuelle Solltemperatur verwendet. In einer laufenden Party wirken die Variablen direkt.
+* HomeMatic IP Heating Group: Dasselbe für Urlaub/Party: Zeiten und Solltemperatur werden gemerkt, der Start der Party sendet Modus, Solltemperatur, Start und Ende in einem Aufruf. `Urlaub/Party Solltemperatur` wird nicht mehr als Solltemperatur an die CCU gesendet, solange keine Party läuft.
+* HomeMatic IP Heating Group: `Ventilöffnung` und `Ventilanpassung` sind nicht mehr bedienbar (die CCU übernimmt die Werte nicht). Bestehende Variablen werden schreibgeschützt.
+* Formulare der Heizungsmodule: Optionale Statusvariablen mit höchstens zwei Schaltern je Zeile.
 * HomeMatic Programme: Eine Liste im Aktionsbereich bestimmt, zu welchen CCU-Programmen eine Statusvariable angelegt wird. Das Abwählen löscht die Variable. Bestehende Instanzen behalten per Migration alle vorhandenen Variablen (alle angehakt), eine neue Instanz legt erst nach der Auswahl Variablen an.
 
 **Version 3.90:**

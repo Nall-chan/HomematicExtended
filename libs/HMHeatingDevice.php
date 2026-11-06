@@ -678,6 +678,9 @@ class HMHeatingDevice extends HMBase
             $this->MaintainHeatingVariable($Ident, $Name, $VarType, $Presentation, $HasAction, $Variable);
             if ($HasAction) {
                 $this->EnableAction($Ident);
+            } else {
+                // Variablen, die ältere Versionen bedienbar anlegten (z.B. HmIP LEVEL, VALVE_ADAPTION), werden schreibgeschützt.
+                $this->DisableAction($Ident);
             }
             if (($Ident == static::SelectedWeekScheduleIdent) && $this->FindIDForIdent(\HMExtended\Variables::SELECT_NEW_WEEK_PROGRAM)) {
                 $this->MaintainSelectWeekProgram($Presentation, $Variable);

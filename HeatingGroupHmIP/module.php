@@ -49,22 +49,22 @@ class HomeMaticIPHeatingGroup extends HMHeatingDevice
             switch ($Ident) { // Sonderfall Party Variablen
                 case \HMExtended\HeatingGroupHmIP::PARTY_TIME_START:
                 case \HMExtended\HeatingGroupHmIP::PARTY_TIME_END:
+                    // Ohne laufende Party nimmt die CCU einzelne Zeiten nicht an: nur merken, gesendet wird beim Start der Party.
+                    if ($this->GetValue(\HMExtended\HeatingGroupHmIP::SET_POINT_MODE) != 2) {
+                        $this->SetValue($Ident, (int) $Value);
+                        return;
+                    }
                     $Time = (new DateTime())->setTimestamp((int) $Value);
                     $SendValue = $Time->format('Y_m_d H:i');
                     break;
                 case \HMExtended\HeatingGroupHmIP::PARTY_SET_POINT_TEMPERATURE:
+                    // Die Party-Temperatur ist in der CCU nur schreibbar, indem sie die Soll-Temperatur ändert (nur bei laufender Party).
                     if ($this->GetValue(\HMExtended\HeatingGroupHmIP::SET_POINT_MODE) == 2) {
                         $Ident = \HMExtended\HeatingGroupHmIP::SET_POINT_TEMPERATURE;
                     } else {
-                        $Start = (new DateTime())->setTimestamp((int) $this->GetValue(\HMExtended\HeatingGroupHmIP::PARTY_TIME_START));
-                        $End = (new DateTime())->setTimestamp((int) $this->GetValue(\HMExtended\HeatingGroupHmIP::PARTY_TIME_END));
-                        $this->PutValueSet(
-                            [
-                                \HMExtended\HeatingGroupHmIP::PARTY_TIME_START => $Start->format('Y_m_d H:i'),
-                                \HMExtended\HeatingGroupHmIP::PARTY_TIME_END   => $End->format('Y_m_d H:i')
-                            ]
-                        );
-                        $Ident = \HMExtended\HeatingGroupHmIP::SET_POINT_TEMPERATURE;
+                        // Ohne laufende Party nur merken, gesendet wird beim Start der Party.
+                        $this->SetValue($Ident, (float) $Value);
+                        return;
                     }
                     break;
                 case \HMExtended\HeatingGroupHmIP::SET_POINT_TEMPERATURE:
@@ -81,15 +81,18 @@ class HomeMaticIPHeatingGroup extends HMHeatingDevice
                                 echo $this->Translate('Party is disabled in config.') . PHP_EOL;
                                 return;
                             }
+                            // Wie die CCU-Oberfläche: Modus, Temperatur und beide Zeiten in einem Aufruf.
                             $Start = (new DateTime())->setTimestamp((int) $this->GetValue(\HMExtended\HeatingGroupHmIP::PARTY_TIME_START));
                             $End = (new DateTime())->setTimestamp((int) $this->GetValue(\HMExtended\HeatingGroupHmIP::PARTY_TIME_END));
                             $this->PutValueSet(
                                 [
-                                    \HMExtended\HeatingGroupHmIP::PARTY_TIME_START => $Start->format('Y_m_d H:i'),
-                                    \HMExtended\HeatingGroupHmIP::PARTY_TIME_END   => $End->format('Y_m_d H:i')
+                                    \HMExtended\HeatingGroupHmIP::SET_POINT_MODE        => 2,
+                                    \HMExtended\HeatingGroupHmIP::SET_POINT_TEMPERATURE => (float) $this->GetValue(\HMExtended\HeatingGroupHmIP::PARTY_SET_POINT_TEMPERATURE),
+                                    \HMExtended\HeatingGroupHmIP::PARTY_TIME_START      => $Start->format('Y_m_d H:i'),
+                                    \HMExtended\HeatingGroupHmIP::PARTY_TIME_END        => $End->format('Y_m_d H:i')
                                 ]
                             );
-                            break;
+                            return;
                     }
             }
             $this->PutValue($Ident, $SendValue);

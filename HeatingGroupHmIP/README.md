@@ -108,14 +108,14 @@ Welche Statusvariablen angelegt werden, richtet sich nach dem Gerät und den Opt
 | Frostschutz | FROST_PROTECTION | Boolean | nein | ja (aus) | Werte | Wertanzeige (Aus/An) |
 | Betriebsmodus | HEATING_COOLING | Integer | ja | ja (aus) | Werte | Aufzählung (Heizen, Kühlen) |
 | Feuchtigkeit | HUMIDITY | Integer | nein |  | Werte | Wertanzeige % |
-| Ventilöffnung | LEVEL | Float | ja | ja (an) | Werte | Schieberegler 0 bis 100 % |
+| Ventilöffnung | LEVEL | Float | nein | ja (an) | Werte | Wertanzeige 0 bis 100 % |
 | Urlaub/Party Solltemperatur | PARTY_SET_POINT_TEMPERATURE | Float | ja | ja (an) | Werte | Schieberegler Temperatur ¹ |
 | Urlaub/Party Ende | PARTY_TIME_END | Integer | ja | ja (an) | Werte | Datum/Uhrzeit |
 | Urlaub/Party Anfang | PARTY_TIME_START | Integer | ja | ja (an) | Werte | Datum/Uhrzeit |
 | Modus Solltemperatur | SET_POINT_MODE | Integer | ja |  | Werte | Aufzählung (Automatik, Manuell, Urlaub/Party) |
 | Solltemperatur | SET_POINT_TEMPERATURE | Float | ja |  | Werte | Schieberegler Temperatur ¹ |
 | Schaltpunkt erreicht | SWITCH_POINT_OCCURED | Boolean | nein | ja (aus) | Werte | Wertanzeige (Aus/An) |
-| Ventilanpassung | VALVE_ADAPTION | Boolean | ja | ja (aus) | Werte | Schalter |
+| Ventilanpassung | VALVE_ADAPTION | Boolean | nein | ja (aus) | Werte | Wertanzeige (Aus, An) |
 | Ventilzustand | VALVE_STATE | Integer | nein | ja (an) | Werte | Wertanzeige (Zustand der Ventiladaption) |
 | Fensterzustand | WINDOW_STATE | Integer | ja | ja (an) | Werte | Aufzählung (Geschlossen, Geöffnet) |
 | Entkalkung Uhrzeit | DECALCIFICATION_TIME | Integer | ja | ja (aus) | Parameter | Datum/Uhrzeit (Uhrzeit) |

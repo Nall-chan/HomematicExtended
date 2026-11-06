@@ -223,6 +223,10 @@ namespace HMExtended
         public const PARTY_STOP_YEAR = 'PARTY_STOP_YEAR';
         public const PARTY_TEMPERATURE = 'PARTY_TEMPERATURE';
         public const SET_TEMPERATURE = 'SET_TEMPERATURE';
+        public const BATTERY_STATE = 'BATTERY_STATE';
+        public const BOOST_STATE = 'BOOST_STATE';
+        public const FAULT_REPORTING = 'FAULT_REPORTING';
+        public const VALVE_STATE = 'VALVE_STATE';
         //Params
         public const DECALCIFICATION_TIME = 'DECALCIFICATION_TIME';
         public const DECALCIFICATION_WEEKDAY = 'DECALCIFICATION_WEEKDAY';
@@ -280,6 +284,10 @@ namespace HMExtended
                 HeatingGroup::COMFORT_MODE                            => true,
                 HeatingGroup::LOWERING_MODE                           => true,
                 HeatingGroup::PARTY                                   => true,
+                HeatingGroup::VALVE_STATE                             => false,
+                HeatingGroup::BATTERY_STATE                           => false,
+                HeatingGroup::FAULT_REPORTING                         => false,
+                HeatingGroup::BOOST_STATE                             => false,
                 HeatingGroup::DECALCIFICATION_TIME                    => false,
                 HeatingGroup::DECALCIFICATION_WEEKDAY                 => false,
                 HeatingGroup::BOOST_POSITION                          => false,
@@ -369,6 +377,8 @@ namespace HMExtended
         public const OperationModeCCTC = 'OperationModeCCTC';
         public const WindowState = 'WindowState';
         public const ValveStateHmIP = 'ValveStateHmIP';
+        public const Voltage = 'Voltage';
+        public const FaultReportingHM = 'FaultReportingHM';
         public const WeekdayFromSaturday = 'WeekdayFromSaturday';
         public const WeekdayFromSunday = 'WeekdayFromSunday';
         public const ValveMode = 'ValveMode';
@@ -394,6 +404,8 @@ namespace HMExtended
             self::Humidity            => ['Drops', ' %', 0, 0, 100, 1, false],
             self::Level               => ['Intensity', ' %', 0, 0, 1, 0.05, true],
             self::Percent             => ['Intensity', ' %', 0, 0, 100, 1, false],
+            // Batteriespannung der HM-Thermostate (BATTERY_STATE: 1,5 .. 4,6 V laut CCU).
+            self::Voltage             => ['Electricity', ' V', 1, 1.5, 4.6, 0.1, false],
             self::Minutes30           => ['Clock', ' min', 0, 0, 30, 1, false],
             self::Minutes30Steps      => ['Clock', ' min', 0, 0, 30, 5, false],
             self::Minutes60Steps      => ['Clock', ' min', 0, 0, 60, 5, false]
@@ -452,6 +464,16 @@ namespace HMExtended
                 [6, 'Range too big', '', -1],
                 [7, 'Range too small', '', -1],
                 [8, 'Error position', '', -1]
+            ]],
+            // FAULT_REPORTING der HM-Thermostate (Wert 5 ist in der CCU unbenannt).
+            self::FaultReportingHM => ['Warning', [
+                [0, 'No fault', '', -1],
+                [1, 'Valve too tight', '', 0xFF0000],
+                [2, 'Range too big', '', 0xFF0000],
+                [3, 'Range too small', '', 0xFF0000],
+                [4, 'Communication error', '', 0xFF0000],
+                [6, 'Battery low', '', 0xFF0000],
+                [7, 'Error position', '', 0xFF0000]
             ]],
             self::WeekdayFromSaturday => ['Calendar', [
                 [0, 'Saturday', '', -1],
@@ -735,7 +757,7 @@ namespace HMExtended
                 HeatingGroupHmIP::LEVEL => [
                     VARIABLETYPE_FLOAT,
                     HeatingPresentation::Level,
-                    true,
+                    false,
                     'Valve opening'
                 ],
                 HeatingGroupHmIP::LEVEL_STATUS => [
@@ -792,7 +814,7 @@ namespace HMExtended
                 HeatingGroupHmIP::VALVE_ADAPTION => [
                     VARIABLETYPE_BOOLEAN,
                     HeatingPresentation::Switch,
-                    true,
+                    false,
                     'Valve adaption'
                 ],
                 HeatingGroupHmIP::VALVE_STATE => [
@@ -893,6 +915,30 @@ namespace HMExtended
                     \HMExtended\Variables::VARIABLETYPE_NONE,
                     '',
                     HeatingGroup::PARTY_STOP_TIME
+                ],
+                HeatingGroup::VALVE_STATE => [
+                    VARIABLETYPE_INTEGER,
+                    HeatingPresentation::Percent,
+                    false,
+                    'Valve opening'
+                ],
+                HeatingGroup::BATTERY_STATE => [
+                    VARIABLETYPE_FLOAT,
+                    HeatingPresentation::Voltage,
+                    false,
+                    'Battery voltage'
+                ],
+                HeatingGroup::FAULT_REPORTING => [
+                    VARIABLETYPE_INTEGER,
+                    HeatingPresentation::FaultReportingHM,
+                    false,
+                    'Fault'
+                ],
+                HeatingGroup::BOOST_STATE => [
+                    VARIABLETYPE_INTEGER,
+                    HeatingPresentation::Minutes30,
+                    false,
+                    'Boost remaining time'
                 ],
                 HeatingGroup::COMFORT_MODE => [
                     VARIABLETYPE_INTEGER,

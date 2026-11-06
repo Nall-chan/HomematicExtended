@@ -69,6 +69,10 @@ Existieren in IPS mehrere Homematic Sockets, so ist der auszuwählen, an dem das
 | Zeitplan | enable_SCHEDULE | boolean | `true` | Legt den Wochenplan (Ereignis) und die Variablen zum Speichern an. |
 | Setze auf Komfort Temperatur | enable_COMFORT_MODE | boolean | `true` | Optionale Statusvariable (Bereich „Regelung“) |
 | Setze auf Absenktemperatur | enable_LOWERING_MODE | boolean | `true` | Optionale Statusvariable (Bereich „Regelung“) |
+| Ventilöffnung | enable_VALVE_STATE | boolean | `false` | Optionale Statusvariable (Bereich „Status“) |
+| Batteriespannung | enable_BATTERY_STATE | boolean | `false` | Optionale Statusvariable (Bereich „Status“) |
+| Störung | enable_FAULT_REPORTING | boolean | `false` | Optionale Statusvariable (Bereich „Status“) |
+| Boost Restlaufzeit | enable_BOOST_STATE | boolean | `false` | Optionale Statusvariable (Bereich „Status“) |
 | Boost Ventilöffnung | enable_BOOST_POSITION | boolean | `false` | Optionale Statusvariable (Bereich „Boost“) |
 | Boostdauer | enable_BOOST_TIME_PERIOD | boolean | `false` | Optionale Statusvariable (Bereich „Boost“) |
 | Urlaub/Party Steuerung | enable_PARTY | boolean | `true` | Optionale Statusvariable (Bereich „Urlaub/Party“) |
@@ -106,6 +110,10 @@ Welche Statusvariablen angelegt werden, richtet sich nach dem Gerät und den Opt
 | Urlaub/Party Ende | PARTY_STOP_TIME | Integer | ja | ja (an) | Werte | Datum/Uhrzeit |
 | Setze auf Komfort Temperatur | COMFORT_MODE | Integer | ja | ja (an) | Werte | Aufzählung (Ausführen) |
 | Setze auf Absenktemperatur | LOWERING_MODE | Integer | ja | ja (an) | Werte | Aufzählung (Ausführen) |
+| Ventilöffnung | VALVE_STATE | Integer | nein | ja (aus) | Werte | Wertanzeige 0 bis 100 % |
+| Batteriespannung | BATTERY_STATE | Float | nein | ja (aus) | Werte | Wertanzeige V |
+| Störung | FAULT_REPORTING | Integer | nein | ja (aus) | Werte | Wertanzeige mit Texten (Keine Störung, Ventil schwergängig, Stellbereich zu groß/klein, Kommunikationsfehler, Batterie schwach, Notbetrieb) |
+| Boost Restlaufzeit | BOOST_STATE | Integer | nein | ja (aus) | Werte | Wertanzeige 0 bis 30 min |
 | Aktives Zeitprofil | WEEK_PROGRAM_POINTER | Integer | ja | ja (an) | Parameter | Aufzählung (1, 2, 3) |
 | Entkalkung Uhrzeit | DECALCIFICATION_TIME | Integer | ja | ja (aus) | Parameter | Datum/Uhrzeit (Uhrzeit) |
 | Entkalkung Wochentag | DECALCIFICATION_WEEKDAY | Integer | ja | ja (aus) | Parameter | Aufzählung (Samstag bis Freitag) |

@@ -29,7 +29,11 @@ class HeatingGroupTest extends HeatingTestCase
                 'SET_TEMPERATURE'   => 'FLOAT',
                 'PARTY_TEMPERATURE' => 'FLOAT',
                 'PARTY_START_TIME'  => 'INTEGER',
-                'PARTY_STOP_TIME'   => 'INTEGER'
+                'PARTY_STOP_TIME'   => 'INTEGER',
+                'VALVE_STATE'       => 'INTEGER',
+                'BATTERY_STATE'     => 'FLOAT',
+                'FAULT_REPORTING'   => 'INTEGER',
+                'BOOST_STATE'       => 'INTEGER'
             ]),
             'getParamset:VALUES' => [
                 'CONTROL_MODE'      => 1,
@@ -43,7 +47,11 @@ class HeatingGroupTest extends HeatingTestCase
                 'PARTY_STOP_TIME'   => 1140,
                 'PARTY_STOP_DAY'    => 8,
                 'PARTY_STOP_MONTH'  => 3,
-                'PARTY_STOP_YEAR'   => 26
+                'PARTY_STOP_YEAR'   => 26,
+                'VALVE_STATE'       => 40,
+                'BATTERY_STATE'     => 2.9,
+                'FAULT_REPORTING'   => 0,
+                'BOOST_STATE'       => 0
             ],
             'getParamsetDescription:MASTER' => $this->description([
                 'WEEK_PROGRAM_POINTER'    => 'INTEGER',
@@ -63,8 +71,30 @@ class HeatingGroupTest extends HeatingTestCase
         IPS_SetProperty($this->DeviceId, 'enable_DECALCIFICATION_TIME', true);
         IPS_SetProperty($this->DeviceId, 'enable_BOOST_TIME_PERIOD', true);
         IPS_SetProperty($this->DeviceId, 'enable_DECALCIFICATION_WEEKDAY', true);
+        foreach (['VALVE_STATE', 'BATTERY_STATE', 'FAULT_REPORTING', 'BOOST_STATE'] as $Ident) {
+            IPS_SetProperty($this->DeviceId, 'enable_' . $Ident, true);
+        }
         IPS_ApplyChanges($this->DeviceId);
         FakeHomematicIO::$Requests = [];
+    }
+
+    public function testOptionalStatusVariablesAreCreatedReadOnly(): void
+    {
+        $this->assertSame(40, GetValueInteger($this->variable('VALVE_STATE')));
+        $this->assertEqualsWithDelta(2.9, GetValueFloat($this->variable('BATTERY_STATE')), 0.001);
+        $this->assertSame(0, GetValueInteger($this->variable('FAULT_REPORTING')));
+        $this->assertSame(0, GetValueInteger($this->variable('BOOST_STATE')));
+        foreach (['VALVE_STATE', 'BATTERY_STATE', 'FAULT_REPORTING', 'BOOST_STATE'] as $Ident) {
+            $this->assertFalse(HasAction($this->variable($Ident)), $Ident);
+        }
+    }
+
+    public function testOptionalStatusVariablesFollowEvents(): void
+    {
+        $this->device()->ReceiveData(json_encode(['VariableName' => 'FAULT_REPORTING', 'VariableValue' => 6]));
+        $this->device()->ReceiveData(json_encode(['VariableName' => 'BOOST_STATE', 'VariableValue' => 9]));
+        $this->assertSame(6, GetValueInteger($this->variable('FAULT_REPORTING')));
+        $this->assertSame(9, GetValueInteger($this->variable('BOOST_STATE')));
     }
 
     public function testPartyTimestampIsComposedFromTimeDayMonthAndYear(): void
@@ -105,6 +135,7 @@ class HeatingGroupTest extends HeatingTestCase
     #[PHPUnit\Framework\Attributes\DataProvider('halfHourProvider')]
     public function testPartyStartIsRoundedDownToHalfHour(int $Minute, int $ExpectedMinute, int $ExpectedTime): void
     {
+        $this->startParty();
         $Timestamp = mktime(9, $Minute, 17, 3, 5, 2026);
         $this->assertSame('', $this->action('PARTY_START_TIME', $Timestamp));
         $Put = $this->lastPut('VALUES');
@@ -117,6 +148,7 @@ class HeatingGroupTest extends HeatingTestCase
 
     public function testPartyStopIsSentWithDateParts(): void
     {
+        $this->startParty();
         $this->action('PARTY_STOP_TIME', mktime(23, 45, 0, 12, 31, 2026));
         $this->assertSame(
             ['PARTY_STOP_TIME' => 1410, 'PARTY_STOP_DAY' => 31, 'PARTY_STOP_MONTH' => 12, 'PARTY_STOP_YEAR' => 26],
@@ -124,6 +156,49 @@ class HeatingGroupTest extends HeatingTestCase
         );
     }
 
+    public function testPartyValuesAreOnlyStoredWithoutRunningParty(): void
+    {
+        $this->assertSame('', $this->action('PARTY_START_TIME', mktime(9, 45, 0, 3, 6, 2026)));
+        $this->assertSame('', $this->action('PARTY_STOP_TIME', mktime(18, 10, 0, 3, 6, 2026)));
+        $this->assertSame('', $this->action('PARTY_TEMPERATURE', 12.5));
+        $this->assertCount(0, $this->requests('putParamset'));
+        $this->assertCount(0, $this->requests('setValue'));
+        $this->assertSame(mktime(9, 30, 0, 3, 6, 2026), GetValueInteger($this->variable('PARTY_START_TIME')));
+        $this->assertSame(mktime(18, 0, 0, 3, 6, 2026), GetValueInteger($this->variable('PARTY_STOP_TIME')));
+        $this->assertEquals(12.5, GetValueFloat($this->variable('PARTY_TEMPERATURE')));
+    }
+
+    public function testPartyModeSendsTimesAndPartyTemperatureInOneCall(): void
+    {
+        $this->action('PARTY_TEMPERATURE', 12.5);
+        FakeHomematicIO::$Requests = [];
+        $this->assertSame('', $this->action('CONTROL_MODE', 2));
+        $this->assertCount(1, $this->requests('putParamset'));
+        $this->assertCount(0, $this->requests('setValue'));
+        $this->assertEquals(
+            [
+                'PARTY_START_TIME'  => 570,
+                'PARTY_START_DAY'   => 5,
+                'PARTY_START_MONTH' => 3,
+                'PARTY_START_YEAR'  => 26,
+                'PARTY_STOP_TIME'   => 1140,
+                'PARTY_STOP_DAY'    => 8,
+                'PARTY_STOP_MONTH'  => 3,
+                'PARTY_STOP_YEAR'   => 26,
+                'PARTY_TEMPERATURE' => 12.5
+            ],
+            $this->lastPut('VALUES')
+        );
+    }
+
+    public function testPartyTemperatureIsSentDuringParty(): void
+    {
+        $this->startParty();
+        $this->assertSame('', $this->action('PARTY_TEMPERATURE', 12.5));
+        $Requests = $this->requests('setValue');
+        $this->assertCount(1, $Requests);
+        $this->assertSame('PARTY_TEMPERATURE', $Requests[0]['Data'][1]);
+    }
     public function testDecalcificationTimeIsSentInMinutes(): void
     {
         $this->action('DECALCIFICATION_TIME', mktime(22, 10, 0, 1, 1, 2026));
@@ -193,5 +268,14 @@ class HeatingGroupTest extends HeatingTestCase
     {
         $this->assertStringContainsString('Invalid Ident.', $this->action('UNKNOWN', 1));
         $this->assertCount(0, $this->requests('putParamset'));
+    }
+
+    /**
+     * Meldet der CCU-Ereignis „Party läuft“ (CONTROL_MODE 2) und leert die aufgezeichneten Aufrufe.
+     */
+    private function startParty(): void
+    {
+        $this->device()->ReceiveData(json_encode(['VariableName' => 'CONTROL_MODE', 'VariableValue' => 2]));
+        FakeHomematicIO::$Requests = [];
     }
 }

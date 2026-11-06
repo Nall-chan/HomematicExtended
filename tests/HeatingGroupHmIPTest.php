@@ -103,49 +103,63 @@ class HeatingGroupHmIPTest extends HeatingTestCase
         $this->assertSame(['DECALCIFICATION_TIME' => $Expected], $this->lastPut('MASTER'));
     }
 
-    public function testPartyTimeIsSentAsDateString(): void
+    public function testPartyTimeIsOnlyStoredWithoutRunningParty(): void
     {
+        $Time = mktime(18, 45, 0, 12, 24, 2026);
+        $this->assertSame('', $this->action('PARTY_TIME_START', $Time));
+        $this->assertCount(0, $this->requests('setValue'));
+        $this->assertCount(0, $this->requests('putParamset'));
+        $this->assertSame($Time, GetValueInteger($this->variable('PARTY_TIME_START')));
+    }
+
+    public function testPartyTimeIsSentAsDateStringDuringParty(): void
+    {
+        $this->event('SET_POINT_MODE', 2);
+        FakeHomematicIO::$Requests = [];
         $this->assertSame('', $this->action('PARTY_TIME_START', mktime(18, 45, 0, 12, 24, 2026)));
         $Requests = $this->requests('setValue');
         $this->assertCount(1, $Requests);
         $this->assertSame(['3014F711A0001F5A4993F31C:1', 'PARTY_TIME_START', '2026_12_24 18:45'], $Requests[0]['Data']);
     }
 
-    public function testPartyTemperatureSendsTimesFirstWhenModeIsNotParty(): void
+    public function testPartyTemperatureIsOnlyStoredWithoutRunningParty(): void
     {
-        $this->event('PARTY_TIME_START', '2026_03_05 08:00');
-        $this->event('PARTY_TIME_END', '2026_03_08 20:00');
-        FakeHomematicIO::$Requests = [];
         $this->assertSame('', $this->action('PARTY_SET_POINT_TEMPERATURE', 16.5));
-        $this->assertSame(
-            ['PARTY_TIME_START' => '2026_03_05 08:00', 'PARTY_TIME_END' => '2026_03_08 20:00'],
-            $this->lastPut('VALUES')
-        );
-        $Requests = $this->requests('setValue');
-        $this->assertSame('SET_POINT_TEMPERATURE', $Requests[0]['Data'][1]);
-        $this->assertEquals(16.5, $Requests[0]['Data'][2]);
+        $this->assertCount(0, $this->requests('setValue'));
+        $this->assertCount(0, $this->requests('putParamset'));
+        $this->assertEquals(16.5, GetValueFloat($this->variable('PARTY_SET_POINT_TEMPERATURE')));
     }
 
     public function testPartyTemperatureInPartyModeOnlySetsTemperature(): void
     {
         $this->event('SET_POINT_MODE', 2);
+        FakeHomematicIO::$Requests = [];
         $this->assertSame('', $this->action('PARTY_SET_POINT_TEMPERATURE', 16.5));
         $this->assertCount(0, $this->requests('putParamset'));
         $this->assertSame('SET_POINT_TEMPERATURE', $this->requests('setValue')[0]['Data'][1]);
     }
 
-    public function testPartyModeSendsPartyTimes(): void
+    public function testPartyModeSendsModeTemperatureAndTimesInOneCall(): void
     {
         IPS_SetProperty($this->DeviceId, 'enable_PARTY', true);
         IPS_ApplyChanges($this->DeviceId);
+        $this->event('PARTY_TIME_START', '2026_03_05 08:00');
+        $this->event('PARTY_TIME_END', '2026_03_08 20:00');
+        $this->assertSame('', $this->action('PARTY_SET_POINT_TEMPERATURE', 16.5));
         FakeHomematicIO::$Requests = [];
-        $this->assertSame('', $this->action('CONTROL_MODE', 2));
-        $Put = $this->lastPut('VALUES');
-        $this->assertArrayHasKey('PARTY_TIME_START', $Put);
-        $this->assertArrayHasKey('PARTY_TIME_END', $Put);
-        $this->assertMatchesRegularExpression('/^\d{4}_\d{2}_\d{2} \d{2}:\d{2}$/', $Put['PARTY_TIME_START']);
+        $this->assertSame('', $this->action('SET_POINT_MODE', 2));
+        $this->assertCount(1, $this->requests('putParamset'));
+        $this->assertCount(0, $this->requests('setValue'));
+        $this->assertEquals(
+            [
+                'SET_POINT_MODE'        => 2,
+                'SET_POINT_TEMPERATURE' => 16.5,
+                'PARTY_TIME_START'      => '2026_03_05 08:00',
+                'PARTY_TIME_END'        => '2026_03_08 20:00'
+            ],
+            $this->lastPut('VALUES')
+        );
     }
-
     public function testPartyModeIsRejectedWhenPartyIsDisabled(): void
     {
         IPS_SetProperty($this->DeviceId, 'enable_PARTY', false);

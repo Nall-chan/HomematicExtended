@@ -104,6 +104,47 @@
                 },
                 {
                     "type": "ExpansionPanel",
+                    "caption": "Status",
+                    "expanded": true,
+                    "items": [
+                        {
+                            "type": "RowLayout",
+                            "items": [
+                                {
+                                    "name": "enable_VALVE_STATE",
+                                    "type": "CheckBox",
+                                    "caption": "Valve opening",
+                                    "width": "250px"
+                                },
+                                {
+                                    "name": "enable_BATTERY_STATE",
+                                    "type": "CheckBox",
+                                    "caption": "Battery voltage",
+                                    "width": "250px"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "RowLayout",
+                            "items": [
+                                {
+                                    "name": "enable_FAULT_REPORTING",
+                                    "type": "CheckBox",
+                                    "caption": "Fault",
+                                    "width": "250px"
+                                },
+                                {
+                                    "name": "enable_BOOST_STATE",
+                                    "type": "CheckBox",
+                                    "caption": "Boost remaining time",
+                                    "width": "250px"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "ExpansionPanel",
                     "caption": "Boost",
                     "expanded": true,
                     "items": [
