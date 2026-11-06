@@ -55,14 +55,17 @@ Dieses Modul ist Bestandteil der [HomeMaticExtended-Library](../).
 
 **Konfigurationsseite:**  
 
-   Dieses Modul hat keinerlei Einstellungen, welche konfiguriert werden müssen.  
+   Dieses Modul hat keine Eigenschaften, die gespeichert werden müssen. Im Aktionsbereich des Formulars steht die Liste `Programme der CCU`.  
+   Nur zu den Programmen mit Haken in der Spalte `Anlegen` wird eine Statusvariable erzeugt.  
+   Das Setzen des Hakens legt die Variable sofort an. **Das Entfernen des Hakens löscht die Variable sofort.**  
+   Die Auswahl wird im Attribut der Instanz gespeichert. Zeilen in Rot sind gewählte Programme, die es auf der CCU nicht mehr gibt.  
 
-   Im Testcenter ist es jedoch über den Button 'CCU auslesen' möglich, die auf der CCU vorhandenen Programme auszulesen.  
-   Dies erfolgt auch automatisch wenn Symcon die Verbindung zur CCU herstellt und wenn die Instanz angelegt wird.  
+   Über den Button 'CCU auslesen' können die Variablen der gewählten Programme aktualisiert werden.  
+   Dies erfolgt auch automatisch wenn Symcon die Verbindung zur CCU herstellt.  
 
 ## 5. Statusvariablen
 
-   Die Programme werden als Integer-Variable unterhalb der Instanz erzeugt. Es wird automatisch der Name und die Beschreibung aus der CCU übernommen.  
+   Die gewählten Programme werden als Integer-Variable unterhalb der Instanz erzeugt. Es wird automatisch der Name und die Beschreibung aus der CCU übernommen.  
    Die Variablen erhalten die Darstellung Aufzählung mit dem Eintrag `Ausführen`.  
    Es ist somit sofort möglich die Programme aus dem WebFront heraus zu starten.  
    Werden in der CCU Programme gelöscht, so müssen die dazugehörigen Variablen in IPS bei Bedarf manuell gelöscht werden.  
@@ -84,7 +87,7 @@ Die direkte Darstellung im WebFront ist möglich, es wird aber empfohlen mit Lin
    ```php
     boolean HM_ReadPrograms(int $InstantID /*[HomeMatic Programme]*/)
 ```
-   Alle Programme auf der CCU werden ausgelesen und bei Bedarf neu angelegt.
+   Alle Programme auf der CCU werden ausgelesen, die Variablen der in der Liste gewählten Programme werden bei Bedarf neu angelegt.
 
 ```php
     boolean HM_StartProgram(int $InstantID /*[HomeMatic Programme]*/, string $IDENT);
@@ -115,6 +118,10 @@ Die direkte Darstellung im WebFront ist möglich, es wird aber empfohlen mit Lin
 ### 1. Changelog
 
 Der vollständige Changelog der Library steht in der [Haupt-README](../README.md#2-changelog).  
+
+**Version 3.91:**
+
+- Eine Liste im Aktionsbereich bestimmt, zu welchen CCU-Programmen eine Statusvariable angelegt wird. Das Abwählen löscht die Variable. Bestehende Instanzen behalten per Migration alle vorhandenen Variablen (alle angehakt), eine neue Instanz legt erst nach der Auswahl Variablen an.  
 
 **Version 3.82:**
 

@@ -2,6 +2,50 @@
     "elements": [],
     "actions": [
         {
+            "type": "Label",
+            "bold": true,
+            "color": 16711680,
+            "caption": "Variables are created only for the selected programs. Deselecting a program immediately deletes its variable."
+        },
+        {
+            "name": "Programs",
+            "type": "List",
+            "caption": "Programs of the CCU",
+            "rowCount": 15,
+            "add": false,
+            "delete": false,
+            "onEdit": "IPS_RequestAction($id, 'ProgramEdited', json_encode([$Programs['Id'], $Programs['Use']]));",
+            "sort": {
+                "column": "Name",
+                "direction": "ascending"
+            },
+            "columns": [
+                {
+                    "caption": "Create",
+                    "name": "Use",
+                    "width": "80px",
+                    "save": true,
+                    "add": false,
+                    "edit": {
+                        "type": "CheckBox"
+                    }
+                },
+                {
+                    "caption": "Name",
+                    "name": "Name",
+                    "width": "auto",
+                    "save": false
+                },
+                {
+                    "caption": "CCU ID",
+                    "name": "Id",
+                    "width": "80px",
+                    "save": true
+                }
+            ],
+            "values": []
+        },
+        {
             "type": "Button",
             "caption": "read CCU",
             "onClick": "HM_ReadPrograms($id);"

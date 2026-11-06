@@ -192,6 +192,10 @@ Erweitert IPS um die native Unterstützung von:
 
 ### 2. Changelog
 
+**Version 3.91:**
+
+* HomeMatic Programme: Eine Liste im Aktionsbereich bestimmt, zu welchen CCU-Programmen eine Statusvariable angelegt wird. Das Abwählen löscht die Variable. Bestehende Instanzen behalten per Migration alle vorhandenen Variablen (alle angehakt), eine neue Instanz legt erst nach der Auswahl Variablen an.
+
 **Version 3.90:**
 
 * [HomeMatic RGBW](RGBW/): Funk-RGBW-Controller HM-LC-RGBW-WM mit den Kanälen Helligkeit, Farbe und Automatik in einer Instanz (Helligkeit, Farbton, Programme, Status und Farbwähler für die Licht-Kachel, Vorgaben für Rampenzeit und Einschaltdauer, `HM_SetLevel`, `HM_SetColor`, Weißabgleich per `HM_ReadWhiteBalance`, `HM_SetWhiteBalance` und Aktion). Der Extended Konfigurator listet die Geräte.  

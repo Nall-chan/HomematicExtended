@@ -13,7 +13,13 @@
             "Invalid response from CCU.": "Ungültige Antwort der CCU.",
             "The CCU did not answer the HM-Script.": "Die CCU hat das HM-Script nicht beantwortet.",
             "Invalid Ident.": "Ungültiger Ident.",
-            "Error on start program.": "Fehler beim Starten des Programmes."
+            "Error on start program.": "Fehler beim Starten des Programmes.",
+            "CCU program %d does not exist.": "CCU-Programm %d existiert nicht.",
+            "Variables are created only for the selected programs. Deselecting a program immediately deletes its variable.": "Variablen werden nur für die gewählten Programme angelegt. Das Abwählen eines Programms löscht sofort dessen Variable.",
+            "Programs of the CCU": "Programme der CCU",
+            "Create": "Anlegen",
+            "Name": "Name",
+            "CCU ID": "CCU-ID"
         }
     }
 }
