@@ -115,7 +115,8 @@
             "Heating": "Heizen",
             "The temperature is not known yet.": "Die Temperatur ist noch nicht bekannt.",
             "Set to comfort temperature": "Setze auf Komfort Temperatur",
-            "Set to lowering temperature": "Setze auf Absenktemperatur"
+            "Set to lowering temperature": "Setze auf Absenktemperatur",
+            "Create weekly program as event": "Wochenprogramm als Ereignis anlegen"
         }
     }
 }

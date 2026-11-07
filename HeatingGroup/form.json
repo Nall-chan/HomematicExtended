@@ -35,8 +35,8 @@
                         {
                             "name": "enable_SCHEDULE",
                             "type": "CheckBox",
-                            "caption": "Schedule",
-                            "width": "250px"
+                            "caption": "Create weekly program as event",
+                            "width": "330px"
                         },
                         {
                             "type": "PopupButton",

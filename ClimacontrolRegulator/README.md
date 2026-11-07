@@ -64,7 +64,7 @@ Existieren in IPS mehrere Homematic Sockets, so ist der auszuwählen, an dem das
 | Adresse | Address | string | leer | Adresse des Gerätes bzw. der Gruppe, z.B. `IEQ1234567`. Das Modul spricht den Kanal 2 des Wandthermostaten an. Die Adresse wird ohne Kanal eingetragen. |
 | System | Protocol | integer | 0 | Funk (BidCos-RF). Wird vom Modul gesetzt und nicht im Formular angezeigt. |
 | Verändern der Solltemperatur setzt Modus auf Manuell | SetPointBehavior | boolean | `true` | Das Ändern der Solltemperatur schaltet den Modus der Solltemperatur auf Manuell. |
-| Zeitplan | enable_SCHEDULE | boolean | `true` | Legt den Wochenplan (Ereignis) und die Variablen zum Speichern an. |
+| Wochenprogramm als Ereignis anlegen | enable_SCHEDULE | boolean | `false` | Legt das Wochenprogramm als Ereignis (Wochenplan) und die Variablen zum Speichern an. Gilt nur für dieses Ereignis: Die Kachel zeigt und bearbeitet den Wochenplan unabhängig davon. Bis Version 3.91 war die Eigenschaft standardmäßig aktiv, bestehende Instanzen behalten ihre Einstellung. |
 | Urlaub/Party Solltemperatur | enable_TEMPERATUR_PARTY_VALUE | boolean | `true` | Optionale Statusvariable (Bereich „Urlaub/Party“) |
 | Urlaub/Party Ende | enable_PARTY_END_TIME | boolean | `true` | Optionale Statusvariable (Bereich „Urlaub/Party“) |
 | Komforttemperatur | enable_TEMPERATUR_COMFORT_VALUE | boolean | `false` | Optionale Statusvariable (Bereich „Temperatur“) |

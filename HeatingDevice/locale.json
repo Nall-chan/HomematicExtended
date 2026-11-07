@@ -132,7 +132,8 @@
             "Window state open": "Offen",
             "Window state closed": "Geschlossen",
             "Heating": "Heizen",
-            "The temperature is not known yet.": "Die Temperatur ist noch nicht bekannt."
+            "The temperature is not known yet.": "Die Temperatur ist noch nicht bekannt.",
+            "Create weekly program as event": "Wochenprogramm als Ereignis anlegen"
         }
     }
 }

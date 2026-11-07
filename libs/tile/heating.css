@@ -32,8 +32,8 @@ svg.i { width: 1em; height: 1em; fill: currentColor; display: block; }
 /* Wählrad wie die Thermostat-Darstellung von Symcon */
 .dialwrap { position: relative; flex: 1; min-height: 0; display: grid; place-items: center; }
 .dial { width: 100%; height: 100%; touch-action: none; }
-.dial .track { fill: none; stroke: url(#htg); stroke-width: 7; stroke-linecap: round; opacity: .38; }
-.dial .active { fill: none; stroke: url(#htg); stroke-width: 7; stroke-linecap: round; }
+.dial .track { opacity: .38; }
+.dial path { fill: none; stroke-width: 7; }
 .dial .knob { stroke: var(--card); stroke-width: 2; cursor: grab; }
 .dial .actual { fill: var(--text); opacity: .75; }
 .center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; text-align: center; }
@@ -103,7 +103,7 @@ select option { background: var(--card); color: var(--text); }
 .week .seg1 { position: absolute; left: 2px; right: 2px; border-radius: 4px; font-size: 10px; display: grid; place-items: center; color: #fff; overflow: hidden; text-shadow: 0 0 2px #0006; }
 .week .now { position: absolute; left: 0; right: 0; height: 2px; background: var(--text); z-index: 2; }
 .legend { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--muted); flex: none; }
-.legend i { flex: 1; height: 6px; border-radius: 3px; background: linear-gradient(90deg, #0aa5f0, #8f86a8, #ffb3a6, #e5604f); }
+.legend i { flex: 1; height: 6px; border-radius: 3px; }
 .dayrow { display: flex; align-items: center; gap: 8px; flex: none; }
 .dayrow .title { flex: 1; font-weight: 500; }
 .plist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 5px; }

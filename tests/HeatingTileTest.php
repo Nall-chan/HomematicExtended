@@ -12,7 +12,11 @@ require_once __DIR__ . '/../HeatingGroup/module.php';
  */
 class TileHeatingGroupHmIP extends HomeMaticIPHeatingGroup
 {
-    public static bool $ScheduleEnabled = false;
+    // Die Stubs können keine Ereignisse anlegen: „Wochenprogramm als Ereignis anlegen“ ist immer aus, die Kachel braucht die Eigenschaft nicht.
+    public function ColorOf(float $Temperature): int
+    {
+        return $this->GetTemperatureColor($Temperature);
+    }
 
     public static function Slots(array $Days, int $Plan): array|string
     {
@@ -21,7 +25,7 @@ class TileHeatingGroupHmIP extends HomeMaticIPHeatingGroup
 
     protected function ReadPropertyBoolean(string $Name): bool
     {
-        return ($Name == \HMExtended\Device\Property::Schedule) ? self::$ScheduleEnabled : parent::ReadPropertyBoolean($Name);
+        return ($Name == \HMExtended\Device\Property::Schedule) ? false : parent::ReadPropertyBoolean($Name);
     }
 }
 
@@ -43,12 +47,10 @@ class HeatingTileTest extends HeatingTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        TileHeatingGroupHmIP::$ScheduleEnabled = false;
     }
 
     protected function tearDown(): void
     {
-        TileHeatingGroupHmIP::$ScheduleEnabled = false;
         parent::tearDown();
     }
 
@@ -99,11 +101,10 @@ class HeatingTileTest extends HeatingTestCase
         $this->assertEqualsWithDelta([[420, 17.0], [1320, 21.0], [1440, 17.0]], $Schedule['days'][0], 0.001);
     }
 
-    public function testNoScheduleInTheTileWhenDisabled(): void
+    public function testTileShowsTheWeekScheduleWithoutEventProperty(): void
     {
         $this->hmipDevice();
-        TileHeatingGroupHmIP::$ScheduleEnabled = false;
-        $this->assertNull($this->tileConfig()['schedule']);
+        $this->assertNotNull($this->tileConfig()['schedule']);
     }
 
     public function testHeatingGroupWithoutTileRolesHasNoTile(): void
@@ -205,6 +206,35 @@ class HeatingTileTest extends HeatingTestCase
         $this->assertSame([], $Limits['special']);
     }
 
+    public function testGradientFollowsThePresentationOfTheSetPoint(): void
+    {
+        $this->hmipDevice();
+        $Variable = $this->variable('SET_POINT_TEMPERATURE');
+        // Darstellung der Library: Verlauf der Temperatur-Darstellung (Material-Farben, an der Symcon-Kachel abgetastet)
+        $Gradient = $this->tileConfig()['limits']['gradient'];
+        $this->assertCount(4, $Gradient);
+        $this->assertSame(0x03A9F4, $Gradient[0][1]);
+        $this->assertSame(0xF44336, $Gradient[3][1]);
+        // Standard: Akzentfarbe der Visualisierung (kein Verlauf)
+        IPS_SetVariableCustomPresentation($Variable, ['MIN' => 4.5, 'MAX' => 30.5, 'GRADIENT_TYPE' => 0, 'PRESENTATION' => '{6B9CAEEC-5958-C223-30F7-BD36569FC57A}']);
+        $this->assertSame([], $this->tileConfig()['limits']['gradient']);
+        // Eigener Verlauf des Nutzers, Positionen aus Minimum und Maximum
+        IPS_SetVariableCustomPresentation($Variable, ['MIN' => 10, 'MAX' => 30, 'GRADIENT_TYPE' => 3, 'CUSTOM_GRADIENT' => json_encode([['Value' => 30, 'Color' => 0x0000FF], ['Value' => 10, 'Color' => 0xFF0000], ['Value' => 20, 'Color' => 0x00FF00]]), 'PRESENTATION' => '{6B9CAEEC-5958-C223-30F7-BD36569FC57A}']);
+        $this->assertEquals([[0, 0xFF0000], [0.5, 0x00FF00], [1, 0x0000FF]], $this->tileConfig()['limits']['gradient']);
+    }
+
+    public function testScheduleEventColorsUseTheSameGradient(): void
+    {
+        $this->hmipDevice();
+        $Device = $this->device();
+        $this->assertSame(0x03A9F4, $Device->ColorOf(4.5));
+        $this->assertSame(0xF44336, $Device->ColorOf(30.5));
+        $this->assertSame(0x2196F3, $Device->ColorOf(4.5 + 26 / 3));
+        // Zwischen den Stützstellen wird linear gemischt, außerhalb des Bereichs gilt der Rand
+        $this->assertSame(0xF44336, $Device->ColorOf(40.0));
+        $this->assertSame(0x03A9F4, $Device->ColorOf(-5.0));
+    }
+
     public function testAllTextsOfTheTileScriptAreTranslatable(): void
     {
         $Texts = (new ReflectionClass(HMHeatingDevice::class))->getReflectionConstant('TileTexts')->getValue();
@@ -273,14 +303,6 @@ class HeatingTileTest extends HeatingTestCase
         $this->assertEqualsWithDelta([[420, 17.0], [1320, 21.0], [1440, 17.0]], $Schedule['days'][0], 0.001);
     }
 
-    public function testTileSaveIsRejectedWithoutWeeklyProgram(): void
-    {
-        $this->hmipDevice();
-        TileHeatingGroupHmIP::$ScheduleEnabled = false;
-        $this->action('TileSave', json_encode(['days' => array_fill(0, 7, [[1440, 17.0]])]));
-        $this->assertCount(0, $this->requests('putParamset'));
-    }
-
     public function testTileReloadNeedsNoValueChange(): void
     {
         $this->hmipDevice();
@@ -346,7 +368,6 @@ class HeatingTileTest extends HeatingTestCase
         }
         IPS_ApplyChanges($this->DeviceId);
         FakeHomematicIO::$Requests = [];
-        TileHeatingGroupHmIP::$ScheduleEnabled = true;
     }
 
     private function tileConfig(): array

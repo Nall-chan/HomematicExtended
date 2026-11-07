@@ -66,7 +66,7 @@ Existieren in IPS mehrere Homematic Sockets, so ist der auszuwählen, an dem das
 | System | Protocol | integer | 3 | Gruppen (virtuelle Geräte der CCU). Wird vom Modul gesetzt und nicht im Formular angezeigt. |
 | Verändern der Solltemperatur setzt Modus auf Manuell | SetPointBehavior | boolean | `true` | Das Ändern der Solltemperatur schaltet den Modus der Solltemperatur auf Manuell. |
 | Aktives Zeitprofil | enable_ACTIVE_PROFILE | boolean | `true` | Variable für das aktive Zeitprofil. |
-| Zeitplan | enable_SCHEDULE | boolean | `true` | Legt den Wochenplan (Ereignis) und die Variablen zum Speichern an. |
+| Wochenprogramm als Ereignis anlegen | enable_SCHEDULE | boolean | `false` | Legt das Wochenprogramm als Ereignis (Wochenplan) und die Variablen zum Speichern an. Gilt nur für dieses Ereignis: Die Kachel zeigt und bearbeitet den Wochenplan unabhängig davon. Bis Version 3.91 war die Eigenschaft standardmäßig aktiv, bestehende Instanzen behalten ihre Einstellung. |
 | Betriebsmodus | enable_HEATING_COOLING | boolean | `false` | Optionale Statusvariable (Bereich „Regelung“) |
 | Setze auf Komfort Temperatur | enable_COMFORT_MODE | boolean | `false` | Optionale Statusvariable (Bereich „Regelung“), setzt die Solltemperatur auf die Komforttemperatur (bzw. Komforttemperatur kühlen im Kühlbetrieb). Kein Datenpunkt der CCU. |
 | Setze auf Absenktemperatur | enable_LOWERING_MODE | boolean | `false` | Optionale Statusvariable (Bereich „Regelung“), setzt die Solltemperatur auf die Absenktemperatur (bzw. Absenktemperatur kühlen im Kühlbetrieb). Kein Datenpunkt der CCU. |
@@ -165,6 +165,7 @@ Maximiert (ab etwa 880 × 520 Pixel) kommen Schnellwahl, Party und der Wochenpla
 | Maximiert (ab etwa 880 × 520 Pixel) | zusätzlich Schnellwahl (Komfort, Absenkung, Fenster offen), Party-Formular und der Wochenplan zum Bearbeiten |
 
 * Die Solltemperatur wird am Wählrad gezogen oder mit `-` / `+` in den Schritten der Statusvariable geändert. Wie bei der Statusvariable schaltet das Ändern in der Betriebsart Automatik auf Manuell, sofern die Option in der Konfiguration aktiv ist.
+* Die Farben von Wählrad, Wochenplan und Legende folgen dem Farbverlauf der Darstellung der Solltemperatur (`Verlauf`): Bei `Temperatur` der Verlauf der Symcon-Temperaturdarstellung, bei `Eigener Verlauf` die Farben des Nutzers, bei `Standard` die Akzentfarbe der Visualisierung. Die Aktionen des Wochenplan-Ereignisses erhalten dieselben Farben.
 * Grenzen, Schrittweite und Sonderwerte (z.B. „Aus“ und „An“ bei 4,5 und 30,5 °C) des Wählrads entnimmt die Kachel der Darstellung der Statusvariable. Hat der Nutzer eine eigene Darstellung eingestellt, gilt sie, sonst die Darstellung der Library.
 * Statusvariablen, die in der Instanz abgewählt sind (z.B. Party, Boost-Restlaufzeit, Ventilöffnung), zeigt die Kachel nicht. Die übrigen Bedienelemente nutzen den frei gewordenen Platz.
 * Elemente, deren Statusvariable keine Aktion hat oder bei der der Nutzer die Standardaktion deaktiviert hat (`VariableCustomAction` = `VARIABLE_ACTION_DISABLED`), zeigt die Kachel abgedunkelt und nicht bedienbar (z.B. das Wählrad, wenn die Solltemperatur nicht bedient werden darf).
@@ -173,7 +174,7 @@ Maximiert (ab etwa 880 × 520 Pixel) kommen Schnellwahl, Party und der Wochenpla
 * Der Fensterzustand zeigt Symbol und Zustand, ist die Statusvariable bedienbar, schaltet ein Klick den Zustand um.
 * Die maximierte Kachel gliedert das Bedienfeld in die Gruppen `Schnellwahl`, `Wochenplan` (mit den Schaltpunkten des gewählten Tages) und `Party`. Ein Klick auf die Überschrift klappt die Gruppe ein oder aus, die Party ist zunächst eingeklappt. Der Zustand wird im Browser gemerkt.
 * Party: Beginn, Ende und Temperatur werden im maximierten Formular eingegeben. `Party starten` überträgt alles in einem Aufruf an die CCU.
-* Wochenplan bearbeiten: Tag wählen, Zeiten und Temperaturen ändern, Schaltpunkte hinzufügen oder entfernen, auf andere Tage kopieren. `Übernehmen` schreibt das aktive Zeitprofil in einem Aufruf in das Gerät (Endzeiten im Raster des Gerätes, Temperaturen in 0,5 °C), vorher gelten die Änderungen nur als Entwurf in der Kachel. Der Wochenplan ist nur vorhanden, wenn er in der Konfiguration aktiviert ist.
+* Wochenplan bearbeiten: Tag wählen, Zeiten und Temperaturen ändern, Schaltpunkte hinzufügen oder entfernen, auf andere Tage kopieren. `Übernehmen` schreibt das aktive Zeitprofil in einem Aufruf in das Gerät (Endzeiten im Raster des Gerätes, Temperaturen in 0,5 °C), vorher gelten die Änderungen nur als Entwurf in der Kachel. Die Kachel zeigt den Wochenplan ab der Größe „Groß“ immer, auch ohne die Eigenschaft `Wochenprogramm als Ereignis anlegen`.
 * Die Kachel zeigt die Werte der Statusvariablen der Instanz; Änderungen von der CCU erscheinen sofort.
 * Die Listenansicht bleibt erhalten: Im Kacheldialog der Visualisierung (Tabellen-Symbol oben rechts) lässt sich die Darstellung auf `Liste` umschalten. Sie zeigt alle Statusvariablen der Instanz:
 

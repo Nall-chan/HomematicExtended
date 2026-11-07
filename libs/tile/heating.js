@@ -80,13 +80,23 @@
   const coolingOn = () => has('cooling') && Number(val('cooling')) === 1;
   const windowOpen = () => has('window') && Number(val('window')) > 0;
 
-  // Farbe zur Temperatur: blau, violett, lachs, rot (Bereich 12 bis 26 °C)
-  const STOPS = [[10, 165, 240], [143, 134, 168], [255, 179, 166], [229, 96, 79]];
-  function tempColor(v) {
-    const t = Math.min(1, Math.max(0, (v - 12) / 14));
-    const p = Math.min(2.999, t * 3), i = Math.floor(p);
-    return 'rgb(' + STOPS[i].map((x, k) => Math.round(x + (STOPS[i + 1][k] - x) * (p - i))).join(',') + ')';
+  // Farbverlauf nach der Darstellung der Solltemperatur (Instanz: gradient = Liste aus Position 0..1 und RGB-Wert).
+  // Ohne Verlauf (Darstellung „Standard“) gilt die Akzentfarbe der Visualisierung.
+  const rgb = c => [(c >> 16) & 255, (c >> 8) & 255, c & 255];
+  function colorAt(frac) {
+    const g = state.limits.gradient || [];
+    if (!g.length) return 'var(--accent)';
+    const t = Math.min(1, Math.max(0, frac));
+    let i = 1;
+    while (i < g.length - 1 && t > g[i][0]) i++;
+    const a = g[i - 1], b = g[i], span = b[0] - a[0];
+    const p = span > 0 ? Math.min(1, Math.max(0, (t - a[0]) / span)) : 1;
+    const ca = rgb(a[1]), cb = rgb(b[1]);
+    return 'rgb(' + ca.map((x, k) => Math.round(x + (cb[k] - x) * p)).join(',') + ')';
   }
+  const tempColor = v => colorAt((v - state.limits.min) / (state.limits.max - state.limits.min));
+  // Verlauf als CSS-Farbverlauf (Legende des Wochenplans)
+  const gradientCss = () => 'linear-gradient(90deg, ' + [0, 1 / 6, 2 / 6, 3 / 6, 4 / 6, 5 / 6, 1].map(p => colorAt(p)).join(', ') + ')';
   // Werte mit festem Text (z.B. Aus und An bei 4,5 und 30,5 °C) laut Darstellung der Variable, sonst die Temperatur
   const setText = v => {
     const s = (state.limits.special || []).find(x => v >= x.min - 0.001 && v <= x.max + 0.001);
@@ -101,12 +111,23 @@
     const p0 = point(R, a0), p1 = point(R, a1);
     return 'M' + p0[0].toFixed(1) + ' ' + p0[1].toFixed(1) + ' A' + R + ' ' + R + ' 0 ' + (a1 - a0 > 180 ? 1 : 0) + ' 1 ' + p1[0].toFixed(1) + ' ' + p1[1].toFixed(1);
   }
+  // Bogen aus kleinen Stücken, jedes in der Farbe seiner Position im Verlauf (Position = Anteil am ganzen Bogen)
+  function arcSegments(a0, a1) {
+    const n = Math.max(1, Math.ceil((a1 - a0) / 4));
+    let h = '';
+    for (let k = 0; k < n; k++) {
+      const s0 = a0 + (a1 - a0) * k / n, s1 = a0 + (a1 - a0) * (k + 1) / n + (k < n - 1 ? 0.6 : 0);
+      h += '<path d="' + arc(s0, s1) + '" stroke="' + colorAt((s0 - A0) / (A1 - A0)) + '"/>';
+    }
+    const e0 = point(R, a0), e1 = point(R, a1);
+    return h + '<circle cx="' + e0[0].toFixed(1) + '" cy="' + e0[1].toFixed(1) + '" r="3.5" fill="' + colorAt((a0 - A0) / (A1 - A0)) + '"/>'
+      + '<circle cx="' + e1[0].toFixed(1) + '" cy="' + e1[1].toFixed(1) + '" r="3.5" fill="' + colorAt((a1 - A0) / (A1 - A0)) + '"/>';
+  }
   function dialHTML() {
     const withSet = has('set');
     const actual = has('actual') ? val('actual') : null;
-    let svg = '<svg class="dial" viewBox="0 0 200 200" id="dial"><defs><linearGradient id="htg" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#0aa5f0"/><stop offset=".5" stop-color="#8f86a8"/><stop offset="1" stop-color="#ffb3a6"/></linearGradient></defs>'
-      + '<path class="track" d="' + arc(A0, A1) + '"/>';
-    if (withSet) svg += '<path class="active" id="dial-active"/>';
+    let svg = '<svg class="dial" viewBox="0 0 200 200" id="dial"><g class="track">' + arcSegments(A0, A1) + '</g>';
+    if (withSet) svg += '<g class="active" id="dial-active"></g>';
     if (actual !== null && withSet) svg += '<circle class="actual" id="dial-actual" r="2.6"/>';
     if (withSet) svg += '<circle class="knob" id="dial-knob" r="10"/>';
     svg += '</svg>';
@@ -129,7 +150,7 @@
     const v = val('set');
     const a = document.getElementById('dial-active'), k = document.getElementById('dial-knob'), s = document.getElementById('dial-set');
     if (!a || !k) return;
-    a.setAttribute('d', arc(A0, Math.max(A0 + 0.01, angOf(v))));
+    a.innerHTML = arcSegments(A0, Math.max(A0 + 0.5, angOf(v)));
     const p = point(R, angOf(v));
     k.setAttribute('cx', p[0].toFixed(1)); k.setAttribute('cy', p[1].toFixed(1)); k.setAttribute('fill', tempColor(v));
     if (s) s.innerHTML = setText(v);
@@ -222,7 +243,7 @@
         + (i === today ? '<div class="now" style="top:' + (now / 1440 * 100) + '%"></div>' : '') + '</div>';
     });
     return '<div class="weekbox"><div class="week">' + heads + '<div class="hours">' + hrs + '</div>' + cols + '</div>'
-      + '<div class="legend">' + fmt(state.schedule.min) + ' °C<i></i>' + fmt(state.schedule.max) + ' °C</div></div>';
+      + '<div class="legend">' + fmt(state.schedule.min) + ' °C<i style="background:' + gradientCss() + '"></i>' + fmt(state.schedule.max) + ' °C</div></div>';
   }
   function editorHTML() {
     const sch = state.schedule, slots = (draft || sch.days)[selDay];

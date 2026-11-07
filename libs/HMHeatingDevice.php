@@ -94,7 +94,8 @@ class HMHeatingDevice extends HMBase
         foreach (\HMExtended\Property::$Properties[static::DeviceTyp] as $Property => $Value) {
             $this->RegisterPropertyBoolean(self::EnablePrefix . $Property, $Value);
         }
-        $this->RegisterPropertyBoolean(\HMExtended\Device\Property::Schedule, true);
+        // Das Wochenprogramm als Ereignis ist ab Version 4.00 standardmäßig aus; die Kachel zeigt den Wochenplan unabhängig davon.
+        $this->RegisterPropertyBoolean(\HMExtended\Device\Property::Schedule, false);
         $this->RegisterPropertyBoolean(\HMExtended\Device\Property::SetPointBehavior, true);
         $InitTemps = [static::MinScheduleTemperature, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 30];
         foreach ($InitTemps as &$Temp) {
@@ -928,7 +929,6 @@ class HMHeatingDevice extends HMBase
         if (count($ScheduleTemps) == 0) {
             return [];
         }
-        $StepSize = 260 / count($ScheduleTemps);
 
         foreach ($Event['ScheduleActions'] as $Action) {
             IPS_SetEventScheduleAction($Event['EventID'], $Action['ID'], '', 0, '');
@@ -937,7 +937,7 @@ class HMHeatingDevice extends HMBase
         $ActionId = 1;
         $Actions = [];
         foreach ($ScheduleTemps as $Temp) {
-            $Color = self::TempToRGB($ActionId - 1, $StepSize);
+            $Color = $this->GetTemperatureColor((float) $Temp);
             $this->SendDebug((string) $Temp, $Color, 0);
             $Actions[$ActionId] = $Temp;
             IPS_SetEventScheduleAction($Event['EventID'], $ActionId++, sprintf('%0.1f °C', $Temp), $Color, "<?php\r\n/** Do not edit this code,\r\n    It will be automatically overwritten.\r\n*/\r\n\r\n" . 'HM_RequestParams($_IPS[\'TARGET\']);');
@@ -1034,71 +1034,6 @@ class HMHeatingDevice extends HMBase
     }
      */
 
-    /**
-     * HSVtoRGB
-     *
-     * not static, falls wir doch auf Statusvariablen zurückgreifen müssen
-     *
-     * @param  array $Values
-     * @return int
-     */
-    private static function TempToRGB(int $Index, float $StepSize): int
-    {
-        $Index++;
-        $hue = (260 - ($Index * $StepSize)) / 360;
-        $saturation = 0.75;
-        $value = 1;
-        if ($saturation == 0) {
-            $red = $value * 255;
-            $green = $value * 255;
-            $blue = $value * 255;
-        } else {
-            $var_h = $hue * 6;
-            $var_i = floor($var_h);
-            $var_1 = $value * (1 - $saturation);
-            $var_2 = $value * (1 - $saturation * ($var_h - $var_i));
-            $var_3 = $value * (1 - $saturation * (1 - ($var_h - $var_i)));
-
-            switch ($var_i) {
-                case 0:
-                    $var_r = $value;
-                    $var_g = $var_3;
-                    $var_b = $var_1;
-                    break;
-                case 1:
-                    $var_r = $var_2;
-                    $var_g = $value;
-                    $var_b = $var_1;
-                    break;
-                case 2:
-                    $var_r = $var_1;
-                    $var_g = $value;
-                    $var_b = $var_3;
-                    break;
-                case 3:
-                    $var_r = $var_1;
-                    $var_g = $var_2;
-                    $var_b = $value;
-                    break;
-                case 4:
-                    $var_r = $var_3;
-                    $var_g = $var_1;
-                    $var_b = $value;
-                    break;
-                default:
-                    $var_r = $value;
-                    $var_g = $var_1;
-                    $var_b = $var_2;
-                    break;
-            }
-
-            $red = (int) round($var_r * 255);
-            $green = (int) round($var_g * 255);
-            $blue = (int) round($var_b * 255);
-        }
-
-        return ($red << 16) ^ ($green << 8) ^ $blue;
-    }
 }
 
 /* @} */

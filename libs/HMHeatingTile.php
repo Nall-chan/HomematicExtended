@@ -27,6 +27,11 @@ declare(strict_types=1);
 trait HMHeatingTileFunctions
 {
     /**
+     * Standard-Verlauf der Temperatur-Darstellung von Symcon (Material-Farben, ermittelt an der Symcon-Kachel): Position 0 bis 1 => Farbe (RGB).
+     */
+    protected const TemperatureGradient = [[0.0, 0x03A9F4], [1 / 3, 0x2196F3], [2 / 3, 0xFF5722], [1.0, 0xF44336]];
+
+    /**
      * Aktion der Kachel: Wochenplan des aktiven Zeitprofils schreiben (JSON mit `days`).
      */
     protected const TileActionSave = 'TileSave';
@@ -229,6 +234,37 @@ trait HMHeatingTileFunctions
     }
 
     /**
+     * Farbe (RGB) einer Temperatur nach dem Farbverlauf der Solltemperatur-Darstellung (ohne Verlauf: der Verlauf der Temperatur-Darstellung).
+     * Die Wochenplan-Aktionen des Ereignisses färben sich damit wie die Kachel.
+     *
+     * @param float $Temperature Die Temperatur.
+     *
+     * @return int Die Farbe als RGB-Wert.
+     */
+    protected function GetTemperatureColor(float $Temperature): int
+    {
+        $Presentation = $this->GetTilePresentation(static::TileRoles['set'] ?? '');
+        $Stops = count($Presentation['gradient']) ? $Presentation['gradient'] : static::TemperatureGradient;
+        $Range = $Presentation['max'] - $Presentation['min'];
+        $Position = ($Range > 0) ? min(1.0, max(0.0, ($Temperature - $Presentation['min']) / $Range)) : 0.0;
+        $Count = count($Stops);
+        for ($i = 1; $i < $Count; $i++) {
+            if ($Position <= $Stops[$i][0] || $i == $Count - 1) {
+                $Span = $Stops[$i][0] - $Stops[$i - 1][0];
+                $Part = ($Span > 0) ? min(1.0, max(0.0, ($Position - $Stops[$i - 1][0]) / $Span)) : 1.0;
+                $Color = 0;
+                foreach ([16, 8, 0] as $Shift) {
+                    $From = ($Stops[$i - 1][1] >> $Shift) & 0xFF;
+                    $To = ($Stops[$i][1] >> $Shift) & 0xFF;
+                    $Color |= ((int) round($From + ($To - $From) * $Part)) << $Shift;
+                }
+                return $Color;
+            }
+        }
+        return (int) ($Stops[0][1] ?? 0);
+    }
+
+    /**
      * Schreibt den in der Kachel bearbeiteten Wochenplan in das aktive Zeitprofil des Gerätes.
      *
      * @param string $Json JSON mit `days`: sieben Tage (Montag bis Sonntag) mit Einträgen [Endzeit in Minuten, Temperatur].
@@ -237,10 +273,6 @@ trait HMHeatingTileFunctions
      */
     private function SaveScheduleFromTile(string $Json): bool
     {
-        if (!$this->ReadPropertyBoolean(\HMExtended\Device\Property::Schedule)) {
-            echo $this->Translate('The weekly program is disabled in config.') . PHP_EOL;
-            return false;
-        }
         $Request = json_decode($Json, true);
         if (!is_array($Request) || !isset($Request['days']) || !is_array($Request['days'])) {
             echo $this->Translate('Invalid weekly program.') . PHP_EOL;
@@ -274,7 +306,7 @@ trait HMHeatingTileFunctions
      */
     private function GetTilePresentation(string $Ident): array
     {
-        $Result = ['min' => 4.5, 'max' => 30.5, 'step' => 0.5, 'special' => []];
+        $Result = ['min' => 4.5, 'max' => 30.5, 'step' => 0.5, 'special' => [], 'gradient' => []];
         $VariableId = ($Ident == '') ? 0 : $this->FindIDForIdent($Ident);
         if ($VariableId == 0) {
             return $Result;
@@ -299,6 +331,26 @@ trait HMHeatingTileFunctions
                         'max'  => (float) $Interval['IntervalMaxValue'],
                         'text' => (string) ($Interval['ConstantValue'] ?? '')
                     ];
+                }
+            }
+        }
+        // Farbverlauf nach der Darstellung: 0 = Standard (Akzentfarbe der Visualisierung, leere Liste), 3 = eigener Verlauf,
+        // sonst der Verlauf der Temperatur-Darstellung. Position 0 = Minimum, 1 = Maximum.
+        $Type = (int) ($Source['GRADIENT_TYPE'] ?? $Standard['GRADIENT_TYPE'] ?? 0);
+        if ($Type != 0) {
+            $Result['gradient'] = static::TemperatureGradient;
+            if ($Type == 3) {
+                $Stops = [];
+                $List = json_decode((string) ($Source['CUSTOM_GRADIENT'] ?? '[]'), true);
+                $Range = $Result['max'] - $Result['min'];
+                foreach (is_array($List) ? $List : [] as $Stop) {
+                    if (isset($Stop['Value'], $Stop['Color']) && ($Range > 0)) {
+                        $Stops[] = [min(1.0, max(0.0, ((float) $Stop['Value'] - $Result['min']) / $Range)), ((int) $Stop['Color']) & 0xFFFFFF];
+                    }
+                }
+                usort($Stops, fn ($a, $b) => $a[0] <=> $b[0]);
+                if (count($Stops) >= 2) {
+                    $Result['gradient'] = $Stops;
                 }
             }
         }
@@ -349,15 +401,13 @@ trait HMHeatingTileFunctions
     }
 
     /**
-     * Wochenplan des aktiven Zeitprofils für die Kachel. Ohne Wochenplan (Eigenschaft oder noch nicht gelesen) null.
+     * Wochenplan des aktiven Zeitprofils für die Kachel. Solange das Paramset MASTER nicht gelesen wurde, null.
      *
      * @return array|null `days` (sieben Tage von Montag bis Sonntag mit [Endzeit in Minuten, Temperatur]), `plan`, `plans`, `step`, `min`, `max`, `slots`.
      */
     private function GetTileSchedule(): ?array
     {
-        if (!$this->ReadPropertyBoolean(\HMExtended\Device\Property::Schedule)) {
-            return null;
-        }
+        // Unabhängig von der Eigenschaft „Wochenprogramm als Ereignis anlegen“: Die Instanz kennt den Wochenplan aus dem Paramset MASTER
         $Plan = static::SelectedWeekScheduleIdent ? $this->WeekProfile : 1;
         $Schedules = $this->WeekSchedules;
         if (!isset($Schedules[$Plan])) {
