@@ -10,7 +10,7 @@ declare(strict_types=1);
  * @author        Michael Tröger <nall4chan@gmail.com>
  * @copyright     2015-2026 Michael Tröger
  * @license       Custom Non-Commercial Share-Alike License (see LICENSE)
- * @version       3.75
+ * @version       4.00
  */
 eval('declare(strict_types=1);namespace HMExtended {?>' . file_get_contents(__DIR__ . '/helper/DebugHelper.php') . '}');
 eval('declare(strict_types=1);namespace HMExtended {?>' . file_get_contents(__DIR__ . '/helper/BufferHelper.php') . '}');
@@ -20,6 +20,14 @@ eval('declare(strict_types=1);namespace HMExtended {?>' . file_get_contents(__DI
 eval('declare(strict_types=1);namespace HMExtended {?>' . file_get_contents(__DIR__ . '/helper/AttributeArrayHelper.php') . '}');
 require_once __DIR__ . '/HMTypes.php';  // HMTypes Data
 require_once __DIR__ . '/HMScriptParser.php';  // Parser für die Antworten der CCU
+
+// Konstanten des Kernels, die erst ab Symcon 9.1 definiert sind (die Library setzt 9.0 voraus).
+// Vor 9.1 ist INSTANCE_VISUALIZATION_TYPE_HTML_FULLSCREEN gleich HTML (1), ab 9.1 setzt der Kernel den Wert 2.
+foreach (['INSTANCE_VISUALIZATION_TYPE_HTML' => 1, 'INSTANCE_VISUALIZATION_TYPE_HTML_FULLSCREEN' => 1, 'VARIABLE_ACTION_DISABLED' => 1] as $ConstantName => $ConstantValue) {
+    if (!defined($ConstantName)) {
+        define($ConstantName, $ConstantValue);
+    }
+}
 
 /**
  * Statusvariablen mit Darstellung (seit Version 3.82 statt Variablenprofilen).

@@ -77,14 +77,14 @@ trait HMHeatingTileFunctions
 
     /**
      * Meldet die Instanz als Kachel an, wenn das Modul Rollen für die Kachel kennt. Normale und maximierte Kachel über das HTML-SDK
-     * gibt es erst ab Symcon 9.1, davor nur die normale Kachel.
+     * gibt es erst ab Symcon 9.1, davor nur die normale Kachel (HMBase setzt die Konstante dort auf HTML).
      */
     protected function RegisterHeatingTile(): void
     {
         if (count(static::TileRoles) == 0) {
             return;
         }
-        $this->SetVisualizationType(defined('INSTANCE_VISUALIZATION_TYPE_HTML_FULLSCREEN') ? constant('INSTANCE_VISUALIZATION_TYPE_HTML_FULLSCREEN') : INSTANCE_VISUALIZATION_TYPE_HTML);
+        $this->SetVisualizationType(INSTANCE_VISUALIZATION_TYPE_HTML_FULLSCREEN);
     }
 
     /**

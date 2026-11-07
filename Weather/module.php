@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @copyright     2015-2026 Michael Tröger
  * @license       Custom Non-Commercial Share-Alike License (see LICENSE)
  *
- * @version       3.78
+ * @version       4.00
  */
 require_once __DIR__ . '/../libs/HMBase.php';  // HMBase Klasse
 require_once __DIR__ . '/../libs/HMReadValue.php';  // Datenpunkt in Statusvariable lesen

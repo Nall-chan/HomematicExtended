@@ -12,7 +12,7 @@ declare(strict_types=1);
  * @copyright     2015-2026 Michael Tröger
  * @license       Custom Non-Commercial Share-Alike License (see LICENSE)
  *
- * @version       3.90
+ * @version       4.00
  */
 require_once __DIR__ . '/../libs/HMBase.php';  // HMBase Klasse
 require_once __DIR__ . '/../libs/HMWeeklyProgram.php';  // Wochenprogramm (Paramset MASTER)
@@ -108,7 +108,7 @@ class HomeMaticIPWeeklyProgram extends HMBase
         $this->RegisterAttributeInteger(self::AttributeLocks, 0);
         $this->RegisterAttributeInteger(self::AttributeEntryCount, \HMExtended\WeeklyProgram::EntryCount);
         // Normale Kachel und Vollbild (maximierte Kachel) über das HTML-SDK gibt es erst ab Symcon 9.1, davor nur die normale Kachel
-        $this->SetVisualizationType(defined('INSTANCE_VISUALIZATION_TYPE_HTML_FULLSCREEN') ? constant('INSTANCE_VISUALIZATION_TYPE_HTML_FULLSCREEN') : INSTANCE_VISUALIZATION_TYPE_HTML);
+        $this->SetVisualizationType(INSTANCE_VISUALIZATION_TYPE_HTML_FULLSCREEN);
     }
 
     /**
