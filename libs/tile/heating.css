@@ -141,3 +141,7 @@ button.chip:disabled:hover, .tool:disabled:hover { background: var(--surface); }
 .col .head { padding-right: 0; }
 .size-wide .col.b, .size-full .col.b { padding-top: var(--corner); }
 .size-wide .app, .size-full .app { padding-top: 4px; }
+
+/* Chip Heizen/Kühlen: Hintergrundfarbe aus dem Verlauf der Solltemperatur (gesetzt in heating.js) */
+.chip.mode { color: #fff; text-shadow: 0 0 2px #0004; }
+button.chip.mode:hover:not(:disabled) { filter: brightness(1.08); }

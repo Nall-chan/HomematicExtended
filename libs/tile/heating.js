@@ -211,7 +211,8 @@
     // Betriebsart Heizen / Kühlen (nur mit der Statusvariable), bedienbar schaltet sie um
     if (has('cooling')) {
       const cool = coolingOn(), tag = can('cooling') ? 'button' : 'span';
-      h += '<' + tag + ' class="chip' + (cool ? ' cool' : '') + (tag === 'span' ? ' dim' : '') + '"' + (tag === 'button' ? ' data-cooling' : '') + '>'
+      // Hintergrund: Kühlen in der Farbe des Minimums, Heizen in der des Maximums der Solltemperatur-Darstellung
+      h += '<' + tag + ' class="chip mode' + (cool ? ' cool' : ' heat') + (tag === 'span' ? ' dim' : '') + '" style="background:' + colorAt(cool ? 0 : 1) + '"' + (tag === 'button' ? ' data-cooling' : '') + '>'
         + icon(cool ? 'snow' : 'flame') + (cool ? T('Cooling') : T('Heating')) + '</' + tag + '>';
     }
     return h ? '<div class="chips">' + h + '</div>' : '';
