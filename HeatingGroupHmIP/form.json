@@ -93,9 +93,26 @@
                             "type": "RowLayout",
                             "items": [
                                 {
+                                    "name": "enable_COMFORT_MODE",
+                                    "type": "CheckBox",
+                                    "caption": "Set to comfort temperature",
+                                    "width": "250px"
+                                },
+                                {
                                     "name": "enable_HEATING_COOLING",
                                     "type": "CheckBox",
                                     "caption": "Operation mode",
+                                    "width": "250px"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "RowLayout",
+                            "items": [
+                                {
+                                    "name": "enable_LOWERING_MODE",
+                                    "type": "CheckBox",
+                                    "caption": "Set to lowering temperature",
                                     "width": "250px"
                                 }
                             ]

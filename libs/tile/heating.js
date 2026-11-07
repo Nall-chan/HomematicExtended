@@ -42,8 +42,12 @@
     roles: cfg.roles || {},
     actions: cfg.actions || [],
     values: cfg.values || {},
-    limits: cfg.limits || { min: 4.5, max: 30.5, step: 0.5 },
-    schedule: cfg.schedule || null
+    limits: cfg.limits || { min: 4.5, max: 30.5, step: 0.5, special: [] },
+    partyLimits: cfg.partyLimits || { min: 4.5, max: 30.5, step: 0.5, special: [] },
+    schedule: cfg.schedule || null,
+    presetModes: !!cfg.presetModes,
+    presetWindow: !!cfg.presetWindow,
+    temps: cfg.temps || {}
   };
   let size = 'compact';
   let selDay = (new Date().getDay() + 6) % 7;     // Montag = 0
@@ -73,6 +77,7 @@
   const hasParty = () => has('mode') && has('partyStart') && has('partyEnd') && has('partyTemp');
   const partyOn = () => mode() === 2;
   const canParty = () => can('partyStart') && can('partyEnd') && can('partyTemp');
+  const coolingOn = () => has('cooling') && Number(val('cooling')) === 1;
   const windowOpen = () => has('window') && Number(val('window')) > 0;
 
   // Farbe zur Temperatur: blau, violett, lachs, rot (Bereich 12 bis 26 °C)
@@ -82,11 +87,10 @@
     const p = Math.min(2.999, t * 3), i = Math.floor(p);
     return 'rgb(' + STOPS[i].map((x, k) => Math.round(x + (STOPS[i + 1][k] - x) * (p - i))).join(',') + ')';
   }
+  // Werte mit festem Text (z.B. Aus und An bei 4,5 und 30,5 °C) laut Darstellung der Variable, sonst die Temperatur
   const setText = v => {
-    const l = state.limits;
-    if (v <= l.min) return T('Off');
-    if (v >= l.max) return T('On');
-    return fmt(v) + '<small> °C</small>';
+    const s = (state.limits.special || []).find(x => v >= x.min - 0.001 && v <= x.max + 0.001);
+    return s ? esc(s.text) : fmt(v) + '<small> °C</small>';
   };
 
   // ---------- Wählrad ----------
@@ -183,7 +187,12 @@
       h += '<' + tag + ' class="chip' + (open ? ' warn' : '') + (tag === 'span' ? ' dim' : '') + '"' + (tag === 'button' ? ' data-window' : '') + ' title="' + esc(T('Window')) + '">'
         + icon(open ? 'windowOpen' : 'window') + (open ? T('Window state open') : T('Window state closed')) + '</' + tag + '>';
     }
-    if (has('cooling') && Number(val('cooling')) === 1) h += '<span class="chip">' + icon('snow') + T('Cooling') + '</span>';
+    // Betriebsart Heizen / Kühlen (nur mit der Statusvariable), bedienbar schaltet sie um
+    if (has('cooling')) {
+      const cool = coolingOn(), tag = can('cooling') ? 'button' : 'span';
+      h += '<' + tag + ' class="chip' + (cool ? ' cool' : '') + (tag === 'span' ? ' dim' : '') + '"' + (tag === 'button' ? ' data-cooling' : '') + '>'
+        + icon(cool ? 'snow' : 'flame') + (cool ? T('Cooling') : T('Heating')) + '</' + tag + '>';
+    }
     return h ? '<div class="chips">' + h + '</div>' : '';
   }
   function headHTML() {
@@ -242,10 +251,23 @@
   // ---------- Bedienfeld (maximiert) ----------
   const toLocal = ts => { const d = new Date(ts * 1000); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes()); };
   function presetsHTML() {
-    const list = [['comfort', 'Comfort'], ['lowering', 'Lowering'], ['windowTemp', 'Window open']].filter(p => has(p[0]));
+    // Komfort und Absenkung: Die Aktionsvariable (COMFORT_MODE, LOWERING_MODE) löst die Aktion aus, die Temperatur dahinter ist nur die
+    // Anzeige und richtet sich nach der Betriebsart (Heizen oder Kühlen). Sonst, und für Fenster offen, wird die Solltemperatur gesetzt.
+    // Ein Eintrag erscheint nur, wenn seine Statusvariable vorhanden (in der Instanz aktiv) ist.
+    // Fenster offen: Mit Fensterzustand (HomematicIP) schaltet der Eintrag den Zustand und erscheint nur mit dieser Variablen.
+    const list = [['comfort', 'Comfort', state.presetModes ? 'comfortMode' : null], ['lowering', 'Lowering', state.presetModes ? 'loweringMode' : null], ['windowTemp', 'Window open', state.presetWindow ? 'window' : null]]
+      .map(p => ({ temp: p[0] + ((p[2] && p[2] !== 'window' && coolingOn()) ? 'Cooling' : ''), label: p[1], mode: p[2] }))
+      .filter(p => p.mode ? has(p.mode) : has(p.temp));
     if (!list.length) return '';
-    return '<div class="presets">' + list.map(p =>
-      '<button' + (can('set') ? '' : ' disabled') + ' class="preset' + (has('set') && Math.abs(val('set') - val(p[0])) < 0.01 ? ' on' : '') + '" data-preset="' + p[0] + '"><span>' + T(p[1]) + '</span><span>' + fmt(val(p[0])) + ' °C</span></button>').join('') + '</div>';
+    return '<div class="presets">' + list.map(p => {
+      const viaMode = !!p.mode;
+      const enabled = viaMode ? can(p.mode) : can('set');
+      // Die Temperatur kommt aus der Statusvariable, ist sie abgewählt, aus dem gemerkten Paramset des Gerätes
+      const value = has(p.temp) ? val(p.temp) : (p.temp in state.temps ? state.temps[p.temp] : null);
+      const on = p.mode === 'window' ? windowOpen() : (value !== null && has('set') && Math.abs(val('set') - value) < 0.01);
+      return '<button' + (enabled ? '' : ' disabled') + ' class="preset' + (on ? ' on' : '') + '" data-preset="' + p.temp + '"' + (viaMode ? ' data-via="' + p.mode + '"' : '') + '><span>' + T(p.label) + '</span><span>'
+        + (value !== null ? fmt(value) + ' °C' : '&nbsp;') + '</span></button>';
+    }).join('') + '</div>';
   }
   function partyHTML() {
     if (!hasParty()) return '';
@@ -261,7 +283,7 @@
     return '<div class="form">'
       + '<label>' + T('Begin') + '</label><input' + dis + ' type="datetime-local" data-party="start" value="' + toLocal(party.start) + '">'
       + '<label>' + T('End') + '</label><input' + dis + ' type="datetime-local" data-party="end" value="' + toLocal(party.end) + '">'
-      + '<label>' + T('Temperature') + '</label><input' + dis + ' type="number" step="0.5" min="' + state.limits.min + '" max="' + state.limits.max + '" data-party="temp" value="' + Number(party.temp).toFixed(1) + '">'
+      + '<label>' + T('Temperature') + '</label><input' + dis + ' type="number" step="0.5" min="' + state.partyLimits.min + '" max="' + state.partyLimits.max + '" data-party="temp" value="' + Number(party.temp).toFixed(1) + '">'
       + '<span></span><button' + (can('mode') && canParty() ? '' : ' disabled') + ' class="tool primary" data-party-' + (on ? 'stop' : 'start') + '>' + (on ? T('End party') : T('Start party')) + '</button></div>';
   }
 
@@ -341,8 +363,11 @@
       else { state.values.mode = boostOn() ? 0 : boostMode; act('mode', state.values.mode); }
       render();
     }
+    else if ('cooling' in b.dataset) { state.values.cooling = coolingOn() ? 0 : 1; act('cooling', state.values.cooling); render(); }
     else if ('window' in b.dataset) { state.values.window = windowOpen() ? 0 : 1; act('window', state.values.window); render(); }
-    else if (b.dataset.preset) { state.values.set = clampSet(val(b.dataset.preset)); commitSet(); render(); }
+    else if (b.dataset.via === 'window') { state.values.window = windowOpen() ? 0 : 1; act('window', state.values.window); render(); }
+    else if (b.dataset.via) { act(b.dataset.via, true); }
+    else if (b.dataset.preset) { state.values.set = clampSet(has(b.dataset.preset) ? val(b.dataset.preset) : state.temps[b.dataset.preset]); commitSet(); render(); }
     else if ('partyStart' in b.dataset) {
       act('partyStart', party.start); act('partyEnd', party.end); act('partyTemp', party.temp); act('mode', 2);
     }
@@ -405,6 +430,10 @@
     if (msg.type === 'state') {
       state.roles = msg.roles || {}; state.actions = msg.actions || []; state.values = msg.values || {};
       state.limits = msg.limits || state.limits;
+      state.partyLimits = msg.partyLimits || state.partyLimits;
+      state.presetModes = !!msg.presetModes;
+      state.presetWindow = !!msg.presetWindow;
+      state.temps = msg.temps || {};
       scheduleFrom(msg.schedule);
     } else if (msg.type === 'schedule') {
       scheduleFrom(msg.schedule);

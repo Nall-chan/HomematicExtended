@@ -45,7 +45,7 @@ trait HMHeatingTileFunctions
      * Texte der Kachel (Schlüssel = englischer Text, übersetzt über locale.json).
      */
     private const TileTexts = [
-        'Automatic', 'Manual', 'Party', 'Boost', 'Window open', 'Window', 'Window state open', 'Window state closed', 'Valve', 'Actual', 'Cooling',
+        'Automatic', 'Manual', 'Party', 'Boost', 'Window open', 'Window', 'Window state open', 'Window state closed', 'Valve', 'Actual', 'Cooling', 'Heating',
         'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday',
         'Comfort', 'Lowering', 'Presets', 'Off', 'On', 'min', 'Begin', 'End', 'Temperature', 'Start party', 'End party',
         'Profile', 'Add switching point', 'Remove', 'Apply', 'Discard', 'Saving…', 'until',
@@ -183,6 +183,52 @@ trait HMHeatingTileFunctions
     }
 
     /**
+     * Merkt sich die Temperaturen der Schnellwahl (Komfort, Absenkung, Fenster offen) aus dem Paramset MASTER. Die Kachel zeigt sie auch dann,
+     * wenn die Statusvariable dazu in der Instanz abgewählt ist.
+     *
+     * @param array $Params Das Paramset MASTER der CCU.
+     */
+    protected function StoreTileTemperatures(array $Params): void
+    {
+        $Temperatures = $this->TileTemperatures;
+        foreach (['comfort', 'lowering', 'comfortCooling', 'loweringCooling', 'windowTemp'] as $Role) {
+            $Ident = static::TileRoles[$Role] ?? '';
+            if (($Ident != '') && isset($Params[$Ident]) && is_numeric($Params[$Ident])) {
+                $Temperatures[$Role] = (float) $Params[$Ident];
+            }
+        }
+        $this->TileTemperatures = $Temperatures;
+        $this->PushTileValues();
+    }
+
+    /**
+     * true, wenn das Gerät auf Kühlen steht (Statusvariable Betriebsart vorhanden und auf Kühlen).
+     */
+    protected function GetCoolingActive(): bool
+    {
+        $Ident = static::TileRoles['cooling'] ?? '';
+        return ($Ident != '') && ($this->FindIDForIdent($Ident) != 0) && ((int) $this->GetValue($Ident) === 1);
+    }
+
+    /**
+     * Liefert die Temperatur für Komfort oder Absenkung: aus der Statusvariable, ist sie abgewählt, aus dem gemerkten Paramset MASTER.
+     *
+     * @param string $Role `comfort` oder `lowering`.
+     * @param bool $Cooling true für die Temperatur im Kühlbetrieb.
+     *
+     * @return float|null Die Temperatur, null wenn sie noch nicht bekannt ist.
+     */
+    protected function GetPresetTemperature(string $Role, bool $Cooling): ?float
+    {
+        $Role .= $Cooling ? 'Cooling' : '';
+        $Ident = static::TileRoles[$Role] ?? '';
+        if (($Ident != '') && ($this->FindIDForIdent($Ident) != 0)) {
+            return (float) $this->GetValue($Ident);
+        }
+        return $this->TileTemperatures[$Role] ?? null;
+    }
+
+    /**
      * Schreibt den in der Kachel bearbeiteten Wochenplan in das aktive Zeitprofil des Gerätes.
      *
      * @param string $Json JSON mit `days`: sieben Tage (Montag bis Sonntag) mit Einträgen [Endzeit in Minuten, Temperatur].
@@ -219,6 +265,47 @@ trait HMHeatingTileFunctions
     }
 
     /**
+     * Grenzen und Sonderwerte einer Statusvariable aus ihrer Darstellung. Hat der Nutzer eine eigene Darstellung eingestellt
+     * (VariableCustomPresentation), gilt sie, fehlen darin Grenzen, die Darstellung der Library.
+     *
+     * @param string $Ident Ident der Statusvariable.
+     *
+     * @return array `min`, `max`, `step` und `special` (Liste aus `min`, `max`, `text` für Werte mit festem Text, z.B. Aus/An).
+     */
+    private function GetTilePresentation(string $Ident): array
+    {
+        $Result = ['min' => 4.5, 'max' => 30.5, 'step' => 0.5, 'special' => []];
+        $VariableId = ($Ident == '') ? 0 : $this->FindIDForIdent($Ident);
+        if ($VariableId == 0) {
+            return $Result;
+        }
+        $Variable = IPS_GetVariable($VariableId);
+        $Standard = $Variable['VariablePresentation'] ?? [];
+        $Custom = $Variable['VariableCustomPresentation'] ?? [];
+        foreach (['min' => 'MIN', 'max' => 'MAX', 'step' => 'STEP_SIZE'] as $Key => $Name) {
+            $Value = $Custom[$Name] ?? $Standard[$Name] ?? null;
+            if (is_numeric($Value)) {
+                $Result[$Key] = (float) $Value;
+            }
+        }
+        // Sonderwerte (Intervalle mit festem Text) gelten nach der Darstellung, die gerade wirkt
+        $Source = (count($Custom) > 0) ? $Custom : $Standard;
+        if (!empty($Source['INTERVALS_ACTIVE'])) {
+            $Intervals = json_decode((string) ($Source['INTERVALS'] ?? '[]'), true);
+            foreach (is_array($Intervals) ? $Intervals : [] as $Interval) {
+                if (!empty($Interval['ConstantActive']) && isset($Interval['IntervalMinValue'], $Interval['IntervalMaxValue'])) {
+                    $Result['special'][] = [
+                        'min'  => (float) $Interval['IntervalMinValue'],
+                        'max'  => (float) $Interval['IntervalMaxValue'],
+                        'text' => (string) ($Interval['ConstantValue'] ?? '')
+                    ];
+                }
+            }
+        }
+        return $Result;
+    }
+
+    /**
      * Werte der vorhandenen Rollen und die Eigenschaften der Kachel.
      *
      * @return array `roles` (Rolle => Ident der Statusvariable), `actions` (Rollen mit Aktion), `values` (Rolle => Wert),
@@ -242,20 +329,22 @@ trait HMHeatingTileFunctions
             $Value = $this->GetValue($Ident);
             $Values[$Role] = is_bool($Value) ? $Value : (is_numeric($Value) ? $Value * (static::TileFactors[$Role] ?? 1) : $Value);
         }
-        $Limits = ['min' => 4.5, 'max' => 30.5, 'step' => 0.5];
-        $SetId = $this->FindIDForIdent(static::TileRoles['set'] ?? '');
-        if ($SetId != 0) {
-            $Presentation = IPS_GetVariable($SetId)['VariablePresentation'] ?? [];
-            $Limits['min'] = (float) ($Presentation['MIN'] ?? $Limits['min']);
-            $Limits['max'] = (float) ($Presentation['MAX'] ?? $Limits['max']);
-            $Limits['step'] = (float) ($Presentation['STEP_SIZE'] ?? $Limits['step']);
-        }
+        // Grenzen der Soll-Temperatur und der Party-Temperatur nach der Darstellung der jeweiligen Variable
+        $Limits = $this->GetTilePresentation(static::TileRoles['set'] ?? '');
+        $PartyLimits = $this->GetTilePresentation(static::TileRoles['partyTemp'] ?? '');
         return [
-            'roles'    => $Roles,
-            'actions'  => $Actions,
-            'values'   => $Values,
-            'limits'   => $Limits,
-            'schedule' => $this->GetTileSchedule()
+            'roles'       => $Roles,
+            'actions'     => $Actions,
+            'values'      => $Values,
+            'limits'      => $Limits,
+            'partyLimits' => $PartyLimits,
+            // Temperaturen der Schnellwahl ohne Statusvariable (aus dem Paramset MASTER gemerkt)
+            'temps'    => (object) $this->TileTemperatures,
+            // Geräte mit COMFORT_MODE/LOWERING_MODE: Komfort und Absenkung erscheinen nach diesen Variablen (Regelung), nicht nach den Temperaturen
+            'presetModes' => isset(static::TileRoles['comfortMode']),
+            // Geräte mit Fensterzustand (WINDOW_STATE): „Fenster offen“ schaltet den Zustand, die Temperatur dahinter ist nur die Anzeige
+            'presetWindow' => isset(static::TileRoles['window']),
+            'schedule'     => $this->GetTileSchedule()
         ];
     }
 

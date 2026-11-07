@@ -171,6 +171,9 @@ namespace HMExtended
         public const BOOST_TIME = 'BOOST_TIME';
         public const FROST_PROTECTION = 'FROST_PROTECTION';
         public const HEATING_COOLING = 'HEATING_COOLING';
+        // Kein Datenpunkt der CCU: Variablen der Instanz, die die Soll-Temperatur auf die Komfort- bzw. Absenktemperatur setzen
+        public const COMFORT_MODE = 'COMFORT_MODE';
+        public const LOWERING_MODE = 'LOWERING_MODE';
         public const HUMIDITY = 'HUMIDITY';
         public const HUMIDITY_STATUS = 'HUMIDITY_STATUS';
         public const LEVEL = 'LEVEL';
@@ -262,6 +265,8 @@ namespace HMExtended
                 HeatingGroupHmIP::ACTIVE_PROFILE               => true,
                 HeatingGroupHmIP::BOOST_MODE                   => true,
                 HeatingGroupHmIP::BOOST_TIME                   => false,
+                HeatingGroupHmIP::COMFORT_MODE                 => false,
+                HeatingGroupHmIP::LOWERING_MODE                => false,
                 HeatingGroupHmIP::FROST_PROTECTION             => false,
                 HeatingGroupHmIP::HEATING_COOLING              => false,
                 HeatingGroupHmIP::LEVEL                        => true,
@@ -744,6 +749,18 @@ namespace HMExtended
                     HeatingPresentation::HeatingCooling,
                     true,
                     'Operation mode'
+                ],
+                HeatingGroupHmIP::COMFORT_MODE => [
+                    VARIABLETYPE_INTEGER,
+                    HeatingPresentation::Execute,
+                    true,
+                    'Set to comfort temperature'
+                ],
+                HeatingGroupHmIP::LOWERING_MODE => [
+                    VARIABLETYPE_INTEGER,
+                    HeatingPresentation::Execute,
+                    true,
+                    'Set to lowering temperature'
                 ],
                 HeatingGroupHmIP::HUMIDITY => [
                     VARIABLETYPE_INTEGER,

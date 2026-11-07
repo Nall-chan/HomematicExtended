@@ -130,7 +130,9 @@
             "The end times of a day must be in ascending order.": "Die Endzeiten eines Tages müssen aufsteigend sein.",
             "The temperature of a switching point is out of range.": "Die Temperatur eines Schaltpunktes liegt außerhalb des gültigen Bereichs.",
             "Window state open": "Offen",
-            "Window state closed": "Geschlossen"
+            "Window state closed": "Geschlossen",
+            "Heating": "Heizen",
+            "The temperature is not known yet.": "Die Temperatur ist noch nicht bekannt."
         }
     }
 }

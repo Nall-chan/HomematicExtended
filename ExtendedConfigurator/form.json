@@ -28,6 +28,13 @@
             "values": []
         },
         {
+            "type": "Button",
+            "name": "ResetProtocolHints",
+            "caption": "Show hidden hints again",
+            "visible": false,
+            "onClick": "IPS_RequestAction($id, 'ResetProtocolHints', true);"
+        },
+        {
             "type": "Label",
             "caption": "This module is free for non-commercial use,\r\nDonations in support of the author are accepted here:"
         },

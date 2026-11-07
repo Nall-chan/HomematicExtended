@@ -46,8 +46,14 @@ class HomeMaticIPHeatingGroup extends HMHeatingDevice
         'comfort'    => \HMExtended\HeatingGroupHmIP::TEMPERATURE_COMFORT,
         'lowering'   => \HMExtended\HeatingGroupHmIP::TEMPERATURE_LOWERING,
         'windowTemp' => \HMExtended\HeatingGroupHmIP::TEMPERATURE_WINDOW_OPEN,
-        'profile'    => \HMExtended\HeatingGroupHmIP::ACTIVE_PROFILE
+        'profile'    => \HMExtended\HeatingGroupHmIP::ACTIVE_PROFILE,
+        // Komfort und Absenkung: Aktionsvariablen der Instanz, die die Soll-Temperatur setzen (Heizen bzw. Kühlen je nach Betriebsart)
+        'comfortMode'     => \HMExtended\HeatingGroupHmIP::COMFORT_MODE,
+        'loweringMode'    => \HMExtended\HeatingGroupHmIP::LOWERING_MODE,
+        'comfortCooling'  => \HMExtended\HeatingGroupHmIP::TEMPERATURE_COMFORT_COOLING,
+        'loweringCooling' => \HMExtended\HeatingGroupHmIP::TEMPERATURE_LOWERING_COOLING
     ];
+    protected const VirtualVariables = [\HMExtended\HeatingGroupHmIP::COMFORT_MODE, \HMExtended\HeatingGroupHmIP::LOWERING_MODE];
     // LEVEL ist ein Anteil von 0 bis 1, BOOST_TIME in Sekunden
     protected const TileFactors = ['valve' => 100, 'boostRemain' => 1 / 60];
 
@@ -78,6 +84,16 @@ class HomeMaticIPHeatingGroup extends HMHeatingDevice
                     $Time = (new DateTime())->setTimestamp((int) $Value);
                     $SendValue = $Time->format('Y_m_d H:i');
                     break;
+                case \HMExtended\HeatingGroupHmIP::COMFORT_MODE:
+                case \HMExtended\HeatingGroupHmIP::LOWERING_MODE:
+                    $Temperature = $this->GetPresetTemperature(($Ident == \HMExtended\HeatingGroupHmIP::COMFORT_MODE) ? 'comfort' : 'lowering', (bool) $this->GetCoolingActive());
+                    if ($Temperature === null) {
+                        echo $this->Translate('The temperature is not known yet.') . PHP_EOL;
+                        return;
+                    }
+                    // Wie eine Änderung der Soll-Temperatur (inklusive Wechsel auf Manuell)
+                    $this->ProcessRequestAction(\HMExtended\HeatingGroupHmIP::SET_POINT_TEMPERATURE, $Temperature, $done);
+                    return;
                 case \HMExtended\HeatingGroupHmIP::PARTY_SET_POINT_TEMPERATURE:
                     // Die Party-Temperatur ist in der CCU nur schreibbar, indem sie die Soll-Temperatur ändert (nur bei laufender Party).
                     if ($this->GetValue(\HMExtended\HeatingGroupHmIP::SET_POINT_MODE) == 2) {

@@ -38,6 +38,21 @@ class HomeMaticExtendedConfigurator extends HMBase
     ];
 
     /**
+     * Prefix der Aktion für „nicht mehr anzeigen“, gefolgt von der Eigenschaft des Protokolls im Socket (z.B. `HideProtocolHint_GROpen`).
+     */
+    private const ActionHideProtocolHint = 'HideProtocolHint_';
+
+    /**
+     * Aktion: alle ausgeblendeten Hinweise zu nicht aktivierten Protokollen wieder anzeigen.
+     */
+    private const ActionResetProtocolHints = 'ResetProtocolHints';
+
+    /**
+     * Attribut: Protokolle (Eigenschaft im Socket), für die der Nutzer den Hinweis „nicht aktiviert“ ausgeblendet hat.
+     */
+    private const AttributeHiddenProtocolHints = 'HiddenProtocolHints';
+
+    /**
      * Namen und Räume der CCU-Geräte, je Interface und Adresse.
      * Gilt nur für einen Aufruf von GetConfigurationForm und liegt deshalb nicht im Buffer der Instanz (Buffer sind auf 256 kB begrenzt).
      *
@@ -51,12 +66,14 @@ class HomeMaticExtendedConfigurator extends HMBase
      * @var array
      */
     private array $listDevices = [];
+
     /**
      * Interne Funktion des SDK.
      */
     public function Create(): void
     {
         parent::Create();
+        $this->RegisterAttributeArray(self::AttributeHiddenProtocolHints, []);
         $this->RegisterHMPropertys('XXX9999994');
         $this->RegisterPropertyBoolean(\HMExtended\Device\Property::EmulateStatus, false);
     }
@@ -68,7 +85,6 @@ class HomeMaticExtendedConfigurator extends HMBase
     {
         parent::ApplyChanges();
     }
-    //################# PUBLIC
 
     /**
      * Interne Funktion des SDK.
@@ -101,6 +117,37 @@ class HomeMaticExtendedConfigurator extends HMBase
         $this->SendDebug('FORM', json_encode($Form), 0);
         $this->SendDebug('FORM', json_last_error_msg(), 0);
         return json_encode($Form);
+    }
+    //################# PUBLIC
+
+    /**
+     * Interne Funktion des SDK.
+     * Blendet den Hinweis zu einem nicht aktivierten Protokoll aus bzw. blendet alle Hinweise wieder ein.
+     */
+    protected function ProcessRequestAction(string $Ident, mixed $Value, bool &$done = false): void
+    {
+        if ($Ident == self::ActionResetProtocolHints) {
+            $this->WriteAttributeArray(self::AttributeHiddenProtocolHints, []);
+            $this->UpdateFormField(self::ActionResetProtocolHints, 'visible', false);
+            $done = true;
+            return;
+        }
+        if (str_starts_with($Ident, self::ActionHideProtocolHint)) {
+            $Property = substr($Ident, strlen(self::ActionHideProtocolHint));
+            if (array_key_exists($Property, self::ProtocolCaptions)) {
+                $Hidden = array_values(array_diff($this->ReadAttributeArray(self::AttributeHiddenProtocolHints), [$Property]));
+                if ($Value) {
+                    $Hidden[] = $Property;
+                }
+                $this->WriteAttributeArray(self::AttributeHiddenProtocolHints, $Hidden);
+                $this->UpdateFormField(self::ActionResetProtocolHints, 'visible', count($Hidden) > 0);
+            } else {
+                echo $this->Translate('Invalid Ident.') . PHP_EOL;
+            }
+            $done = true;
+            return;
+        }
+        parent::ProcessRequestAction($Ident, $Value, $done);
     }
 
     /**
@@ -205,34 +252,51 @@ class HomeMaticExtendedConfigurator extends HMBase
             $Form['actions'][0]['values'] = array_merge($Form['actions'][0]['values'], $this->GetConfigRows(3, \HMExtended\GUID::HeatingGroupHmIP));
             $Form['actions'][0]['values'] = array_merge($Form['actions'][0]['values'], $this->GetConfigRows(3, \HMExtended\GUID::HeatingGroup));
         }
-        $DisabledProtocols = [];
+        // Hinweis auf nicht aktivierte Protokolle; der Nutzer kann ihn je Protokoll ausblenden.
+        $Hidden = $this->ReadAttributeArray(self::AttributeHiddenProtocolHints);
+        $Items = [[
+            'type'    => 'Label',
+            'caption' => 'These protocols are not enabled in the I/O, the matching devices cannot be listed:'
+        ]];
         foreach (self::ProtocolCaptions as $Property => $Caption) {
-            if (!@IPS_GetProperty($ParentId, $Property)) {
-                $DisabledProtocols[] = '- ' . $this->Translate($Caption);
+            if (@IPS_GetProperty($ParentId, $Property) || in_array($Property, $Hidden, true)) {
+                continue;
             }
-        }
-        if (count($DisabledProtocols)) {
-            $Form['actions'][] = [
-                'type'  => 'PopupAlert',
-                'popup' => [
-                    'items' => [
-                        [
-                            'type'    => 'Label',
-                            'caption' => 'These protocols are not enabled in the I/O, the matching devices cannot be listed:'
-                        ],
-                        [
-                            'type'    => 'Label',
-                            'caption' => implode("\n", $DisabledProtocols)
-                        ],
-                        [
-                            'type'     => 'OpenObjectButton',
-                            'caption'  => 'Open I/O instance',
-                            'objectID' => $ParentId
-                        ]
+            $Items[] = [
+                'type'  => 'RowLayout',
+                'items' => [
+                    [
+                        'type'    => 'Label',
+                        'caption' => '- ' . $this->Translate($Caption),
+                        'width'   => '200px'
+                    ],
+                    [
+                        'type'     => 'CheckBox',
+                        'name'     => 'Hide_' . $Property,
+                        'caption'  => 'Do not show again',
+                        'value'    => false,
+                        'onChange' => 'IPS_RequestAction($id, "' . self::ActionHideProtocolHint . $Property . '", $Hide_' . $Property . ');'
                     ]
                 ]
             ];
         }
+        if (count($Items) > 1) {
+            $Items[] = [
+                'type'     => 'OpenObjectButton',
+                'caption'  => 'Open I/O instance',
+                'objectID' => $ParentId
+            ];
+            $Form['actions'][] = [
+                'type'  => 'PopupAlert',
+                'popup' => ['items' => $Items]
+            ];
+        }
+        foreach ($Form['actions'] as &$Action) {
+            if (($Action['name'] ?? '') == self::ActionResetProtocolHints) {
+                $Action['visible'] = count($Hidden) > 0;
+            }
+        }
+        unset($Action);
         $Form['actions'][0]['rowCount'] = count($Form['actions'][0]['values']) + 1;
         return $Form;
     }
@@ -659,8 +723,11 @@ class HomeMaticExtendedConfigurator extends HMBase
     private function GetDevices(int $Protocol, array $Types): array
     {
         if (!array_key_exists($Protocol, $this->listDevices)) {
-            $Devices = $this->SendRPC('listDevices', $Protocol, []);
+            // Optionale Abfrage: Liefert ein Protokoll keine auswertbare Antwort (z.B. Gruppen ohne Geräte), bleibt die Liste leer.
+            // Das Ergebnis wird auch dann gemerkt, damit die Abfrage nicht für jedes Modul erneut gesendet wird.
+            $Devices = $this->SendRPC('listDevices', $Protocol, [], null, false, true);
             if (!is_array($Devices)) {
+                $this->listDevices[$Protocol] = [];
                 return [];
             }
             // Für die Zeilen werden nur Adresse und Typ gebraucht, die übrigen Felder (CHILDREN, PARAMSETS, …) blähen das Formular auf.

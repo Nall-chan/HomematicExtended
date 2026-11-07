@@ -22,6 +22,7 @@ require_once __DIR__ . '/HMHeatingTile.php';  // Kachel der Heizungsmodule
  *
  * @property array $WeekSchedules
  * @property int $WeekProfile
+ * @property array $TileTemperatures Komfort-, Absenk- und Fenster-offen-Temperatur (Rolle => Wert) aus dem Paramset MASTER, für die Kachel auch ohne Statusvariable
  */
 class HMHeatingDevice extends HMBase
 {
@@ -51,6 +52,8 @@ class HMHeatingDevice extends HMBase
     protected const TileFactors = [];
     /** Wert des Modus, der den Boost anzeigt und startet, bei Geräten ohne eigenen Datenpunkt für den Boost. */
     protected const TileBoostMode = null;
+    /** Statusvariablen mit Aktion, die kein Datenpunkt der CCU sind (Ident, Eigenschaft `enable_<Ident>`), z.B. Setze auf Komfort Temperatur bei HmIP. */
+    protected const VirtualVariables = [];
 
     protected const EVENT = 'WEEK_PROFIL';
     protected const EnablePrefix = 'enable_';
@@ -133,6 +136,7 @@ class HMHeatingDevice extends HMBase
          */
         $this->WeekSchedules = [];
         $this->WeekProfile = 1;
+        $this->TileTemperatures = [];
         $this->RegisterHeatingTile();
     }
 
@@ -158,6 +162,7 @@ class HMHeatingDevice extends HMBase
         $this->SetStatus(IS_ACTIVE);
 
         $this->WeekProfile = 1;
+        $this->TileTemperatures = [];
         $Address = $this->ReadPropertyString(\HMExtended\Device\Property::Address);
         if ($Address == '') {
             $this->SetReceiveDataFilter('.*9999999999.*');
@@ -181,6 +186,13 @@ class HMHeatingDevice extends HMBase
                 if (!$this->ReadPropertyBoolean(self::EnablePrefix . $Property)) {
                     $this->UnregisterVariable($Ident);
                 }
+            }
+        }
+        foreach (static::VirtualVariables as $Ident) {
+            if ($this->ReadPropertyBoolean(self::EnablePrefix . $Ident)) {
+                $Definition = \HMExtended\ValuesSet::$Variables[static::DeviceTyp][$Ident];
+                $this->MaintainHeatingVariable($Ident, $this->Translate($Definition[3]), $Definition[0], $Definition[1], true, []);
+                $this->EnableAction($Ident);
             }
         }
         if ($this->ReadPropertyBoolean(\HMExtended\Device\Property::Schedule)) {
@@ -423,6 +435,7 @@ class HMHeatingDevice extends HMBase
      */
     protected function SetParamVariables(array $Params): void
     {
+        $this->StoreTileTemperatures($Params);
         $ScheduleData = [];
 
         for ($Plan = 1; $Plan <= static::NumberOfWeekSchedules; $Plan++) {

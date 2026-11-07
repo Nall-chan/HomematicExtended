@@ -66,6 +66,11 @@ class HeatingTileTest extends HeatingTestCase
         $this->assertEqualsWithDelta(5.0, $Config['values']['boostRemain'], 0.001);
         $this->assertTrue($Config['values']['boost']);
         $this->assertNull($Config['boostMode']);
+        // HmIP: Komfort und Absenkung über die Aktionsvariablen der Instanz
+        $this->assertTrue($Config['presetModes']);
+        $this->assertSame('COMFORT_MODE', $Config['roles']['comfortMode']);
+        // Mit Fensterzustand schaltet „Fenster offen“ den Zustand
+        $this->assertTrue($Config['presetWindow']);
         $this->assertContains('set', $Config['actions']);
         $this->assertContains('mode', $Config['actions']);
         $this->assertNotContains('actual', $Config['actions']);
@@ -110,10 +115,10 @@ class HeatingTileTest extends HeatingTestCase
     {
         $this->IoId = $this->createFakeIo();
         FakeHomematicIO::$RpcResponses = [
-            'getParamsetDescription:VALUES' => $this->description(['CONTROL_MODE' => 'INTEGER', 'SET_TEMPERATURE' => 'FLOAT', 'ACTUAL_TEMPERATURE' => 'FLOAT', 'ACTUAL_HUMIDITY' => 'INTEGER']),
+            'getParamsetDescription:VALUES' => $this->description(['CONTROL_MODE' => 'INTEGER', 'SET_TEMPERATURE' => 'FLOAT', 'ACTUAL_TEMPERATURE' => 'FLOAT', 'ACTUAL_HUMIDITY' => 'INTEGER', 'COMFORT_MODE' => 'ACTION', 'LOWERING_MODE' => 'ACTION']),
             'getParamset:VALUES'            => ['CONTROL_MODE' => 3, 'SET_TEMPERATURE' => 30.5, 'ACTUAL_TEMPERATURE' => 19.0, 'ACTUAL_HUMIDITY' => 55],
             'getParamsetDescription:MASTER' => $this->description(['WEEK_PROGRAM_POINTER' => 'INTEGER', 'DECALCIFICATION_TIME' => 'INTEGER', 'DECALCIFICATION_WEEKDAY' => 'INTEGER']),
-            'getParamset:MASTER'            => array_merge(['WEEK_PROGRAM_POINTER' => 0, 'DECALCIFICATION_TIME' => 1320, 'DECALCIFICATION_WEEKDAY' => 6], $this->schedule('P%3$d_ENDTIME_%2$s_%1$d', 'P%3$d_TEMPERATURE_%2$s_%1$d', 3, 13))
+            'getParamset:MASTER'            => array_merge(['WEEK_PROGRAM_POINTER' => 0, 'DECALCIFICATION_TIME' => 1320, 'DECALCIFICATION_WEEKDAY' => 6, 'TEMPERATURE_COMFORT' => 21.5, 'TEMPERATURE_LOWERING' => 17.0, 'TEMPERATUREFALL_WINDOW_OPEN' => 12.0], $this->schedule('P%3$d_ENDTIME_%2$s_%1$d', 'P%3$d_TEMPERATURE_%2$s_%1$d', 3, 13))
         ];
         $this->DeviceId = $this->createDevice(TileHeatingGroup::class, \HMExtended\GUID::HeatingGroup, 'HMHG', $this->IoId);
         IPS_SetProperty($this->DeviceId, \HMExtended\Device\Property::Address, 'INT0000001');
@@ -124,6 +129,17 @@ class HeatingTileTest extends HeatingTestCase
         $this->assertSame(3, $Config['values']['mode']);
         $this->assertSame(55, $Config['values']['humidity']);
         $this->assertArrayNotHasKey('boost', $Config['roles']);
+        // Komfort und Absenkung laufen über eigene Datenpunkte, Fenster-offen-Temperatur über die Solltemperatur
+        $this->assertSame('COMFORT_MODE', $Config['roles']['comfortMode']);
+        $this->assertSame('LOWERING_MODE', $Config['roles']['loweringMode']);
+        $this->assertSame('TEMPERATUREFALL_WINDOW_OPEN', (new ReflectionClassConstant(HomeMaticHeatingGroup::class, 'TileRoles'))->getValue()['windowTemp']);
+        $this->assertContains('comfortMode', $Config['actions']);
+        $this->assertTrue($Config['presetModes']);
+        $this->assertFalse($Config['presetWindow']);
+        // Die Temperaturvariablen sind standardmäßig abgewählt, die Schnellwahl kennt die Werte trotzdem aus dem Paramset MASTER
+        $this->assertArrayNotHasKey('comfort', $Config['roles']);
+        $this->assertEqualsWithDelta(21.5, $Config['temps']['comfort'], 0.001);
+        $this->assertEqualsWithDelta(17.0, $Config['temps']['lowering'], 0.001);
     }
 
     //################# Wochenplan schreiben
@@ -156,6 +172,39 @@ class HeatingTileTest extends HeatingTestCase
      * Jeder Text, den die Kachel mit T('…') ausgibt, und jede Beschriftung der Schnellwahl muss in TileTexts stehen,
      * sonst bleibt er in der Kachel englisch.
      */
+    public function testComfortAndLoweringSetTheSetPointTemperatureOfTheActiveMode(): void
+    {
+        $this->hmipDevice();
+        $this->assertSame('', $this->action('COMFORT_MODE', 0));
+        $this->assertSame(['3014F711A0001F5A4993F31C:1', 'SET_POINT_TEMPERATURE', 21.5], end(FakeHomematicIO::$Requests)['Data']);
+        // Im Kühlbetrieb gelten die Temperaturen für Kühlen
+        $this->device()->ReceiveData(json_encode(['VariableName' => 'HEATING_COOLING', 'VariableValue' => 1]));
+        FakeHomematicIO::$Requests = [];
+        $this->assertSame('', $this->action('LOWERING_MODE', 0));
+        $Data = end(FakeHomematicIO::$Requests)['Data'];
+        $this->assertSame('SET_POINT_TEMPERATURE', $Data[1]);
+        $this->assertEqualsWithDelta(26.0, $Data[2], 0.001);
+        $Config = $this->tileConfig();
+        $this->assertEqualsWithDelta(24.0, $Config['temps']['comfortCooling'], 0.001);
+        $this->assertSame('HEATING_COOLING', $Config['roles']['cooling']);
+    }
+
+    public function testPresentationOfTheSetPointDefinesLimitsAndSpecialValues(): void
+    {
+        $this->hmipDevice();
+        $Limits = $this->tileConfig()['limits'];
+        $this->assertEqualsWithDelta(4.5, $Limits['min'], 0.001);
+        $this->assertEqualsWithDelta(30.5, $Limits['max'], 0.001);
+        $this->assertSame(['Off', 'On'], array_column($Limits['special'], 'text'));
+        // Eine eigene Darstellung des Nutzers hat Vorrang
+        IPS_SetVariableCustomPresentation($this->variable('SET_POINT_TEMPERATURE'), ['MIN' => 10, 'MAX' => 25, 'STEP_SIZE' => 1, 'INTERVALS_ACTIVE' => false, 'PRESENTATION' => '{6B9CAEEC-5958-C223-30F7-BD36569FC57A}']);
+        $Limits = $this->tileConfig()['limits'];
+        $this->assertEqualsWithDelta(10.0, $Limits['min'], 0.001);
+        $this->assertEqualsWithDelta(25.0, $Limits['max'], 0.001);
+        $this->assertEqualsWithDelta(1.0, $Limits['step'], 0.001);
+        $this->assertSame([], $Limits['special']);
+    }
+
     public function testAllTextsOfTheTileScriptAreTranslatable(): void
     {
         $Texts = (new ReflectionClass(HMHeatingDevice::class))->getReflectionConstant('TileTexts')->getValue();
@@ -254,6 +303,7 @@ class HeatingTileTest extends HeatingTestCase
         }
         FakeHomematicIO::$RpcResponses = [
             'getParamsetDescription:VALUES' => $this->description([
+                'HEATING_COOLING'             => 'ENUM',
                 'ACTIVE_PROFILE'              => 'INTEGER',
                 'ACTUAL_TEMPERATURE'          => 'FLOAT',
                 'BOOST_MODE'                  => 'BOOL',
@@ -268,6 +318,7 @@ class HeatingTileTest extends HeatingTestCase
                 'PARTY_TIME_END'              => 'STRING'
             ]),
             'getParamset:VALUES' => [
+                'HEATING_COOLING'             => 0,
                 'ACTIVE_PROFILE'              => 1,
                 'ACTUAL_TEMPERATURE'          => 19.1,
                 'BOOST_MODE'                  => true,
@@ -282,11 +333,14 @@ class HeatingTileTest extends HeatingTestCase
                 'PARTY_TIME_END'              => '2026_03_05 17:30'
             ],
             'getParamsetDescription:MASTER' => $this->description(['DECALCIFICATION_TIME' => 'INTEGER']),
-            'getParamset:MASTER'            => array_merge(['DECALCIFICATION_TIME' => 5], $Schedule)
+            'getParamset:MASTER'            => array_merge(['DECALCIFICATION_TIME' => 5, 'TEMPERATURE_COMFORT' => 21.5, 'TEMPERATURE_LOWERING' => 17.5, 'TEMPERATURE_COMFORT_COOLING' => 24.0, 'TEMPERATURE_LOWERING_COOLING' => 26.0], $Schedule)
         ];
         $this->DeviceId = $this->createDevice(TileHeatingGroupHmIP::class, \HMExtended\GUID::HeatingGroupHmIP, 'HMHI', $this->IoId);
         IPS_SetProperty($this->DeviceId, \HMExtended\Device\Property::Address, self::Address);
         IPS_SetProperty($this->DeviceId, 'enable_BOOST_TIME', true);
+        IPS_SetProperty($this->DeviceId, 'enable_COMFORT_MODE', true);
+        IPS_SetProperty($this->DeviceId, 'enable_LOWERING_MODE', true);
+        IPS_SetProperty($this->DeviceId, 'enable_HEATING_COOLING', true);
         foreach ($DisabledProperties as $Property) {
             IPS_SetProperty($this->DeviceId, 'enable_' . $Property, false);
         }

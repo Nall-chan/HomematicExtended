@@ -289,7 +289,7 @@ class ExtendedConfiguratorTest extends HomematicModuleTestCase
         $Popup = $this->findPopup();
         $this->assertNotNull($Popup);
         $Items = $Popup['popup']['items'];
-        $Text = implode(' ', array_column($Items, 'caption'));
+        $Text = $this->popupText($Items);
         foreach (['HomeMatic IP', 'HomeMatic groups'] as $Protocol) {
             $this->assertStringContainsString($Protocol, $Text);
         }
@@ -299,6 +299,69 @@ class ExtendedConfiguratorTest extends HomematicModuleTestCase
         $Button = array_values(array_filter($Items, fn ($Item) => $Item['type'] == 'OpenObjectButton'));
         $this->assertCount(1, $Button);
         $this->assertSame($this->IoId, $Button[0]['objectID']);
+    }
+
+    public function testEveryDisabledProtocolHasADoNotShowAgainCheckBox(): void
+    {
+        $Names = [];
+        foreach ($this->findPopup()['popup']['items'] as $Item) {
+            foreach ($Item['items'] ?? [] as $Element) {
+                if ($Element['type'] == 'CheckBox') {
+                    $Names[] = $Element['name'];
+                    $this->assertStringContainsString('HideProtocolHint_', $Element['onChange']);
+                }
+            }
+        }
+        $this->assertSame(['Hide_IPOpen', 'Hide_GROpen'], $Names);
+    }
+
+    public function testHiddenProtocolHintIsNotShownAgain(): void
+    {
+        $this->action('HideProtocolHint_GROpen', true);
+        $Text = $this->popupText($this->findPopup()['popup']['items']);
+        $this->assertStringContainsString('HomeMatic IP', $Text);
+        $this->assertStringNotContainsString('HomeMatic groups', $Text);
+        $this->assertTrue($this->findAction('ResetProtocolHints')['visible']);
+    }
+
+    public function testNoPopupWhenAllDisabledProtocolsAreHidden(): void
+    {
+        $this->action('HideProtocolHint_IPOpen', true);
+        $this->action('HideProtocolHint_GROpen', true);
+        $this->assertNull($this->findPopup());
+    }
+
+    public function testHiddenProtocolHintCanBeShownAgain(): void
+    {
+        $this->action('HideProtocolHint_GROpen', true);
+        $this->action('ResetProtocolHints', true);
+        $this->assertStringContainsString('HomeMatic groups', $this->popupText($this->findPopup()['popup']['items']));
+        $this->assertFalse($this->findAction('ResetProtocolHints')['visible']);
+        // Das Abwählen des Hakens zeigt den Hinweis ebenfalls wieder an
+        $this->action('HideProtocolHint_GROpen', true);
+        $this->action('HideProtocolHint_GROpen', false);
+        $this->assertStringContainsString('HomeMatic groups', $this->popupText($this->findPopup()['popup']['items']));
+    }
+
+    public function testUnknownProtocolHintIdentIsRejected(): void
+    {
+        ob_start();
+        IPS\InstanceManager::getInstanceInterface($this->ConfiguratorId)->RequestAction('HideProtocolHint_Foo', true);
+        $this->assertStringContainsString('Invalid Ident.', (string) ob_get_clean());
+    }
+
+    public function testFailedListDevicesIsRequestedOnceAndNotReported(): void
+    {
+        IPS_SetProperty($this->IoId, 'GROpen', true);
+        IPS_ApplyChanges($this->IoId);
+        FakeHomematicIO::$Requests = [];
+        // Keine auswertbare Antwort (z.B. Gruppen ohne Geräte)
+        FakeHomematicIO::$RpcResponses['listDevices@3'] = false;
+        $Form = $this->getForm();
+        $Groups = array_filter(FakeHomematicIO::$Requests, fn ($Request) => ($Request['MethodName'] ?? '') == 'listDevices' && ($Request['Protocol'] ?? -1) == 3);
+        $this->assertCount(1, $Groups);
+        $Texts = array_column(array_filter($Form['actions'], fn ($Action) => ($Action['type'] ?? '') == 'PopupAlert'), 'popup');
+        $this->assertStringNotContainsString('Error on listDevices', json_encode($Texts));
     }
 
     public function testHmIpDevicesAreListedWhenIpInterfaceIsOpen(): void
@@ -478,6 +541,30 @@ class ExtendedConfiguratorTest extends HomematicModuleTestCase
             }
         }
         return $Result;
+    }
+
+    private function popupText(array $Items): string
+    {
+        $Text = '';
+        foreach ($Items as $Item) {
+            $Text .= ' ' . ($Item['caption'] ?? '') . $this->popupText($Item['items'] ?? []);
+        }
+        return $Text;
+    }
+
+    private function findAction(string $Name): array
+    {
+        foreach ($this->getForm()['actions'] as $Action) {
+            if (($Action['name'] ?? '') == $Name) {
+                return $Action;
+            }
+        }
+        $this->fail('Action ' . $Name . ' not found');
+    }
+
+    private function action(string $Ident, mixed $Value): void
+    {
+        IPS\InstanceManager::getInstanceInterface($this->ConfiguratorId)->RequestAction($Ident, $Value);
     }
 
     private function findPopup(): ?array

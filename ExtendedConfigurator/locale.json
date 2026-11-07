@@ -22,7 +22,10 @@
             "Alarm variable not found on the CCU": "Alarmvariable auf der CCU nicht gefunden",
             "internal": "intern",
             "Name": "Name",
-            "RF interface (radio, not connected)": "RF-Interface (Funk, nicht verbunden)"
+            "RF interface (radio, not connected)": "RF-Interface (Funk, nicht verbunden)",
+            "Do not show again": "Nicht mehr anzeigen",
+            "Show hidden hints again": "Ausgeblendete Hinweise wieder anzeigen",
+            "Invalid Ident.": "Ungültiger Ident."
         }
     }
 }

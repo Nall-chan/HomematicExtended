@@ -92,7 +92,9 @@ Für die Systemvariablen zeigt der Konfigurator die vorhandenen Instanzen bzw. e
 
 - **Gerät auf der CCU nicht gefunden:** Zu einer vorhandenen Instanz gibt es auf der CCU kein Gerät mit der eingetragenen Adresse (Gerät abgelernt, Tippfehler, falscher Socket).  
 - **Keine Adresse konfiguriert (Migration erforderlich):** Die Instanz stammt aus einer älteren Version und hat noch keine Adresse. Die Adresse wird beim Update aus den bisherigen Einstellungen übernommen, gelingt das nicht, ist die Adresse in der Instanz einzutragen.  
-- **Nicht aktivierte Protokolle:** Sind Funk, HmIP oder Gruppen im Homematic Socket nicht aktiviert, erscheint beim Öffnen eine Meldung mit der Liste der Protokolle und der Schaltfläche `I/O Instanz öffnen`. Die Geräte dieser Protokolle fehlen in der Liste. Wired wird nicht gemeldet, die Library unterstützt keine Wired-Geräte (die Zeile des WR-Interface erscheint nur bei aktiviertem Wired).  
+- **Nicht aktivierte Protokolle:** Sind Funk, HmIP oder Gruppen im Homematic Socket nicht aktiviert, erscheint beim Öffnen eine Meldung mit der Liste der Protokolle und der Schaltfläche `I/O Instanz öffnen`. Die Geräte dieser Protokolle fehlen in der Liste. Hinter jedem Protokoll steht der Haken `Nicht mehr anzeigen`: Der Hinweis zu diesem Protokoll erscheint dann nicht mehr (die Wahl wird je Konfigurator-Instanz gespeichert). Die Schaltfläche `Ausgeblendete Hinweise wieder anzeigen` unter der Geräteliste (nur sichtbar, wenn Hinweise ausgeblendet sind) macht das rückgängig.  
+
+![Hinweis auf nicht aktivierte Protokolle](imgs/protocol_hint.png)   Wired wird nicht gemeldet, die Library unterstützt keine Wired-Geräte (die Zeile des WR-Interface erscheint nur bei aktiviertem Wired).  
 
 ### RF-Interfaces
 

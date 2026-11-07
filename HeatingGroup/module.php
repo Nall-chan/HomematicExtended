@@ -41,7 +41,11 @@ class HomeMaticHeatingGroup extends HMHeatingDevice
         'partyTemp'  => \HMExtended\HeatingGroup::PARTY_TEMPERATURE,
         'comfort'    => \HMExtended\HeatingGroup::TEMPERATURE_COMFORT,
         'lowering'   => \HMExtended\HeatingGroup::TEMPERATURE_LOWERING,
-        'profile'    => \HMExtended\HeatingGroup::WEEK_PROGRAM_POINTER
+        'windowTemp' => \HMExtended\HeatingGroup::TEMPERATUREFALL_WINDOW_OPEN,
+        // Komfort und Absenkung setzt das Gerät über die Datenpunkte COMFORT_MODE und LOWERING_MODE, nicht über die Solltemperatur
+        'comfortMode'  => \HMExtended\HeatingGroup::COMFORT_MODE,
+        'loweringMode' => \HMExtended\HeatingGroup::LOWERING_MODE,
+        'profile'      => \HMExtended\HeatingGroup::WEEK_PROGRAM_POINTER
     ];
     // Der Boost ist beim Gerät ein Wert des Modus (CONTROL_MODE 3)
     protected const TileBoostMode = 3;
