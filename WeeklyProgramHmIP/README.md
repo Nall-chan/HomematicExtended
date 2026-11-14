@@ -65,14 +65,37 @@ Belegte Schaltzeitpunkte stehen lückenlos ab Nummer 1, ein Eintrag ist belegt, 
 | Feld                         | Bereich        | Bedeutung                                                                                                                                                             |
 | :--------------------------- | :------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `WEEKDAY`                    | 0 - 127        | Bitmaske der Wochentage: 1 = Sonntag, 2 = Montag, 4 = Dienstag, 8 = Mittwoch, 16 = Donnerstag, 32 = Freitag, 64 = Samstag                                              |
-| `CONDITION`                  | 0 - 7          | 0 feste Uhrzeit, 1 Astro, 2 fest wenn vor Astro, 3 Astro wenn vor fest, 4 fest wenn nach Astro, 5 Astro wenn nach fest, 6 früheres von beiden, 7 späteres von beiden |
-| `FIXED_HOUR`, `FIXED_MINUTE` | 0 - 23, 0 - 59 | Feste Uhrzeit                                                                                                                                                         |
-| `ASTRO_TYPE`                 | 0 - 1          | 0 Sonnenaufgang, 1 Sonnenuntergang                                                                                                                                    |
-| `ASTRO_OFFSET`               | -128 - 127     | Versatz zur Astro-Zeit in Minuten                                                                                                                                     |
+| `CONDITION`                  | 0 - 7          | Legt fest, welche Zeit gilt: 0 = feste Uhrzeit, 1 = Astro-Zeit, 2 bis 7 = Kombination aus beiden. Siehe [Zeitpunkt: feste Uhrzeit, Astro und Bedingung](#zeitpunkt-feste-uhrzeit-astro-und-bedingung) |
+| `FIXED_HOUR`, `FIXED_MINUTE` | 0 - 23, 0 - 59 | Feste Uhrzeit (wird bei `CONDITION` 1 nicht beachtet)                                                                                                                 |
+| `ASTRO_TYPE`                 | 0 - 1          | 0 Sonnenaufgang, 1 Sonnenuntergang (wird bei `CONDITION` 0 nicht beachtet)                                                                                            |
+| `ASTRO_OFFSET`               | -128 - 127     | Versatz zur Astro-Zeit in Minuten, negativ = vorher, positiv = danach (wird bei `CONDITION` 0 nicht beachtet)                                                         |
 | `LEVEL`                      | 0.0 - 1.01     | Schaltzustand: 1.0 = Ein, 0.0 = Aus (bei Dimmern der Wert). 1.01 ist der Maximalwert des Wertebereichs, die Bedeutung ist nicht belegt                                |
 | `DURATION_BASE`              | 0 - 7          | Einheit der Dauer: 0 = 100 ms, 1 = 1 s, 2 = 5 s, 3 = 10 s, 4 = 1 min, 5 = 5 min, 6 = 10 min, 7 = 1 h                                                                  |
 | `DURATION_FACTOR`            | 0 - 31         | Faktor der Dauer. Basis 7 mit Faktor 31 bedeutet dauerhaft                                                                                                            |
 | `TARGET_CHANNELS`            | 0 - 16777215   | Bitmaske der Zielkanäle, Bit 0 = erster Schaltkanal des Gerätes (bei den Kanälen 3 bis 5: 1 = Kanal 3, 2 = Kanal 4, 4 = Kanal 5)                                       |
+
+### Zeitpunkt: feste Uhrzeit, Astro und Bedingung
+
+Jeder Schaltzeitpunkt kann eine feste Uhrzeit (`FIXED_HOUR`, `FIXED_MINUTE`) und eine Astro-Zeit (`ASTRO_TYPE`, `ASTRO_OFFSET`) enthalten. Welche davon gilt, bestimmt allein `CONDITION`. Die Astro-Zeit ist der Sonnenaufgang (`ASTRO_TYPE` 0) oder Sonnenuntergang (`ASTRO_TYPE` 1) des Tages plus `ASTRO_OFFSET` Minuten, z.B. `ASTRO_TYPE` 1 mit `ASTRO_OFFSET` -30 = eine halbe Stunde vor Sonnenuntergang. Der Versatz reicht von gut zwei Stunden vorher bis gut zwei Stunden danach.
+
+> [!IMPORTANT]
+> Ein Astro-Schaltzeitpunkt braucht `CONDITION` 1 (oder eine der Kombinationen 2 bis 7). Mit `CONDITION` 0 schaltet der Aktor zur festen Uhrzeit, die Astro-Felder werden nicht beachtet. Fehlen dann `FIXED_HOUR` und `FIXED_MINUTE`, schaltet der Eintrag um 00:00 Uhr bzw. zur Uhrzeit, die vorher an dieser Nummer im Gerät stand.
+
+| `CONDITION` | Bezeichnung in der CCU          | Benötigte Felder        | Geschaltet wird                                                                    |
+| :---------- | :------------------------------ | :---------------------- | :--------------------------------------------------------------------------------- |
+| 0           | `FIXED_TIME`                    | feste Uhrzeit           | zur festen Uhrzeit                                                                 |
+| 1           | `ASTRO`                         | Astro                   | zur Astro-Zeit                                                                     |
+| 2           | `FIXED_IF_BEFORE_ASTRO`         | feste Uhrzeit und Astro | zur festen Uhrzeit, aber nur, wenn sie vor der Astro-Zeit liegt, sonst gar nicht   |
+| 3           | `ASTRO_IF_BEFORE_FIXED`         | feste Uhrzeit und Astro | zur Astro-Zeit, aber nur, wenn sie vor der festen Uhrzeit liegt, sonst gar nicht   |
+| 4           | `FIXED_IF_AFTER_ASTRO`          | feste Uhrzeit und Astro | zur festen Uhrzeit, aber nur, wenn sie nach der Astro-Zeit liegt, sonst gar nicht  |
+| 5           | `ASTRO_IF_AFTER_FIXED`          | feste Uhrzeit und Astro | zur Astro-Zeit, aber nur, wenn sie nach der festen Uhrzeit liegt, sonst gar nicht  |
+| 6           | `EARLIEST_OF_FIXED_AND_ASTRO`   | feste Uhrzeit und Astro | zur früheren der beiden Zeiten (jeden Tag)                                         |
+| 7           | `LATEST_OF_FIXED_AND_ASTRO`     | feste Uhrzeit und Astro | zur späteren der beiden Zeiten (jeden Tag)                                         |
+
+Wozu die Kombinationen dienen: Soll eine Lampe morgens um 06:00 Uhr ein- und eine Stunde nach Sonnenaufgang ausgeschaltet werden, liegt die Astro-Zeit im Sommer vor 06:00 Uhr. Mit `CONDITION` 0 für das Einschalten wäre die Lampe dann ab 06:00 Uhr bis zum nächsten Ausschaltpunkt am Abend an. Mit `CONDITION` 2 (feste Uhrzeit 06:00, Astro Sonnenaufgang +60) schaltet sie nur ein, solange 06:00 Uhr vor dieser Astro-Zeit liegt. Ebenso abends: `CONDITION` 3 (Astro Sonnenuntergang -30, feste Uhrzeit 22:30) schaltet nur ein, wenn die Astro-Zeit vor dem Ausschalten um 22:30 Uhr liegt.
+
+> [!NOTE]
+> Die Wirkung der Werte 2 bis 7 ist aus den Bezeichnungen der CCU abgeleitet und am Gerät nicht geprüft. Am Dimmaktor geprüft sind feste Uhrzeit und Astro-Zeit (0 und 1).
 
 ## 2. Voraussetzungen
 
@@ -166,6 +189,7 @@ $Program = json_decode(HM_ReadWeeklyProgram(12345), true);
 Schreibt das Wochenprogramm in das Gerät. `$Program` ist ein JSON-Array mit Schaltzeitpunkten, die Felder entsprechen der Tabelle oben.
 **Jeder Aufruf ersetzt das gesamte Programm im Gerät.** Alle Schaltzeitpunkte müssen daher in einem Aufruf übergeben werden. Die Einträge des Arrays werden in ihrer Reihenfolge lückenlos ab Nummer 1 abgelegt, alle übrigen Einträge im Gerät werden geleert. Mehrere Aufrufe nacheinander ergänzen das Programm nicht, im Gerät steht danach nur das zuletzt übergebene Array. Um ein bestehendes Programm zu ergänzen oder zu ändern, wird es vorher mit `HM_ReadWeeklyProgram` gelesen (siehe Beispiel 3).
 Ungültige Werte werden vor dem Senden abgelehnt (Rückgabe `false`, Meldung).
+Geschrieben werden nur die Felder, die ein Eintrag enthält. Ein fehlendes Feld behält im Gerät den Wert, der dort vorher an dieser Nummer stand. Daher immer alle Felder angeben, die `CONDITION` benötigt, sowie `LEVEL`, Dauer und `TARGET_CHANNELS`.
 
 **Beispiel 1:** Montag und Mittwoch um 12:34 Uhr für 3 Minuten, nur der zweite Zielkanal:
 
@@ -230,6 +254,37 @@ HM_WriteWeeklyProgram(12345, json_encode($Program));
 ```
 
 Ebenso lassen sich Einträge des gelesenen Arrays ändern oder mit `unset` entfernen, bevor es zurückgeschrieben wird.
+
+**Beispiel 4:** Astro-Zeiten: Täglich eine halbe Stunde vor Sonnenuntergang ein und um 22:30 Uhr aus. Der Astro-Eintrag hat `CONDITION` 1, die feste Uhrzeit wird dann nicht benötigt:
+
+```php
+$EveryDay = 1 + 2 + 4 + 8 + 16 + 32 + 64;
+$Program = [
+    [
+        'WEEKDAY' => $EveryDay,
+        'CONDITION' => 1,
+        'ASTRO_TYPE' => 1,
+        'ASTRO_OFFSET' => -30,
+        'LEVEL' => 1.0,
+        'DURATION_BASE' => 7,
+        'DURATION_FACTOR' => 31,
+        'TARGET_CHANNELS' => 1
+    ],
+    [
+        'WEEKDAY' => $EveryDay,
+        'CONDITION' => 0,
+        'FIXED_HOUR' => 22,
+        'FIXED_MINUTE' => 30,
+        'LEVEL' => 0.0,
+        'DURATION_BASE' => 7,
+        'DURATION_FACTOR' => 31,
+        'TARGET_CHANNELS' => 1
+    ]
+];
+HM_WriteWeeklyProgram(12345, json_encode($Program));
+```
+
+Kommen morgens Einträge wie „06:00 Uhr ein“ und „Sonnenaufgang +60 Minuten aus“ hinzu, liegt die Astro-Zeit im Sommer vor 06:00 Uhr und die Lampe bliebe ab 06:00 Uhr bis zum Abend an. Für solche Fälle gibt es die Kombinationen, siehe [Zeitpunkt: feste Uhrzeit, Astro und Bedingung](#zeitpunkt-feste-uhrzeit-astro-und-bedingung) (Einschalten mit `CONDITION` 2).
 
 `string|false HM_ReadWeeklyProgramModes(integer $InstanzID);`
 Liest den Modus der Schaltkanäle von der CCU und liefert je Schaltkanal (Reihenfolge der Kanäle des Gerätes) `true` bei manuellem Modus als JSON.

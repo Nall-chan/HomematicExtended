@@ -36,11 +36,15 @@ HmIP Heizgruppe `HmIP-HEATING` mit Statusvariablen und Zeitprofil (Wochenplan).
 - Sechs Zeitprofile (Wochenpläne), das aktive Zeitprofil ist umschaltbar. Der Wochenplan wird in IP-Symcon bearbeitet und in ein wählbares Profil der CCU gespeichert.  
 - Urlaub/Party mit Start- und Endzeit sowie optionale Statusvariablen für Boost, Entkalkung, Temperaturen und weitere Parameter.  
 
+> [!IMPORTANT]
+> Für HmIP-Heizungsgeräte (z.B. Heizkörperthermostate, Wandthermostate wie HmIP-WTH oder HmIP-BWTH) gibt es nur dieses Modul für die Heizgruppe, keine Instanz je Gerät. Die Heizgruppe legt die CCU nicht selbst an: Sie wird in der CCU unter `Einstellungen` → `Gruppen` manuell angelegt und die Geräte werden ihr zugeordnet. Erst danach zeigt der Konfigurator die Gruppe (`INT…`) an.  
+> Weitere Kanäle der Geräte (z.B. das Schaltrelais des HmIP-BWTH) werden über die normalen Homematic-Instanzen von Symcon eingebunden.
+
 ## 2. Voraussetzungen
 
 - IP-Symcon ab Version 9.0  
 - Ein Homematic Socket (`HomeMatic Socket`), an dem die CCU angebunden ist  
-- Eine HmIP Heizgruppe ist auf der CCU angelegt  
+- Eine HmIP Heizgruppe ist auf der CCU manuell angelegt und die Geräte sind ihr zugeordnet  
 - Die Verwendung der HomeMatic Gruppen ist im Homematic Socket aktiviert (`Gruppen`)  
 
 ## 3. Software-Installation
