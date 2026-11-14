@@ -25,6 +25,12 @@
             "caption": "emulate state"
         },
         {
+            "type": "Button",
+            "name": "ReloadVariableList",
+            "caption": "Reload system variables",
+            "onClick": "IPS_RequestAction($id, 'ReloadVariableList', true);"
+        },
+        {
             "name": "Variables",
             "type": "List",
             "caption": "System variables of the CCU",

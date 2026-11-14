@@ -95,6 +95,55 @@ class WeeklyProgramTest extends HomematicModuleTestCase
         $this->assertStringContainsString('"01_WP_LEVEL":1.0', $Put[0]['Data'][2]);
     }
 
+    public function testTargetChannelsFromChannelTypes(): void
+    {
+        // HmIP-BDT (live 2026-11-14): Kanäle 4 bis 6 sind die Zielkanäle, Reihenfolge nach Kanalnummer
+        $Types = [7 => 'DIMMER_WEEK_PROFILE', 0 => 'MAINTENANCE', 1 => 'KEY_TRANSCEIVER', 2 => 'KEY_TRANSCEIVER', 3 => 'DIMMER_TRANSMITTER', 6 => 'DIMMER_VIRTUAL_RECEIVER', 4 => 'DIMMER_VIRTUAL_RECEIVER', 5 => 'DIMMER_VIRTUAL_RECEIVER'];
+        $this->assertSame([4, 5, 6], WeeklyProgram::TargetChannels($Types));
+        $this->assertSame([], WeeklyProgram::TargetChannels([0 => 'MAINTENANCE']));
+    }
+
+    public function testChannelNamesAndModesFollowTargetChannelsOfTheCcu(): void
+    {
+        $IoId = $this->createFakeIo();
+        FakeHomematicIO::$RpcResponses = [
+            'getParamset'                              => self::master(),
+            'getParamset:VALUES'                       => ['WEEK_PROGRAM_CHANNEL_LOCKS' => 65],
+            'getDeviceDescription:002560C99B959A:'     => ['TYPE' => 'HmIP-FSI16', 'CHILDREN' => ['002560C99B959A:0', '002560C99B959A:2', '002560C99B959A:3', '002560C99B959A:4', '002560C99B959A:5', '002560C99B959A:6']],
+            'getDeviceDescription:002560C99B959A:0:'   => ['TYPE' => 'MAINTENANCE'],
+            'getDeviceDescription:002560C99B959A:2:'   => ['TYPE' => 'SWITCH_TRANSMITTER'],
+            'getDeviceDescription:002560C99B959A:3:'   => ['TYPE' => 'SWITCH_VIRTUAL_RECEIVER'],
+            'getDeviceDescription:002560C99B959A:4:'   => ['TYPE' => 'SWITCH_VIRTUAL_RECEIVER'],
+            'getDeviceDescription:002560C99B959A:5:'   => ['TYPE' => 'SWITCH_VIRTUAL_RECEIVER'],
+            'getDeviceDescription:002560C99B959A:6:'   => ['TYPE' => 'SWITCH_WEEK_PROFILE']
+        ];
+        $Id = $this->createDevice('HomeMaticIPWeeklyProgram', \HMExtended\GUID::WeeklyProgramHmIP, 'HM', $IoId);
+        IPS_SetProperty($Id, \HMExtended\Device\Property::Address, self::Address);
+        IPS_ApplyChanges($Id);
+        // Ohne Symcon-Instanzen der Kanäle: alle drei Zielkanäle mit Kanalnummer, Modus Kanal 3 und 5 manuell (65 = Bit 0 und 6)
+        $this->assertSame([true, false, true], json_decode(HM_ReadWeeklyProgramModes($Id), true));
+        $Tile = HM_GetVisualizationTile($Id);
+        $this->assertStringContainsString('"channels":["Channel 3","Channel 4","Channel 5"]', $Tile);
+        // Die Kanaltypen werden je Geräteadresse nur einmal gelesen
+        FakeHomematicIO::$Requests = [];
+        HM_ReadWeeklyProgram($Id);
+        $Descriptions = array_filter(FakeHomematicIO::$Requests, fn ($Request) => ($Request['MethodName'] ?? '') == 'getDeviceDescription');
+        $this->assertSame([], array_values($Descriptions));
+    }
+
+    public function testEmptyProgramClearsAllEntries(): void
+    {
+        $Id = $this->createModule();
+        HM_ReadWeeklyProgram($Id);
+        FakeHomematicIO::$Requests = [];
+        $this->assertTrue(HM_WriteWeeklyProgram($Id, '[]'));
+        $Put = array_values(array_filter(FakeHomematicIO::$Requests, fn ($Request) => ($Request['MethodName'] ?? '') == 'putParamset'));
+        $this->assertCount(1, $Put);
+        $Values = json_decode($Put[0]['Data'][2], true);
+        $this->assertSame(0, $Values['01_WP_WEEKDAY']);
+        $this->assertSame(0, $Values['03_WP_WEEKDAY']);
+    }
+
     public function testInvalidProgramIsRejected(): void
     {
         $Id = $this->createModule();

@@ -10,7 +10,7 @@ declare(strict_types=1);
  * @author        Michael Tröger <nall4chan@gmail.com>
  * @copyright     2015-2026 Michael Tröger
  * @license       Custom Non-Commercial Share-Alike License (see LICENSE)
- * @version       4.00
+ * @version       4.01
  */
 
 namespace HMExtended
@@ -327,6 +327,27 @@ namespace HMExtended
                 $Result[$Channel] = ($Locks & (1 << (3 * $Channel))) != 0;
             }
             return $Result;
+        }
+
+        /**
+         * Zielkanäle des Wochenprogramms aus den Kanaltypen des Gerätes (getDeviceDescription der CCU).
+         * Zielkanäle sind die Kanäle, deren Typ auf `_RECEIVER` endet (z.B. `SWITCH_VIRTUAL_RECEIVER`, `DIMMER_VIRTUAL_RECEIVER`),
+         * in der Reihenfolge der Kanalnummern. Belegt: HmIP-FSI16 (Kanäle 3 bis 5) und HmIP-BDT (Kanäle 4 bis 6), Bit 0 = kleinste Nummer.
+         *
+         * @param string[] $ChannelTypes Kanalnummer => Kanaltyp.
+         *
+         * @return int[] Kanalnummern, Index = Bit in TARGET_CHANNELS.
+         */
+        public static function TargetChannels(array $ChannelTypes): array
+        {
+            ksort($ChannelTypes);
+            $Channels = [];
+            foreach ($ChannelTypes as $Channel => $Type) {
+                if (str_ends_with((string) $Type, '_RECEIVER')) {
+                    $Channels[] = (int) $Channel;
+                }
+            }
+            return $Channels;
         }
 
         /**

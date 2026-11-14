@@ -192,6 +192,14 @@ Erweitert IPS um die native Unterstützung von:
 
 ### 2. Changelog
 
+**Version 4.01:**
+
+* HomeMatic IP Weekly Program: Ein leeres Programm (alle Schaltzeitpunkte gelöscht, auch in der Kachel) führte nach dem Schreiben zu einem Fehler. Die CCU hatte das Programm trotzdem geleert.
+* HomeMatic IP Weekly Program: Die Zielkanäle des Gerätes werden einmalig von der CCU gelesen. Kachel und `HM_ReadWeeklyProgramModes` zeigen jetzt alle Zielkanäle, auch ohne Symcon-Instanz für jeden Kanal (bisher nur die Kanäle mit Instanz). Kanäle ohne Instanz erscheinen als `Kanal <Nummer>`.
+* HomeMatic IP Weekly Program: Am Dimmaktor HmIP-BDT getestet (`DIMMER_WEEK_PROFILE` mit Rampenzeit, Dauer und Astro-Zeit).
+* HomeMatic IP Weekly Program: Die Dokumentation von `HM_WriteWeeklyProgram` stellt klar, dass jeder Aufruf das gesamte Programm ersetzt und alle Schaltzeitpunkte in einem Aufruf übergeben werden. Neue Beispiele für zwei Schaltzeitpunkte (ein/aus) und für das Erweitern eines vorhandenen Programms per `HM_ReadWeeklyProgram`.
+* HomeMatic Systemvariablen: Neue Schaltfläche `Systemvariablen neu laden` im Formular. Sie liest die Liste der Systemvariablen erneut von der CCU, z.B. nach dem Anlegen einer neuen Systemvariable.
+
 **Version 4.00:**
 
 * HomeMatic IP Heating Group, HomeMatic Heating Group und HomeMatic Heating Device: Eigene Kachel für die Kachel-Visualisierung im Design der Thermostat- und Licht-Darstellung von Symcon. Wählrad für die Solltemperatur, Umschalter Automatik / Manuell / Party, Boost, Anzeige von Ventil und Fenster. Ab einer größeren Kachel zeigt sie den Wochenplan, maximiert mit Schnellwahl, Party-Formular und dem Bearbeiten des Wochenplans. Abgewählte Statusvariablen blendet die Kachel aus. Die Instanz zeigt in der Kachel-Visualisierung standardmäßig diese Kachel. Die Liste der Statusvariablen lässt sich im Kacheldialog über das Tabellen-Symbol wieder einblenden.

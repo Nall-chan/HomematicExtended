@@ -12,7 +12,7 @@ declare(strict_types=1);
  * @copyright     2015-2026 Michael Tröger
  * @license       Custom Non-Commercial Share-Alike License (see LICENSE)
  *
- * @version       4.00
+ * @version       4.01
  */
 require_once __DIR__ . '/../libs/HMBase.php';  // HMBase Klasse
 require_once __DIR__ . '/../libs/HMWeeklyProgram.php';  // Wochenprogramm (Paramset MASTER)
@@ -69,6 +69,16 @@ class HomeMaticIPWeeklyProgram extends HMBase
     private const AttributeLocks = 'Locks';
 
     /**
+     * Attribut: Zielkanäle des Gerätes von der CCU (`Address` = Geräteadresse, `Channels` = Kanalnummern, Index = Bit in TARGET_CHANNELS).
+     */
+    private const AttributeTargetChannels = 'TargetChannels';
+
+    /**
+     * Höchstzahl der Kanäle in `WEEK_PROGRAM_CHANNEL_LOCKS` (3 Bit je Kanal, 24 Bit).
+     */
+    private const MaxModeChannels = 8;
+
+    /**
      * Aufruf der Kachel: Modus (manuell/automatisch) eines Schaltkanals ändern.
      */
     private const TileActionMode = 'Mode';
@@ -106,6 +116,7 @@ class HomeMaticIPWeeklyProgram extends HMBase
         $this->RegisterAttributeArray(self::AttributeFields, []);
         $this->RegisterAttributeArray(self::AttributeInfo, []);
         $this->RegisterAttributeInteger(self::AttributeLocks, 0);
+        $this->RegisterAttributeArray(self::AttributeTargetChannels, []);
         $this->RegisterAttributeInteger(self::AttributeEntryCount, \HMExtended\WeeklyProgram::EntryCount);
         // Normale Kachel und Vollbild (maximierte Kachel) über das HTML-SDK gibt es erst ab Symcon 9.1, davor nur die normale Kachel
         $this->SetVisualizationType(INSTANCE_VISUALIZATION_TYPE_HTML_FULLSCREEN);
@@ -171,8 +182,9 @@ class HomeMaticIPWeeklyProgram extends HMBase
     }
 
     /**
-     * Schreibt das Wochenprogramm in das Gerät. Die Schaltzeitpunkte ersetzen das bisherige Programm,
-     * die Nummern werden lückenlos ab 1 vergeben.
+     * Schreibt das Wochenprogramm in das Gerät. Jeder Aufruf ersetzt das gesamte Programm: Die übergebenen
+     * Schaltzeitpunkte werden lückenlos ab 1 abgelegt, alle übrigen Einträge geleert. Zum Ergänzen das
+     * Programm vorher mit ReadWeeklyProgram lesen.
      *
      * @param string $Program Schaltzeitpunkte als JSON-Array (Felder wie `WEEKDAY`, `FIXED_HOUR`, `LEVEL` ohne Präfix).
      *
@@ -200,7 +212,8 @@ class HomeMaticIPWeeklyProgram extends HMBase
         if ($this->SendRPC('putParamset', $Protocol, [$Address, \HMExtended\CCU::MASTER], $Set) === null) {
             return false;
         }
-        $this->WriteAttributeArray(self::AttributeProgram, array_combine(range(1, count($Entries)), array_values($Entries)) ?: []);
+        // Nummern ab 1; bei leerem Programm kein range(1, 0), das liefert [1, 0].
+        $this->WriteAttributeArray(self::AttributeProgram, $Entries === [] ? [] : array_combine(range(1, count($Entries)), array_values($Entries)));
         return true;
     }
 
@@ -346,6 +359,7 @@ class HomeMaticIPWeeklyProgram extends HMBase
         if (count($this->ReadAttributeArray(self::AttributeInfo)) == 0) {
             $this->LoadInfo();
         }
+        $this->LoadTargetChannels();
         $this->LoadLocks(false);
         $this->PushProgram();
         return $Program;
@@ -373,7 +387,42 @@ class HomeMaticIPWeeklyProgram extends HMBase
      */
     private function GetModes(): array
     {
-        return \HMExtended\WeeklyProgram::ManualChannels($this->ReadAttributeInteger(self::AttributeLocks), max(count($this->GetChannelNames()), 1));
+        return \HMExtended\WeeklyProgram::ManualChannels($this->ReadAttributeInteger(self::AttributeLocks), min(max(count($this->GetChannelNames()), 1), self::MaxModeChannels));
+    }
+
+    /**
+     * Liest die Zielkanäle des Gerätes (Kanaltypen aus getDeviceDescription) einmal je Geräteadresse und speichert sie.
+     * Optionale Zusatzabfrage: Fehler nur per Debug, beim nächsten Lesen des Programms wird es erneut versucht.
+     */
+    private function LoadTargetChannels(): void
+    {
+        $Address = $this->ReadPropertyString(\HMExtended\Device\Property::Address);
+        $Pos = strpos($Address, ':');
+        if ($Pos === false) {
+            return;
+        }
+        $Device = substr($Address, 0, $Pos);
+        if (($this->ReadAttributeArray(self::AttributeTargetChannels)['Address'] ?? '') === $Device) {
+            return;
+        }
+        $Protocol = $this->ReadPropertyInteger(\HMExtended\Device\Property::Protocol);
+        $Description = $this->SendRPC('getDeviceDescription', $Protocol, [$Device], null, false, true);
+        if (!is_array($Description) || !is_array($Description['CHILDREN'] ?? null)) {
+            $this->SendDebug('TargetChannels', 'not available', 0);
+            return;
+        }
+        $Types = [];
+        foreach ($Description['CHILDREN'] as $Child) {
+            $ChildDescription = $this->SendRPC('getDeviceDescription', $Protocol, [(string) $Child], null, false, true);
+            if (!is_array($ChildDescription) || !isset($ChildDescription['TYPE'])) {
+                $this->SendDebug('TargetChannels', 'not available: ' . $Child, 0);
+                return;
+            }
+            $Types[(int) substr((string) $Child, strlen($Device) + 1)] = (string) $ChildDescription['TYPE'];
+        }
+        $Channels = \HMExtended\WeeklyProgram::TargetChannels($Types);
+        $this->SendDebug('TargetChannels', $Channels, 0);
+        $this->WriteAttributeArray(self::AttributeTargetChannels, ['Address' => $Device, 'Channels' => $Channels]);
     }
 
     /**
@@ -470,8 +519,10 @@ class HomeMaticIPWeeklyProgram extends HMBase
 
     /**
      * Namen der Schaltkanäle des Gerätes für die Zielkanäle des Wochenprogramms (Bit 0 = erster Schaltkanal).
-     * Angenommen wird: die Kanäle mit Statusvariable `STATE` oder `LEVEL` und Aktion, in der Reihenfolge der Kanalnummern.
-     * Fehlt ein Kanal in Symcon, zeigt die Kachel `Kanal n`. Gelesen wird nur (fremde Instanzen).
+     * Sind die Zielkanäle von der CCU bekannt (self::LoadTargetChannels), gibt es je Zielkanal einen Namen: den Namen der
+     * Symcon-Instanz dieses Kanals, sonst `Kanal <Nummer>` (Kanalnummer der CCU).
+     * Sonst angenommen: die Kanäle mit Statusvariable `STATE` oder `LEVEL` und Aktion, in der Reihenfolge der Kanalnummern.
+     * Gelesen wird nur (fremde Instanzen).
      *
      * @return string[] Namen, Index = Bit.
      */
@@ -483,16 +534,28 @@ class HomeMaticIPWeeklyProgram extends HMBase
             return [];
         }
         $Device = substr($Address, 0, $Pos);
-        $Channels = [];
+        $Instances = [];
         foreach (IPS_GetInstanceListByModuleID(\HMExtended\GUID::HmDevice) as $InstanceID) {
             $InstanceAddress = (string) IPS_GetProperty($InstanceID, \HMExtended\Device\Property::Address);
-            if (!str_starts_with($InstanceAddress, $Device . ':')) {
-                continue;
+            if (str_starts_with($InstanceAddress, $Device . ':')) {
+                $Instances[$InstanceID] = (int) substr($InstanceAddress, $Pos + 1);
             }
+        }
+        $Target = $this->ReadAttributeArray(self::AttributeTargetChannels);
+        if ((($Target['Address'] ?? '') === $Device) && (count($Target['Channels'] ?? []) > 0)) {
+            $Names = [];
+            foreach ($Target['Channels'] as $Channel) {
+                $InstanceID = array_search($Channel, $Instances, true);
+                $Names[] = $InstanceID !== false ? IPS_GetName($InstanceID) : $this->Translate('Channel') . ' ' . $Channel;
+            }
+            return $Names;
+        }
+        $Channels = [];
+        foreach ($Instances as $InstanceID => $Channel) {
             foreach (['STATE', 'LEVEL'] as $Ident) {
                 $VariableId = @IPS_GetObjectIDByIdent($Ident, $InstanceID);
                 if (($VariableId !== false) && HasAction($VariableId)) {
-                    $Channels[(int) substr($InstanceAddress, $Pos + 1)] = IPS_GetName($InstanceID);
+                    $Channels[$Channel] = IPS_GetName($InstanceID);
                     break;
                 }
             }

@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @copyright     2015-2026 Michael Tröger
  * @license       Custom Non-Commercial Share-Alike License (see LICENSE)
  *
- * @version       4.00
+ * @version       4.01
  */
 require_once __DIR__ . '/../libs/HMSystemVariableBase.php';  // Basisklasse Systemvariablen
 
@@ -47,6 +47,7 @@ class HomeMaticSystemvariablen extends HMSystemVariableBase
     private const ActionDeleteUnused = 'DeleteUnusedVariables';
     private const ActionDeleteLegacyAlarms = 'DeleteLegacyAlarmVariables';
     private const ActionVariableEdited = 'VariableEdited';
+    private const ActionReloadVariableList = 'ReloadVariableList';
     /**
      * Symcon-Version, ab der die Funktionen HM_WriteValue… (ohne 2) die gleichnamigen Funktionen des Kernels überschreiben können.
      * Bis dahin (alle C++-Versionen) bleiben HM_WriteValue…2 die gültigen Funktionen und erzeugen keine Warnung (Vorgabe des Nutzers).
@@ -302,6 +303,9 @@ class HomeMaticSystemvariablen extends HMSystemVariableBase
                 return;
             case self::ActionDeleteLegacyAlarms:
                 $this->DeleteLegacyAlarmVariables();
+                $this->ReloadForm();
+                return;
+            case self::ActionReloadVariableList:
                 $this->ReloadForm();
                 return;
             case self::ActionVariableEdited:

@@ -50,13 +50,13 @@ Das Wochenprogramm liegt bei allen HmIP-Aktoren im Kanal mit einem der Typen:
 | Kanaltyp                               | Geräte (Anzahl laut Dokumentation)  | Zusätzliche Felder                                          | Getestet |
 | -------------------------------------- | ----------------------------------- | ----------------------------------------------------------- | -------- |
 | `SWITCH_WEEK_PROFILE`                  | Schaltaktoren (51)                  | Dauer                                                       | ✅ (HmIP-FSI16, Kanal 6) |
-| `DIMMER_WEEK_PROFILE`                  | Dimmer (22)                         | Dauer, Rampenzeit                                           | ❌ |
+| `DIMMER_WEEK_PROFILE`                  | Dimmer (22)                         | Dauer, Rampenzeit                                           | ✅ (HmIP-BDT, Kanal 7) |
 | `BLIND_WEEK_PROFILE`                   | Rollladen- und Jalousieaktoren (26) | `LEVEL_2` (Lamellen)                                        | ❌ |
 | `UNIVERSAL_LIGHT_WEEK_PROFILE`         | Universal-Lichtaktoren (4)          | Dauer, Rampenzeit, Farbe, Sättigung, Farbtemperatur, Effekt | ❌ |
 | `DIMMER_OUTPUT_BEHAVIOUR_WEEK_PROFILE` | Dimmer mit Ausgangsverhalten (3)    | Dauer, Rampenzeit, `OUTPUT_BEHAVIOUR`                       | ❌ |
 | `SERVO_WEEK_PROFILE`                   | HmIP-WSC (1)                        | Dauer, Rampenzeit                                           | ❌ |
 
-Getestet ist das Lesen und Schreiben bisher nur an einem HmIP-Schaltaktor (Kanal 6). Die Felder der übrigen Typen werden nach der Beschreibung gelesen, die das Gerät selbst liefert (Typ, Bereich, Werteliste), und in der Kachel und beim Schreiben danach geprüft. Rückmeldungen mit dem Debug der Instanz sind willkommen.
+Getestet ist das Lesen und Schreiben bisher an einem HmIP-Schaltaktor (Kanal 6) und einem HmIP-Dimmaktor (HmIP-BDT, Kanal 7, mit Rampenzeit, Dauer und Astro-Zeit). Die Felder der übrigen Typen werden nach der Beschreibung gelesen, die das Gerät selbst liefert (Typ, Bereich, Werteliste), und in der Kachel und beim Schreiben danach geprüft. Rückmeldungen mit dem Debug der Instanz sind willkommen.
 
 ### Felder eines Schaltzeitpunktes
 
@@ -130,7 +130,7 @@ Ein Klick auf einen Balken der Wochenübersicht öffnet den zugehörigen Eintrag
 
 Geändert wird nur ein Entwurf, die Kopfzeile zeigt `Nicht übernommene Änderungen` sowie `Übernehmen` und `Verwerfen`. Erst `Übernehmen` schreibt das Programm in das Gerät: Die Einträge werden nach Uhrzeit geordnet (Astro-Zeiten nach 6 Uhr bzw. 18 Uhr plus Versatz), die Instanz prüft alle Werte und liest das Programm danach zur Kontrolle neu von der CCU. Fehler erscheinen in der Kopfzeile der Kachel. Felder, die nur einzelne Gerätetypen kennen (Rampenzeit, Lamellen, Farbe, Effekt, Ausgangsverhalten), zeigt das Formular nach der Beschreibung des Gerätes: Auswahlen aus der Werteliste, Prozentwerte, Zeiten als Wert mit Einheit. Sie sind bisher nur mit simulierten Daten geprüft.  
 
-**Modus der Schaltkanäle:** Unter der Kopfzeile zeigt die Kachel je Schaltkanal den Modus (`Manuell` oder `Automatisch`). Mit der Berechtigung schaltet ein Klick auf den Kanal den Modus um (Wochenprogramm für diesen Kanal an oder aus). Die Kachel folgt auch Änderungen am Gerät oder in der CCU, weil die Instanz das Ereignis `WEEK_PROGRAM_CHANNEL_LOCKS` auswertet.
+**Modus der Schaltkanäle:** Unter der Kopfzeile zeigt die Kachel je Schaltkanal den Modus (`Manuell` oder `Automatisch`). Welche Kanäle des Gerätes Schaltkanäle sind, liest die Instanz einmalig von der CCU. Als Name erscheint der Name der Symcon-Instanz des Kanals, ohne Instanz `Kanal <Nummer>`. Mit der Berechtigung schaltet ein Klick auf den Kanal den Modus um (Wochenprogramm für diesen Kanal an oder aus). Die Kachel folgt auch Änderungen am Gerät oder in der CCU, weil die Instanz das Ereignis `WEEK_PROGRAM_CHANNEL_LOCKS` auswertet.
 
 Die Kachel steht nur in der Kachel-Visualisierung zur Verfügung, nicht im klassischen WebFront.
 
@@ -163,10 +163,11 @@ $Program = json_decode(HM_ReadWeeklyProgram(12345), true);
 ```
 
 `boolean HM_WriteWeeklyProgram(integer $InstanzID, string $Program);`
-Schreibt das Wochenprogramm in das Gerät. `$Program` ist ein JSON-Array mit Schaltzeitpunkten, die Felder entsprechen der Tabelle oben. Das bisherige Programm wird ersetzt, die Nummern werden lückenlos ab 1 vergeben. Nicht mehr benötigte Einträge werden geleert.
+Schreibt das Wochenprogramm in das Gerät. `$Program` ist ein JSON-Array mit Schaltzeitpunkten, die Felder entsprechen der Tabelle oben.
+**Jeder Aufruf ersetzt das gesamte Programm im Gerät.** Alle Schaltzeitpunkte müssen daher in einem Aufruf übergeben werden. Die Einträge des Arrays werden in ihrer Reihenfolge lückenlos ab Nummer 1 abgelegt, alle übrigen Einträge im Gerät werden geleert. Mehrere Aufrufe nacheinander ergänzen das Programm nicht, im Gerät steht danach nur das zuletzt übergebene Array. Um ein bestehendes Programm zu ergänzen oder zu ändern, wird es vorher mit `HM_ReadWeeklyProgram` gelesen (siehe Beispiel 3).
 Ungültige Werte werden vor dem Senden abgelehnt (Rückgabe `false`, Meldung).
 
-**Beispiel:** Montag und Mittwoch um 12:34 Uhr für 3 Minuten, nur der zweite Zielkanal:
+**Beispiel 1:** Montag und Mittwoch um 12:34 Uhr für 3 Minuten, nur der zweite Zielkanal:
 
 ```php
 $Program = [[
@@ -181,6 +182,54 @@ $Program = [[
 ]];
 HM_WriteWeeklyProgram(12345, json_encode($Program));
 ```
+
+**Beispiel 2:** Täglich um 06:00 Uhr ein und um 10:00 Uhr aus, erster Zielkanal. Beide Schaltzeitpunkte stehen in einem Array, die Dauer ist jeweils dauerhaft (Basis 7, Faktor 31):
+
+```php
+$EveryDay = 1 + 2 + 4 + 8 + 16 + 32 + 64;
+$Program = [
+    [
+        'WEEKDAY' => $EveryDay,
+        'CONDITION' => 0,
+        'FIXED_HOUR' => 6,
+        'FIXED_MINUTE' => 0,
+        'LEVEL' => 1.0,
+        'DURATION_BASE' => 7,
+        'DURATION_FACTOR' => 31,
+        'TARGET_CHANNELS' => 1
+    ],
+    [
+        'WEEKDAY' => $EveryDay,
+        'CONDITION' => 0,
+        'FIXED_HOUR' => 10,
+        'FIXED_MINUTE' => 0,
+        'LEVEL' => 0.0,
+        'DURATION_BASE' => 7,
+        'DURATION_FACTOR' => 31,
+        'TARGET_CHANNELS' => 1
+    ]
+];
+HM_WriteWeeklyProgram(12345, json_encode($Program));
+```
+
+**Beispiel 3:** Das vorhandene Programm um einen Schaltzeitpunkt erweitern (samstags und sonntags um 22:30 Uhr aus):
+
+```php
+$Program = json_decode(HM_ReadWeeklyProgram(12345), true);
+$Program[] = [
+    'WEEKDAY' => 1 + 64,
+    'CONDITION' => 0,
+    'FIXED_HOUR' => 22,
+    'FIXED_MINUTE' => 30,
+    'LEVEL' => 0.0,
+    'DURATION_BASE' => 7,
+    'DURATION_FACTOR' => 31,
+    'TARGET_CHANNELS' => 1
+];
+HM_WriteWeeklyProgram(12345, json_encode($Program));
+```
+
+Ebenso lassen sich Einträge des gelesenen Arrays ändern oder mit `unset` entfernen, bevor es zurückgeschrieben wird.
 
 `string|false HM_ReadWeeklyProgramModes(integer $InstanzID);`
 Liest den Modus der Schaltkanäle von der CCU und liefert je Schaltkanal (Reihenfolge der Kanäle des Gerätes) `true` bei manuellem Modus als JSON.
@@ -205,6 +254,12 @@ Die Schaltzeitpunkte und der Modus werden über die Funktionen aus der PHP-Befeh
 ### 1. Changelog
 
 Der vollständige Changelog der Library steht in der [Haupt-README](../README.md#2-changelog).
+
+**Version 4.01:**
+
+- Fehler beim Schreiben eines leeren Programms behoben.
+- Zielkanäle von der CCU: Kachel und `HM_ReadWeeklyProgramModes` zeigen alle Schaltkanäle, auch ohne Symcon-Instanz je Kanal.
+- Am Dimmaktor HmIP-BDT getestet, Dokumentation von `HM_WriteWeeklyProgram` mit neuen Beispielen.
 
 **Version 3.90:**
 
