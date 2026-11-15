@@ -37,7 +37,7 @@
             "Triggering datapoint": "Auslösender Datenpunkt",
             "No virtual key selected.": "Keine Taste der virtuellen Fernbedienung gewählt.",
             "No variables selected.": "Keine Variablen gewählt.",
-            "Created by Symcon instance %d (HomematicExtended). Changes will be overwritten.": "Angelegt von Symcon-Instanz %d (HomematicExtended). Änderungen werden überschrieben.",
+            "Created by Symcon \"%s\", instance %d (HomematicExtended). Changes will be overwritten.": "Angelegt von Symcon \"%s\", Instanz %d (HomematicExtended). Änderungen werden überschrieben.",
             "The virtual key was not found on the CCU.": "Die Taste der virtuellen Fernbedienung wurde auf der CCU nicht gefunden.",
             "CCU program \"%s\" created.": "CCU-Programm \"%s\" angelegt.",
             "CCU program \"%s\" deleted.": "CCU-Programm \"%s\" gelöscht.",

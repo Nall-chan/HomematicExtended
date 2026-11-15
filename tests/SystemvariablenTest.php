@@ -186,6 +186,8 @@ class SystemvariablenTest extends HomematicModuleTestCase
         $this->assertStringContainsString('oSC.LeftVal(950); oSC.RightVal1(true);', $Script);
         $this->assertStringContainsString('oSC.LeftVal(27598); oSC.RightVal1(0.0);', $Script);
         $this->assertStringContainsString('oKey.Name("Symcon Systemvariablen ' . $Id . '")', $Script);
+        // Die Beschreibung nennt das Symcon-System (Name von Objekt 0) und die Instanz
+        $this->assertStringContainsString('oPrg.PrgInfo("Created by Symcon \"' . IPS_GetName(0) . '\", instance ' . $Id . ' (HomematicExtended).', $Script);
         $this->assertStringNotContainsString('DeleteObject', $Script);
         $this->assertSame(29701, $this->attribute($Id, \HMExtended\Device\Attribute::ProgramID));
         $this->assertSame(self::Key, $this->attribute($Id, \HMExtended\Device\Attribute::ProgramKey, 'ReadAttributeString'));

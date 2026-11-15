@@ -164,7 +164,8 @@ abstract class HMSystemVariableBase extends HMBase
         }
         $Script = \HMExtended\SystemVariables::ProgramScript(
             $this->ProgramName(),
-            sprintf($this->Translate('Created by Symcon instance %d (HomematicExtended). Changes will be overwritten.'), $this->InstanceID),
+            // Name des Symcon-Systems (Objekt 0), damit bei mehreren Systemen an einer CCU erkennbar ist, wem das Programm gehört
+            sprintf($this->Translate('Created by Symcon "%s", instance %d (HomematicExtended). Changes will be overwritten.'), IPS_GetName(0), $this->InstanceID),
             $this->ReadAttributeInteger(\HMExtended\Device\Attribute::ProgramID),
             $this->ReadAttributeString(\HMExtended\Device\Attribute::ProgramKey),
             $Address,
