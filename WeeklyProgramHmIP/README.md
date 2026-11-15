@@ -33,7 +33,7 @@ Wochenprogramm (Schaltzeitpunkte) der HomeMatic IP Aktoren, das in der CCU im Ka
 ## 1. Funktionsumfang
 
 > [!NOTE]
-> Das Modul ist neu und bisher nur an einem HmIP-Schaltaktor getestet.
+> Das Modul ist neu und bisher an einem HmIP-Schaltaktor (HmIP-FSI16) und einem HmIP-Dimmaktor (HmIP-BDT) getestet. Welche Typen von Wochenprogrammen geprüft sind, zeigt die Tabelle unten.
 
 Das Modul
 
