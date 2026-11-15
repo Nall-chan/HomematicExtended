@@ -10,7 +10,7 @@ declare(strict_types=1);
  * @author        Michael Tröger <nall4chan@gmail.com>
  * @copyright     2015-2026 Michael Tröger
  * @license       Custom Non-Commercial Share-Alike License (see LICENSE)
- * @version       4.01
+ * @version       4.02
  */
 
 /**
@@ -51,6 +51,7 @@ trait HMHeatingTileFunctions
      */
     private const TileTexts = [
         'Automatic', 'Manual', 'Party', 'Boost', 'Window open', 'Window', 'Window state open', 'Window state closed', 'Valve', 'Actual', 'Cooling', 'Heating',
+        'Heating active', 'Heating idle',
         'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday',
         'Comfort', 'Lowering', 'Presets', 'Off', 'On', 'min', 'Begin', 'End', 'Temperature', 'Start party', 'End party',
         'Profile', 'Add switching point', 'Remove', 'Apply', 'Discard', 'Saving…', 'until',
@@ -380,6 +381,12 @@ trait HMHeatingTileFunctions
             }
             $Value = $this->GetValue($Ident);
             $Values[$Role] = is_bool($Value) ? $Value : (is_numeric($Value) ? $Value * (static::TileFactors[$Role] ?? 1) : $Value);
+        }
+        // Zustand des Heizungsaktors aus der vom Nutzer gewählten Variable (nur lesen, keine Statusvariable der Instanz)
+        $HeaterId = $this->GetHeaterStateVariable();
+        if ($HeaterId > 0) {
+            $Roles['heater'] = '';
+            $Values['heater'] = GetValueBoolean($HeaterId);
         }
         // Grenzen der Soll-Temperatur und der Party-Temperatur nach der Darstellung der jeweiligen Variable
         $Limits = $this->GetTilePresentation(static::TileRoles['set'] ?? '');

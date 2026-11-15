@@ -10,7 +10,7 @@ declare(strict_types=1);
  * @author        Michael Tröger <nall4chan@gmail.com>
  * @copyright     2015-2026 Michael Tröger
  * @license       Custom Non-Commercial Share-Alike License (see LICENSE)
- * @version       4.01
+ * @version       4.02
  */
 require_once __DIR__ . '/HMBase.php';  // HMBase Klasse
 require_once __DIR__ . '/HMSystemVariables.php';  // Scripte und Parser für Systemvariablen
@@ -24,6 +24,7 @@ require_once __DIR__ . '/HMSystemVariables.php';  // Scripte und Parser für Sys
  * Zusätzlich kann zyklisch gelesen werden (Eigenschaft Interval).
  *
  * @property string $LastTimestamp Uhrzeit der CCU beim letzten Lesen (Zeitstempel-Filter für das nächste Lesen).
+ * @property int $UriDecodeSupport Kennt die CCU `UriDecode()`? -1 = noch nicht geprüft, 0 = nein, 1 = ja (für Texte mit Umlauten).
  */
 abstract class HMSystemVariableBase extends HMBase
 {
@@ -55,6 +56,11 @@ abstract class HMSystemVariableBase extends HMBase
      * Statuscode: Intervall kleiner als MinInterval.
      */
     protected const StatusIntervalTooSmall = IS_EBASE + 3;
+    /**
+     * Texte mit Umlauten gehen nur vor dieser Symcon-Version per `UriDecode()` an die CCU (Umgehung des Kodierungsfehlers im
+     * Homematic Socket, der mit Symcon 10.0 behoben sein soll; Vorgabe des Nutzers). Ab dieser Version wird wie bisher gesendet.
+     */
+    protected const UriDecodeBeforeVersion = '10.0';
 
     /**
      * Interne Funktion des SDK.
@@ -70,6 +76,7 @@ abstract class HMSystemVariableBase extends HMBase
         $this->RegisterAttributeString(\HMExtended\Device\Attribute::ProgramKey, '');
         $this->RegisterTimer(static::ActionRead, 0, 'IPS_RequestAction($_IPS[\'TARGET\'], \'' . static::ActionRead . '\', true);');
         $this->LastTimestamp = '';
+        $this->UriDecodeSupport = -1;
     }
 
     /**
@@ -80,6 +87,7 @@ abstract class HMSystemVariableBase extends HMBase
     {
         parent::ApplyChanges();
         $this->LastTimestamp = '';
+        $this->UriDecodeSupport = -1;
         $this->SetTimerInterval(static::ActionRead, 0);
         $Address = $this->ReadPropertyString(\HMExtended\Device\Property::Address);
         if ($this->HasKey()) {
@@ -162,10 +170,12 @@ abstract class HMSystemVariableBase extends HMBase
             echo sprintf($this->Translate('The virtual key %s is in use (%s). Every key press would trigger it as well. Please choose another key.'), $Address, implode('; ', $Usage)) . PHP_EOL;
             return false;
         }
+        // Name des Symcon-Systems (Objekt 0), damit bei mehreren Systemen an einer CCU erkennbar ist, wem das Programm gehört
+        $Info = sprintf($this->Translate('Created by Symcon "%s", instance %d (HomematicExtended). Changes will be overwritten.'), IPS_GetName(0), $this->InstanceID);
+        $this->PrepareUriDecode($this->ProgramName(), $Info);
         $Script = \HMExtended\SystemVariables::ProgramScript(
             $this->ProgramName(),
-            // Name des Symcon-Systems (Objekt 0), damit bei mehreren Systemen an einer CCU erkennbar ist, wem das Programm gehört
-            sprintf($this->Translate('Created by Symcon "%s", instance %d (HomematicExtended). Changes will be overwritten.'), IPS_GetName(0), $this->InstanceID),
+            $Info,
             $this->ReadAttributeInteger(\HMExtended\Device\Attribute::ProgramID),
             $this->ReadAttributeString(\HMExtended\Device\Attribute::ProgramKey),
             $Address,
@@ -310,6 +320,34 @@ abstract class HMSystemVariableBase extends HMBase
             return false;
         }
         return $Output;
+    }
+
+    /**
+     * Legt fest, ob die folgenden Scripte Texte mit Umlauten per `UriDecode()` senden (\HMExtended\SystemVariables::$UriDecode).
+     * Nur vor Symcon 10.0 (self::UriDecodeBeforeVersion) und nur wenn einer der Texte Zeichen außerhalb von ASCII enthält, wird
+     * die CCU einmal je Laufzeit der Instanz gefragt, ob sie `UriDecode()` kennt. Ohne Antwort oder ohne `UriDecode()` werden die
+     * Texte wie bisher gesendet (Umlaute dann verfälscht).
+     *
+     * @param string ...$Texts Die Texte, die das nächste Script an die CCU schreibt.
+     */
+    protected function PrepareUriDecode(string ...$Texts): void
+    {
+        \HMExtended\SystemVariables::$UriDecode = false;
+        if (version_compare(IPS_GetKernelVersion(), self::UriDecodeBeforeVersion, '>=')) {
+            return;
+        }
+        if (!\HMExtended\SystemVariables::NeedsUriDecode(...$Texts)) {
+            return;
+        }
+        if ($this->UriDecodeSupport == -1) {
+            $Output = $this->RunScriptQuiet(\HMExtended\SystemVariables::UriDecodeTestScript);
+            if ($Output === false) {
+                return;
+            }
+            $this->UriDecodeSupport = \HMExtended\SystemVariables::ParseUriDecodeTest($Output) ? 1 : 0;
+            $this->SendDebug('UriDecode', $this->UriDecodeSupport == 1 ? 'supported' : 'not supported', 0);
+        }
+        \HMExtended\SystemVariables::$UriDecode = ($this->UriDecodeSupport == 1);
     }
 
     /**

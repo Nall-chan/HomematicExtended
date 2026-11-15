@@ -32,6 +32,7 @@
     chevron: 'M7.4 8.6 12 13.2l4.6-4.6L18 10l-6 6-6-6z',
     minus: 'M19 13H5v-2h14z',
     close: 'M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z',
+    heater: 'M3 5h3v12H3zm5 0h3v12H8zm5 0h3v12h-3zm5 0h3v12h-3zM2 17h20v2H2zm2 2h2v2H4zm14 0h2v2h-2z',
     valve: 'M15 13V5c0-1.66-1.34-3-3-3S9 3.34 9 5v8c-1.21.91-2 2.37-2 4 0 2.76 2.24 5 5 5s5-2.24 5-5c0-1.63-.79-3.09-2-4z'
   };
   const icon = name => '<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="' + ICON[name] + '"/></svg>';
@@ -202,7 +203,9 @@
       h += '<button class="chip grow ' + (boostOn() ? 'on' : '') + '" data-boost' + ((has('boost') ? can('boost') : can('mode')) ? '' : ' disabled') + '>' + icon('flame')
         + (boostOn() ? T('Boost') + (has('boostRemain') && val('boostRemain') > 0 ? ' · ' + Math.ceil(val('boostRemain')) + ' ' + T('min') : '') : T('Boost')) + '</button>';
     }
-    if (has('valve')) h += '<span class="chip">' + icon('valve') + T('Valve') + ' ' + Math.round(val('valve')) + ' %</span>';
+    // Zustand des Heizungsaktors (vom Nutzer gewählte Variable) hat Vorrang vor der Ventilöffnung, nur Anzeige
+    if (has('heater')) h += '<span class="chip' + (val('heater') ? ' on' : '') + '">' + icon('heater') + (val('heater') ? T('Heating active') : T('Heating idle')) + '</span>';
+    else if (has('valve')) h += '<span class="chip">' + icon('valve') + T('Valve') + ' ' + Math.round(val('valve')) + ' %</span>';
     // Fensterzustand: nur Symbol und Zustand, bedienbar (wie die Statusvariable) schaltet er um
     if (has('window')) {
       const open = windowOpen(), tag = can('window') ? 'button' : 'span';

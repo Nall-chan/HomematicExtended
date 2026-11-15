@@ -10,7 +10,7 @@ declare(strict_types=1);
  * @author        Michael Tröger <nall4chan@gmail.com>
  * @copyright     2015-2026 Michael Tröger
  * @license       Custom Non-Commercial Share-Alike License (see LICENSE)
- * @version       4.01
+ * @version       4.02
  */
 
 namespace HMExtended
@@ -65,6 +65,11 @@ namespace HMExtended
             self::ValueTypeString  => 3  // VARIABLETYPE_STRING
         ];
 
+        /**
+         * Script zum Test, ob die CCU `UriDecode()` kennt: Ausgabe `AB`. Kennt sie die Methode nicht, bricht sie das Script ohne Ausgabe ab.
+         */
+        public const UriDecodeTestScript = 'WriteLine("%41%42".UriDecode());';
+
         /** ConditionType der CCU (live ermittelt): gleich bzw. ungleich dem Vergleichswert */
         private const ConditionEqual = 1;
         private const ConditionNotEqual = 12;
@@ -83,6 +88,14 @@ namespace HMExtended
          * Namensanfänge der Systemvariablen, welche die CCU für Energiezähler (Powermeter) und Wetterstationen (Weather) anlegt.
          */
         private const CounterPrefixes = ['svEnergyCounter', 'svHmIP'];
+
+        /**
+         * true: Texte mit Zeichen außerhalb von ASCII (z.B. Umlaute) gehen als ISO-8859-1, prozentkodiert und damit als reines ASCII
+         * an die CCU und werden dort per `UriDecode()` dekodiert. Der Homematic Socket überträgt den Script-Text als UTF-8, die CCU
+         * erwartet ISO-8859-1, ohne Kodierung landen Umlaute verfälscht in der CCU. Das Modul setzt den Wert vor dem Erzeugen der
+         * Scripte nach dem Ergebnis von UriDecodeTestScript; false sendet die Texte wie bisher.
+         */
+        public static bool $UriDecode = false;
 
         /**
          * Liefert das Protokoll (0 = BidCos-RF, 2 = HmIP) zur Adresse eines Kanals einer virtuellen Fernbedienung.
@@ -303,7 +316,7 @@ namespace HMExtended
             return 'string sId;' . PHP_EOL .
                 'object o;' . PHP_EOL .
                 'string sTs;' . PHP_EOL .
-                'string sSince = "' . self::Literal($Since) . '";' . PHP_EOL .
+                'string sSince = ' . self::TextLiteral($Since) . ';' . PHP_EOL .
                 'WriteLine("' . self::Header . '" # system.Date("%F %T"));' . PHP_EOL .
                 'foreach (sId, "' . implode('\t', array_map('intval', $Ids)) . '") {' . PHP_EOL .
                 ' o = dom.GetObject(sId);' . PHP_EOL .
@@ -398,10 +411,10 @@ namespace HMExtended
             $Script .= 'object oDP = dom.GetObject("' . $Interface . '.' . self::Literal($KeyAddress) . '.' . self::KeyDatapoint . '");' . PHP_EOL .
                 'if (oDP) {' . PHP_EOL .
                 ' object oKey = dom.GetObject(oDP.Channel());' . PHP_EOL .
-                ' if (oKey) { if (oKey.Name() == "' . self::Literal(self::DefaultKeyName($KeyAddress)) . '") { oKey.Name("' . self::Literal($Name) . '"); } }' . PHP_EOL .
+                ' if (oKey) { if (oKey.Name() == ' . self::TextLiteral(self::DefaultKeyName($KeyAddress)) . ') { oKey.Name(' . self::TextLiteral($Name) . '); } }' . PHP_EOL .
                 ' object oPrg = dom.CreateObject(OT_PROGRAM);' . PHP_EOL .
-                ' oPrg.Name("' . self::Literal($Name) . '");' . PHP_EOL .
-                ' oPrg.PrgInfo("' . self::Literal($Info) . '");' . PHP_EOL .
+                ' oPrg.Name(' . self::TextLiteral($Name) . ');' . PHP_EOL .
+                ' oPrg.PrgInfo(' . self::TextLiteral($Info) . ');' . PHP_EOL .
                 ' dom.GetObject(ID_PROGRAMS).Add(oPrg.ID());' . PHP_EOL .
                 ' object oRule = dom.GetObject(oPrg.Rule().ID());' . PHP_EOL .
                 ' object oCnd = oRule.RuleAddCondition();' . PHP_EOL .
@@ -441,7 +454,7 @@ namespace HMExtended
             $Script = $Restore .
                 'boolean bDeleted = false;' . PHP_EOL .
                 'object oOld = dom.GetObject(' . $ProgramId . ');' . PHP_EOL .
-                'if (oOld) { if ((oOld.TypeName() == "PROGRAM") && (oOld.Name() == "' . self::Literal($Name) . '")) { dom.DeleteObject(oOld.ID()); bDeleted = true; } }' . PHP_EOL;
+                'if (oOld) { if ((oOld.TypeName() == "PROGRAM") && (oOld.Name() == ' . self::TextLiteral($Name) . ')) { dom.DeleteObject(oOld.ID()); bDeleted = true; } }' . PHP_EOL;
             if ($WithOutput) {
                 $Script .= 'dom.RTUpdate(0);' . PHP_EOL .
                     'if (bDeleted) { WriteLine("' . self::Header . '1"); } else { WriteLine("' . self::Header . '0"); }' . PHP_EOL;
@@ -462,7 +475,7 @@ namespace HMExtended
                 return '';
             }
             return 'object oOldDP = dom.GetObject("' . self::VirtualKeys[$Protocol]['Interface'] . '.' . $KeyAddress . '.' . self::KeyDatapoint . '");' . PHP_EOL .
-                'if (oOldDP) { object oOldKey = dom.GetObject(oOldDP.Channel()); if (oOldKey) { if (oOldKey.Name() == "' . self::Literal($Name) . '") { oOldKey.Name("' . self::Literal(self::DefaultKeyName($KeyAddress)) . '"); } } }' . PHP_EOL;
+                'if (oOldDP) { object oOldKey = dom.GetObject(oOldDP.Channel()); if (oOldKey) { if (oOldKey.Name() == ' . self::TextLiteral($Name) . ') { oOldKey.Name(' . self::TextLiteral(self::DefaultKeyName($KeyAddress)) . '); } } }' . PHP_EOL;
         }
 
         /**
@@ -649,6 +662,29 @@ namespace HMExtended
         }
 
         /**
+         * Wertet die Ausgabe von UriDecodeTestScript aus.
+         *
+         * @return bool true, wenn die CCU `UriDecode()` kennt.
+         */
+        public static function ParseUriDecodeTest(string $Output): bool
+        {
+            return trim($Output) === 'AB';
+        }
+
+        /**
+         * True, wenn einer der Texte Zeichen außerhalb von druckbarem ASCII enthält und mit `UriDecode()` gesendet werden sollte.
+         */
+        public static function NeedsUriDecode(string ...$Texts): bool
+        {
+            foreach ($Texts as $Text) {
+                if (preg_match('/[^\x20-\x7E]/', $Text)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /**
          * Maskiert Backslash, Tabulator und Zeilenumbrüche des Ergebnisses eines HM-Script-Ausdrucks.
          *
          * @param string $Expression HM-Script-Ausdruck, der einen Text liefert.
@@ -678,6 +714,18 @@ namespace HMExtended
         }
 
         /**
+         * Liefert einen Text als HM-Script-Ausdruck samt Anführungszeichen. Reines ASCII oder ohne UriDecode wie bisher als Literal,
+         * sonst als ISO-8859-1 prozentkodiert mit `.UriDecode()`. Zeichen, die ISO-8859-1 nicht kennt, werden zu `?`.
+         */
+        private static function TextLiteral(string $Text): string
+        {
+            if (!self::$UriDecode || !self::NeedsUriDecode($Text)) {
+                return '"' . self::Literal($Text) . '"';
+            }
+            return '"' . rawurlencode(mb_convert_encoding($Text, 'ISO-8859-1', 'UTF-8')) . '".UriDecode()';
+        }
+
+        /**
          * Liefert einen Wert als HM-Script-Literal.
          */
         private static function ValueLiteral(mixed $Value): string
@@ -691,7 +739,7 @@ namespace HMExtended
             if (is_float($Value)) {
                 return sprintf('%.6F', $Value);
             }
-            return '"' . self::Literal((string) $Value) . '"';
+            return self::TextLiteral((string) $Value);
         }
 
         /**

@@ -15,6 +15,17 @@
                     "name": "SetPointBehavior",
                     "type": "CheckBox",
                     "caption": "Changing the target temperature sets the mode to manual"
+                },
+                {
+                    "name": "HeaterStateVariable",
+                    "type": "SelectVariable",
+                    "caption": "Heater state for the tile (optional)",
+                    "validVariableTypes": [0],
+                    "width": "450px"
+                },
+                {
+                    "type": "Label",
+                    "caption": "e.g. STATE of the switching actuator of a HmIP-BWTH (channel 10). The tile shows it instead of the valve opening."
                 }
             ]
         },

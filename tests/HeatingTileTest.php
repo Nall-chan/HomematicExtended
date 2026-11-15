@@ -23,6 +23,11 @@ class TileHeatingGroupHmIP extends HomeMaticIPHeatingGroup
         return static::SlotsToParams($Days, $Plan);
     }
 
+    public function Messages(): array
+    {
+        return $this->GetMessageList();
+    }
+
     protected function ReadPropertyBoolean(string $Name): bool
     {
         return ($Name == \HMExtended\Device\Property::Schedule) ? false : parent::ReadPropertyBoolean($Name);
@@ -88,6 +93,45 @@ class HeatingTileTest extends HeatingTestCase
             $this->assertArrayNotHasKey($Role, $Config['values'], $Role);
         }
         $this->assertArrayHasKey('set', $Config['roles']);
+    }
+
+    public function testHeaterStateVariableIsShownInTheTile(): void
+    {
+        $this->hmipDevice();
+        $this->assertArrayNotHasKey('heater', $this->tileConfig()['roles']);
+        // Boolean-Variable einer fremden Instanz (z.B. STATE des Schaltaktors eines HmIP-BWTH), vom Nutzer gewählt
+        $HeaterId = IPS_CreateVariable(VARIABLETYPE_BOOLEAN);
+        SetValueBoolean($HeaterId, true);
+        IPS_SetProperty($this->DeviceId, \HMExtended\Device\Property::HeaterState, $HeaterId);
+        IPS_ApplyChanges($this->DeviceId);
+        $Config = $this->tileConfig();
+        $this->assertArrayHasKey('heater', $Config['roles']);
+        $this->assertTrue($Config['values']['heater']);
+        $this->assertNotContains('heater', $Config['actions'], 'only displayed, not operated');
+        // Die Ventilöffnung bleibt in den Daten, die Kachel zeigt den Zustand des Aktors an ihrer Stelle
+        $this->assertArrayHasKey('valve', $Config['roles']);
+        $this->assertContains($HeaterId, $this->device()->GetReferenceList());
+        $this->assertContains(VM_UPDATE, $this->device()->Messages()[$HeaterId] ?? []);
+        // Eine Aktualisierung der Variable geht an die Kachel
+        SetValueBoolean($HeaterId, false);
+        $this->device()->MessageSink(time(), $HeaterId, VM_UPDATE, [false, true, true]);
+        $this->assertFalse($this->tileConfig()['values']['heater']);
+    }
+
+    public function testHeaterStateIgnoresOtherVariableTypesAndReleasesTheOldVariable(): void
+    {
+        $this->hmipDevice();
+        $HeaterId = IPS_CreateVariable(VARIABLETYPE_BOOLEAN);
+        IPS_SetProperty($this->DeviceId, \HMExtended\Device\Property::HeaterState, $HeaterId);
+        IPS_ApplyChanges($this->DeviceId);
+        // Keine Boolean-Variable: keine Rolle, Referenz und Nachricht der bisherigen Variable werden gelöst
+        $IntegerId = IPS_CreateVariable(VARIABLETYPE_INTEGER);
+        IPS_SetProperty($this->DeviceId, \HMExtended\Device\Property::HeaterState, $IntegerId);
+        IPS_ApplyChanges($this->DeviceId);
+        $this->assertArrayNotHasKey('heater', $this->tileConfig()['roles']);
+        $this->assertSame([], $this->device()->GetReferenceList());
+        $this->assertArrayNotHasKey($HeaterId, $this->device()->Messages());
+        $this->assertArrayNotHasKey($IntegerId, $this->device()->Messages());
     }
 
     public function testTileGetsTheActiveWeekSchedule(): void

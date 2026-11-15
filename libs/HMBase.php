@@ -402,7 +402,8 @@ abstract class HMBase extends IPSModuleStrict
         unset($xml->exec);
         unset($xml->sessionId);
         unset($xml->httpUserAgent);
-        $xml->addChild('Output', $Output);
+        // addChild maskiert ein „&“ im Wert nicht (Warnung „unterminated entity reference“), daher selbst maskieren
+        $xml->addChild('Output', htmlspecialchars($Output, ENT_XML1 | ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'));
         return $xml;
     }
 

@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @copyright     2015-2026 Michael Tröger
  * @license       Custom Non-Commercial Share-Alike License (see LICENSE)
  *
- * @version       4.01
+ * @version       4.02
  */
 require_once __DIR__ . '/HMBase.php';  // HMBase Klasse
 require_once __DIR__ . '/HMWriteValue.php';  // HM_WriteValue… über die Bedienung der Statusvariable
@@ -138,6 +138,9 @@ class HMHeatingDevice extends HMBase
         $this->WeekSchedules = [];
         $this->WeekProfile = 1;
         $this->TileTemperatures = [];
+        if (count(static::TileRoles) > 0) {
+            $this->RegisterPropertyInteger(\HMExtended\Device\Property::HeaterState, 0);
+        }
         $this->RegisterHeatingTile();
     }
 
@@ -164,6 +167,7 @@ class HMHeatingDevice extends HMBase
 
         $this->WeekProfile = 1;
         $this->TileTemperatures = [];
+        $this->RegisterHeaterState();
         $Address = $this->ReadPropertyString(\HMExtended\Device\Property::Address);
         if ($Address == '') {
             $this->SetReceiveDataFilter('.*9999999999.*');
@@ -239,6 +243,18 @@ class HMHeatingDevice extends HMBase
     }
 
     /**
+     * Interne Funktion des SDK.
+     * Eine Aktualisierung der Variable mit dem Zustand des Heizungsaktors geht sofort an die Kachel.
+     */
+    public function MessageSink(int $TimeStamp, int $SenderID, int $Message, array $Data): void
+    {
+        parent::MessageSink($TimeStamp, $SenderID, $Message, $Data);
+        if (($Message == VM_UPDATE) && ($SenderID != 0) && ($SenderID == $this->GetHeaterStateVariable())) {
+            $this->PushTileValues();
+        }
+    }
+
+    /**
      * Liest einen Datenpunkt (Paramset VALUES) von der CCU und schreibt ihn in die Statusvariable.
      *
      * @param string $Ident Ident der Statusvariable, muss ein Datenpunkt der Werte sein.
@@ -280,6 +296,47 @@ class HMHeatingDevice extends HMBase
             parent::RequestAction($Ident, $Value, $done);
         } finally {
             $this->PushTileValues();
+        }
+    }
+
+    /**
+     * Variable mit dem Zustand des Heizungsaktors (Eigenschaft HeaterStateVariable, vom Nutzer gewählt, z.B. STATE des Schaltaktors
+     * eines HmIP-BWTH). Die Heizgruppe der CCU kennt diesen Zustand nicht, die Kachel zeigt ihn statt der Ventilöffnung.
+     *
+     * @return int Die ID, wenn die Eigenschaft auf eine vorhandene Boolean-Variable zeigt, sonst 0.
+     */
+    protected function GetHeaterStateVariable(): int
+    {
+        if (count(static::TileRoles) == 0) {
+            return 0;
+        }
+        $VariableId = $this->ReadPropertyInteger(\HMExtended\Device\Property::HeaterState);
+        if (($VariableId <= 0) || !IPS_VariableExists($VariableId) || (IPS_GetVariable($VariableId)['VariableType'] != VARIABLETYPE_BOOLEAN)) {
+            return 0;
+        }
+        return $VariableId;
+    }
+
+    /**
+     * Registriert Referenz und VM_UPDATE der Variable mit dem Zustand des Heizungsaktors und löst die einer zuvor gewählten Variable.
+     * Die Heizungsmodule nutzen Referenzen und VM_UPDATE nur dafür.
+     */
+    protected function RegisterHeaterState(): void
+    {
+        $VariableId = $this->GetHeaterStateVariable();
+        foreach ($this->GetMessageList() as $SenderId => $Messages) {
+            if (($SenderId != $VariableId) && in_array(VM_UPDATE, $Messages)) {
+                $this->UnregisterMessage($SenderId, VM_UPDATE);
+            }
+        }
+        foreach ($this->GetReferenceList() as $ReferenceId) {
+            if ($ReferenceId != $VariableId) {
+                $this->UnregisterReference($ReferenceId);
+            }
+        }
+        if ($VariableId > 0) {
+            $this->RegisterReference($VariableId);
+            $this->RegisterMessage($VariableId, VM_UPDATE);
         }
     }
 

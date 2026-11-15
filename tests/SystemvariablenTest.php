@@ -122,6 +122,40 @@ class SystemvariablenTest extends HomematicModuleTestCase
         $this->expectOutputString('Error on write CCU system variable 950.' . PHP_EOL);
     }
 
+    public function testWriteStringWithUmlautsUsesUriDecode(): void
+    {
+        $Id = $this->createSystemVariables([14901]);
+        $Interface = IPS\InstanceManager::getInstanceInterface($Id);
+        // Erster Text mit Umlauten: Test, ob die CCU UriDecode() kennt, danach das Schreiben
+        FakeHomematicIO::$Requests = [];
+        FakeHomematicIO::$ScriptResponses = ["AB\r\n" . self::Xml, "true\r\n" . self::Xml];
+        $this->assertTrue($Interface->WriteValueString('14901', 'Grüße'));
+        $this->assertSame(\HMExtended\SystemVariables::UriDecodeTestScript, $this->scripts()[0]);
+        $this->assertStringContainsString('o.State("Gr%FC%DFe".UriDecode())', $this->scripts()[1]);
+        // Das Ergebnis gilt für die Laufzeit der Instanz, reines ASCII geht ohne UriDecode
+        FakeHomematicIO::$Requests = [];
+        FakeHomematicIO::$ScriptResponses = [];
+        FakeHomematicIO::$ScriptResponse = "true\r\n" . self::Xml;
+        $this->assertTrue($Interface->WriteValueString('14901', 'Öl'));
+        $this->assertTrue($Interface->WriteValueString('14901', 'abc'));
+        $this->assertCount(2, $this->scripts());
+        $this->assertStringContainsString('o.State("%D6l".UriDecode())', $this->scripts()[0]);
+        $this->assertStringContainsString('o.State("abc")', $this->scripts()[1]);
+        $this->assertFalse(\HMExtended\SystemVariables::$UriDecode);
+        $this->expectOutputString('');
+    }
+
+    public function testWriteStringWithoutUriDecodeSendsText(): void
+    {
+        $Id = $this->createSystemVariables([14901]);
+        FakeHomematicIO::$Requests = [];
+        // Ohne UriDecode() bricht die CCU den Test ohne Ausgabe ab, der Text geht wie bisher an die CCU
+        FakeHomematicIO::$ScriptResponses = ["\r\n" . self::Xml, "true\r\n" . self::Xml];
+        $this->assertTrue(IPS\InstanceManager::getInstanceInterface($Id)->WriteValueString('14901', 'Grüße'));
+        $this->assertStringContainsString('o.State("Grüße")', $this->scripts()[1]);
+        $this->expectOutputString('');
+    }
+
     public function testWriteValueWithEmulateStatus(): void
     {
         $Id = $this->createSystemVariables([950]);

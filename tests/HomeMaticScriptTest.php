@@ -34,6 +34,16 @@ class HomeMaticScriptTest extends HomematicModuleTestCase
         $this->assertSame('Value=42;', FakeHomematicIO::$Requests[0]['Content']);
     }
 
+    public function testRunScriptOutputWithAmpersandAndTags(): void
+    {
+        // Zeichen mit Bedeutung in XML (z.B. ein Systemname „Ruby & Yuri“) dürfen das Zusammensetzen der Antwort nicht stören
+        FakeHomematicIO::$ScriptResponse = "Ruby & Yuri <b>\"x\"</b>\r\n<xml><exec>/x</exec><sessionId>0</sessionId><httpUserAgent>x</httpUserAgent></xml>";
+        $Result = IPS\InstanceManager::getInstanceInterface($this->ScriptId)->RunScript('WriteLine("Ruby & Yuri");');
+        $this->assertIsArray($Result);
+        $this->assertSame("Ruby & Yuri <b>\"x\"</b>\r\n", $Result['Output']);
+        $this->expectOutputString('');
+    }
+
     public function testRunScriptWithInvalidAnswerReturnsFalse(): void
     {
         FakeHomematicIO::$ScriptResponse = 'no xml';

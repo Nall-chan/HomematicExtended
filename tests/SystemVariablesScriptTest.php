@@ -109,6 +109,34 @@ class SystemVariablesScriptTest extends TestCase
         $this->assertStringContainsString('dom.GetObject(14901)', SystemVariables::WriteScript(14901, 'x'));
     }
 
+    public function testUriDecodeTest(): void
+    {
+        $this->assertSame('WriteLine("%41%42".UriDecode());', SystemVariables::UriDecodeTestScript);
+        $this->assertTrue(SystemVariables::ParseUriDecodeTest("AB\r\n"));
+        $this->assertFalse(SystemVariables::ParseUriDecodeTest(''));
+        $this->assertFalse(SystemVariables::NeedsUriDecode('abc', 'Symcon "x" 1'));
+        $this->assertTrue(SystemVariables::NeedsUriDecode('abc', 'Grüße'));
+        $this->assertTrue(SystemVariables::NeedsUriDecode("a\tb"));
+    }
+
+    public function testTextsWithUriDecode(): void
+    {
+        SystemVariables::$UriDecode = true;
+        try {
+            // Umlaute als ISO-8859-1 prozentkodiert, reines ASCII unverändert, Zeichen außerhalb von ISO-8859-1 werden zu ?
+            $this->assertStringContainsString('o.State("Gr%FC%DFe%20%22x%22".UriDecode())', SystemVariables::WriteScript(1, 'Grüße "x"'));
+            $this->assertStringContainsString('o.State("abc")', SystemVariables::WriteScript(1, 'abc'));
+            $this->assertStringContainsString('o.State("%3F".UriDecode())', SystemVariables::WriteScript(1, '€'));
+            $Script = SystemVariables::ProgramScript('Symcon Systemvariablen 1', 'Änderung', 0, '', 'BidCoS-RF:49', [950 => 2]);
+            $this->assertStringContainsString('oPrg.PrgInfo("%C4nderung".UriDecode());', $Script);
+            $this->assertStringContainsString('oPrg.Name("Symcon Systemvariablen 1");', $Script);
+        } finally {
+            SystemVariables::$UriDecode = false;
+        }
+        // Ohne UriDecode wie bisher
+        $this->assertStringContainsString('o.State("Grüße")', SystemVariables::WriteScript(1, 'Grüße'));
+    }
+
     public function testProtocolOfKey(): void
     {
         $this->assertSame(0, SystemVariables::ProtocolOfKey('BidCoS-RF:49'));

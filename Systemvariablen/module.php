@@ -383,6 +383,9 @@ class HomeMaticSystemvariablen extends HMSystemVariableBase
             echo sprintf($this->Translate('Wrong data type for %s.'), $Ident) . PHP_EOL;
             return false;
         }
+        if (is_string($Value)) {
+            $this->PrepareUriDecode($Value);
+        }
         $Output = $this->RunScript(\HMExtended\SystemVariables::WriteScript((int) $Ident, $Value));
         if ($Output === false) {
             return false;
