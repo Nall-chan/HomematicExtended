@@ -25,8 +25,6 @@ svg.i { width: 1em; height: 1em; fill: currentColor; display: block; }
 /* Kopfzeile: Betriebsart links, rechts Platz für den Maximieren-Pfeil der Visu */
 .head { display: flex; align-items: center; gap: 8px; min-height: 24px; padding-right: var(--corner); flex: none; }
 .pill { font-size: 11px; padding: 1px 9px; border-radius: 999px; background: color-mix(in srgb, var(--accent) 22%, transparent); white-space: nowrap; }
-.pill.warn { background: #ffb02e55; }
-.pill.hot { background: color-mix(in srgb, var(--hot) 30%, transparent); }
 .notice { font-size: 12px; color: var(--hot); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* Wählrad wie die Thermostat-Darstellung von Symcon */
@@ -47,7 +45,8 @@ svg.i { width: 1em; height: 1em; fill: currentColor; display: block; }
 .nudge:hover { background: var(--line); }
 .nudge.minus { left: 18%; }
 .nudge.plus { right: 18%; }
-.size-mini .nudge, .size-mini .center .is { display: none; }
+.size-mini .nudge { display: none; }
+.size-mini .center .is { margin-top: 3px; font-size: 11px; }
 
 /* Umschalter wie bei der RGB-Kachel: Segmente und Chips */
 .seg { display: flex; border-radius: 999px; background: var(--surface); padding: 3px; gap: 2px; flex: none; }

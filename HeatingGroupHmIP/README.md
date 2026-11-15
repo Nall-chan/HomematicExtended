@@ -163,8 +163,8 @@ Maximiert (ab etwa 880 × 520 Pixel) kommen Schnellwahl, Party und der Wochenpla
 
 | Größe der Kachel | Inhalt |
 | --- | --- |
-| Klein | Wählrad mit Solltemperatur und Betriebsart, darin Ist-Temperatur und Luftfeuchte |
-| Mittel | zusätzlich die Tasten `-` und `+`, der Umschalter `Automatik` / `Manuell` / `Party`, der Boost-Schalter mit Restlaufzeit sowie Ventilöffnung, Fensterzustand und Betriebsart (Heizen/Kühlen) |
+| Klein | Wählrad mit Solltemperatur, darin Ist-Temperatur und Betriebsart |
+| Mittel | zusätzlich die Luftfeuchte, die Tasten `-` und `+`, der Umschalter `Automatik` / `Manuell` / `Party`, der Boost-Schalter mit Restlaufzeit sowie Ventilöffnung, Fensterzustand und Betriebsart (Heizen/Kühlen) |
 | Groß (ab etwa 560 × 300 Pixel) | Wählrad links, rechts Umschalter, Wochenplan des aktiven Zeitprofils (Ansicht) und Statusanzeigen |
 | Maximiert (ab etwa 880 × 520 Pixel) | zusätzlich Schnellwahl (Komfort, Absenkung, Fenster offen), Party-Formular und der Wochenplan zum Bearbeiten |
 

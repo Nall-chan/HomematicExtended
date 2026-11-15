@@ -11,9 +11,10 @@ declare(strict_types=1);
  * @copyright     2015-2026 Michael Tröger
  * @license       Custom Non-Commercial Share-Alike License (see LICENSE)
  *
- * @version       4.01
+ * @version       4.02
  */
 require_once __DIR__ . '/../libs/HMSystemVariableBase.php';  // Basisklasse Systemvariablen
+require_once __DIR__ . '/../libs/HMWriteValue.php';  // HM_WriteValue…2, ab Symcon 10.0 HM_WriteValue…
 
 /**
  * HomeMaticSystemvariablen ist die Klasse für das IPS-Modul 'HomeMatic Systemvariablen'.
@@ -30,6 +31,7 @@ require_once __DIR__ . '/../libs/HMSystemVariableBase.php';  // Basisklasse Syst
  */
 class HomeMaticSystemvariablen extends HMSystemVariableBase
 {
+    use HMWriteValueAliasFunctions;
     protected const ProgramPrefix = 'Symcon Systemvariablen ';
 
     /**
@@ -48,11 +50,6 @@ class HomeMaticSystemvariablen extends HMSystemVariableBase
     private const ActionDeleteLegacyAlarms = 'DeleteLegacyAlarmVariables';
     private const ActionVariableEdited = 'VariableEdited';
     private const ActionReloadVariableList = 'ReloadVariableList';
-    /**
-     * Symcon-Version, ab der die Funktionen HM_WriteValue… (ohne 2) die gleichnamigen Funktionen des Kernels überschreiben können.
-     * Bis dahin (alle C++-Versionen) bleiben HM_WriteValue…2 die gültigen Funktionen und erzeugen keine Warnung (Vorgabe des Nutzers).
-     */
-    private const NativeWriteValueVersion = '10.0';
 
     /**
      * Interne Funktion des SDK.
@@ -190,98 +187,6 @@ class HomeMaticSystemvariablen extends HMSystemVariableBase
         return true;
     }
 
-    /**
-     * IPS-Instanz-Funktion 'HM_WriteValueBoolean'.
-     * Schreibt einen bool-Wert in eine Systemvariable der CCU.
-     *
-     * @param string $Parameter Der Ident der Statusvariable (= ID der Systemvariable auf der CCU).
-     * @param bool   $Value     Der zu schreibende Wert.
-     *
-     * @return bool True bei Erfolg, sonst false.
-     */
-    public function WriteValueBoolean(string $Parameter, bool $Value): bool
-    {
-        return $this->WriteValue($Parameter, $Value, VARIABLETYPE_BOOLEAN);
-    }
-
-    /**
-     * IPS-Instanz-Funktion 'HM_WriteValueInteger'.
-     * Schreibt einen integer-Wert in eine Systemvariable der CCU (Wertelisten und Zähler).
-     *
-     * @param string $Parameter Der Ident der Statusvariable (= ID der Systemvariable auf der CCU).
-     * @param int    $Value     Der zu schreibende Wert.
-     *
-     * @return bool True bei Erfolg, sonst false.
-     */
-    public function WriteValueInteger(string $Parameter, int $Value): bool
-    {
-        return $this->WriteValue($Parameter, $Value, VARIABLETYPE_INTEGER);
-    }
-
-    /**
-     * IPS-Instanz-Funktion 'HM_WriteValueFloat'.
-     * Schreibt einen float-Wert in eine Systemvariable der CCU.
-     *
-     * @param string $Parameter Der Ident der Statusvariable (= ID der Systemvariable auf der CCU).
-     * @param float  $Value     Der zu schreibende Wert.
-     *
-     * @return bool True bei Erfolg, sonst false.
-     */
-    public function WriteValueFloat(string $Parameter, float $Value): bool
-    {
-        return $this->WriteValue($Parameter, $Value, VARIABLETYPE_FLOAT);
-    }
-
-    /**
-     * IPS-Instanz-Funktion 'HM_WriteValueString'.
-     * Schreibt einen string-Wert in eine Systemvariable der CCU.
-     *
-     * @param string $Parameter Der Ident der Statusvariable (= ID der Systemvariable auf der CCU).
-     * @param string $Value     Der zu schreibende Wert.
-     *
-     * @return bool True bei Erfolg, sonst false.
-     */
-    public function WriteValueString(string $Parameter, string $Value): bool
-    {
-        return $this->WriteValue($Parameter, $Value, VARIABLETYPE_STRING);
-    }
-
-    /**
-     * IPS-Instanz-Funktion 'HM_WriteValueBoolean2'. Ruft WriteValueBoolean auf, ab Symcon 10.0 veraltet.
-     */
-    public function WriteValueBoolean2(string $Parameter, bool $Value): bool
-    {
-        $this->LogWriteValueAlias('HM_WriteValueBoolean2', 'HM_WriteValueBoolean');
-        return $this->WriteValueBoolean($Parameter, $Value);
-    }
-
-    /**
-     * IPS-Instanz-Funktion 'HM_WriteValueInteger2'. Ruft WriteValueInteger auf, ab Symcon 10.0 veraltet.
-     */
-    public function WriteValueInteger2(string $Parameter, int $Value): bool
-    {
-        $this->LogWriteValueAlias('HM_WriteValueInteger2', 'HM_WriteValueInteger');
-        return $this->WriteValueInteger($Parameter, $Value);
-    }
-
-    /**
-     * IPS-Instanz-Funktion 'HM_WriteValueFloat2'. Ruft WriteValueFloat auf, ab Symcon 10.0 veraltet.
-     */
-    public function WriteValueFloat2(string $Parameter, float $Value): bool
-    {
-        $this->LogWriteValueAlias('HM_WriteValueFloat2', 'HM_WriteValueFloat');
-        return $this->WriteValueFloat($Parameter, $Value);
-    }
-
-    /**
-     * IPS-Instanz-Funktion 'HM_WriteValueString2'. Ruft WriteValueString auf, ab Symcon 10.0 veraltet.
-     */
-    public function WriteValueString2(string $Parameter, string $Value): bool
-    {
-        $this->LogWriteValueAlias('HM_WriteValueString2', 'HM_WriteValueString');
-        return $this->WriteValueString($Parameter, $Value);
-    }
-
     //################# protected
 
     /**
@@ -341,7 +246,7 @@ class HomeMaticSystemvariablen extends HMSystemVariableBase
                 $Value = (string) $Value;
                 break;
         }
-        $this->WriteValue($Ident, $Value, $Type);
+        $this->WriteValueOfType($Ident, $Value, $Type);
     }
 
     /**
@@ -456,14 +361,6 @@ class HomeMaticSystemvariablen extends HMSystemVariableBase
         }, $this->ReadAttributeArray(\HMExtended\Device\Attribute::Metadata));
     }
 
-    /**
-     * True ab Symcon 10.0: Erst dann können die Funktionen HM_WriteValue… (ohne 2) genutzt werden.
-     */
-    protected function HasNativeWriteValue(): bool
-    {
-        return version_compare(IPS_GetKernelVersion(), self::NativeWriteValueVersion, '>=');
-    }
-
     //################# PRIVATE
 
     /**
@@ -475,7 +372,7 @@ class HomeMaticSystemvariablen extends HMSystemVariableBase
      *
      * @return bool true bei Erfolg.
      */
-    private function WriteValue(string $Ident, mixed $Value, int $Type): bool
+    protected function WriteValueOfType(string $Ident, mixed $Value, int $Type): bool
     {
         $VariableId = ctype_digit($Ident) ? $this->FindIDForIdent($Ident) : 0;
         if ($VariableId == 0) {
@@ -678,16 +575,6 @@ class HomeMaticSystemvariablen extends HMSystemVariableBase
         ];
     }
 
-    /**
-     * Meldet den Aufruf von HM_WriteValue…2 im Log, aber erst ab Symcon 10.0. Davor gibt es keinen Ersatz.
-     */
-    private function LogWriteValueAlias(string $Old, string $New): void
-    {
-        if (!$this->HasNativeWriteValue()) {
-            return;
-        }
-        $this->LogMessage(sprintf($this->Translate('%s is deprecated as of Symcon %s, use %s.'), $Old, self::NativeWriteValueVersion, $New), KL_WARNING);
-    }
 }
 
 /* @} */

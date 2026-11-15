@@ -37,6 +37,7 @@
             "System variable %d does not exist on the CCU.": "Systemvariable %d existiert nicht auf der CCU.",
             "Type of CCU system variable %s has changed.": "Typ der CCU-Systemvariable %s hat sich geändert.",
             "Wrong data type for %s.": "Falscher Datentyp für %s.",
+            "Variable %s cannot be operated.": "Variable %s ist nicht bedienbar.",
             "Error on write CCU system variable %s.": "Fehler beim Schreiben der CCU-Systemvariable %s.",
             "missing": "fehlt",
             "Deselected system variables are not deleted. After applying the changes their status variables are no longer updated. They can be deleted with the button for status variables without selection.": "Abgewählte Systemvariablen werden nicht gelöscht. Nach dem Übernehmen werden ihre Statusvariablen nicht mehr aktualisiert. Sie können danach unten bei den Aktionen über die Schaltfläche „Statusvariablen ohne Auswahl löschen“ gelöscht werden.",

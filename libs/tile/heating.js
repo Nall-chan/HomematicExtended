@@ -134,7 +134,8 @@
     const big = withSet ? setText(val('set')) : (actual !== null ? fmt(actual) + '<small> °C</small>' : '');
     let is = [];
     if (withSet && actual !== null) is.push(T('Actual') + ' <b>' + fmt(actual) + ' °C</b>');
-    if (has('humidity')) is.push('<b>' + Math.round(val('humidity')) + ' %</b>');
+    // In der kleinsten Größe nur die Ist-Temperatur, die Luftfeuchte passt dort nicht mehr hinein
+    if (has('humidity') && size !== 'mini') is.push('<b>' + Math.round(val('humidity')) + ' %</b>');
     const sub = boostOn() ? T('Boost') + (has('boostRemain') && val('boostRemain') > 0 ? ' ' + Math.ceil(val('boostRemain')) + ' ' + T('min') : '')
       : windowOpen() ? T('Window open') : modeName();
     return '<div class="dialwrap' + (withSet && !can('set') ? ' inactive' : '') + '">' + svg
@@ -219,9 +220,10 @@
   }
   function headHTML() {
     if (size === 'mini') return '';
-    const warn = windowOpen() ? ' warn' : '', hot = boostOn() ? ' hot' : '';
-    const name = windowOpen() ? T('Window open') : modeName();
-    return '<div class="head">' + (name ? '<span class="pill' + warn + hot + '">' + esc(name) + '</span>' : '') + (notice ? '<span class="notice">' + esc(notice) + '</span>' : '') + '</div>';
+    // Betriebsart, Boost und Fenster zeigen schon die Schalter darunter (seg, Chips). Die Pille erscheint nur für Party/Urlaub,
+    // wenn der Umschalter dafür keinen Knopf hat (Party-Variablen nicht angelegt).
+    const name = has('mode') && partyOn() && !hasParty() && !boostOn() ? T('Party') : '';
+    return '<div class="head">' + (name ? '<span class="pill">' + esc(name) + '</span>' : '') + (notice ? '<span class="notice">' + esc(notice) + '</span>' : '') + '</div>';
   }
 
   // ---------- Wochenplan ----------
