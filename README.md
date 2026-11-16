@@ -192,6 +192,11 @@ Erweitert IPS um die native Unterstützung von:
 
 ### 2. Changelog
 
+**Version 4.03:**
+
+* Heizungskachel: Neue Eigenschaft `Fenster- oder Türkontakt für die Kachel (optional)` bei HomeMatic IP Heating Group, HomeMatic Heating Group und HomeMatic Heating Device. Die Kachel zeigt den Zustand eines eigenen Fenster- oder Türkontakts (Boolean oder Integer, z.B. Reed-Kontakt) als `Geschlossen`, `Gekippt` oder `Offen`, ohne dass das Gerät auf die Fenster-offen-Temperatur absenkt. Profile mit der Endung `.Reversed` und `~Window.HM` (gekippt) werden berücksichtigt.
+* Heizungskachel: `Zustand des Heizungsaktors für die Kachel` berücksichtigt Profile mit der Endung `.Reversed` (z.B. `~Switch.Reversed`) und zeigt dann den umgekehrten Zustand.
+
 **Version 4.02:**
 
 * Alle Gerätemodule: Liefert die CCU für einen Datenpunkt einen Text statt einer Zahl (z.B. Powermeter an einem Kanal der HmIP-ESI ohne Sensor), behält die Variable ihren letzten Wert. Bisher erschien die Warnung „Cannot auto-convert value for parameter Value (stod)“.

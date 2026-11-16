@@ -1339,8 +1339,10 @@ namespace HMExtended\Device
         public const SetPointBehavior = 'SetPointBehavior';
         public const Schedule = 'enable_SCHEDULE';
         public const ScheduleTemps = 'ScheduleTemps';
-        /** Heizungsmodule mit Kachel: Boolean-Variable mit dem Zustand des Heizungsaktors (z.B. STATE des Schaltaktors eines HmIP-BWTH), 0 = keine. */
+        /** Heizungsmodule mit Kachel: Boolean-Variable mit dem Zustand des Heizungsaktors (z.B. STATE des Schaltaktors eines HmIP-BWTH), 1 = keine. */
         public const HeaterState = 'HeaterStateVariable';
+        /** Heizungsmodule mit Kachel: Boolean- oder Integer-Variable mit dem Zustand eines Fenster- oder Türkontakts (nur Anzeige), 1 = keine. */
+        public const WindowState = 'WindowStateVariable';
         public const Interval = 'Interval';
         /** Systemvariablen: Auswahlliste der CCU-Systemvariablen (JSON). */
         public const Variables = 'Variables';

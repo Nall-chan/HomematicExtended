@@ -10,7 +10,7 @@ declare(strict_types=1);
  * @author        Michael Tröger <nall4chan@gmail.com>
  * @copyright     2015-2026 Michael Tröger
  * @license       Custom Non-Commercial Share-Alike License (see LICENSE)
- * @version       4.02
+ * @version       4.03
  */
 
 /**
@@ -50,7 +50,7 @@ trait HMHeatingTileFunctions
      * Texte der Kachel (Schlüssel = englischer Text, übersetzt über locale.json).
      */
     private const TileTexts = [
-        'Automatic', 'Manual', 'Party', 'Boost', 'Window open', 'Window', 'Window state open', 'Window state closed', 'Valve', 'Actual', 'Cooling', 'Heating',
+        'Automatic', 'Manual', 'Party', 'Boost', 'Window open', 'Window', 'Window state open', 'Window state tilted', 'Window state closed', 'Valve', 'Actual', 'Cooling', 'Heating',
         'Heating active', 'Heating idle',
         'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday',
         'Comfort', 'Lowering', 'Presets', 'Off', 'On', 'min', 'Begin', 'End', 'Temperature', 'Start party', 'End party',
@@ -359,6 +359,41 @@ trait HMHeatingTileFunctions
     }
 
     /**
+     * Zustand einer vom Nutzer gewählten Variable (Heizungsaktor, Fenster- oder Türkontakt) nach ihrer Darstellung.
+     * - Profil (Darstellung „Legacy“) mit der Endung `.Reversed` (z.B. `~Window.Reversed`, `~Door.Reversed`): Boolean invertiert.
+     * - Profil `~Window.HM` (Integer): 0 = geschlossen, 1 = gekippt, 2 = offen.
+     * - Sonst (auch die Vorlagen Fenster/Tür der Wertanzeige, false = geschlossen): Boolean true bzw. Integer > 0 = an/offen.
+     *
+     * @param int $VariableId ID der Variable (Boolean oder Integer).
+     *
+     * @return int 0 = aus/geschlossen, 1 = gekippt, 2 = an/offen.
+     */
+    private static function GetTileSensorLevel(int $VariableId): int
+    {
+        $Profile = '';
+        $Presentation = IPS_GetVariablePresentation($VariableId);
+        if (($Presentation['PRESENTATION'] ?? '') == VARIABLE_PRESENTATION_LEGACY) {
+            $Profile = (string) ($Presentation['PROFILE'] ?? '');
+        }
+        if ($Profile == '') {
+            $Variable = IPS_GetVariable($VariableId);
+            $Profile = ($Variable['VariableCustomProfile'] ?? '') ?: ($Variable['VariableProfile'] ?? '');
+        }
+        if (IPS_GetVariable($VariableId)['VariableType'] == VARIABLETYPE_BOOLEAN) {
+            $State = GetValueBoolean($VariableId);
+            if (str_ends_with($Profile, '.Reversed')) {
+                $State = !$State;
+            }
+            return $State ? 2 : 0;
+        }
+        $Value = GetValueInteger($VariableId);
+        if ($Profile == '~Window.HM') {
+            return min(2, max(0, $Value));
+        }
+        return ($Value > 0) ? 2 : 0;
+    }
+
+    /**
      * Werte der vorhandenen Rollen und die Eigenschaften der Kachel.
      *
      * @return array `roles` (Rolle => Ident der Statusvariable), `actions` (Rollen mit Aktion), `values` (Rolle => Wert),
@@ -382,11 +417,16 @@ trait HMHeatingTileFunctions
             $Value = $this->GetValue($Ident);
             $Values[$Role] = is_bool($Value) ? $Value : (is_numeric($Value) ? $Value * (static::TileFactors[$Role] ?? 1) : $Value);
         }
-        // Zustand des Heizungsaktors aus der vom Nutzer gewählten Variable (nur lesen, keine Statusvariable der Instanz)
-        $HeaterId = $this->GetHeaterStateVariable();
+        // Zustand des Heizungsaktors und des Fensterkontakts aus den vom Nutzer gewählten Variablen (nur lesen, keine Statusvariablen der Instanz)
+        $HeaterId = $this->GetTileSensorVariable(\HMExtended\Device\Property::HeaterState);
         if ($HeaterId > 0) {
             $Roles['heater'] = '';
-            $Values['heater'] = GetValueBoolean($HeaterId);
+            $Values['heater'] = self::GetTileSensorLevel($HeaterId) > 0;
+        }
+        $WindowId = $this->GetTileSensorVariable(\HMExtended\Device\Property::WindowState);
+        if ($WindowId > 0) {
+            $Roles['windowSensor'] = '';
+            $Values['windowSensor'] = self::GetTileSensorLevel($WindowId);
         }
         // Grenzen der Soll-Temperatur und der Party-Temperatur nach der Darstellung der jeweiligen Variable
         $Limits = $this->GetTilePresentation(static::TileRoles['set'] ?? '');

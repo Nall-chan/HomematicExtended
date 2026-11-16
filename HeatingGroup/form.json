@@ -28,6 +28,20 @@
                 {
                     "type": "Label",
                     "caption": "e.g. STATE of the switching actuator of a HmIP-BWTH (channel 10). The tile shows it instead of the valve opening."
+                },
+                {
+                    "name": "WindowStateVariable",
+                    "type": "SelectVariable",
+                    "caption": "Window or door contact for the tile (optional)",
+                    "validVariableTypes": [
+                        0,
+                        1
+                    ],
+                    "width": "450px"
+                },
+                {
+                    "type": "Label",
+                    "caption": "Only displayed in the tile, the device does not lower the temperature. Profiles ending in .Reversed and ~Window.HM (tilted) are taken into account."
                 }
             ]
         },

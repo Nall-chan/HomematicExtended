@@ -219,8 +219,13 @@
     // Zustand des Heizungsaktors (vom Nutzer gewählte Variable) hat Vorrang vor der Ventilöffnung, nur Anzeige
     if (has('heater')) h += '<span class="chip' + (val('heater') ? ' on' : '') + '">' + icon('heater') + (val('heater') ? T('Heating active') : T('Heating idle')) + '</span>';
     else if (has('valve')) h += '<span class="chip">' + icon('valve') + T('Valve') + ' ' + Math.round(val('valve')) + ' %</span>';
-    // Fensterzustand: nur Symbol und Zustand, bedienbar (wie die Statusvariable) schaltet er um
-    if (has('window')) {
+    // Fensterzustand: Ein vom Nutzer gewählter Fenster- oder Türkontakt hat Vorrang und ist nur Anzeige (0 = zu, 1 = gekippt, 2 = offen),
+    // sonst die Statusvariable: nur Symbol und Zustand, bedienbar schaltet sie um
+    if (has('windowSensor')) {
+      const level = Number(val('windowSensor'));
+      h += '<span class="chip' + (level > 0 ? ' warn' : '') + '" title="' + esc(T('Window')) + '">'
+        + icon(level > 0 ? 'windowOpen' : 'window') + (level >= 2 ? T('Window state open') : level === 1 ? T('Window state tilted') : T('Window state closed')) + '</span>';
+    } else if (has('window')) {
       const open = windowOpen(), tag = can('window') ? 'button' : 'span';
       h += '<' + tag + ' class="chip' + (open ? ' warn' : '') + (tag === 'span' ? ' dim' : '') + '"' + (tag === 'button' ? ' data-window' : '') + ' title="' + esc(T('Window')) + '">'
         + icon(open ? 'windowOpen' : 'window') + (open ? T('Window state open') : T('Window state closed')) + '</' + tag + '>';

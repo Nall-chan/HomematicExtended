@@ -118,6 +118,83 @@ class HeatingTileTest extends HeatingTestCase
         $this->assertFalse($this->tileConfig()['values']['heater']);
     }
 
+    public function testHeaterStateWithReversedProfileIsInverted(): void
+    {
+        $this->hmipDevice();
+        $HeaterId = IPS_CreateVariable(VARIABLETYPE_BOOLEAN);
+        IPS_SetVariableCustomPresentation($HeaterId, ['PRESENTATION' => VARIABLE_PRESENTATION_LEGACY, 'PROFILE' => '~Switch.Reversed']);
+        SetValueBoolean($HeaterId, false);
+        IPS_SetProperty($this->DeviceId, \HMExtended\Device\Property::HeaterState, $HeaterId);
+        IPS_ApplyChanges($this->DeviceId);
+        $this->assertTrue($this->tileConfig()['values']['heater']);
+    }
+
+    public function testWindowStateVariableIsShownInTheTile(): void
+    {
+        $this->hmipDevice();
+        $this->assertArrayNotHasKey('windowSensor', $this->tileConfig()['roles']);
+        $WindowId = IPS_CreateVariable(VARIABLETYPE_BOOLEAN);
+        SetValueBoolean($WindowId, true);
+        $HeaterId = IPS_CreateVariable(VARIABLETYPE_BOOLEAN);
+        IPS_SetProperty($this->DeviceId, \HMExtended\Device\Property::WindowState, $WindowId);
+        IPS_SetProperty($this->DeviceId, \HMExtended\Device\Property::HeaterState, $HeaterId);
+        IPS_ApplyChanges($this->DeviceId);
+        $Config = $this->tileConfig();
+        $this->assertSame(2, $Config['values']['windowSensor']);
+        $this->assertNotContains('windowSensor', $Config['actions'], 'only displayed, not operated');
+        // Beide gewählten Variablen sind referenziert und melden Aktualisierungen
+        $this->assertEqualsCanonicalizing([$HeaterId, $WindowId], $this->device()->GetReferenceList());
+        $this->assertContains(VM_UPDATE, $this->device()->Messages()[$WindowId] ?? []);
+        SetValueBoolean($WindowId, false);
+        $this->device()->MessageSink(time(), $WindowId, VM_UPDATE, [false, true, true]);
+        $this->assertSame(0, $this->tileConfig()['values']['windowSensor']);
+        // Abwählen löst nur diese Variable
+        IPS_SetProperty($this->DeviceId, \HMExtended\Device\Property::WindowState, 1);
+        IPS_ApplyChanges($this->DeviceId);
+        $this->assertSame([$HeaterId], $this->device()->GetReferenceList());
+        $this->assertArrayNotHasKey($WindowId, $this->device()->Messages());
+    }
+
+    /**
+     * Zustand des Fensterkontakts nach Variablentyp und Darstellung.
+     */
+    public static function windowStateProvider(): array
+    {
+        $Legacy = fn (string $Profile) => ['PRESENTATION' => VARIABLE_PRESENTATION_LEGACY, 'PROFILE' => $Profile];
+        $Template = ['PRESENTATION' => VARIABLE_PRESENTATION_VALUE_PRESENTATION, 'TEMPLATE' => '{A51A0A4B-97CC-4699-BFB6-5EF4B47B6664}'];
+        return [
+            'bool open'                => [VARIABLETYPE_BOOLEAN, [], true, 2],
+            'bool closed'              => [VARIABLETYPE_BOOLEAN, [], false, 0],
+            '~Window open'             => [VARIABLETYPE_BOOLEAN, $Legacy('~Window'), true, 2],
+            '~Window.Reversed open'    => [VARIABLETYPE_BOOLEAN, $Legacy('~Window.Reversed'), false, 2],
+            '~Window.Reversed closed'  => [VARIABLETYPE_BOOLEAN, $Legacy('~Window.Reversed'), true, 0],
+            '~Door.Reversed open'      => [VARIABLETYPE_BOOLEAN, $Legacy('~Door.Reversed'), false, 2],
+            'template window open'     => [VARIABLETYPE_BOOLEAN, $Template, true, 2],
+            'integer closed'           => [VARIABLETYPE_INTEGER, [], 0, 0],
+            'integer open (SWDO)'      => [VARIABLETYPE_INTEGER, [], 1, 2],
+            '~Window.HM closed'        => [VARIABLETYPE_INTEGER, $Legacy('~Window.HM'), 0, 0],
+            '~Window.HM tilted'        => [VARIABLETYPE_INTEGER, $Legacy('~Window.HM'), 1, 1],
+            '~Window.HM open'          => [VARIABLETYPE_INTEGER, $Legacy('~Window.HM'), 2, 2],
+        ];
+    }
+
+    /**
+     * @dataProvider windowStateProvider
+     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('windowStateProvider')]
+    public function testWindowStateFollowsThePresentation(int $Type, array $Presentation, bool|int $Value, int $Expected): void
+    {
+        $this->hmipDevice();
+        $WindowId = IPS_CreateVariable($Type);
+        if (count($Presentation)) {
+            IPS_SetVariableCustomPresentation($WindowId, $Presentation);
+        }
+        SetValue($WindowId, $Value);
+        IPS_SetProperty($this->DeviceId, \HMExtended\Device\Property::WindowState, $WindowId);
+        IPS_ApplyChanges($this->DeviceId);
+        $this->assertSame($Expected, $this->tileConfig()['values']['windowSensor']);
+    }
+
     public function testHeaterStateIgnoresOtherVariableTypesAndReleasesTheOldVariable(): void
     {
         $this->hmipDevice();

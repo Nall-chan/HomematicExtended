@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @copyright     2015-2026 Michael Tröger
  * @license       Custom Non-Commercial Share-Alike License (see LICENSE)
  *
- * @version       4.02
+ * @version       4.03
  */
 require_once __DIR__ . '/HMBase.php';  // HMBase Klasse
 require_once __DIR__ . '/HMWriteValue.php';  // HM_WriteValue… über die Bedienung der Statusvariable
@@ -139,7 +139,8 @@ class HMHeatingDevice extends HMBase
         $this->WeekProfile = 1;
         $this->TileTemperatures = [];
         if (count(static::TileRoles) > 0) {
-            $this->RegisterPropertyInteger(\HMExtended\Device\Property::HeaterState, 0);
+            $this->RegisterPropertyInteger(\HMExtended\Device\Property::HeaterState, 1);
+            $this->RegisterPropertyInteger(\HMExtended\Device\Property::WindowState, 1);
         }
         $this->RegisterHeatingTile();
     }
@@ -167,7 +168,7 @@ class HMHeatingDevice extends HMBase
 
         $this->WeekProfile = 1;
         $this->TileTemperatures = [];
-        $this->RegisterHeaterState();
+        $this->RegisterTileSensors();
         $Address = $this->ReadPropertyString(\HMExtended\Device\Property::Address);
         if ($Address == '') {
             $this->SetReceiveDataFilter('.*9999999999.*');
@@ -244,12 +245,12 @@ class HMHeatingDevice extends HMBase
 
     /**
      * Interne Funktion des SDK.
-     * Eine Aktualisierung der Variable mit dem Zustand des Heizungsaktors geht sofort an die Kachel.
+     * Eine Aktualisierung der Variablen mit dem Zustand des Heizungsaktors oder des Fensterkontakts geht sofort an die Kachel.
      */
     public function MessageSink(int $TimeStamp, int $SenderID, int $Message, array $Data): void
     {
         parent::MessageSink($TimeStamp, $SenderID, $Message, $Data);
-        if (($Message == VM_UPDATE) && ($SenderID != 0) && ($SenderID == $this->GetHeaterStateVariable())) {
+        if (($Message == VM_UPDATE) && ($SenderID != 0) && in_array($SenderID, $this->GetTileSensorVariables())) {
             $this->PushTileValues();
         }
     }
@@ -300,41 +301,60 @@ class HMHeatingDevice extends HMBase
     }
 
     /**
-     * Variable mit dem Zustand des Heizungsaktors (Eigenschaft HeaterStateVariable, vom Nutzer gewählt, z.B. STATE des Schaltaktors
-     * eines HmIP-BWTH). Die Heizgruppe der CCU kennt diesen Zustand nicht, die Kachel zeigt ihn statt der Ventilöffnung.
+     * Vom Nutzer gewählte Variable für die Kachel (nur Anzeige, keine Statusvariable der Instanz):
+     * - HeaterStateVariable: Zustand des Heizungsaktors (z.B. STATE des Schaltaktors eines HmIP-BWTH, Boolean). Die Heizgruppe der CCU
+     *   kennt diesen Zustand nicht, die Kachel zeigt ihn statt der Ventilöffnung.
+     * - WindowStateVariable: Zustand eines Fenster- oder Türkontakts (Boolean oder Integer). Die Kachel zeigt ihn, ohne dass das Gerät absenkt.
      *
-     * @return int Die ID, wenn die Eigenschaft auf eine vorhandene Boolean-Variable zeigt, sonst 0.
+     * @param string $Property Name der Eigenschaft.
+     *
+     * @return int Die ID, wenn die Eigenschaft auf eine vorhandene Variable eines erlaubten Typs zeigt, sonst 0.
      */
-    protected function GetHeaterStateVariable(): int
+    protected function GetTileSensorVariable(string $Property): int
     {
         if (count(static::TileRoles) == 0) {
             return 0;
         }
-        $VariableId = $this->ReadPropertyInteger(\HMExtended\Device\Property::HeaterState);
-        if (($VariableId <= 0) || !IPS_VariableExists($VariableId) || (IPS_GetVariable($VariableId)['VariableType'] != VARIABLETYPE_BOOLEAN)) {
+        $Types = ($Property == \HMExtended\Device\Property::WindowState) ? [VARIABLETYPE_BOOLEAN, VARIABLETYPE_INTEGER] : [VARIABLETYPE_BOOLEAN];
+        $VariableId = $this->ReadPropertyInteger($Property);
+        // Keine Auswahl (1, bei älteren Instanzen 0) ist keine Variable
+        if (!IPS_VariableExists($VariableId) || !in_array(IPS_GetVariable($VariableId)['VariableType'], $Types)) {
             return 0;
         }
         return $VariableId;
     }
 
     /**
-     * Registriert Referenz und VM_UPDATE der Variable mit dem Zustand des Heizungsaktors und löst die einer zuvor gewählten Variable.
+     * IDs aller gültig gewählten Variablen für die Kachel (Heizungsaktor, Fensterkontakt).
+     *
+     * @return int[]
+     */
+    protected function GetTileSensorVariables(): array
+    {
+        return array_values(array_filter([
+            $this->GetTileSensorVariable(\HMExtended\Device\Property::HeaterState),
+            $this->GetTileSensorVariable(\HMExtended\Device\Property::WindowState)
+        ]));
+    }
+
+    /**
+     * Registriert Referenz und VM_UPDATE der für die Kachel gewählten Variablen und löst die zuvor gewählter Variablen.
      * Die Heizungsmodule nutzen Referenzen und VM_UPDATE nur dafür.
      */
-    protected function RegisterHeaterState(): void
+    protected function RegisterTileSensors(): void
     {
-        $VariableId = $this->GetHeaterStateVariable();
+        $VariableIds = $this->GetTileSensorVariables();
         foreach ($this->GetMessageList() as $SenderId => $Messages) {
-            if (($SenderId != $VariableId) && in_array(VM_UPDATE, $Messages)) {
+            if (!in_array($SenderId, $VariableIds) && in_array(VM_UPDATE, $Messages)) {
                 $this->UnregisterMessage($SenderId, VM_UPDATE);
             }
         }
         foreach ($this->GetReferenceList() as $ReferenceId) {
-            if ($ReferenceId != $VariableId) {
+            if (!in_array($ReferenceId, $VariableIds)) {
                 $this->UnregisterReference($ReferenceId);
             }
         }
-        if ($VariableId > 0) {
+        foreach ($VariableIds as $VariableId) {
             $this->RegisterReference($VariableId);
             $this->RegisterMessage($VariableId, VM_UPDATE);
         }
