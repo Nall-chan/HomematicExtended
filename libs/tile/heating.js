@@ -8,7 +8,20 @@
   'use strict';
   const cfg = window.HT_CONFIG || {};
   const texts = cfg.texts || {};
-  const T = key => texts[key] || key;
+  // Übersetzung in der Sprache des Benutzers über translate() der Visu (locale.json des Moduls). Die Visu übersetzt beim Laden
+  // die ganze Seite damit; eigene Texte müssen dieselbe Quelle nutzen, sonst wechselt die Sprache beim nächsten Neuzeichnen.
+  // Die von der Instanz mitgegebenen Texte gelten nur ohne Visu (z.B. Vorschau).
+  const T = key => {
+    if (typeof window.translate === 'function') {
+      try {
+        const text = window.translate(key);
+        if (typeof text === 'string' && text !== '') {
+          return text;
+        }
+      } catch (e) { /* ohne Übersetzung der Visu: Texte der Instanz */ }
+    }
+    return texts[key] || key;
+  };
   const app = document.getElementById('app');
   const boostMode = (cfg.boostMode === null || cfg.boostMode === undefined) ? null : cfg.boostMode;
   // Überschrift der Kachel: Die Visu übergibt in der Adresse margintop (mit Titel 60, ohne 15) und legt den Titel über die Kachel.

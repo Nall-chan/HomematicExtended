@@ -194,6 +194,7 @@ Erweitert IPS um die native Unterstützung von:
 
 **Version 4.02:**
 
+* Heizungskachel und Kachel von HomeMatic IP Weekly Program: Die Beschriftung wechselte zwischen Deutsch und Englisch, wenn die Sprache des Browsers von der Sprache des Symcon-Servers abwich (z.B. nach einer Größenänderung Deutsch, nach dem nächsten Wert wieder Englisch). Die Kacheln übersetzen jetzt immer in der Sprache der Visualisierung.
 * Heizungskachel: Die kleinste Kachel zeigt unter der Solltemperatur auch die Ist-Temperatur.
 * Heizungskachel: Die Anzeige der Betriebsart oben links entfällt, weil Umschalter, Boost-Schalter und Fensterzustand sie schon zeigen. Sie erscheint nur noch für Party/Urlaub, wenn der Umschalter dafür keinen Knopf hat.
 * HomeMatic Systemvariablen, Heizungsmodule, HomeMatic LED16 und HomeMatic RGBW: Vor Symcon 10.0 erscheinen beim Laden der Library (z.B. bei jeder Installation oder Aktualisierung eines Moduls) keine Warnungen `Override of native function "HM_WriteValue…" is not implemented` mehr. Die Funktionen ohne `2` werden erst ab Symcon 10.0 angeboten, bis dahin gelten wie bisher `HM_WriteValueBoolean2` usw.
