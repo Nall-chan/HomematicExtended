@@ -257,6 +257,18 @@ class PowerMeterTest extends HomematicModuleTestCase
         $this->assertEquals(42.0, GetValueFloat(IPS_GetObjectIDByIdent('POWER', $this->PowerMeterId)));
     }
 
+    public function testTextWithoutNumberIsNotWrittenToNumericVariable(): void
+    {
+        // Forum #768/#770: HmIP-ESI, Kanal ohne Sensor. SetValue brach mit „Cannot auto-convert value for parameter Value (stod)“ ab.
+        FakeHomematicIO::$RpcResponses['getParamset']['POWER'] = '';
+        FakeHomematicIO::$RpcResponses['getParamset']['ENERGY_COUNTER'] = '17.5';
+        $this->recreateDevice('<xml><exec>/x</exec><sessionId>0</sessionId><httpUserAgent>x</httpUserAgent><Value>1000.0</Value></xml>');
+        $this->assertEquals(0.0, GetValueFloat(IPS_GetObjectIDByIdent('POWER', $this->PowerMeterId)));
+        // Zahlen als Text schreibt Symcon weiterhin.
+        $this->assertEquals(17.5, GetValueFloat(IPS_GetObjectIDByIdent('ENERGY_COUNTER', $this->PowerMeterId)));
+        $this->assertSame(IS_ACTIVE, IPS_GetInstance($this->PowerMeterId)['InstanceStatus']);
+    }
+
     public function testTotalScaling(): void
     {
         // Systemvariable der CCU 5000000 Wh -> 5000 kWh, Gas ohne Faktor.

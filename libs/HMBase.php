@@ -344,8 +344,16 @@ abstract class HMBase extends IPSModuleStrict
      */
     protected function SetVariable(string $Ident, mixed $Value): void
     {
-        if ($this->FindIDForIdent($Ident) == 0) {
+        $VariableId = $this->FindIDForIdent($Ident);
+        if ($VariableId == 0) {
             $this->SendDebug('Unknown variable', $Ident, 0);
+            return;
+        }
+        // Die CCU liefert für Datenpunkte ohne empfangenen Wert (z.B. Kanal ohne Sensor an einer HmIP-ESI) teils einen Text statt einer Zahl.
+        // Die Variable behält dann ihren letzten Wert, sonst bricht SetValue mit „Cannot auto-convert value (stod)“ ab.
+        // Symcon wandelt wie std::stod: Der Text muss mit einer Zahl beginnen.
+        if (is_string($Value) && !preg_match('/^[+-]?(\d|\.\d)/', trim(str_replace(',', '.', $Value))) && in_array(IPS_GetVariable($VariableId)['VariableType'], [VARIABLETYPE_INTEGER, VARIABLETYPE_FLOAT])) {
+            $this->SendDebug('Invalid value', $Ident . ': ' . json_encode($Value), 0);
             return;
         }
         $this->SetValue($Ident, $Value);

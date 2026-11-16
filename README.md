@@ -194,6 +194,7 @@ Erweitert IPS um die native Unterstützung von:
 
 **Version 4.02:**
 
+* Alle Gerätemodule: Liefert die CCU für einen Datenpunkt einen Text statt einer Zahl (z.B. Powermeter an einem Kanal der HmIP-ESI ohne Sensor), behält die Variable ihren letzten Wert. Bisher erschien die Warnung „Cannot auto-convert value for parameter Value (stod)“.
 * Heizungsmodule, HomeMatic LED16, HomeMatic RGBW und weitere Module mit festen Texten je Wert: Die Darstellung (z.B. „Aus“/„An“ bei der Solltemperatur) setzt jetzt alle Felder der Intervalle. Bisher meldete die Visualisierung bei der Solltemperatur „Invalid Configuration: type 'Null' is not a subtype of type 'num'“.
 * Heizungskachel und Kachel von HomeMatic IP Weekly Program: Die Beschriftung wechselte zwischen Deutsch und Englisch, wenn die Sprache des Browsers von der Sprache des Symcon-Servers abwich (z.B. nach einer Größenänderung Deutsch, nach dem nächsten Wert wieder Englisch). Die Kacheln übersetzen jetzt immer in der Sprache der Visualisierung.
 * Heizungskachel: Die kleinste Kachel zeigt unter der Solltemperatur auch die Ist-Temperatur.
