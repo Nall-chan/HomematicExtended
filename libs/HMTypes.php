@@ -557,6 +557,45 @@ namespace HMExtended
         }
 
         /**
+         * Intervall für genau einen Wert mit festem Text. Alle Felder der Darstellung sind gesetzt (Standardwerte wie in der Konsole);
+         * fehlende Zahlenfelder (z.B. ConversionFactor) lehnt die Visualisierung ab („Invalid Configuration: type 'Null' is not a subtype of type 'num'“).
+         *
+         * @param int|float $Value Wert.
+         * @param string $Caption Text für den Wert.
+         * @param bool $ValuePresentation true für die Wertanzeige (zusätzlich Farbe und Inhaltsfarbe), false für den Schieberegler.
+         * @param int $Color Farbe (nur Wertanzeige), -1 = keine.
+         *
+         * @return array Intervall.
+         */
+        public static function Interval(int|float $Value, string $Caption, bool $ValuePresentation = false, int $Color = -1): array
+        {
+            $Interval = [
+                'IntervalMinValue' => $Value,
+                'IntervalMaxValue' => $Value,
+                'ConversionFactor' => 1,
+                'ConstantActive'   => true,
+                'ConstantValue'    => $Caption,
+                'DigitsActive'     => false,
+                'DigitsValue'      => 0,
+                'IconActive'       => false,
+                'IconValue'        => '',
+                'PrefixActive'     => false,
+                'PrefixValue'      => '',
+                'SuffixActive'     => false,
+                'SuffixValue'      => ''
+            ];
+            if ($ValuePresentation) {
+                $Interval += [
+                    'ColorActive'        => $Color != -1,
+                    'ColorValue'         => $Color,
+                    'ContentColorActive' => false,
+                    'ContentColorValue'  => -1
+                ];
+            }
+            return $Interval;
+        }
+
+        /**
          * Zahlenwert als Schieberegler (mit Aktion) oder Wertanzeige (ohne Aktion).
          */
         private static function Number(string $Key, int $VariableType, bool $HasAction, array $Description, callable $Translate): array
@@ -570,15 +609,15 @@ namespace HMExtended
                     $Max = (float) $Description['MAX'];
                 }
                 if ($Min == self::TemperatureOff) {
-                    $Intervals[] = self::Interval($Min, $Translate('Off'));
+                    $Intervals[] = self::Interval($Min, $Translate('Off'), !$HasAction);
                 }
                 if ($Max == self::TemperatureOn) {
-                    $Intervals[] = self::Interval($Max, $Translate('On'));
+                    $Intervals[] = self::Interval($Max, $Translate('On'), !$HasAction);
                 }
                 foreach ($Description['SPECIAL'] ?? [] as $Special) {
                     if (is_array($Special) && is_numeric($Special['VALUE'] ?? null)) {
                         $Caption = self::SpecialCaptions[$Special['ID'] ?? ''] ?? (string) ($Special['ID'] ?? $Special['VALUE']);
-                        $Intervals[] = self::Interval((float) $Special['VALUE'], $Translate($Caption));
+                        $Intervals[] = self::Interval((float) $Special['VALUE'], $Translate($Caption), !$HasAction);
                     }
                 }
             }
@@ -635,11 +674,9 @@ namespace HMExtended
             }
             $Intervals = [];
             foreach ($Entries as [$Value, $Caption, $EntryIcon, $Color]) {
-                $Interval = self::Interval($Value, $Translate($Caption));
+                $Interval = self::Interval($Value, $Translate($Caption), true, $Color);
                 $Interval['IconActive'] = $EntryIcon !== '';
                 $Interval['IconValue'] = $EntryIcon;
-                $Interval['ColorActive'] = $Color != -1;
-                $Interval['ColorValue'] = $Color;
                 $Intervals[] = $Interval;
             }
             return [
@@ -649,14 +686,6 @@ namespace HMExtended
                 'INTERVALS_ACTIVE' => true,
                 'INTERVALS'        => json_encode($Intervals)
             ];
-        }
-
-        /**
-         * Intervall für genau einen Wert mit festem Text.
-         */
-        private static function Interval(int|float $Value, string $Caption): array
-        {
-            return ['IntervalMinValue' => $Value, 'IntervalMaxValue' => $Value, 'ConstantActive' => true, 'ConstantValue' => $Caption];
         }
 
         /**

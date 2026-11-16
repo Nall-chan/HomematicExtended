@@ -262,7 +262,7 @@ abstract class HMAllChannels extends HMBase
                     // Die Wertanzeige für Zahlen kennt keine Optionen, die Texte der Werte sind Intervalle mit genau einem Wert
                     $Options[] = $HasAction
                         ? ['Value' => $Value, 'Caption' => $Caption, 'IconActive' => false, 'IconValue' => '', 'Color' => $Color]
-                        : ['IntervalMinValue' => $Value, 'IntervalMaxValue' => $Value, 'ConstantActive' => true, 'ConstantValue' => $Caption, 'ColorActive' => $Color != -1, 'ColorValue' => $Color];
+                        : \HMExtended\HeatingPresentation::Interval($Value, $Caption, true, $Color);
                 }
                 if (!count($Options)) {
                     return [];

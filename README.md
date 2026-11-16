@@ -194,6 +194,7 @@ Erweitert IPS um die native Unterstützung von:
 
 **Version 4.02:**
 
+* Heizungsmodule, HomeMatic LED16, HomeMatic RGBW und weitere Module mit festen Texten je Wert: Die Darstellung (z.B. „Aus“/„An“ bei der Solltemperatur) setzt jetzt alle Felder der Intervalle. Bisher meldete die Visualisierung bei der Solltemperatur „Invalid Configuration: type 'Null' is not a subtype of type 'num'“.
 * Heizungskachel und Kachel von HomeMatic IP Weekly Program: Die Beschriftung wechselte zwischen Deutsch und Englisch, wenn die Sprache des Browsers von der Sprache des Symcon-Servers abwich (z.B. nach einer Größenänderung Deutsch, nach dem nächsten Wert wieder Englisch). Die Kacheln übersetzen jetzt immer in der Sprache der Visualisierung.
 * Heizungskachel: Die kleinste Kachel zeigt unter der Solltemperatur auch die Ist-Temperatur.
 * Heizungskachel: Die Anzeige der Betriebsart oben links entfällt, weil Umschalter, Boost-Schalter und Fensterzustand sie schon zeigen. Sie erscheint nur noch für Party/Urlaub, wenn der Umschalter dafür keinen Knopf hat.

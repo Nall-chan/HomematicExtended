@@ -226,6 +226,8 @@ class PresentationsTest extends HomematicModuleTestCase
                 $this->assertIsString($Value, $Name . ': ' . $Parameter . ' must be a JSON string');
                 foreach (json_decode($Value, true) as $Entry) {
                     $this->assertSame([], array_values(array_diff(array_keys($Entry), $Group[$Parameter])), $Name . ': unknown fields in ' . $Parameter);
+                    // Fehlende Felder lehnt die Visualisierung ab (z.B. ConversionFactor: „type 'Null' is not a subtype of type 'num'“).
+                    $this->assertSame([], array_values(array_diff($Group[$Parameter], array_keys($Entry))), $Name . ': missing fields in ' . $Parameter);
                 }
             }
         }
