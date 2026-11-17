@@ -5,6 +5,18 @@
    Bearbeitet wird ein Entwurf, erst „Übernehmen“ schreibt ihn über die Instanz (requestAction 'Save') in das Gerät. */
 (function () {
   'use strict';
+  // Browser-„Zurück“ bei maximierter Kachel: Die Visu setzt beim Maximieren die src des vorhandenen iframes neu (nur margintop
+  // ändert sich), das legt einen eigenen Eintrag im Verlauf an. Das erste „Zurück“ lädt dann nur den alten Inhalt, statt den
+  // Dialog zu schließen. Wurde der Inhalt so geladen und passt nicht mehr zur Adresse des iframes, einen Schritt weiter zurück.
+  try {
+    const nav = performance.getEntriesByType('navigation')[0];
+    const frame = window.frameElement;
+    if (nav && nav.type === 'back_forward' && frame && frame.src
+      && new URL(frame.src, location.href).search !== location.search) {
+      history.back();
+      return;
+    }
+  } catch (e) { /* ohne Zugriff auf das iframe: nichts tun */ }
   const cfg = window.WP_CONFIG || {};
   const texts = cfg.texts || {};
   // Übersetzung in der Sprache des Benutzers über translate() der Visu (locale.json des Moduls). Die Visu übersetzt beim Laden

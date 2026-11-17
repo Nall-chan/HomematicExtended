@@ -6,6 +6,18 @@
    mini = Wählrad, compact = Wählrad, Betriebsart und Chips, wide = zusätzlich der Wochenplan, full = Bedienfeld und Wochenplan bearbeiten. */
 (function () {
   'use strict';
+  // Browser-„Zurück“ bei maximierter Kachel: Die Visu setzt beim Maximieren die src des vorhandenen iframes neu (nur margintop
+  // ändert sich), das legt einen eigenen Eintrag im Verlauf an. Das erste „Zurück“ lädt dann nur den alten Inhalt, statt den
+  // Dialog zu schließen. Wurde der Inhalt so geladen und passt nicht mehr zur Adresse des iframes, einen Schritt weiter zurück.
+  try {
+    const nav = performance.getEntriesByType('navigation')[0];
+    const frame = window.frameElement;
+    if (nav && nav.type === 'back_forward' && frame && frame.src
+      && new URL(frame.src, location.href).search !== location.search) {
+      history.back();
+      return;
+    }
+  } catch (e) { /* ohne Zugriff auf das iframe: nichts tun */ }
   const cfg = window.HT_CONFIG || {};
   const texts = cfg.texts || {};
   // Übersetzung in der Sprache des Benutzers über translate() der Visu (locale.json des Moduls). Die Visu übersetzt beim Laden
@@ -359,8 +371,18 @@
         + groupHTML('party', T('Party'), partyHTML(), hasParty() && partyOn() ? T('On') : '')
         + '</div></div>';
     }
+    // Scrollposition der scrollbaren Bereiche (rechte Spalte in „full“) über das Neuzeichnen erhalten,
+    // sonst springt die Spalte nach jeder Bedienung oder Zustandsmeldung nach oben.
+    const scrolled = scrollAreas().map(e => [e.scrollTop, e.scrollLeft]);
     app.innerHTML = html;
+    const areas = scrollAreas();
+    if (areas.length === scrolled.length) {
+      areas.forEach((e, i) => { e.scrollTop = scrolled[i][0]; e.scrollLeft = scrolled[i][1]; });
+    }
     updateDial();
+  }
+  function scrollAreas() {
+    return Array.from(app.querySelectorAll('.col.b'));
   }
   function layout() {
     const w = app.clientWidth, h = app.clientHeight;

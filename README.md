@@ -196,6 +196,8 @@ Erweitert IPS um die native Unterstützung von:
 
 * Heizungskachel: Neue Eigenschaft `Fenster- oder Türkontakt für die Kachel (optional)` bei HomeMatic IP Heating Group, HomeMatic Heating Group und HomeMatic Heating Device. Die Kachel zeigt den Zustand eines eigenen Fenster- oder Türkontakts (Boolean oder Integer, z.B. Reed-Kontakt) als `Geschlossen`, `Gekippt` oder `Offen`, ohne dass das Gerät auf die Fenster-offen-Temperatur absenkt. Profile mit der Endung `.Reversed` und `~Window.HM` (gekippt) werden berücksichtigt.
 * Heizungskachel: `Zustand des Heizungsaktors für die Kachel` berücksichtigt Profile mit der Endung `.Reversed` (z.B. `~Switch.Reversed`) und zeigt dann den umgekehrten Zustand.
+* Heizungskachel und Weekly Program HmIP: Bugfix: Nach dem Maximieren der Kachel schließt ein einziges „Zurück“ im Browser die Kachel wieder. Bisher lud das erste „Zurück“ nur die Kachel neu, und der Titel der Visualisierung überlagerte den Inhalt.
+* Heizungskachel: Bugfix: Die rechte Spalte der großen Kachel springt nach einer Bedienung oder Zustandsänderung nicht mehr nach oben.
 
 **Version 4.02:**
 
