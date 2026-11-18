@@ -33,7 +33,7 @@ Wochenprogramm (Schaltzeitpunkte) der HomeMatic IP Aktoren, das in der CCU im Ka
 ## 1. Funktionsumfang
 
 > [!NOTE]
-> Das Modul ist neu und bisher an einem HmIP-Schaltaktor (HmIP-FSI16) und einem HmIP-Dimmaktor (HmIP-BDT) getestet. Welche Typen von Wochenprogrammen geprüft sind, zeigt die Tabelle unten.
+> Das Modul ist neu und bisher an einem HmIP-Schaltaktor (HmIP-FSI16), einem HmIP-Dimmaktor (HmIP-BDT) und von einem Nutzer an einem Jalousieaktor (HmIP-BBL) getestet. Welche Typen von Wochenprogrammen geprüft sind, zeigt die Tabelle unten.
 
 Das Modul
 
@@ -51,12 +51,12 @@ Das Wochenprogramm liegt bei allen HmIP-Aktoren im Kanal mit einem der Typen:
 | -------------------------------------- | ----------------------------------- | ----------------------------------------------------------- | -------- |
 | `SWITCH_WEEK_PROFILE`                  | Schaltaktoren (51)                  | Dauer                                                       | ✅ (HmIP-FSI16, Kanal 6) |
 | `DIMMER_WEEK_PROFILE`                  | Dimmer (22)                         | Dauer, Rampenzeit                                           | ✅ (HmIP-BDT, Kanal 7) |
-| `BLIND_WEEK_PROFILE`                   | Rollladen- und Jalousieaktoren (26) | `LEVEL_2` (Lamellen)                                        | ❌ |
+| `BLIND_WEEK_PROFILE`                   | Rollladen- und Jalousieaktoren (26) | `LEVEL_2` (Lamellen)                                        | ✅ (HmIP-BBL, Kanal 7, Rückmeldung eines Nutzers) |
 | `UNIVERSAL_LIGHT_WEEK_PROFILE`         | Universal-Lichtaktoren (4)          | Dauer, Rampenzeit, Farbe, Sättigung, Farbtemperatur, Effekt | ❌ |
 | `DIMMER_OUTPUT_BEHAVIOUR_WEEK_PROFILE` | Dimmer mit Ausgangsverhalten (3)    | Dauer, Rampenzeit, `OUTPUT_BEHAVIOUR`                       | ❌ |
 | `SERVO_WEEK_PROFILE`                   | HmIP-WSC (1)                        | Dauer, Rampenzeit                                           | ❌ |
 
-Getestet ist das Lesen und Schreiben bisher an einem HmIP-Schaltaktor (Kanal 6) und einem HmIP-Dimmaktor (HmIP-BDT, Kanal 7, mit Rampenzeit, Dauer und Astro-Zeit). Die Felder der übrigen Typen werden nach der Beschreibung gelesen, die das Gerät selbst liefert (Typ, Bereich, Werteliste), und in der Kachel und beim Schreiben danach geprüft. Rückmeldungen mit dem Debug der Instanz sind willkommen.
+Getestet ist das Lesen und Schreiben bisher an einem HmIP-Schaltaktor (Kanal 6), einem HmIP-Dimmaktor (HmIP-BDT, Kanal 7, mit Rampenzeit, Dauer und Astro-Zeit) und von einem Nutzer an einem Jalousieaktor (HmIP-BBL, Kanal 7, mit Lamellenposition). Die Felder der übrigen Typen werden nach der Beschreibung gelesen, die das Gerät selbst liefert (Typ, Bereich, Werteliste), und in der Kachel und beim Schreiben danach geprüft. Rückmeldungen mit dem Debug der Instanz sind willkommen.
 
 ### Felder eines Schaltzeitpunktes
 

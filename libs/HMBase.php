@@ -485,12 +485,14 @@ abstract class HMBase extends IPSModuleStrict
             $ParentData['Data'][] = $Values;
         }
         $this->SendDebug('Send', $ParentData, 0);
+        error_clear_last();
         $ResultJSON = @$this->SendDataToParent(json_encode($ParentData, JSON_PRESERVE_ZERO_FRACTION));
         if ($EmulateStatus) {
             return true;
         }
         if ($ResultJSON === false) {
-            $this->SendDebug('Error', $MethodName, 0);
+            // Meldung des Sockets (z.B. Fault der CCU) nur im Debug, die Fehlermeldung an den Aufrufer bleibt kurz.
+            $this->SendDebug('Error', $MethodName . ': ' . (error_get_last()['message'] ?? 'no message'), 0);
             if (!$Quiet) {
                 echo sprintf($this->Translate('Error on %s'), $MethodName) . PHP_EOL;
             }

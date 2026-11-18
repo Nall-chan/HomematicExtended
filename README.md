@@ -198,6 +198,8 @@ Erweitert IPS um die native Unterstützung von:
 * Heizungskachel: `Zustand des Heizungsaktors für die Kachel` berücksichtigt Profile mit der Endung `.Reversed` (z.B. `~Switch.Reversed`) und zeigt dann den umgekehrten Zustand.
 * Heizungskachel und Weekly Program HmIP: Bugfix: Nach dem Maximieren der Kachel schließt ein einziges „Zurück“ im Browser die Kachel wieder. Bisher lud das erste „Zurück“ nur die Kachel neu, und der Titel der Visualisierung überlagerte den Inhalt.
 * Heizungskachel: Bugfix: Die rechte Spalte der großen Kachel springt nach einer Bedienung oder Zustandsänderung nicht mehr nach oben.
+* Alle Module: Lehnt die CCU eine Anfrage ab (z.B. „Fehler bei putParamset“), steht ihre Meldung jetzt im Debug der Instanz.
+* Weekly Program HmIP: Jalousieaktor HmIP-BBL von einem Nutzer getestet (README).
 
 **Version 4.02:**
 
