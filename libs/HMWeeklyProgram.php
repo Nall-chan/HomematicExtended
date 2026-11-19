@@ -146,13 +146,38 @@ namespace HMExtended
                     $Set[$Name] = $Value;
                 }
             }
-            // Nicht mehr benötigte Einträge leeren (alle Felder des gelöschten Eintrags auf 0).
+            // Nicht mehr benötigte Einträge leeren.
+            $Empty = self::EmptyEntry($Info);
             for ($Index = count($Entries); $Index < min($PreviousCount, $MaxEntries); $Index++) {
-                foreach (array_keys(self::Fields) as $Field) {
-                    $Set[self::ParamName($Index + 1, $Field)] = self::Fields[$Field][2] ? 0.0 : 0;
+                foreach (self::EntryToParams($Index + 1, $Empty, $Info) as $Name => $Value) {
+                    $Set[$Name] = $Value;
                 }
             }
             return $Set;
+        }
+
+        /**
+         * Felder eines geleerten Schaltzeitpunktes. Mit Beschreibung des Gerätes nur dessen Felder mit ihrem Standardwert
+         * (die CCU lehnt das ganze Paramset ab, wenn ein Feld fehlt, z.B. DURATION_* am Jalousieaktor HmIP-BBL; dort
+         * setzt die CCU beim Löschen LEVEL_2 auf 1.01), ohne Beschreibung alle Felder aus self::Fields auf 0.
+         *
+         * @param array $Info Beschreibung der Felder des Gerätes (siehe self::ParseDescription).
+         *
+         * @return array Feld (ohne Präfix) => Wert.
+         */
+        public static function EmptyEntry(array $Info = []): array
+        {
+            if ($Info === []) {
+                return array_map(fn (array $Field): int|float => $Field[2] ? 0.0 : 0, self::Fields);
+            }
+            $Entry = [];
+            foreach ($Info as $Field => $Description) {
+                $Default = $Description['Default'] ?? null;
+                $Entry[$Field] = is_numeric($Default) ? $Default + 0 : 0;
+            }
+            // Ohne Wochentag ist der Eintrag unbelegt, unabhängig vom Standardwert der Beschreibung.
+            $Entry[self::Weekday] = 0;
+            return $Entry;
         }
 
         /**

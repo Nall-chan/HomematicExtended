@@ -200,6 +200,7 @@ Erweitert IPS um die native Unterstützung von:
 * Heizungskachel: Bugfix: Die rechte Spalte der großen Kachel springt nach einer Bedienung oder Zustandsänderung nicht mehr nach oben.
 * Alle Module: Lehnt die CCU eine Anfrage ab (z.B. „Fehler bei putParamset“), steht ihre Meldung jetzt im Debug der Instanz.
 * Weekly Program HmIP: Jalousieaktor HmIP-BBL von einem Nutzer getestet (README).
+* Weekly Program HmIP: Gelöschte Schaltzeitpunkte enthalten nur noch die Felder des Gerätes mit deren Standardwert. Bisher lehnte die CCU z.B. beim HmIP-BBL das Leeren des Programms ab („Invalid parameter or value“).
 
 **Version 4.02:**
 

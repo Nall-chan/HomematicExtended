@@ -233,6 +233,29 @@ class WeeklyProgramTest extends HomematicModuleTestCase
         $this->assertSame('Invalid value in weekly program entry.', WeeklyProgram::Encode([['WEEKDAY' => 2, 'RAMP_TIME_FACTOR' => 'x']], 0, 75, $Info));
     }
 
+    public function testClearedEntriesUseOnlyTheFieldsOfTheDevice(): void
+    {
+        // Jalousieaktor HmIP-BBL (Forum #792): kein DURATION_*, die CCU setzt beim Löschen LEVEL_2 auf 1.01.
+        $Description = [];
+        $Fields = ['WEEKDAY' => ['INTEGER', 0], 'CONDITION' => ['INTEGER', 0], 'FIXED_HOUR' => ['INTEGER', 0], 'FIXED_MINUTE' => ['INTEGER', 0],
+            'ASTRO_TYPE'     => ['ENUM', 0], 'ASTRO_OFFSET' => ['INTEGER', 0], 'LEVEL' => ['FLOAT', 0.0], 'LEVEL_2' => ['FLOAT', 1.01], 'TARGET_CHANNELS' => ['INTEGER', 0]];
+        foreach ($Fields as $Field => [$Type, $Default]) {
+            $Description['01_WP_' . $Field] = ['TYPE' => $Type, 'DEFAULT' => $Default];
+        }
+        $Set = WeeklyProgram::Encode([], 1, 75, WeeklyProgram::ParseDescription($Description));
+        $this->assertSame([
+            '01_WP_WEEKDAY'         => 0,
+            '01_WP_CONDITION'       => 0,
+            '01_WP_FIXED_HOUR'      => 0,
+            '01_WP_FIXED_MINUTE'    => 0,
+            '01_WP_ASTRO_TYPE'      => 0,
+            '01_WP_ASTRO_OFFSET'    => 0,
+            '01_WP_LEVEL'           => 0.0,
+            '01_WP_LEVEL_2'         => 1.01,
+            '01_WP_TARGET_CHANNELS' => 0
+        ], $Set);
+    }
+
     public function testChannelModes(): void
     {
         // Belegt am HmIP-Schaltaktor: Ruhewert 2, Kanal 1/2/3 manuell = +1/+8/+64
