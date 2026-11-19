@@ -689,7 +689,7 @@ namespace HMExtended
          *
          * @param string $Expression HM-Script-Ausdruck, der einen Text liefert.
          */
-        private static function Escape(string $Expression): string
+        public static function Escape(string $Expression): string
         {
             return $Expression . '.Replace("\\\\", "\\\\\\\\").Replace("\t", "\\\\t").Replace("\r", "\\\\r").Replace("\n", "\\\\n")';
         }
@@ -697,7 +697,7 @@ namespace HMExtended
         /**
          * Hebt die Maskierung von Escape() auf.
          */
-        private static function Unescape(string $Text): string
+        public static function Unescape(string $Text): string
         {
             return preg_replace_callback('/\\\\([\\\\trn])/', function ($Match)
             {

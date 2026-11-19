@@ -378,13 +378,9 @@ class HomeMaticExtendedConfigurator extends HMBase
      */
     private function LoadGatewayConfig(): array
     {
-        $Fields = "'^.Interface|^Type|^Name|^Serial Number|^IP Address|^Description'";
-        $Script = 'string o; string e;
-            system.Exec("echo @@rfd; grep -E ' . $Fields . ' /etc/config/rfd.conf; echo @@hs485d; grep -E ' . $Fields . ' /etc/config/hs485d.conf", &o, &e);
-            WriteLine(o); o = 0; e = 0;';
         // Optionale Zusatzabfrage: Fehler nur per Debug.
         ob_start();
-        $Result = $this->LoadHMScript($Script);
+        $Result = $this->LoadHMScript(\HMExtended\ScriptParser::GatewayConfigScript());
         $Errors = (string) ob_get_clean();
         if ($Result === false) {
             $this->SendDebug('Gateway config', 'not available ' . $Errors, 0);

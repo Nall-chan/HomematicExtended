@@ -1,0 +1,147 @@
+/* HomematicExtended – gemeinsame Bausteine der Listen-Kacheln (nach der FritzBox-Library).
+   Farben nur aus dem Design der Kachel-Visualisierung (CSS-Variablen der Visu), Abstufungen per color-mix().
+   Die Rückfallwerte gelten nur ohne Visu (z.B. Vorschau im Browser).
+   Größenstufen setzt tile.js als Klasse an #app: size-mini, size-compact, size-wide, size-full. */
+:root {
+  --accent: var(--accent-color, #00cdab);
+  --on-accent: var(--on-accent-color, #fff);
+  --text: var(--content-color, #1d1d1f);
+  --card: var(--card-color, #fff);
+  --disabled: var(--disabled-color, color-mix(in srgb, var(--text) 40%, transparent));
+  --error: var(--error-color, #e5484d);
+  --on-error: var(--on-error-color, #fff);
+  --warn: #f5a623;
+  --muted: color-mix(in srgb, var(--text) 60%, transparent);
+  --surface: color-mix(in srgb, var(--text) 8%, transparent);
+  --line: color-mix(in srgb, var(--text) 20%, transparent);
+  /* Platz für den Maximieren-Pfeil oben rechts (0, wenn die Kachel eine Überschrift hat; tile.js) */
+  --corner: 34px;
+}
+html, body { margin: 0; height: 100%; overflow: hidden; background: transparent; }
+body { box-sizing: border-box; padding-top: var(--title-space, 0px); font: 14px/1.35 Poppins, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: var(--text); }
+* { box-sizing: border-box; scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+button:disabled { cursor: default; color: var(--disabled); }
+select, input { font: inherit; color: var(--text); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 2px 6px; color-scheme: light dark; }
+select option { background: var(--card); color: var(--text); }
+[hidden] { display: none !important; }
+.muted { color: var(--muted); }
+.app { position: relative; height: 100%; display: flex; flex-direction: column; gap: 8px; padding: 8px 12px 12px; }
+
+/* Kennzahl (1×1 allein, sonst linke Spalte) */
+.kpi { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; min-height: 0; text-align: center; gap: 2px; }
+.kpi .big { font-size: clamp(26px, 14vmin, 54px); font-weight: 300; line-height: 1; }
+.kpi .big small { font-size: .5em; color: var(--muted); }
+.kpi .sub { font-size: 12px; color: var(--muted); max-width: 100%; hyphens: auto; overflow-wrap: break-word; }
+.size-mini.app { padding: 6px; }
+.size-mini .kpi .sub { font-size: 11px; }
+.kpi.alert .big { color: var(--error); }
+.kpi .parts { display: flex; flex-direction: column; gap: 4px; margin-top: 14px; width: min(100%, 230px); }
+.kpi .part { display: flex; align-items: center; gap: 8px; padding: 5px 12px; border-radius: 10px; background: var(--surface); font-size: 13px; text-align: left; }
+.kpi .part:hover { background: var(--line); }
+.kpi .part.on { background: var(--accent); color: var(--on-accent); }
+.kpi .part.on .ico { color: inherit; }
+.kpi .part .lbl { flex: 1; }
+.kpi .part b { font-weight: 600; }
+.kpi .part .ico { width: 18px; display: grid; place-items: center; }
+.kpi .part .ico.error { color: var(--error); }
+.kpi .part .ico.warn { color: var(--warn); }
+
+/* Kennzeichen und Punkte */
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 1px 8px; border-radius: 999px; font-size: 11.5px; background: var(--surface); white-space: nowrap; }
+.badge.accent { background: var(--accent); color: var(--on-accent); }
+.badge.error { background: var(--error); color: var(--on-error); }
+.badge.warn { background: var(--warn); color: #1d1d1f; }
+.dot { width: 9px; height: 9px; border-radius: 50%; flex: none; background: var(--disabled); }
+.dot.on { background: var(--accent); }
+.dot.warn { background: var(--warn); }
+.dot.err { background: var(--error); }
+
+/* Schaltflächen und Chip-Gruppen */
+.btn { display: inline-grid; place-items: center; min-width: 30px; height: 30px; padding: 0 6px; border-radius: 8px; font-size: 15px; }
+.btn:hover:not(:disabled) { background: var(--line); }
+.btn.busy, .btn.busy:hover:not(:disabled) { background: var(--accent); color: var(--on-accent); }
+.tool { padding: 5px 12px; border-radius: 8px; background: var(--surface); font-size: 13px; white-space: nowrap; }
+.tool:hover:not(:disabled) { background: var(--line); }
+.tool.primary { background: var(--accent); color: var(--on-accent); }
+.tool.busy { background: var(--accent); color: var(--on-accent); }
+.seg { display: inline-flex; flex-wrap: nowrap; max-width: 100%; overflow-x: auto; border-radius: 999px; background: var(--surface); padding: 3px; gap: 2px; }
+.seg button { padding: 3px 10px; border-radius: 999px; font-size: 12.5px; white-space: nowrap; }
+.seg button.on { background: var(--accent); color: var(--on-accent); box-shadow: 0 1px 3px #0003; }
+.seg button:hover:not(.on) { background: var(--line); }
+.size-compact .seg button { padding: 3px 7px; font-size: 12px; }
+
+/* Gruppe mit Werkzeugleiste: Chip-Gruppen und Suche brechen bei schmaler Kachel automatisch um (flex-wrap),
+   die Suche steht zuletzt und rechtsbündig */
+.group { display: flex; flex-direction: column; min-height: 0; background: color-mix(in srgb, var(--text) 4%, transparent); border: 1px solid var(--line); border-radius: 12px; padding: 4px 10px 8px; }
+.group.grow { flex: 1; }
+.ghead { display: flex; align-items: center; gap: 8px; padding: 6px 0; flex: none; flex-wrap: wrap; }
+.ghead input[type=search] { width: 140px; min-width: 0; }
+.ghead .limit, .ghead .limit select { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
+.ghead .limit select { text-transform: none; letter-spacing: 0; font-size: 12px; }
+.ghead .spacer { flex: 1; }
+
+/* Listen */
+.list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; overflow: auto; min-height: 0; flex: 1; }
+.list > * { flex: none; }
+.row { display: flex; align-items: center; gap: 10px; padding: 5px 8px; border-radius: 10px; background: var(--surface); min-height: 38px; }
+.row.off { color: var(--disabled); }
+.row .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.row .main > * { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.row .l1 { font-weight: 500; text-align: left; }
+.row .l2 { font-size: 12px; color: var(--muted); }
+.row .side { display: flex; align-items: center; gap: 4px; flex: none; font-size: 12px; color: var(--muted); white-space: nowrap; }
+.row .ico { width: 22px; text-align: center; flex: none; color: var(--muted); }
+.row .ico.error { color: var(--error); }
+.row .ico.warn { color: var(--warn); }
+.size-compact .row .hide-compact { display: none; }
+.empty { padding: 16px; text-align: center; color: var(--muted); }
+
+/* Hinweis (verschwindet nach einigen Sekunden) */
+.notice { position: absolute; left: 12px; right: 12px; bottom: 12px; z-index: 5; padding: 8px 12px; border-radius: 10px; background: var(--error); color: var(--on-error); font-size: 13px; box-shadow: 0 2px 8px #0004; }
+
+/* Sicherheitsabfrage innerhalb der Kachel */
+.dialog { position: absolute; inset: 0; z-index: 10; display: grid; place-items: center; background: color-mix(in srgb, var(--card) 70%, transparent); }
+.dialog > div { max-width: 90%; padding: 14px 16px; border-radius: 12px; background: var(--card); border: 1px solid var(--line); box-shadow: 0 4px 16px #0004; display: flex; flex-direction: column; gap: 12px; }
+.dialog .btns { display: flex; justify-content: flex-end; gap: 8px; }
+
+/* Spalten bei breiter Kachel: links die Kennzahl, rechts die Liste */
+.cols { flex: 1; min-height: 0; display: flex; gap: 14px; }
+.cols > .col { display: flex; flex-direction: column; gap: 8px; min-width: 0; min-height: 0; }
+.cols > .col.side { flex: 0 0 34%; }
+.cols > .col.main { flex: 1; }
+.scroll { overflow: auto; min-height: 0; flex: 1; }
+
+/* Symbole wie in Heizungs- und Wochenprogramm-Kachel: Material-Symbole als Inline-SVG (die Visu lädt kein Font Awesome) */
+svg.i { width: 1em; height: 1em; fill: currentColor; display: block; }
+.row .ico svg.i { margin: 0 auto; font-size: 18px; }
+.btn svg.i { font-size: 18px; }
+.tool svg.i { display: inline-block; vertical-align: -2px; margin-right: 4px; }
+
+/* Stand der Daten (linke Spalte): klickbar, das Symbol dreht sich beim Laden (data-wait in tile.js) */
+.stamp { display: inline-flex; align-items: center; gap: 5px; margin-top: 10px; padding: 3px 10px; border-radius: 999px; font-size: 12px; color: var(--muted); }
+.stamp:hover { background: var(--surface); color: var(--text); }
+.stamp svg.i { font-size: 14px; }
+@keyframes hmt-spin { to { transform: rotate(360deg); } }
+.busy[data-wait] svg.i { animation: hmt-spin .9s linear infinite; }
+.stamp.busy { color: var(--accent); }
+
+/* Funkpegel: Qualität (Balken), beide Richtungen, Funkmodule mit Duty Cycle */
+.row .ico.good, .kpi .part .ico.good { color: var(--accent); }
+.kpi .part.on .ico.good { color: inherit; }
+.row .side.levels { gap: 10px; font-variant-numeric: tabular-nums; }
+.row .side.levels > span { min-width: 34px; text-align: right; }
+.ghead .legend { font-size: 11px; }
+.size-compact .ghead .legend { display: none; }
+.modules { display: flex; flex-direction: column; gap: 4px; margin-top: 14px; width: min(100%, 260px); }
+.modules .mhead { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); text-align: left; }
+.module { display: flex; align-items: center; gap: 8px; font-size: 12px; text-align: left; }
+.module.off { color: var(--disabled); }
+.module .lbl { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.module b { font-weight: 500; min-width: 34px; text-align: right; }
+.bar { position: relative; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; width: 50px; flex: none; }
+.bar > i { position: absolute; inset: 0 auto 0 0; background: var(--accent); border-radius: 3px; }
+.ghead .legend { display: inline-flex; align-items: center; gap: 4px; }
+.ghead .sorter { padding: 2px 6px; border-radius: 6px; font-size: 11px; color: var(--muted); white-space: nowrap; }
+.ghead .sorter:hover { background: var(--surface); color: var(--text); }
+.ghead .sorter.on { color: var(--text); font-weight: 500; }

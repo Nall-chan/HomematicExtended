@@ -21,6 +21,9 @@
         "ResetTimer"
     ],
     "ExtendedConfigurator": [],
+    "Funkpegel": [
+        "GetRSSIValues"
+    ],
     "HeatingDevice": [
         "RequestParams",
         "RequestState",
@@ -79,6 +82,10 @@
         "ReadPrograms",
         "StartProgram"
     ],
+    "RFInterface": [],
+    "RFInterfaceSplitter": [
+        "ReadRFInterfaces"
+    ],
     "RGBW": [
         "ReadWhiteBalance",
         "RequestState",
@@ -94,9 +101,12 @@
         "WriteValueString",
         "WriteValueString2"
     ],
-    "RFInterface": [],
-    "RFInterfaceSplitter": [
-        "ReadRFInterfaces"
+    "Servicemeldungen": [
+        "ConfirmAllServiceMessages",
+        "ConfirmServiceMessage",
+        "CreateCCUProgram",
+        "DeleteCCUProgram",
+        "GetServiceMessages"
     ],
     "Systemvariablen": [
         "CreateCCUProgram",

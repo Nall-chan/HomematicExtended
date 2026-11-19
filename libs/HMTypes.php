@@ -13,6 +13,8 @@ namespace HMExtended
         public const RGBW = '{B9AB52A2-96AE-499E-A5A6-7A1E316FC90D}';
         public const Systemvariablen = '{AF50C42B-7183-4992-B04A-FAFB07BB1B90}';
         public const Alarmvariable = '{72A9F016-A988-430D-B678-E787CC106449}';
+        public const Servicemeldungen = '{5368AD8F-6874-4A42-B7E8-0F906E6F945A}';
+        public const Funkpegel = '{9F93D21E-D308-4824-9052-764B04EBB7AB}';
         public const Programme = '{A5010577-C443-4A85-ABF2-3F2D6CDD2465}';
         public const Dis_WM55 = '{271BCAB1-0658-46D9-A164-985AEB641B48}';
         public const Dis_EP_WM55 = '{E64ED916-FA6C-45B2-B8E3-EDC3191BC4C0}';
@@ -1348,6 +1350,10 @@ namespace HMExtended\Device
         public const Variables = 'Variables';
         /** Alarmvariable: CCU-ID der Alarmvariable. */
         public const AlarmID = 'AlarmID';
+        /** Funkpegel: ab diesem Pegel (dBm) gilt der Empfang als gut. */
+        public const LevelGood = 'LevelGood';
+        /** Funkpegel: unter diesem Pegel (dBm) gilt der Empfang als schwach. */
+        public const LevelWeak = 'LevelWeak';
     }
     /**
      * Attribute der Module (dauerhaft gespeicherter Zustand).
@@ -1373,6 +1379,7 @@ namespace HMExtended\Device
         public const ReadRFInterfaces = 'ReadRFInterfaces';
         public const ReadWRInterface = 'ReadWRInterface';
         public const ReadSystemVariables = 'ReadSystemVariables';
+        public const ReadRadioLevels = 'ReadRadioLevels';
     }
     class Address
     {

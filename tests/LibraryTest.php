@@ -62,6 +62,14 @@ class LibraryTest extends TestCaseSymconValidation
     {
         $this->validateModule(__DIR__ . '/../Systemvariablen');
     }
+    public function testValidateServicemeldungen(): void
+    {
+        $this->validateModule(__DIR__ . '/../Servicemeldungen');
+    }
+    public function testValidateFunkpegel(): void
+    {
+        $this->validateModule(__DIR__ . '/../Funkpegel');
+    }
     public function testValidateRGBW(): void
     {
         $this->validateModule(__DIR__ . '/../RGBW');

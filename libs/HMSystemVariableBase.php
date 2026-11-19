@@ -16,7 +16,7 @@ require_once __DIR__ . '/HMBase.php';  // HMBase Klasse
 require_once __DIR__ . '/HMSystemVariables.php';  // Scripte und Parser für Systemvariablen
 
 /**
- * Basisklasse der Module Systemvariablen und Alarmvariable.
+ * Basisklasse der Module Systemvariablen, Alarmvariable und Servicemeldungen.
  *
  * Änderungen auf der CCU meldet ein CCU-Programm: es drückt bei jeder Aktualisierung der Variablen eine Taste der virtuellen
  * Fernbedienung (`BidCoS-RF:n` bzw. `HmIP-RCV-1:n`). Das Event `PRESS_SHORT` kommt über den Homematic Socket, danach wird mit
@@ -440,7 +440,7 @@ abstract class HMSystemVariableBase extends HMBase
             $Key['Instances'] = [];
         }
         unset($Key);
-        foreach ([\HMExtended\GUID::Systemvariablen, \HMExtended\GUID::Alarmvariable] as $ModuleId) {
+        foreach ([\HMExtended\GUID::Systemvariablen, \HMExtended\GUID::Alarmvariable, \HMExtended\GUID::Servicemeldungen] as $ModuleId) {
             foreach (IPS_GetInstanceListByModuleID($ModuleId) as $InstanceId) {
                 $KeyAddress = (string) @IPS_GetProperty($InstanceId, \HMExtended\Device\Property::Address);
                 if (isset($Keys[$KeyAddress]) && ($InstanceId != $this->InstanceID)) {

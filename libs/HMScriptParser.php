@@ -42,6 +42,19 @@ namespace HMExtended
         }
 
         /**
+         * Script: liest die eingerichteten Gateways aus den Konfigurationsdateien der CCU (`rfd.conf` für Funk, `hs485d.conf` für Wired).
+         * Nur die Felder Typ, Name, Seriennummer, IP-Adresse und Beschreibung, der Sicherheitsschlüssel wird nie gelesen.
+         * Die Namen der Gateways aus der WebUI stehen nur hier (`listBidcosInterfaces` liefert sie nicht).
+         */
+        public static function GatewayConfigScript(): string
+        {
+            $Fields = "'^.Interface|^Type|^Name|^Serial Number|^IP Address|^Description'";
+            return 'string o; string e;
+            system.Exec("echo @@rfd; grep -E ' . $Fields . ' /etc/config/rfd.conf; echo @@hs485d; grep -E ' . $Fields . ' /etc/config/hs485d.conf", &o, &e);
+            WriteLine(o); o = 0; e = 0;';
+        }
+
+        /**
          * Zerlegt die Ausgabe des Scripts, das die Konfigurationsdateien der Gateways (`rfd.conf`, `hs485d.conf`) liest.
          *
          * Das Script gibt je Datei eine Zeile `@@<Name>` aus, danach die Zeilen `[Interface n]`, `Type`, `Name`, `Serial Number`,
