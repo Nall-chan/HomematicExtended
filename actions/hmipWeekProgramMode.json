@@ -79,7 +79,7 @@
             "Default"
         ]
     },
-    "action": "HM_WriteValueString($_IPS['TARGET'], 'WEEK_PROGRAM_TARGET_CHANNEL_LOCK', $_IPS['MODE']);\nHM_WriteValueInteger($_IPS['TARGET'], 'WEEK_PROGRAM_TARGET_CHANNEL_LOCKS', (($_IPS['CH1'] ? 1 : 0) << 0) | (($_IPS['CH2'] ? 1 : 0) << 3) | (($_IPS['CH3'] ? 1 : 0) << 6) | (($_IPS['CH4'] ? 1 : 0) << 9) | (($_IPS['CH5'] ? 1 : 0) << 12) | (($_IPS['CH6'] ? 1 : 0) << 15) | (($_IPS['CH7'] ? 1 : 0) << 18) | (($_IPS['CH8'] ? 1 : 0) << 21));",
+    "action": "HM_WriteValueString($_IPS['TARGET'], 'WEEK_PROGRAM_TARGET_CHANNEL_LOCK', $_IPS['MODE']);\nHM_WriteValueInteger($_IPS['TARGET'], 'WEEK_PROGRAM_TARGET_CHANNEL_LOCKS', (($_IPS['CH1'] ? 1 : 0) << 0) | (($_IPS['CH2'] ? 1 : 0) << 1) | (($_IPS['CH3'] ? 1 : 0) << 2) | (($_IPS['CH4'] ? 1 : 0) << 3) | (($_IPS['CH5'] ? 1 : 0) << 4) | (($_IPS['CH6'] ? 1 : 0) << 5) | (($_IPS['CH7'] ? 1 : 0) << 6) | (($_IPS['CH8'] ? 1 : 0) << 7));",
     "locale": {
         "de": {
             "Set week program mode": "Wochenprogramm-Modus einstellen",

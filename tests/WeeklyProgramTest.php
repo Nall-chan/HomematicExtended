@@ -108,7 +108,7 @@ class WeeklyProgramTest extends HomematicModuleTestCase
         $IoId = $this->createFakeIo();
         FakeHomematicIO::$RpcResponses = [
             'getParamset'                              => self::master(),
-            'getParamset:VALUES'                       => ['WEEK_PROGRAM_CHANNEL_LOCKS' => 65],
+            'getParamset:VALUES'                       => ['WEEK_PROGRAM_CHANNEL_LOCKS' => 5],
             'getDeviceDescription:002560C99B959A:'     => ['TYPE' => 'HmIP-FSI16', 'CHILDREN' => ['002560C99B959A:0', '002560C99B959A:2', '002560C99B959A:3', '002560C99B959A:4', '002560C99B959A:5', '002560C99B959A:6']],
             'getDeviceDescription:002560C99B959A:0:'   => ['TYPE' => 'MAINTENANCE'],
             'getDeviceDescription:002560C99B959A:2:'   => ['TYPE' => 'SWITCH_TRANSMITTER'],
@@ -258,14 +258,15 @@ class WeeklyProgramTest extends HomematicModuleTestCase
 
     public function testChannelModes(): void
     {
-        // Belegt am HmIP-Schaltaktor: Ruhewert 2, Kanal 1/2/3 manuell = +1/+8/+64
-        $this->assertSame([false, false, false], WeeklyProgram::ManualChannels(2, 3));
-        $this->assertSame([true, false, false], WeeklyProgram::ManualChannels(3, 3));
-        $this->assertSame([false, true, false], WeeklyProgram::ManualChannels(10, 3));
-        $this->assertSame([true, false, true], WeeklyProgram::ManualChannels(67, 3));
+        // Dump aus dem Forum (#799): Ruhewert 6 = Kanal 2 und 3 manuell, Kanal 1 manuell = 7, ein Bit je Kanal
+        $this->assertSame([false, true, true], WeeklyProgram::ManualChannels(6, 3));
+        $this->assertSame([true, true, true], WeeklyProgram::ManualChannels(7, 3));
+        $this->assertSame([false, true, false], WeeklyProgram::ManualChannels(2, 3));
+        $this->assertSame([true, false, true], WeeklyProgram::ManualChannels(5, 3));
         $this->assertSame(1, WeeklyProgram::LockMask(1));
-        $this->assertSame(8, WeeklyProgram::LockMask(2));
-        $this->assertSame(73, WeeklyProgram::LockMask(7));
+        $this->assertSame(2, WeeklyProgram::LockMask(2));
+        $this->assertSame(4, WeeklyProgram::LockMask(4));
+        $this->assertSame(7, WeeklyProgram::LockMask(7));
     }
 
     public function testModeIsWrittenToValuesParamset(): void
@@ -276,7 +277,7 @@ class WeeklyProgramTest extends HomematicModuleTestCase
         $Put = $this->putRequests();
         $this->assertCount(1, $Put);
         $this->assertSame(['002560C99B959A:6', 'VALUES'], array_slice($Put[0]['Data'], 0, 2));
-        $this->assertSame(['WEEK_PROGRAM_TARGET_CHANNEL_LOCK' => 'MANU_MODE', 'WEEK_PROGRAM_TARGET_CHANNEL_LOCKS' => 8], json_decode($Put[0]['Data'][2], true));
+        $this->assertSame(['WEEK_PROGRAM_TARGET_CHANNEL_LOCK' => 'MANU_MODE', 'WEEK_PROGRAM_TARGET_CHANNEL_LOCKS' => 2], json_decode($Put[0]['Data'][2], true));
     }
 
     public function testInvalidModeIsRejected(): void

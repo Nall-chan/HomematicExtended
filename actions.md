@@ -80,7 +80,7 @@ Für HomeMatic IP laufen Zeiten über die Datenpunkte `ON_TIME` und `RAMP_TIME` 
 
 Hinweise:  
 
-* Wochenprogramm-Modus: Die Kanalauswahl entspricht dem Dialog „Modus einstellen“ der CCU. Der virtuelle Kanal 1 ist der erste Schaltkanal des Geräts (bei einem Schaltaktor mit den Kanälen 3 bis 5 ist Kanal 3 der virtuelle Kanal 1). Jeder Kanal belegt 3 Bit des Werts (1, 8, 64 …). Geprüft am Testschaltaktor: Der Wert von `WEEK_PROGRAM_CHANNEL_LOCKS` steigt mit „Manuell“ je Kanal um 1, 8 bzw. 64 und fällt mit „Automatisch“ wieder.  
+* Wochenprogramm-Modus: Die Kanalauswahl entspricht dem Dialog „Modus einstellen“ der CCU. Der virtuelle Kanal 1 ist der erste Schaltkanal des Geräts (bei einem Schaltaktor mit den Kanälen 3 bis 5 ist Kanal 3 der virtuelle Kanal 1). Jeder Kanal belegt ein Bit des Werts (1, 2, 4 …), ebenso in `WEEK_PROGRAM_CHANNEL_LOCKS` (gesetzt = manuell). Bis Version 4.10 belegte jeder Kanal 3 Bit (1, 8, 64 …), damit wirkte nur der erste Kanal (Forum #799).  
 * Rollläden und Dimmer haben bei HomeMatic IP dieselben Statusvariablen. Die Aktion „Rollladen anhalten“ erscheint deshalb auch bei Dimmern und „Dimmen“ auch bei Rollläden. Beim falschen Gerät meldet die Funktion einen Fehler.  
 * Die Auswahllisten von Alarm, Garagentor und Türschloss entsprechen der Reihenfolge der Werte in der Gerätedokumentation (Alarm akustisch 0 bis 17, optisch 0 bis 7, Garagentor 0 = keine Aktion, 1 bis 4, Türschloss 0 bis 2).  
 * Zeiten werden vor dem Schaltwert geschrieben und vom Gerät mit dem nächsten Schaltbefehl übernommen. Die CCU behält die Zeit bei HomeMatic IP bis zum nächsten Schaltbefehl (am HmIP-Schaltaktor bestätigt).  

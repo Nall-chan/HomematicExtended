@@ -337,8 +337,9 @@ namespace HMExtended
         }
 
         /**
-         * Modus der Schaltkanäle aus `WEEK_PROGRAM_CHANNEL_LOCKS`. Je Kanal gehören 3 Bit zum Wert, Bit 0 der Gruppe gesetzt
-         * bedeutet manueller Modus (Belegt am HmIP-Schaltaktor: Kanal 1/2/3 = 1/8/64, Ruhewert 2, Auto = Bit gelöscht).
+         * Modus der Schaltkanäle aus `WEEK_PROGRAM_CHANNEL_LOCKS`. Ein Bit je Kanal (Bit 0 = erster Schaltkanal), gesetzt
+         * bedeutet manueller Modus. Belegt durch einen Dump aus dem Forum (#799): Ruhewert 6 = Kanal 2 und 3 manuell (wie die CCU),
+         * Kanal 1 manuell ergibt 7.
          *
          * @param int $Locks Der Wert von WEEK_PROGRAM_CHANNEL_LOCKS.
          * @param int $ChannelCount Anzahl der Schaltkanäle.
@@ -349,7 +350,7 @@ namespace HMExtended
         {
             $Result = [];
             for ($Channel = 0; $Channel < $ChannelCount; $Channel++) {
-                $Result[$Channel] = ($Locks & (1 << (3 * $Channel))) != 0;
+                $Result[$Channel] = ($Locks & (1 << $Channel)) != 0;
             }
             return $Result;
         }
@@ -376,19 +377,14 @@ namespace HMExtended
         }
 
         /**
-         * Wert von `WEEK_PROGRAM_TARGET_CHANNEL_LOCKS` für eine Kanalauswahl (3 Bit je Kanal).
+         * Wert von `WEEK_PROGRAM_TARGET_CHANNEL_LOCKS` für eine Kanalauswahl (ein Bit je Kanal, wie TARGET_CHANNELS).
+         * Bis 4.10 kodierte die Library 3 Bit je Kanal (1, 8, 64); damit wirkte nur der erste Kanal (Forum #799).
          *
          * @param int $ChannelMask Bitmaske der Kanäle, Bit 0 = erster Schaltkanal (wie TARGET_CHANNELS).
          */
         public static function LockMask(int $ChannelMask): int
         {
-            $Mask = 0;
-            for ($Channel = 0; $Channel < 8; $Channel++) {
-                if ($ChannelMask & (1 << $Channel)) {
-                    $Mask |= 1 << (3 * $Channel);
-                }
-            }
-            return $Mask;
+            return $ChannelMask & 0xFF;
         }
 
         /**

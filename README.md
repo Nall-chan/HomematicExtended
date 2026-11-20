@@ -207,6 +207,12 @@ Erweitert IPS um die native Unterstützung von:
 
 ### 2. Changelog
 
+**Version 4.11:**
+
+**Fehlerbehebungen**
+
+* HomeMatic IP Weekly Program: `HM_SetWeeklyProgramMode`, der Klick auf den Modus in der Kachel und die Aktion „Wochenprogramm-Modus einstellen“ wirkten nur auf den ersten Schaltkanal (Forum #799). Die Kanäle zählen jetzt wie in der CCU ein Bit je Kanal. Auch der angezeigte Modus (Kachel, `HM_ReadWeeklyProgramModes`) war für den zweiten und alle weiteren Kanäle falsch.
+
 **Version 4.10:**
 
 **Neue Module**

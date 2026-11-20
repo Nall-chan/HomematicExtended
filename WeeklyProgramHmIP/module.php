@@ -74,7 +74,7 @@ class HomeMaticIPWeeklyProgram extends HMBase
     private const AttributeTargetChannels = 'TargetChannels';
 
     /**
-     * Höchstzahl der Kanäle in `WEEK_PROGRAM_CHANNEL_LOCKS` (3 Bit je Kanal, 24 Bit).
+     * Höchstzahl der Kanäle in `WEEK_PROGRAM_CHANNEL_LOCKS` (ein Bit je Kanal).
      */
     private const MaxModeChannels = 8;
 

@@ -313,6 +313,10 @@ Die Schaltzeitpunkte und der Modus werden über die Funktionen aus der PHP-Befeh
 
 Der vollständige Changelog der Library steht in der [Haupt-README](../README.md#2-changelog).
 
+**Version 4.11:**
+
+- Bugfix: `HM_SetWeeklyProgramMode`, der Klick auf den Modus in der Kachel und die Aktion „Wochenprogramm-Modus einstellen“ wirkten nur auf den ersten Schaltkanal. Der Modus der übrigen Kanäle wurde zudem falsch angezeigt.
+
 **Version 4.10:**
 
 - Kachel: In kleinen und schmalen Kacheln (z.B. 1 × 1 oder 1 × 4) überlagerte der Text die Überschrift. Dort stehen jetzt nur die Anzahl der Schaltzeitpunkte und die nächste Schaltung, zeilenweise und ohne Knöpfe.  
