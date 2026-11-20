@@ -128,7 +128,7 @@ class AlarmvariableTest extends HomematicModuleTestCase
         $this->assertSame('CCU program "Symcon Alarmvariable ' . $Id . '" created.', IPS\InstanceManager::getInstanceInterface($Id)->CreateCCUProgram());
         $Script = $this->scripts()[1];
         // Die Taste ist bereits umbenannt, das Script ändert den Namen nur bei Werksnamen.
-        $this->assertStringContainsString('if (oKey.Name() == "HM-RCV-50 BidCoS-RF:50")', $Script);
+        $this->assertStringContainsString('if ((oKey.Name() == "HM-RCV-50 BidCoS-RF:50")', $Script);
         $this->assertStringContainsString('dom.GetObject("BidCos-RF.BidCoS-RF:50.PRESS_SHORT")', $Script);
         $this->assertStringContainsString('oSC.LeftVal(1253); oSC.RightVal1(false);', $Script);
         $this->assertStringContainsString('oSC.LeftVal(1253); oSC.RightVal1(true);', $Script);

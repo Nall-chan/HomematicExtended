@@ -53,7 +53,7 @@ class ExtendedConfiguratorTest extends HomematicModuleTestCase
     {
         parent::setUp();
         $this->IoId = $this->createFakeIo();
-        foreach ([[\HMExtended\GUID::Programme, 'ConfiguratorTestProgramme', 'CTPR'], [\HMExtended\GUID::RemoteScript, 'ConfiguratorTestScript', 'CTRS'], [\HMExtended\GUID::WR_Interface, 'ConfiguratorTestScript', 'CTWR'], [\HMExtended\GUID::HeatingGroup, 'ConfiguratorTestScript', 'CTHG'], [\HMExtended\GUID::HeatingGroupHmIP, 'ConfiguratorTestScript', 'CTHI'], [\HMExtended\GUID::Systemvariablen, 'ConfiguratorTestScript', 'CTSV'], [\HMExtended\GUID::Alarmvariable, 'ConfiguratorTestAlarm', 'CTAV']] as [$Guid, $Name, $Prefix]) {
+        foreach ([[\HMExtended\GUID::Programme, 'ConfiguratorTestProgramme', 'CTPR'], [\HMExtended\GUID::RemoteScript, 'ConfiguratorTestScript', 'CTRS'], [\HMExtended\GUID::WR_Interface, 'ConfiguratorTestScript', 'CTWR'], [\HMExtended\GUID::HeatingGroup, 'ConfiguratorTestScript', 'CTHG'], [\HMExtended\GUID::HeatingGroupHmIP, 'ConfiguratorTestScript', 'CTHI'], [\HMExtended\GUID::Systemvariablen, 'ConfiguratorTestScript', 'CTSV'], [\HMExtended\GUID::Alarmvariable, 'ConfiguratorTestAlarm', 'CTAV'], [\HMExtended\GUID::Servicemeldungen, 'ConfiguratorTestScript', 'CTSM'], [\HMExtended\GUID::Funkpegel, 'ConfiguratorTestScript', 'CTFP']] as [$Guid, $Name, $Prefix]) {
             $this->registerTestModule($Name, $Guid, MODULETYPE_DEVICE, $Prefix, [
                 'parentRequirements' => [\HMExtended\GUID::SendRpcToIO, \HMExtended\GUID::SendScriptToIO],
                 'implemented'        => [self::DeviceDataFlow]
@@ -145,6 +145,14 @@ class ExtendedConfiguratorTest extends HomematicModuleTestCase
         $this->assertContains(\HMExtended\GUID::RemoteScript, $Created);
         $Script = $Rows[array_search(\HMExtended\GUID::RemoteScript, $Created)];
         $this->assertSame(\HMExtended\Device\Address::REMOTESCRIPT, $Script['create']['configuration']['Address']);
+        // Servicemeldungen (Taste der virtuellen Fernbedienung) und Funkpegel ohne Adresse
+        $this->assertContains(\HMExtended\GUID::Servicemeldungen, $Created);
+        $Messages = $Rows[array_search(\HMExtended\GUID::Servicemeldungen, $Created)];
+        $this->assertSame(['Protocol' => 0, 'EmulateStatus' => false], $Messages['create']['configuration']);
+        $this->assertContains(\HMExtended\GUID::Funkpegel, $Created);
+        $Levels = $Rows[array_search(\HMExtended\GUID::Funkpegel, $Created)];
+        $this->assertSame(['Protocol' => 0], $Levels['create']['configuration']);
+        $this->assertSame('', $Levels['address']);
     }
 
     public function testExistingInstanceIsMatchedByDeviceAddress(): void

@@ -399,8 +399,10 @@ namespace HMExtended
          * @param string $OldKeyAddress Adresse der Taste des bisherigen Programms (leer = keine).
          * @param string $KeyAddress Adresse der Taste, z.B. `BidCoS-RF:49`.
          * @param int[] $Variables CCU-ID => ValueType der Systemvariablen.
+         * @param string $SystemName Name des Symcon-Systems (Objekt 0): Die Taste heißt `<Programmname> (<Systemname>)`, leer = wie das Programm.
+         *                           Eine Taste mit dem bisherigen Namen des Moduls (ohne bzw. mit anderem Systemnamen) erhält den neuen Namen.
          */
-        public static function ProgramScript(string $Name, string $Info, int $OldProgramId, string $OldKeyAddress, string $KeyAddress, array $Variables): string
+        public static function ProgramScript(string $Name, string $Info, int $OldProgramId, string $OldKeyAddress, string $KeyAddress, array $Variables, string $SystemName = ''): string
         {
             $Protocol = self::ProtocolOfKey($KeyAddress);
             $Interface = ($Protocol === false) ? '' : self::VirtualKeys[$Protocol]['Interface'];
@@ -411,7 +413,7 @@ namespace HMExtended
             $Script .= 'object oDP = dom.GetObject("' . $Interface . '.' . self::Literal($KeyAddress) . '.' . self::KeyDatapoint . '");' . PHP_EOL .
                 'if (oDP) {' . PHP_EOL .
                 ' object oKey = dom.GetObject(oDP.Channel());' . PHP_EOL .
-                ' if (oKey) { if (oKey.Name() == ' . self::TextLiteral(self::DefaultKeyName($KeyAddress)) . ') { oKey.Name(' . self::TextLiteral($Name) . '); } }' . PHP_EOL .
+                ' if (oKey) { if ((oKey.Name() == ' . self::TextLiteral(self::DefaultKeyName($KeyAddress)) . ') || ' . self::OwnKeyNameCondition('oKey', $Name) . ') { oKey.Name(' . self::TextLiteral(self::KeyName($Name, $SystemName)) . '); } }' . PHP_EOL .
                 ' object oPrg = dom.CreateObject(OT_PROGRAM);' . PHP_EOL .
                 ' oPrg.Name(' . self::TextLiteral($Name) . ');' . PHP_EOL .
                 ' oPrg.PrgInfo(' . self::TextLiteral($Info) . ');' . PHP_EOL .
@@ -463,10 +465,22 @@ namespace HMExtended
         }
 
         /**
-         * Script: gibt einer Taste ihren Werksnamen zurück, wenn sie den übergebenen Namen trägt (vom Modul vergeben).
+         * Name der Taste: Name des Programms, mit dem Namen des Symcon-Systems in Klammern (zur Zuordnung bei mehreren Systemen an einer CCU).
+         *
+         * @param string $Name Name des Programms.
+         * @param string $SystemName Name des Symcon-Systems (Objekt 0), leer = nur der Name des Programms.
+         */
+        public static function KeyName(string $Name, string $SystemName): string
+        {
+            return ($SystemName === '') ? $Name : $Name . ' (' . $SystemName . ')';
+        }
+
+        /**
+         * Script: gibt einer Taste ihren Werksnamen zurück, wenn sie einen vom Modul vergebenen Namen trägt
+         * (Name des Programms, auch mit beliebigem Systemnamen in Klammern).
          *
          * @param string $KeyAddress Adresse der Taste.
-         * @param string $Name Vom Modul vergebener Name (Name des Programms).
+         * @param string $Name Name des Programms.
          */
         public static function RestoreKeyNameScript(string $KeyAddress, string $Name): string
         {
@@ -475,7 +489,7 @@ namespace HMExtended
                 return '';
             }
             return 'object oOldDP = dom.GetObject("' . self::VirtualKeys[$Protocol]['Interface'] . '.' . $KeyAddress . '.' . self::KeyDatapoint . '");' . PHP_EOL .
-                'if (oOldDP) { object oOldKey = dom.GetObject(oOldDP.Channel()); if (oOldKey) { if (oOldKey.Name() == ' . self::TextLiteral($Name) . ') { oOldKey.Name(' . self::TextLiteral(self::DefaultKeyName($KeyAddress)) . '); } } }' . PHP_EOL;
+                'if (oOldDP) { object oOldKey = dom.GetObject(oOldDP.Channel()); if (oOldKey) { if (' . self::OwnKeyNameCondition('oOldKey', $Name) . ') { oOldKey.Name(' . self::TextLiteral(self::DefaultKeyName($KeyAddress)) . '); } } }' . PHP_EOL;
         }
 
         /**
@@ -703,6 +717,18 @@ namespace HMExtended
             {
                 return ['\\' => '\\', 't' => "\t", 'r' => "\r", 'n' => "\n"][$Match[1]];
             }, $Text);
+        }
+
+        /**
+         * HM-Script-Bedingung: Die Taste trägt einen vom Modul vergebenen Namen, also den Namen des Programms
+         * oder `<Programmname> (<beliebiger Systemname>)`.
+         *
+         * @param string $Variable Name der Script-Variable der Taste.
+         * @param string $Name Name des Programms.
+         */
+        private static function OwnKeyNameCondition(string $Variable, string $Name): string
+        {
+            return '(' . $Variable . '.Name() == ' . self::TextLiteral($Name) . ') || (' . $Variable . '.Name().Find(' . self::TextLiteral($Name . ' (') . ') == 0)';
         }
 
         /**

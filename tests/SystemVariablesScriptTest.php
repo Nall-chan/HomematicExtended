@@ -205,13 +205,23 @@ class SystemVariablesScriptTest extends TestCase
     public function testProgramScriptRenamesKeyWithFactoryName(): void
     {
         $Script = SystemVariables::ProgramScript('Symcon Systemvariablen 12345', 'Info', 0, '', 'BidCoS-RF:49', [950 => 2]);
-        $this->assertStringContainsString('if (oKey) { if (oKey.Name() == "HM-RCV-50 BidCoS-RF:49") { oKey.Name("Symcon Systemvariablen 12345"); } }', $Script);
+        $this->assertStringContainsString('if (oKey) { if ((oKey.Name() == "HM-RCV-50 BidCoS-RF:49") || (oKey.Name() == "Symcon Systemvariablen 12345") || (oKey.Name().Find("Symcon Systemvariablen 12345 (") == 0)) { oKey.Name("Symcon Systemvariablen 12345"); } }', $Script);
         $this->assertStringNotContainsString('oOldKey', $Script);
         // Taste gewechselt: die bisherige Taste erhält ihren Werksnamen zurück, wenn sie noch den Namen des Programms trägt.
         $Changed = SystemVariables::ProgramScript('Symcon Systemvariablen 12345', 'Info', 29625, 'BidCoS-RF:48', 'BidCoS-RF:49', [950 => 2]);
         $this->assertStringContainsString('dom.GetObject("BidCos-RF.BidCoS-RF:48.PRESS_SHORT")', $Changed);
-        $this->assertStringContainsString('if (oOldKey.Name() == "Symcon Systemvariablen 12345") { oOldKey.Name("HM-RCV-50 BidCoS-RF:48"); }', $Changed);
+        $this->assertStringContainsString('if ((oOldKey.Name() == "Symcon Systemvariablen 12345") || (oOldKey.Name().Find("Symcon Systemvariablen 12345 (") == 0)) { oOldKey.Name("HM-RCV-50 BidCoS-RF:48"); }', $Changed);
         $this->assertStringNotContainsString('oOldKey', SystemVariables::ProgramScript('P', 'I', 29625, 'BidCoS-RF:49', 'BidCoS-RF:49', [950 => 2]));
+    }
+
+    public function testKeyNameContainsSystemName(): void
+    {
+        // Die Taste trägt den Namen des Symcon-Systems, das Programm nicht (daran erkennt das Modul sein Programm)
+        $Script = SystemVariables::ProgramScript('Symcon Systemvariablen 12345', 'Info', 0, '', 'BidCoS-RF:49', [950 => 2], 'Haus');
+        $this->assertStringContainsString('oKey.Name("Symcon Systemvariablen 12345 (Haus)");', $Script);
+        $this->assertStringContainsString('oPrg.Name("Symcon Systemvariablen 12345");', $Script);
+        $this->assertSame('Symcon Alarmvariable 1 (Haus)', SystemVariables::KeyName('Symcon Alarmvariable 1', 'Haus'));
+        $this->assertSame('Symcon Alarmvariable 1', SystemVariables::KeyName('Symcon Alarmvariable 1', ''));
     }
 
     public function testDeleteProgramRestoresKeyName(): void

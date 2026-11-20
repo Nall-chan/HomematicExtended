@@ -222,7 +222,9 @@ class HomeMaticExtendedConfigurator extends HMBase
         $Form['actions'][0]['values'] = array_merge($Form['actions'][0]['values'], $this->GetConfigInstance(\HMExtended\GUID::RemoteScript));
         $Gateways = $this->LoadGatewayConfig();
         $Form['actions'][0]['values'] = array_merge($Form['actions'][0]['values'], $this->GetConfigRFInterfaces($ParentId, $Gateways['rfd'] ?? []));
-        $Form['actions'][0]['values'] = array_merge($Form['actions'][0]['values'], $this->GetConfigSystemVariables());
+        $Form['actions'][0]['values'] = array_merge($Form['actions'][0]['values'], $this->GetConfigModuleInstances(\HMExtended\GUID::Systemvariablen, true));
+        $Form['actions'][0]['values'] = array_merge($Form['actions'][0]['values'], $this->GetConfigModuleInstances(\HMExtended\GUID::Servicemeldungen, true));
+        $Form['actions'][0]['values'] = array_merge($Form['actions'][0]['values'], $this->GetConfigModuleInstances(\HMExtended\GUID::Funkpegel, false));
         $Form['actions'][0]['values'] = array_merge($Form['actions'][0]['values'], $this->GetConfigAlarms($this->LoadSystemVariables()));
         // Module mit Geräten auf mehreren Protokollen werden in einem Durchgang gelesen, damit Instanzen ohne Gerät nur einmal erscheinen.
         $RadioAndIp = [];
@@ -576,27 +578,30 @@ class HomeMaticExtendedConfigurator extends HMBase
     }
 
     /**
-     * Liefert die Zeilen der Instanzen des Moduls Systemvariablen. Ist keine Instanz vorhanden, wird eine Zeile zum Anlegen geliefert.
-     * Die Systemvariablen werden in der Instanz gewählt, mehrere Instanzen sind möglich.
+     * Liefert die Zeilen der Instanzen eines Moduls ohne Gerät (Systemvariablen, Servicemeldungen, Funkpegel). Ist keine Instanz vorhanden, wird eine Zeile zum Anlegen geliefert.
+     * Mehrere Instanzen sind möglich. Bei Modulen mit Taste der virtuellen Fernbedienung zeigt die Spalte Adresse die eingetragene Taste.
+     *
+     * @param string $GUID Die GUID des Moduls.
+     * @param bool $WithKey true, wenn das Modul eine Taste der virtuellen Fernbedienung nutzt (Eigenschaft Address).
      *
      * @return array Zeilen für das Element Konfigurator.
      */
-    private function GetConfigSystemVariables(): array
+    private function GetConfigModuleInstances(string $GUID, bool $WithKey): array
     {
-        $GUID = \HMExtended\GUID::Systemvariablen;
+        $Configuration = [\HMExtended\Device\Property::Protocol => 0];
+        if ($WithKey) {
+            $Configuration[\HMExtended\Device\Property::EmulateStatus] = false;
+        }
         $Create = [
             'moduleID'      => $GUID,
             'location'      => [],
-            'configuration' => [
-                \HMExtended\Device\Property::Protocol      => 0,
-                \HMExtended\Device\Property::EmulateStatus => false
-            ]
+            'configuration' => $Configuration
         ];
         $Rows = [];
         foreach ($this->GetInstanceList($GUID, \HMExtended\Device\Property::Address) as $InstanceID => $Address) {
             $Rows[] = [
                 'instanceID' => $InstanceID,
-                'address'    => (\HMExtended\SystemVariables::ProtocolOfKey($Address) !== false) ? $Address : '',
+                'address'    => ($WithKey && (\HMExtended\SystemVariables::ProtocolOfKey($Address) !== false)) ? $Address : '',
                 'name'       => IPS_GetName($InstanceID),
                 'longname'   => IPS_GetName($InstanceID),
                 'type'       => IPS_GetModule($GUID)['ModuleName'],

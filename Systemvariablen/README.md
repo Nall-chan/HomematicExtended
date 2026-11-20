@@ -78,7 +78,7 @@ Dieses Modul ist Bestandteil der [HomeMaticExtended-Library](../).
 
    Ist die Taste Bedingung eines Programms der CCU oder direkt mit einem Gerät verknüpft, legt das Modul kein Programm an und meldet das: Jeder Tastendruck würde diese Programme bzw. Geräte mit auslösen. Drücken andere Programme dieselbe Taste (`gedrückt von`), ist das unkritisch.  
 
-   Trägt die Taste noch ihren Werksnamen (z.B. `HM-RCV-50 BidCoS-RF:49`), erhält sie den Namen des Programms. Wechselt die Instanz die Taste oder wird das Programm gelöscht, erhält die Taste ihren Werksnamen zurück, sofern sie noch den Namen des Programms trägt. Von Hand vergebene Namen werden nie geändert.  
+   Trägt die Taste noch ihren Werksnamen (z.B. `HM-RCV-50 BidCoS-RF:49`), erhält sie den Namen des Programms und dahinter in Klammern den Namen des Symcon-Systems (oberstes Objekt im Objektbaum), z.B. `Symcon Systemvariablen 19373 (Haus)`. So lässt sich die Taste in der CCU einem System zuordnen, wenn mehrere Symcon-Systeme an einer CCU hängen. Wechselt die Instanz die Taste oder wird das Programm gelöscht, erhält die Taste ihren Werksnamen zurück, sofern sie noch einen vom Modul vergebenen Namen trägt. Von Hand vergebene Namen werden nie geändert.  
 
    Das Modul ändert und löscht nur das eigene Programm (ID und Name müssen passen). Beim Löschen der Instanz bleibt das Programm auf der CCU erhalten, es kann vorher mit `CCU-Programm löschen` entfernt werden. Systeminterne Programme zeigt die WebUI der CCU unter `Programme` nur mit der Option `Systeminterne Programme anzeigen`.  
 
@@ -194,6 +194,10 @@ string HM_DeleteCCUProgram(integer $InstanzID);
 ### 1. Changelog
 
 Der vollständige Changelog der Library steht in der [Haupt-README](../README.md#2-changelog).  
+
+**Version 4.10:**
+
+- Die Taste der virtuellen Fernbedienung erhält zusätzlich den Namen des Symcon-Systems, z.B. `Symcon Systemvariablen 19373 (Haus)`.  
 
 **Version 3.82:**
 

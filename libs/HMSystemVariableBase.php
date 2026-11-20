@@ -172,14 +172,16 @@ abstract class HMSystemVariableBase extends HMBase
         }
         // Name des Symcon-Systems (Objekt 0), damit bei mehreren Systemen an einer CCU erkennbar ist, wem das Programm gehört
         $Info = sprintf($this->Translate('Created by Symcon "%s", instance %d (HomematicExtended). Changes will be overwritten.'), IPS_GetName(0), $this->InstanceID);
-        $this->PrepareUriDecode($this->ProgramName(), $Info);
+        // Die Taste trägt zusätzlich den Systemnamen, damit sie sich in der CCU einem System zuordnen lässt
+        $this->PrepareUriDecode($this->ProgramName(), $Info, \HMExtended\SystemVariables::KeyName($this->ProgramName(), IPS_GetName(0)));
         $Script = \HMExtended\SystemVariables::ProgramScript(
             $this->ProgramName(),
             $Info,
             $this->ReadAttributeInteger(\HMExtended\Device\Attribute::ProgramID),
             $this->ReadAttributeString(\HMExtended\Device\Attribute::ProgramKey),
             $Address,
-            $Variables
+            $Variables,
+            IPS_GetName(0)
         );
         $Output = $this->RunScript($Script);
         if ($Output === false) {

@@ -13,6 +13,8 @@ Erweitert IPS um die native Unterstützung von:
 
 * Systemvariablen der CCU
 * Alarmvariablen der CCU
+* Servicemeldungen der CCU (alle Schnittstellen) als Kachel
+* Funkpegel (RSSI) aller Funkgeräte als Kachel
 * Programmen auf der CCU
 * Summenzähler aller Typen von Verbrauchsmessern
 * Display Status-Anzeige (Dis-WM55)
@@ -28,6 +30,8 @@ Erweitert IPS um die native Unterstützung von:
 - [1. Funktionsumfang](#1-funktionsumfang)
   - [HomeMatic Systemvariablen:](#homematic-systemvariablen)
   - [HomeMatic Alarmvariable:](#homematic-alarmvariable)
+  - [HomeMatic Servicemeldungen:](#homematic-servicemeldungen)
+  - [HomeMatic Funkpegel:](#homematic-funkpegel)
   - [HomeMatic Powermeter:](#homematic-powermeter)
   - [HomeMatic Weather:](#homematic-weather)
   - [HomeMatic Programme:](#homematic-programme)
@@ -62,6 +66,15 @@ Erweitert IPS um die native Unterstützung von:
 ### [HomeMatic Alarmvariable:](Alarmvariable/)  
 
    Eine Alarmvariable der CCU mit Zustand, erstem und letztem Alarm und dem Auslöser. Der Alarm kann aus Symcon quittiert werden.  
+
+### [HomeMatic Servicemeldungen:](Servicemeldungen/)  
+
+   Die Servicemeldungen der CCU von BidCos-RF, HmIP und Wired als Kachel mit Filter nach Art (Erreichbarkeit, Batterie, Sabotage, Konfiguration) und Suche. Bestätigen einzelner oder aller Meldungen, PHP-Befehle für Skripte.  
+   Ein vom Modul angelegtes CCU-Programm meldet jede Änderung über eine Taste der virtuellen Fernbedienung.  
+
+### [HomeMatic Funkpegel:](Funkpegel/)  
+
+   Die Funkpegel aller Funkgeräte in beide Richtungen als Kachel mit Bewertung, Filter nach Schnittstelle und Gateway, Sortierung und Suche. Zeigt bei BidCos-RF das zugeordnete und alle weiteren Gateways, die ein Gerät hören, Roaming sowie den Duty Cycle der Funkmodule.  
 
 ### [HomeMatic Powermeter:](PowerMeter/)  
 
@@ -124,7 +137,7 @@ Erweitert IPS um die native Unterstützung von:
 
 ### [HomeMatic Extended Konfigurator:](ExtendedConfigurator/)
 
-   Legt die Instanzen der Geräte dieser Library an (Powermeter, Wetterstationen, Displays, Heizungsgeräte, Systemvariablen, Alarmvariablen, Programme, RemoteScript und WR-Interface).
+   Legt die Instanzen der Geräte dieser Library an (Powermeter, Wetterstationen, Displays, Heizungsgeräte, Systemvariablen, Alarmvariablen, Servicemeldungen, Funkpegel, Programme, RemoteScript und WR-Interface).
    Bereits angelegte Instanzen werden erkannt. Instanzen, zu denen kein Gerät auf der CCU gefunden wird, werden mit einem Hinweis angezeigt.
 
 ### [HomeMatic RF-Interface Splitter:](RFInterfaceSplitter/)
@@ -172,6 +185,8 @@ Erweitert IPS um die native Unterstützung von:
 | :---------------------------------: | :----------: | :------------------------------------: |
 |      HomeMatic Systemvariablen      |    Device    | {AF50C42B-7183-4992-B04A-FAFB07BB1B90} |
 |       HomeMatic Alarmvariable       |    Device    | {72A9F016-A988-430D-B678-E787CC106449} |
+|     HomeMatic Servicemeldungen      |    Device    | {5368AD8F-6874-4A42-B7E8-0F906E6F945A} |
+|         HomeMatic Funkpegel         |    Device    | {9F93D21E-D308-4824-9052-764B04EBB7AB} |
 |        HomeMatic Powermeter         |    Device    | {400F9193-FE79-4086-8D76-958BF9C1B357} |
 |     HomeMatic IP Weekly Program     |    Device    | {9B7A7ED0-D77F-4F5B-B747-68B75B55686A} |
 |           HomeMatic LED16           |    Device    | {3F6C1D8E-2B54-4A0F-9C7E-5D8A1B6E4F32} |
@@ -191,6 +206,23 @@ Erweitert IPS um die native Unterstützung von:
 |   HomeMatic Extended Configurator   | Configurator | {7B8F83C6-E3BC-AC8C-3FFC-D81CAC96D93B} |
 
 ### 2. Changelog
+
+**Version 4.10:**
+
+**Neue Module**
+
+* [HomeMatic Servicemeldungen](Servicemeldungen/): Die Servicemeldungen der CCU aller Schnittstellen (auch HmIP und Wired) als Kachel, mit Filter nach Art, Suche und Bestätigen. Ein CCU-Programm meldet Änderungen sofort über eine Taste der virtuellen Fernbedienung, das Modul legt es per Schaltfläche an.
+* [HomeMatic Funkpegel](Funkpegel/): Die Funkpegel aller BidCos-RF- und HmIP-Geräte in beide Richtungen als Kachel, mit Bewertung, Filter nach Schnittstelle und Gateway, Sortierung, Roaming, nicht mehr eingerichteten Gateways und Duty Cycle der Funkmodule.
+
+**Neue Funktionen und Aktionen**
+
+* HomeMatic Servicemeldungen: `HM_GetServiceMessages`, `HM_ConfirmServiceMessage`, `HM_ConfirmAllServiceMessages`, `HM_CreateCCUProgram`, `HM_DeleteCCUProgram`.
+* HomeMatic Funkpegel: `HM_GetRSSIValues`.
+
+**Geändertes Verhalten**
+
+* HomeMatic Extended Konfigurator: Neue Zeilen für HomeMatic Servicemeldungen und HomeMatic Funkpegel.
+* HomeMatic Systemvariablen, HomeMatic Alarmvariable und HomeMatic Servicemeldungen: Die Taste der virtuellen Fernbedienung erhält hinter dem Namen des Programms in Klammern den Namen des Symcon-Systems (oberstes Objekt im Objektbaum), z.B. `Symcon Alarmvariable 13262 (Haus)`. So lässt sich die Taste in der CCU zuordnen, wenn mehrere Symcon-Systeme an einer CCU hängen. Vorhandene Tasten erhalten den Namen mit `CCU-Programm anlegen oder aktualisieren`, von Hand vergebene Namen bleiben unverändert.
 
 **Version 4.03:**
 

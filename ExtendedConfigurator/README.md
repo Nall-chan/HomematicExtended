@@ -81,12 +81,14 @@ Die Instanz besitzt keine einstellbaren Eigenschaften, die Liste der Geräte wir
 | Programme der CCU                     | [HomeMatic Programme](../Programme/)                                     | alle          | feste Adresse                        |
 | Ausführen von HM-Scripten             | [HomeMatic RemoteScript](../HomeMaticScript/)                            | alle          | feste Adresse                        |
 | Systemvariablen der CCU               | [HomeMatic Systemvariablen](../Systemvariablen/)                         | alle          | Instanzen des Moduls                 |
+| Servicemeldungen der CCU              | [HomeMatic Servicemeldungen](../Servicemeldungen/)                       | alle          | Instanzen des Moduls                 |
+| Funkpegel der Funkgeräte              | [HomeMatic Funkpegel](../Funkpegel/)                                     | Funk, HmIP    | Instanzen des Moduls                 |
 | Alarmvariablen der CCU                | [HomeMatic Alarmvariable](../Alarmvariable/)                             | alle          | ID der Alarmvariable                 |
 | RF-Interfaces (Gateways)              | [HomeMatic RF-Interface](../RFInterface/)                                | Funk, HmIP    | Adresse des Interfaces               |
 
 Die Zeilen für Programme, RemoteScript und WR-Interface stehen für das jeweilige Modul und sind nicht an ein Gerät gebunden. Ist ein Wired-Gateway eingerichtet (`/etc/config/hs485d.conf`), zeigt die Zeile des WR-Interface dessen Seriennummer, Typ und IP-Adresse. Das WR-Interface bleibt eine Instanz je CCU.  
 
-Für die Systemvariablen zeigt der Konfigurator die vorhandenen Instanzen bzw. eine Zeile zum Anlegen, die Systemvariablen selbst werden in der Instanz gewählt. Für jede Alarmvariable der CCU gibt es eine Zeile, die Instanz erhält die ID der Alarmvariable. Die Spalte `Adresse` zeigt den Namen der Alarmvariable auf der CCU (die Instanz kann anders heißen), interne Alarmvariablen wie die `WatchDog: …`-Alarme von RaspberryMatic sind im Typ mit `(intern)` gekennzeichnet. Instanzen, deren Alarmvariable auf der CCU fehlt, erscheinen mit einem Hinweis.  
+Für die Systemvariablen, die Servicemeldungen und die Funkpegel zeigt der Konfigurator die vorhandenen Instanzen bzw. eine Zeile zum Anlegen. Die Systemvariablen und die Taste der virtuellen Fernbedienung werden in der Instanz gewählt, die Spalte `Adresse` zeigt die eingetragene Taste. Für jede Alarmvariable der CCU gibt es eine Zeile, die Instanz erhält die ID der Alarmvariable. Die Spalte `Adresse` zeigt den Namen der Alarmvariable auf der CCU (die Instanz kann anders heißen), interne Alarmvariablen wie die `WatchDog: …`-Alarme von RaspberryMatic sind im Typ mit `(intern)` gekennzeichnet. Instanzen, deren Alarmvariable auf der CCU fehlt, erscheinen mit einem Hinweis.  
 
 ### Hinweise in der Liste
 
@@ -125,6 +127,10 @@ Die Instanz besitzt keine Statusvariablen und keine speziellen Aktionen.
 ### 1. Changelog
 
 Der vollständige Changelog der Library steht in der [Haupt-README](../README.md#2-changelog).  
+
+**Version 4.10:**
+
+- Neue Zeilen für die Servicemeldungen (`HomeMatic Servicemeldungen`) und die Funkpegel (`HomeMatic Funkpegel`).  
 
 **Version 3.90:**
 

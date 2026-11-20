@@ -61,7 +61,7 @@ Dieses Modul ist Bestandteil der [HomeMaticExtended-Library](../).
    Einrichtung:  
 
 1. Unter `Alarmvariable der CCU` die Alarmvariable wählen (beim Anlegen über den Konfigurator bereits eingetragen).  
-2. Unter `Taste der virtuellen Fernbedienung der CCU` eine Taste wählen. Alle Alarm-Instanzen können sich eine Taste teilen. Die Liste zeigt die Verwendung der Tasten, eine belegte Taste wird wie beim Modul [HomeMatic Systemvariablen](../Systemvariablen/#das-ccu-programm) abgelehnt, und eine Taste mit Werksnamen erhält den Namen des Programms.  
+2. Unter `Taste der virtuellen Fernbedienung der CCU` eine Taste wählen. Alle Alarm-Instanzen können sich eine Taste teilen. Die Liste zeigt die Verwendung der Tasten, eine belegte Taste wird wie beim Modul [HomeMatic Systemvariablen](../Systemvariablen/#das-ccu-programm) abgelehnt, und eine Taste mit Werksnamen erhält den Namen des Programms mit dem Namen des Symcon-Systems in Klammern.  
 3. Mit `CCU-Programm anlegen oder aktualisieren` das Programm `Symcon Alarmvariable <Instanz-ID>` auf der CCU anlegen.  
 
 ![Konfiguration](imgs/config.png)  
@@ -144,6 +144,10 @@ string HM_DeleteCCUProgram(integer $InstanzID);
 ### 1. Changelog
 
 Der vollständige Changelog der Library steht in der [Haupt-README](../README.md#2-changelog).  
+
+**Version 4.10:**
+
+- Die Taste der virtuellen Fernbedienung erhält zusätzlich den Namen des Symcon-Systems, z.B. `Symcon Alarmvariable 13262 (Haus)`.  
 
 **Version 3.80:**
 
