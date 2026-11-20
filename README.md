@@ -224,6 +224,10 @@ Erweitert IPS um die native Unterstützung von:
 * HomeMatic Extended Konfigurator: Neue Zeilen für HomeMatic Servicemeldungen und HomeMatic Funkpegel.
 * HomeMatic Systemvariablen, HomeMatic Alarmvariable und HomeMatic Servicemeldungen: Die Taste der virtuellen Fernbedienung erhält hinter dem Namen des Programms in Klammern den Namen des Symcon-Systems (oberstes Objekt im Objektbaum), z.B. `Symcon Alarmvariable 13262 (Haus)`. So lässt sich die Taste in der CCU zuordnen, wenn mehrere Symcon-Systeme an einer CCU hängen. Vorhandene Tasten erhalten den Namen mit `CCU-Programm anlegen oder aktualisieren`, von Hand vergebene Namen bleiben unverändert.
 
+**Fehlerbehebungen**
+
+* Kachel von HomeMatic IP Weekly Program: In kleinen und schmalen Kacheln (z.B. 1 × 1 oder 1 × 4) überlagerte der Text die Überschrift und war abgeschnitten. Die Kachel zeigt dort jetzt nur die Anzahl der Schaltzeitpunkte und die nächste Schaltung, zeilenweise und ohne Knöpfe.
+
 **Version 4.03:**
 
 * Heizungskachel: Neue Eigenschaft `Fenster- oder Türkontakt für die Kachel (optional)` bei HomeMatic IP Heating Group, HomeMatic Heating Group und HomeMatic Heating Device. Die Kachel zeigt den Zustand eines eigenen Fenster- oder Türkontakts (Boolean oder Integer, z.B. Reed-Kontakt) als `Geschlossen`, `Gekippt` oder `Offen`, ohne dass das Gerät auf die Fenster-offen-Temperatur absenkt. Profile mit der Endung `.Reversed` und `~Window.HM` (gekippt) werden berücksichtigt.

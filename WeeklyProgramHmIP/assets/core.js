@@ -184,18 +184,27 @@
     });
     return best;
   }
-  function summaryText() {
-    if (notice) return notice;
+  // Teile der Zusammenfassung; getrennt durch „ · “, in kleinen Kacheln je Teil eine Zeile (CSS .sep)
+  function summaryParts() {
+    if (notice) return [notice];
     const list = entries();
-    if (!list.length) return T('No switching times');
-    let text = list.length + ' ' + T(list.length === 1 ? 'switching time' : 'switching times');
-    if (dirty) return text + ' · ' + T('Unsaved changes');
+    if (!list.length) return [T('No switching times')];
+    const parts = [list.length + ' ' + T(list.length === 1 ? 'switching time' : 'switching times')];
+    if (dirty) return parts.concat(T('Unsaved changes'));
     const next = nextSwitch();
     if (next) {
       const day = T(DAYS[dayIndex(next.date.getDay())][1]);
-      text += ' · ' + T('Next') + ': ' + day + ' ' + pad(next.date.getHours()) + ':' + pad(next.date.getMinutes()) + ' ' + levelText(next.entry);
+      parts.push(T('Next') + ': ' + day + ' ' + pad(next.date.getHours()) + ':' + pad(next.date.getMinutes()) + ' ' + levelText(next.entry));
     }
-    return text;
+    return parts;
+  }
+  function showSummary() {
+    const box = $('summary');
+    box.textContent = '';
+    summaryParts().forEach((p, i) => {
+      if (i) box.appendChild(el('span', 'sep', ' · '));
+      box.appendChild(el('span', 'part')).textContent = p;
+    });
   }
 
   function el(tag, cls, html) {
@@ -476,7 +485,7 @@
     });
   }
   function refreshBar() {
-    $('summary').textContent = summaryText();
+    showSummary();
     $('apply').hidden = !dirty;
     $('discard').hidden = !dirty;
     $('apply').disabled = busy;
@@ -534,7 +543,8 @@
   // Größenstufen nach der Größe der Kachel
   function layout() {
     const w = app.clientWidth, h = app.clientHeight;
-    const size = h < 150 ? 'mini' : (w >= 560 && h >= 360 ? 'full' : 'compact');
+    // Schmale oder niedrige Kacheln (z.B. 1×1, 1×4): nur die Zusammenfassung, Liste und Knöpfe passen dort nicht
+    const size = (h < 150 || w < 250) ? 'mini' : (w >= 560 && h >= 360 ? 'full' : 'compact');
     ['mini', 'compact', 'full'].forEach(s => app.classList.toggle('size-' + s, s === size));
     app.classList.toggle('narrow', w < 480);
   }
@@ -592,5 +602,5 @@
   layout();
   render();
   // Die nächste Schaltung wird jede Minute neu berechnet
-  setInterval(() => { if (!dirty) $('summary').textContent = summaryText(); }, 60000);
+  setInterval(() => { if (!dirty) showSummary(); }, 60000);
 })();

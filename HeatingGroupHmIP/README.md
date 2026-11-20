@@ -155,9 +155,12 @@ Zusätzlich werden bei aktivem Wochenplan angelegt:
 
 ### Kachel Visualisierung
 
-Die Instanz hat eine eigene Kachel (HTML-SDK), die sich nach ihrer Größe richtet. In der Kachel-Visualisierung erscheint sie z.B. so:
+Die Instanz hat eine eigene Kachel (HTML-SDK), die sich nach ihrer Größe richtet. In der Kachel-Visualisierung erscheint sie z.B. in den Größen 1 × 1, 3 × 2 und 7 × 4:
 
-![Kachel](imgs/tile_instance.png)
+![Kachel 1×1](imgs/tile_instance_1x1.png)
+![Kachel 3×2](imgs/tile_instance_3x2.png)  
+
+![Kachel 7×4](imgs/tile_instance_7x4.png)
 
 Maximiert (ab etwa 880 × 520 Pixel) kommen Schnellwahl, Party und der Wochenplan zum Bearbeiten dazu:
 

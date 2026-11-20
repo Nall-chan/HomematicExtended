@@ -138,7 +138,7 @@ Die Kachel passt sich der Größe an und übernimmt Farben und Schrift der Visua
 
 | Größe der Kachel                        | Anzeige                                                                                     |
 | :-------------------------------------- | :------------------------------------------------------------------------------------------ |
-| klein (Höhe unter 150 px)               | Anzahl der Schaltzeitpunkte und die nächste Schaltung                                       |
+| klein (Höhe unter 150 px oder Breite unter 250 px) | Anzahl der Schaltzeitpunkte und die nächste Schaltung                                       |
 | mittel                                  | Liste der Schaltzeitpunkte, ein Klick zeigt die Einzelheiten                                |
 | groß (ab 560 × 360 px)                  | Wochenübersicht (Montag bis Sonntag, 0 bis 24 Uhr, Astro-Zeiten in einer eigenen Zeile) und die Liste |
 
@@ -157,9 +157,12 @@ Geändert wird nur ein Entwurf, die Kopfzeile zeigt `Nicht übernommene Änderun
 
 Die Kachel steht nur in der Kachel-Visualisierung zur Verfügung, nicht im klassischen WebFront.
 
-Die Kachel im Raster (mit Modus der Kanäle und Liste):
+Die Kachel im Raster (mit Modus der Kanäle und Liste) in den Größen 1 × 1, 3 × 2 und 7 × 4:
 
-![Kachel](imgs/tile_instance.png)
+![Kachel 1×1](imgs/tile_instance_1x1.png)
+![Kachel 3×2](imgs/tile_instance_3x2.png)  
+
+![Kachel 7×4](imgs/tile_instance_7x4.png)
 
 Maximiert, mit Wochenübersicht:
 
@@ -309,6 +312,10 @@ Die Schaltzeitpunkte und der Modus werden über die Funktionen aus der PHP-Befeh
 ### 1. Changelog
 
 Der vollständige Changelog der Library steht in der [Haupt-README](../README.md#2-changelog).
+
+**Version 4.10:**
+
+- Kachel: In kleinen und schmalen Kacheln (z.B. 1 × 1 oder 1 × 4) überlagerte der Text die Überschrift. Dort stehen jetzt nur die Anzahl der Schaltzeitpunkte und die nächste Schaltung, zeilenweise und ohne Knöpfe.  
 
 **Version 4.01:**
 
