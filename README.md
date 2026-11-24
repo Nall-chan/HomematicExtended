@@ -211,7 +211,7 @@ Erweitert IPS um die native Unterstützung von:
 
 **Neue Funktionen und Aktionen**
 
-* HomeMatic IP Weekly Program: `HM_SetWeeklyProgramModes` stellt genau die Kanäle einer Bitmaske auf manuell und alle übrigen Schaltkanäle auf Automatik (mit oder ohne Reset). Gesendet wird nur an Kanäle, deren Modus sich ändert (Forum #802).
+* HomeMatic IP Weekly Program: `HM_SetWeeklyProgramModes` stellt genau die Kanäle einer Bitmaske auf manuell und alle übrigen Schaltkanäle auf Automatik. Wahlweise schalten die Kanäle, die in die Automatik wechseln, sofort auf den Zustand laut Programm. Gesendet wird nur an Kanäle, deren Modus sich ändert (Forum #802).
 
 **Version 4.11:**
 

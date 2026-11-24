@@ -84,6 +84,16 @@ class HomeMaticIPWeeklyProgram extends HMBase
     private const ModeManual = 'MANU_MODE';
 
     /**
+     * Modus Automatik, der Kanal schaltet sofort auf den Zustand laut Programm.
+     */
+    private const ModeAutoWithReset = 'AUTO_MODE_WITH_RESET';
+
+    /**
+     * Modus Automatik, der Kanal bleibt bis zum nächsten Schaltzeitpunkt, wie er ist.
+     */
+    private const ModeAutoWithoutReset = 'AUTO_MODE_WITHOUT_RESET';
+
+    /**
      * Aufruf der Kachel: Modus (manuell/automatisch) eines Schaltkanals ändern.
      */
     private const TileActionMode = 'Mode';
@@ -264,17 +274,16 @@ class HomeMaticIPWeeklyProgram extends HMBase
      * Stellt genau die Kanäle der Maske auf manuell und alle übrigen Schaltkanäle auf Automatik.
      * Gesendet wird nur an Kanäle, deren Modus sich ändert (höchstens zwei Aufträge, keiner, wenn alles passt).
      *
-     * @param int    $ManualChannels Bitmaske der Kanäle, die manuell sein sollen (0 = alle automatisch), Bit 0 = erster Schaltkanal.
-     * @param string $AutoMode       `AUTO_MODE_WITHOUT_RESET` oder `AUTO_MODE_WITH_RESET` für die Kanäle, die in die Automatik wechseln.
+     * @param int  $ManualChannels  Bitmaske der Kanäle, die manuell sein sollen (0 = alle automatisch), Bit 0 = erster Schaltkanal.
+     * @param bool $ApplyProgramNow Kanäle, die in die Automatik wechseln, schalten sofort auf den Zustand laut Programm
+     *                              (`AUTO_MODE_WITH_RESET`); bei false bleiben sie bis zum nächsten Schaltzeitpunkt, wie sie sind
+     *                              (`AUTO_MODE_WITHOUT_RESET`).
      *
      * @return bool true, wenn die CCU alle Aufträge angenommen hat.
      */
-    public function SetWeeklyProgramModes(int $ManualChannels, string $AutoMode): bool
+    public function SetWeeklyProgramModes(int $ManualChannels, bool $ApplyProgramNow): bool
     {
-        if (($AutoMode === self::ModeManual) || !in_array($AutoMode, \HMExtended\WeeklyProgram::Modes, true)) {
-            echo $this->Translate('Invalid mode.') . PHP_EOL;
-            return false;
-        }
+        $AutoMode = $ApplyProgramNow ? self::ModeAutoWithReset : self::ModeAutoWithoutReset;
         if (($ManualChannels < 0) || ($ManualChannels > 255)) {
             echo $this->Translate('Invalid channel selection.') . PHP_EOL;
             return false;

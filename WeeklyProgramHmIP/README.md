@@ -301,14 +301,15 @@ Stellt den Modus des Wochenprogramms für Schaltkanäle ein. `$Kanaele` ist eine
 HM_SetWeeklyProgramMode(12345, 2, 'MANU_MODE');
 ```
 
-`boolean HM_SetWeeklyProgramModes(integer $InstanzID, integer $ManuelleKanaele, string $AutoModus);`
-Stellt genau die Kanäle der Bitmaske `$ManuelleKanaele` auf manuell (`MANU_MODE`) und alle übrigen Schaltkanäle in die Automatik. `$AutoModus` ist `AUTO_MODE_WITHOUT_RESET` oder `AUTO_MODE_WITH_RESET` und gilt für die Kanäle, die in die Automatik wechseln. `0` stellt alle Kanäle auf Automatik.
-Die Funktion liest vorher den aktuellen Modus von der CCU und sendet nur an Kanäle, deren Modus sich ändert. Da die CCU je Auftrag nur einen Modus annimmt, sind das höchstens zwei Aufträge, keiner, wenn alle Kanäle schon passen. Kanäle, die bereits in der Automatik laufen, werden auch mit `AUTO_MODE_WITH_RESET` nicht zurückgesetzt.
+`boolean HM_SetWeeklyProgramModes(integer $InstanzID, integer $ManuelleKanaele, boolean $SofortLautProgramm);`
+Stellt genau die Kanäle der Bitmaske `$ManuelleKanaele` auf manuell und alle übrigen Schaltkanäle in die Automatik. `0` stellt alle Kanäle auf Automatik.
+`$SofortLautProgramm` gilt für die Kanäle, die dabei in die Automatik wechseln: Bei `true` schalten sie sofort auf den Zustand, den das Programm jetzt vorsieht (`AUTO_MODE_WITH_RESET`). Bei `false` bleiben sie bis zum nächsten Schaltzeitpunkt, wie sie sind (`AUTO_MODE_WITHOUT_RESET`).
+Die Funktion liest vorher den aktuellen Modus von der CCU und sendet nur an Kanäle, deren Modus sich ändert. Da die CCU je Auftrag nur einen Modus annimmt, sind das höchstens zwei Aufträge, keiner, wenn alle Kanäle schon passen. Kanäle, die bereits in der Automatik laufen, schalten auch mit `true` nicht.
 
-**Beispiel:** Nur den ersten und dritten Schaltkanal manuell betreiben, den zweiten (und alle weiteren) in der Automatik:
+**Beispiel:** Nur den ersten und dritten Schaltkanal manuell betreiben, den zweiten (und alle weiteren) in der Automatik, ohne dass der zweite Kanal sofort schaltet:
 
 ```php
-HM_SetWeeklyProgramModes(12345, 5, 'AUTO_MODE_WITHOUT_RESET');
+HM_SetWeeklyProgramModes(12345, 5, false);
 ```
 
 ## 8. Aktionen
@@ -325,7 +326,7 @@ Der vollständige Changelog der Library steht in der [Haupt-README](../README.md
 
 **Version 4.12:**
 
-- Neue Funktion `HM_SetWeeklyProgramModes`: genau die gewählten Kanäle manuell, alle übrigen in der Automatik, mit höchstens zwei Aufträgen an die CCU.
+- Neue Funktion `HM_SetWeeklyProgramModes`: genau die gewählten Kanäle manuell, alle übrigen in der Automatik (wahlweise sofort laut Programm), mit höchstens zwei Aufträgen an die CCU.
 
 **Version 4.11:**
 

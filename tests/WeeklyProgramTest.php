@@ -298,7 +298,7 @@ class WeeklyProgramTest extends HomematicModuleTestCase
         $Id = $this->createModule();
         FakeHomematicIO::$RpcResponses['getParamset:VALUES'] = ['WEEK_PROGRAM_CHANNEL_LOCKS' => 6];
         FakeHomematicIO::$Requests = [];
-        $this->assertTrue(HM_SetWeeklyProgramModes($Id, 5, 'AUTO_MODE_WITH_RESET'));
+        $this->assertTrue(HM_SetWeeklyProgramModes($Id, 5, true));
         $Put = $this->putRequests();
         $this->assertCount(2, $Put);
         $this->assertSame(['002560C99B959A:6', 'VALUES'], array_slice($Put[0]['Data'], 0, 2));
@@ -306,12 +306,23 @@ class WeeklyProgramTest extends HomematicModuleTestCase
         $this->assertSame(['WEEK_PROGRAM_TARGET_CHANNEL_LOCK' => 'AUTO_MODE_WITH_RESET', 'WEEK_PROGRAM_TARGET_CHANNEL_LOCKS' => 2], json_decode($Put[1]['Data'][2], true));
     }
 
+    public function testExclusiveModesKeepOutputsWithoutApplyingProgram(): void
+    {
+        $Id = $this->createModule();
+        FakeHomematicIO::$RpcResponses['getParamset:VALUES'] = ['WEEK_PROGRAM_CHANNEL_LOCKS' => 1];
+        FakeHomematicIO::$Requests = [];
+        $this->assertTrue(HM_SetWeeklyProgramModes($Id, 0, false));
+        $Put = $this->putRequests();
+        $this->assertCount(1, $Put);
+        $this->assertSame(['WEEK_PROGRAM_TARGET_CHANNEL_LOCK' => 'AUTO_MODE_WITHOUT_RESET', 'WEEK_PROGRAM_TARGET_CHANNEL_LOCKS' => 1], json_decode($Put[0]['Data'][2], true));
+    }
+
     public function testExclusiveModesSendNothingWhenModesMatch(): void
     {
         $Id = $this->createModule();
         FakeHomematicIO::$RpcResponses['getParamset:VALUES'] = ['WEEK_PROGRAM_CHANNEL_LOCKS' => 5];
         FakeHomematicIO::$Requests = [];
-        $this->assertTrue(HM_SetWeeklyProgramModes($Id, 5, 'AUTO_MODE_WITHOUT_RESET'));
+        $this->assertTrue(HM_SetWeeklyProgramModes($Id, 5, false));
         $this->assertSame([], $this->putRequests());
     }
 
@@ -321,11 +332,9 @@ class WeeklyProgramTest extends HomematicModuleTestCase
         FakeHomematicIO::$RpcResponses['getParamset:VALUES'] = ['WEEK_PROGRAM_CHANNEL_LOCKS' => 1];
         FakeHomematicIO::$Requests = [];
         ob_start();
-        $Manual = HM_SetWeeklyProgramModes($Id, 2, 'MANU_MODE');
-        $Range = HM_SetWeeklyProgramModes($Id, 256, 'AUTO_MODE_WITHOUT_RESET');
-        $Negative = HM_SetWeeklyProgramModes($Id, -1, 'AUTO_MODE_WITHOUT_RESET');
+        $Range = HM_SetWeeklyProgramModes($Id, 256, false);
+        $Negative = HM_SetWeeklyProgramModes($Id, -1, false);
         ob_end_clean();
-        $this->assertFalse($Manual);
         $this->assertFalse($Range);
         $this->assertFalse($Negative);
         $this->assertSame([], $this->putRequests());
@@ -337,7 +346,7 @@ class WeeklyProgramTest extends HomematicModuleTestCase
         FakeHomematicIO::$RpcResponses['getParamset:VALUES'] = [];
         FakeHomematicIO::$Requests = [];
         ob_start();
-        $Result = HM_SetWeeklyProgramModes($Id, 2, 'AUTO_MODE_WITHOUT_RESET');
+        $Result = HM_SetWeeklyProgramModes($Id, 2, false);
         $Output = (string) ob_get_clean();
         $this->assertFalse($Result);
         $this->assertStringContainsString('The current mode of the channels could not be read.', $Output);
