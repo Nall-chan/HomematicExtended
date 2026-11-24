@@ -301,6 +301,16 @@ Stellt den Modus des Wochenprogramms für Schaltkanäle ein. `$Kanaele` ist eine
 HM_SetWeeklyProgramMode(12345, 2, 'MANU_MODE');
 ```
 
+`boolean HM_SetWeeklyProgramModes(integer $InstanzID, integer $ManuelleKanaele, string $AutoModus);`
+Stellt genau die Kanäle der Bitmaske `$ManuelleKanaele` auf manuell (`MANU_MODE`) und alle übrigen Schaltkanäle in die Automatik. `$AutoModus` ist `AUTO_MODE_WITHOUT_RESET` oder `AUTO_MODE_WITH_RESET` und gilt für die Kanäle, die in die Automatik wechseln. `0` stellt alle Kanäle auf Automatik.
+Die Funktion liest vorher den aktuellen Modus von der CCU und sendet nur an Kanäle, deren Modus sich ändert. Da die CCU je Auftrag nur einen Modus annimmt, sind das höchstens zwei Aufträge, keiner, wenn alle Kanäle schon passen. Kanäle, die bereits in der Automatik laufen, werden auch mit `AUTO_MODE_WITH_RESET` nicht zurückgesetzt.
+
+**Beispiel:** Nur den ersten und dritten Schaltkanal manuell betreiben, den zweiten (und alle weiteren) in der Automatik:
+
+```php
+HM_SetWeeklyProgramModes(12345, 5, 'AUTO_MODE_WITHOUT_RESET');
+```
+
 ## 8. Aktionen
 
 **Grundsätzlich können alle bedienbaren Statusvariablen als Ziel einer [`Aktion`](https://www.symcon.de/service/dokumentation/konzepte/automationen/ablaufplaene/aktionen/) mit `Auf Wert schalten` angesteuert werden, so dass hier keine speziellen Aktionen benutzt werden müssen.**  
@@ -312,6 +322,10 @@ Die Schaltzeitpunkte und der Modus werden über die Funktionen aus der PHP-Befeh
 ### 1. Changelog
 
 Der vollständige Changelog der Library steht in der [Haupt-README](../README.md#2-changelog).
+
+**Version 4.12:**
+
+- Neue Funktion `HM_SetWeeklyProgramModes`: genau die gewählten Kanäle manuell, alle übrigen in der Automatik, mit höchstens zwei Aufträgen an die CCU.
 
 **Version 4.11:**
 

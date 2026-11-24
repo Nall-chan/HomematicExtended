@@ -388,6 +388,26 @@ namespace HMExtended
         }
 
         /**
+         * Änderungen, um genau die Kanäle der Maske manuell und alle übrigen automatisch zu betreiben.
+         * Die CCU nimmt je Auftrag nur einen Modus an, daher bis zu zwei Masken. Kanäle, die schon im
+         * gewünschten Modus sind, fehlen (kein Funkverkehr, kein Reset eines laufenden Automatikbetriebs).
+         *
+         * @param int $Current Aktueller Wert von `WEEK_PROGRAM_CHANNEL_LOCKS` (gesetztes Bit = manuell).
+         * @param int $Manual  Bitmaske der Kanäle, die manuell sein sollen.
+         *
+         * @return int[] `Manual` = Kanäle, die auf MANU_MODE wechseln, `Auto` = Kanäle, die in die Automatik wechseln.
+         */
+        public static function ModeChanges(int $Current, int $Manual): array
+        {
+            $Current &= 0xFF;
+            $Manual &= 0xFF;
+            return [
+                'Manual' => $Manual & ~$Current,
+                'Auto'   => $Current & ~$Manual
+            ];
+        }
+
+        /**
          * Zielkanäle aus der Bitmaske.
          *
          * @return int[] Nummern der Bits (0 = erster Schaltkanal).

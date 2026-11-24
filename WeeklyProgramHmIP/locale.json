@@ -67,6 +67,7 @@
             "Every switching time needs at least one weekday.": "Jeder Schaltzeitpunkt braucht mindestens einen Wochentag.",
             "Invalid mode.": "Ungültiger Modus.",
             "Invalid channel selection.": "Ungültige Kanalauswahl.",
+            "The current mode of the channels could not be read.": "Der aktuelle Modus der Kanäle konnte nicht gelesen werden.",
             "Mode": "Modus",
             "Manual": "Manuell",
             "Automatic": "Automatisch",

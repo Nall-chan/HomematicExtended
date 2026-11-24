@@ -132,6 +132,7 @@
         "ReadWeeklyProgram",
         "ReadWeeklyProgramModes",
         "SetWeeklyProgramMode",
+        "SetWeeklyProgramModes",
         "WriteWeeklyProgram"
     ],
     "ePaperStatusAnzeige": [

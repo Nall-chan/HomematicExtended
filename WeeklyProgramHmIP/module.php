@@ -79,6 +79,11 @@ class HomeMaticIPWeeklyProgram extends HMBase
     private const MaxModeChannels = 8;
 
     /**
+     * Modus für manuellen Betrieb der Schaltkanäle.
+     */
+    private const ModeManual = 'MANU_MODE';
+
+    /**
      * Aufruf der Kachel: Modus (manuell/automatisch) eines Schaltkanals ändern.
      */
     private const TileActionMode = 'Mode';
@@ -248,17 +253,51 @@ class HomeMaticIPWeeklyProgram extends HMBase
             echo $this->Translate('Invalid channel selection.') . PHP_EOL;
             return false;
         }
-        $Address = $this->ReadPropertyString(\HMExtended\Device\Property::Address);
-        $Protocol = $this->ReadPropertyInteger(\HMExtended\Device\Property::Protocol);
-        $Values = [
-            'WEEK_PROGRAM_TARGET_CHANNEL_LOCK'  => $Mode,
-            'WEEK_PROGRAM_TARGET_CHANNEL_LOCKS' => \HMExtended\WeeklyProgram::LockMask($Channels)
-        ];
-        if ($this->SendRPC('putParamset', $Protocol, [$Address, \HMExtended\CCU::VALUES], $Values) === null) {
+        if (!$this->SendMode($Channels, $Mode)) {
             return false;
         }
         $this->LoadLocks(true);
         return true;
+    }
+
+    /**
+     * Stellt genau die Kanäle der Maske auf manuell und alle übrigen Schaltkanäle auf Automatik.
+     * Gesendet wird nur an Kanäle, deren Modus sich ändert (höchstens zwei Aufträge, keiner, wenn alles passt).
+     *
+     * @param int    $ManualChannels Bitmaske der Kanäle, die manuell sein sollen (0 = alle automatisch), Bit 0 = erster Schaltkanal.
+     * @param string $AutoMode       `AUTO_MODE_WITHOUT_RESET` oder `AUTO_MODE_WITH_RESET` für die Kanäle, die in die Automatik wechseln.
+     *
+     * @return bool true, wenn die CCU alle Aufträge angenommen hat.
+     */
+    public function SetWeeklyProgramModes(int $ManualChannels, string $AutoMode): bool
+    {
+        if (($AutoMode === self::ModeManual) || !in_array($AutoMode, \HMExtended\WeeklyProgram::Modes, true)) {
+            echo $this->Translate('Invalid mode.') . PHP_EOL;
+            return false;
+        }
+        if (($ManualChannels < 0) || ($ManualChannels > 255)) {
+            echo $this->Translate('Invalid channel selection.') . PHP_EOL;
+            return false;
+        }
+        // Aktuellen Modus frisch lesen, sonst blieben Kanäle stehen, die zwischenzeitlich am Gerät umgestellt wurden.
+        if (!$this->LoadLocks(false)) {
+            echo $this->Translate('The current mode of the channels could not be read.') . PHP_EOL;
+            return false;
+        }
+        $Changes = \HMExtended\WeeklyProgram::ModeChanges($this->ReadAttributeInteger(self::AttributeLocks), $ManualChannels);
+        $this->SendDebug('ModeChanges', $Changes, 0);
+        if (($Changes['Manual'] == 0) && ($Changes['Auto'] == 0)) {
+            return true;
+        }
+        $Result = true;
+        if ($Changes['Manual'] != 0) {
+            $Result = $this->SendMode($Changes['Manual'], self::ModeManual);
+        }
+        if ($Result && ($Changes['Auto'] != 0)) {
+            $Result = $this->SendMode($Changes['Auto'], $AutoMode);
+        }
+        $this->LoadLocks(true);
+        return $Result;
     }
 
     /**
@@ -423,6 +462,25 @@ class HomeMaticIPWeeklyProgram extends HMBase
         $Channels = \HMExtended\WeeklyProgram::TargetChannels($Types);
         $this->SendDebug('TargetChannels', $Channels, 0);
         $this->WriteAttributeArray(self::AttributeTargetChannels, ['Address' => $Device, 'Channels' => $Channels]);
+    }
+
+    /**
+     * Sendet einen Modus für die Kanäle einer Maske an die CCU (ein Auftrag, ein Modus).
+     *
+     * @param int    $Channels Bitmaske der Kanäle, Bit 0 = erster Schaltkanal.
+     * @param string $Mode     Modus für `WEEK_PROGRAM_TARGET_CHANNEL_LOCK`.
+     *
+     * @return bool true, wenn die CCU den Auftrag angenommen hat.
+     */
+    private function SendMode(int $Channels, string $Mode): bool
+    {
+        $Address = $this->ReadPropertyString(\HMExtended\Device\Property::Address);
+        $Protocol = $this->ReadPropertyInteger(\HMExtended\Device\Property::Protocol);
+        $Values = [
+            'WEEK_PROGRAM_TARGET_CHANNEL_LOCK'  => $Mode,
+            'WEEK_PROGRAM_TARGET_CHANNEL_LOCKS' => \HMExtended\WeeklyProgram::LockMask($Channels)
+        ];
+        return $this->SendRPC('putParamset', $Protocol, [$Address, \HMExtended\CCU::VALUES], $Values) !== null;
     }
 
     /**
