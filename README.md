@@ -207,6 +207,17 @@ Erweitert IPS um die native Unterstützung von:
 
 ### 2. Changelog
 
+**Version 4.13:**
+
+**Geändertes Verhalten**
+
+* HomeMatic Powermeter, HomeMatic Weather, HomeMatic Systemvariablen, HomeMatic Alarmvariable und HomeMatic Servicemeldungen: Das Lesen nach einem Ereignis läuft über einen einmaligen Timer statt über den Intervall-Timer der Instanz. Ohne aktiven Homematic Socket wird dabei nicht gelesen und nichts gemeldet; das Lesen folgt, sobald der Socket aktiv ist.
+
+**Fehlerbehebungen**
+
+* HomeMatic Powermeter, HomeMatic Weather, HomeMatic Systemvariablen, HomeMatic Alarmvariable und HomeMatic Servicemeldungen: Nach einem Neustart von Symcon erschien im Log die Warnung „Keine aktive Parent Instanz!“, wenn Ereignisse der CCU eintrafen, bevor Symcon vollständig gestartet war (Forum #805).
+* HomeMatic Heizungsmodule (HM-CC-TC, HM-CC-RT-DN, HM-CC-VG-1, HmIP-Heizgruppe): Nach einem Neustart von Symcon wurden Werte und Wochenplan nicht gelesen. Die Kachel zeigte deshalb keinen Wochenplan, bis die Instanz geändert wurde (Forum #810).
+
 **Version 4.12:**
 
 **Neue Funktionen und Aktionen**

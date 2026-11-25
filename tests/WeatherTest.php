@@ -148,19 +148,18 @@ class WeatherTest extends HomematicModuleTestCase
         $this->assertNotFalse(@IPS_GetObjectIDByIdent('ACTUAL_TEMPERATURE', $Weather));
     }
 
-    public function testTriggerEventStartsTimerAndTimerReadsSystemVariables(): void
+    public function testTriggerEventReadsSystemVariablesDelayed(): void
     {
-        $Interface = IPS\InstanceManager::getInstanceInterface($this->WeatherId);
+        FakeHomematicIO::$Requests = [];
         $this->sendEvent('ACTUAL_TEMPERATURE', 13.0);
-        $this->assertSame(0, $this->timerInterval());
+        $this->assertCount(0, array_filter(FakeHomematicIO::$Requests, fn ($Request) => isset($Request['Content'])));
+        // Der einmalige Timer liest nach ReadDelay (5 s; die Stubs führen ihn sofort aus und warten mit).
+        FakeHomematicIO::$ScriptResponse = $this->scriptResponse(['RAIN_COUNTER_TOTAL' => '512.500000', 'RAIN_COUNTER_TODAY' => '0.200000']);
         $this->sendEvent('RAIN_COUNTER', 3.6);
         $this->assertEquals(3.6, GetValueFloat(IPS_GetObjectIDByIdent('RAIN_COUNTER', $this->WeatherId)));
-        $this->assertSame(5000, $this->timerInterval());
-        FakeHomematicIO::$ScriptResponse = $this->scriptResponse(['RAIN_COUNTER_TOTAL' => '512.500000', 'RAIN_COUNTER_TODAY' => '0.200000']);
-        $Interface->RequestAction(\HMExtended\Device\Timer::ReadSystemVariables, true);
+        $this->assertCount(1, array_filter(FakeHomematicIO::$Requests, fn ($Request) => isset($Request['Content'])));
         $this->assertEquals(512.5, GetValueFloat(IPS_GetObjectIDByIdent('RAIN_COUNTER_TOTAL', $this->WeatherId)));
         $this->assertEquals(0.2, GetValueFloat(IPS_GetObjectIDByIdent('RAIN_COUNTER_TODAY', $this->WeatherId)));
-        $this->assertSame(0, $this->timerInterval());
     }
 
     public function testRequestStateReadsADatapointAndTheSystemVariables(): void
@@ -208,11 +207,5 @@ class WeatherTest extends HomematicModuleTestCase
             'VariableName'  => $Datapoint,
             'VariableValue' => $Value
         ]));
-    }
-
-    private function timerInterval(): int
-    {
-        $Method = new ReflectionMethod(HomeMaticWeather::class, 'GetTimerInterval');
-        return $Method->invoke(IPS\InstanceManager::getInstanceInterface($this->WeatherId), \HMExtended\Device\Timer::ReadSystemVariables);
     }
 }

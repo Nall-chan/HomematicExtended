@@ -115,7 +115,7 @@ abstract class HMSystemVariableBase extends HMBase
 
     /**
      * Interne Funktion des SDK.
-     * Das Event der Taste startet den Timer zum Lesen.
+     * Das Event der Taste startet das verzögerte Lesen (einmaliger Timer, StartDelayedRead).
      */
     public function ReceiveData(string $JSONString): string
     {
@@ -124,7 +124,7 @@ abstract class HMSystemVariableBase extends HMBase
             return '';
         }
         $this->SendDebug('EVENT', $Event['DeviceID'] . '.' . $Event['VariableName'], 0);
-        $this->SetTimerInterval(static::ActionRead, static::ReadDelay);
+        $this->StartDelayedRead(static::ActionRead, static::ReadDelay);
         return '';
     }
 
@@ -267,7 +267,9 @@ abstract class HMSystemVariableBase extends HMBase
     }
 
     /**
-     * Verarbeitet den Timer zum Lesen.
+     * Verarbeitet das Lesen nach einem Ereignis (StartDelayedRead) und den Intervall-Timer.
+     * Ohne aktiven Parent (z.B. Ereignisse beim Start von Symcon vor KernelReady) wird nichts gelesen und nichts gemeldet,
+     * ApplyChanges liest danach.
      */
     protected function ProcessRequestAction(string $Ident, mixed $Value, bool &$done = false): void
     {
@@ -278,6 +280,9 @@ abstract class HMSystemVariableBase extends HMBase
         switch ($Ident) {
             case static::ActionRead:
                 $done = true;
+                if (!$this->CanDelayedRead()) {
+                    return;
+                }
                 $this->StartIntervalTimer();
                 $this->ReadValues(false);
                 return;

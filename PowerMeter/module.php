@@ -72,7 +72,6 @@ class HomeMaticPowermeter extends HMBase
         $this->RegisterPropertyInteger(\HMExtended\Device\Property::Protocol, static::ProtocolId);
         $this->RegisterPropertyBoolean(\HMExtended\Device\Property::EmulateStatus, false);
         $this->RegisterAttributeBoolean(self::AttributeGasMode, false);
-        $this->RegisterTimer(\HMExtended\Device\Timer::ReadSystemVariables, 0, 'IPS_RequestAction($_IPS[\'TARGET\'], \'' . \HMExtended\Device\Timer::ReadSystemVariables . '\', true);');
         $this->PendingCounters = [];
     }
 
@@ -113,7 +112,6 @@ class HomeMaticPowermeter extends HMBase
         parent::ApplyChanges();
         // Ohne ausdrücklichen Status bliebe die Instanz nach einem Fehler beim Erstellen (z.B. beim Neuladen) in 101 (wird erstellt).
         $this->SetStatus(IS_ACTIVE);
-        $this->SetTimerInterval(\HMExtended\Device\Timer::ReadSystemVariables, 0);
         $this->PendingCounters = [];
         $Address = $this->ReadPropertyString(\HMExtended\Device\Property::Address);
         if ($Address) {
@@ -158,7 +156,7 @@ class HomeMaticPowermeter extends HMBase
             $this->WriteAttributeBoolean(self::AttributeGasMode, false);
         }
         if (array_key_exists($Event['VariableName'], self::EnergyCounters)) {
-            // Das Ereignis löst auf der CCU zeitgleich das Zählerprogramm aus. Die Systemvariable wird daher erst nach Ablauf des Timers gelesen,
+            // Das Ereignis löst auf der CCU zeitgleich das Zählerprogramm aus. Die Systemvariable wird daher erst nach ReadDelay gelesen,
             // mehrere Ereignisse kurz hintereinander lösen nur ein Lesen aus.
             // Der Zwischenspeicher ist noch nicht initialisiert, wenn ein Ereignis vor dem Ende von ApplyChanges eintrifft (z.B. nach einem Update).
             $Pending = $this->PendingCounters ?: [];
@@ -166,7 +164,7 @@ class HomeMaticPowermeter extends HMBase
                 $Pending[] = $Event['VariableName'];
                 $this->PendingCounters = $Pending;
             }
-            $this->SetTimerInterval(\HMExtended\Device\Timer::ReadSystemVariables, self::ReadDelay);
+            $this->StartDelayedRead(\HMExtended\Device\Timer::ReadSystemVariables, self::ReadDelay);
         }
         return '';
     }
@@ -212,7 +210,8 @@ class HomeMaticPowermeter extends HMBase
     }
 
     /**
-     * Verarbeitet den Timer zum Lesen der Summenzähler.
+     * Verarbeitet das verzögerte Lesen der Summenzähler (StartDelayedRead).
+     * Ohne aktiven Parent (z.B. Ereignisse beim Start von Symcon vor KernelReady) wird nichts gelesen, ApplyChanges liest die Zähler danach.
      *
      * @param string $Ident Ident der Variable bzw. Aktion.
      * @param mixed  $Value Der Wert.
@@ -225,13 +224,15 @@ class HomeMaticPowermeter extends HMBase
             return;
         }
         if ($Ident == \HMExtended\Device\Timer::ReadSystemVariables) {
-            $this->SetTimerInterval(\HMExtended\Device\Timer::ReadSystemVariables, 0);
+            $done = true;
             $Pending = $this->PendingCounters ?: [];
             $this->PendingCounters = [];
+            if (!$this->CanDelayedRead()) {
+                return;
+            }
             foreach ($Pending as $Datapoint) {
                 $this->ReadPowerSysVar($Datapoint);
             }
-            $done = true;
         }
     }
 

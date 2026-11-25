@@ -69,17 +69,16 @@ class SystemvariablenTest extends HomematicModuleTestCase
         $this->assertSame(['abwesend', 'anwesend'], array_column($Options, 'Caption'));
     }
 
-    public function testEventStartsTimerAndReadsOnlyChangedValues(): void
+    public function testEventStartsDelayedReadAndReadsOnlyChangedValues(): void
     {
         $Id = $this->createSystemVariables([950, 27598]);
-        $this->sendEvent($Id, self::Key, 'PRESS_LONG');
-        $this->assertSame(0, $this->timerInterval($Id));
-        $this->sendEvent($Id, self::Key, 'PRESS_SHORT');
-        $this->assertSame(250, $this->timerInterval($Id));
-
         FakeHomematicIO::$Requests = [];
+        $this->sendEvent($Id, self::Key, 'PRESS_LONG');
+        $this->assertSame([], $this->scripts());
+
+        // Der einmalige Timer liest nach ReadDelay (die Stubs führen ihn sofort aus).
         FakeHomematicIO::$ScriptResponse = "@@2026-10-28 08:21:00\r\n27598\t4\t2026-10-28 08:20:59\t12.500000\r\n" . self::Xml;
-        IPS\InstanceManager::getInstanceInterface($Id)->RequestAction(\HMExtended\Device\Timer::ReadSystemVariables, true);
+        $this->sendEvent($Id, self::Key, 'PRESS_SHORT');
         $Scripts = $this->scripts();
         $this->assertCount(1, $Scripts);
         $this->assertStringContainsString('string sSince = "2026-10-28 08:19:58";', $Scripts[0]);

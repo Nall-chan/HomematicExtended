@@ -1380,6 +1380,10 @@ namespace HMExtended\Device
         public const ReadWRInterface = 'ReadWRInterface';
         public const ReadSystemVariables = 'ReadSystemVariables';
         public const ReadRadioLevels = 'ReadRadioLevels';
+        /**
+         * Einmaliger Timer (RegisterOnceTimer), der nach einem Ereignis verzögert liest.
+         */
+        public const DelayedRead = 'DelayedRead';
     }
     class Address
     {

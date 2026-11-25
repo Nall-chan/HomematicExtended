@@ -100,7 +100,6 @@ class HomeMaticWeather extends HMBase
         $this->RegisterPropertyString(\HMExtended\Device\Property::Address, '');
         $this->RegisterPropertyInteger(\HMExtended\Device\Property::Protocol, static::ProtocolId);
         $this->RegisterPropertyBoolean(\HMExtended\Device\Property::EmulateStatus, false);
-        $this->RegisterTimer(\HMExtended\Device\Timer::ReadSystemVariables, 0, 'IPS_RequestAction($_IPS[\'TARGET\'], \'' . \HMExtended\Device\Timer::ReadSystemVariables . '\', true);');
     }
 
     /**
@@ -111,7 +110,6 @@ class HomeMaticWeather extends HMBase
         parent::ApplyChanges();
         // Ohne ausdrücklichen Status bliebe die Instanz nach einem Fehler beim Erstellen (z.B. beim Neuladen) in 101 (wird erstellt).
         $this->SetStatus(IS_ACTIVE);
-        $this->SetTimerInterval(\HMExtended\Device\Timer::ReadSystemVariables, 0);
         $Address = $this->ReadPropertyString(\HMExtended\Device\Property::Address);
         if ($Address) {
             $this->SetReceiveDataFilter('.*"DeviceID":"' . $Address . static::ValuesChannel . '".*');
@@ -140,7 +138,7 @@ class HomeMaticWeather extends HMBase
         }
         if (in_array($Event['VariableName'], self::TriggerDatapoints)) {
             // Mehrere Ereignisse kurz hintereinander lösen nur ein Lesen aus.
-            $this->SetTimerInterval(\HMExtended\Device\Timer::ReadSystemVariables, self::ReadDelay);
+            $this->StartDelayedRead(\HMExtended\Device\Timer::ReadSystemVariables, self::ReadDelay);
         }
         return '';
     }
@@ -186,7 +184,8 @@ class HomeMaticWeather extends HMBase
     }
 
     /**
-     * Verarbeitet den Timer zum Lesen der Systemvariablen.
+     * Verarbeitet das verzögerte Lesen der Systemvariablen (StartDelayedRead).
+     * Ohne aktiven Parent (z.B. Ereignisse beim Start von Symcon vor KernelReady) wird nichts gelesen, ApplyChanges liest danach.
      *
      * @param string $Ident Ident der Variable bzw. Aktion.
      * @param mixed  $Value Der Wert.
@@ -199,9 +198,10 @@ class HomeMaticWeather extends HMBase
             return;
         }
         if ($Ident == \HMExtended\Device\Timer::ReadSystemVariables) {
-            $this->SetTimerInterval(\HMExtended\Device\Timer::ReadSystemVariables, 0);
-            $this->ReadSystemVariables();
             $done = true;
+            if ($this->CanDelayedRead()) {
+                $this->ReadSystemVariables();
+            }
         }
     }
 

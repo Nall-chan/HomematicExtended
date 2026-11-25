@@ -113,14 +113,18 @@ class ServicemeldungenTest extends HomematicModuleTestCase
         $Interface->ReceiveData($Event);
         $this->assertGreaterThanOrEqual(29000, $this->timerInterval($Id));
         $this->assertLessThanOrEqual(30000, $this->timerInterval($Id));
-        // Letztes Lesen länger als 30 s her: sofort (nach der kurzen Sammelverzögerung)
+        // Letztes Lesen länger als 30 s her: sofort über den einmaligen Timer (nach der kurzen Sammelverzögerung, die Stubs führen ihn sofort aus).
+        // Danach läuft wieder nur das Intervall (hier keines).
         $Interface->LastRead = time() - 31;
+        FakeHomematicIO::$Requests = [];
         $Interface->ReceiveData($Event);
-        $this->assertSame(250, $this->timerInterval($Id));
+        $this->assertCount(1, FakeHomematicIO::$Requests);
+        $this->assertSame(0, $this->timerInterval($Id));
         // Andere Datenpunkte der Taste lösen nichts aus
-        $Interface->LastRead = time();
+        $Interface->LastRead = time() - 31;
         $Interface->ReceiveData(json_encode(['DataID' => \HMExtended\GUID::HmDevice, 'DeviceID' => self::Key, 'VariableName' => 'PRESS_LONG', 'VariableValue' => true]));
-        $this->assertSame(250, $this->timerInterval($Id));
+        $this->assertCount(1, FakeHomematicIO::$Requests);
+        $this->assertSame(0, $this->timerInterval($Id));
     }
 
     /**

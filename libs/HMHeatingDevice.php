@@ -424,6 +424,17 @@ class HMHeatingDevice extends HMBase
     //################# protected
 
     /**
+     * Wird ausgeführt wenn der Kernel hochgefahren wurde.
+     * Beim Start von Symcon bricht ApplyChanges vor dem Lesen ab. Ist der Socket beim Registrieren schon aktiv, folgt kein
+     * IOChangeState; ohne erneutes ApplyChanges blieben Werte, Wochenplan und Kachel bis zur nächsten Änderung der Instanz leer.
+     */
+    protected function KernelReady(): void
+    {
+        parent::KernelReady();
+        $this->ApplyChanges();
+    }
+
+    /**
      * Wird ausgeführt wenn sich der Status vom Parent ändert.
      */
     protected function IOChangeState(int $State): void

@@ -75,8 +75,10 @@ class HomeMaticServicemeldungen extends HMSystemVariableBase
 
     /**
      * Interne Funktion des SDK.
-     * Das Event der Taste startet den Timer zum Lesen, frühestens MinEventInterval Sekunden nach dem letzten Lesen.
-     * Weitere Events bis dahin verschieben den Zeitpunkt nicht (er wird jedes Mal aus dem letzten Lesen berechnet).
+     * Das Event der Taste startet das Lesen, frühestens MinEventInterval Sekunden nach dem letzten Lesen.
+     * Ohne Drosselung liest ein einmaliger Timer nach ReadDelay (StartDelayedRead). Bei Drosselung wartet der Intervall-Timer
+     * bis zum frühesten Zeitpunkt (ein Thread soll nicht bis zu 30 s schlafen); weitere Events bis dahin verschieben den Zeitpunkt nicht
+     * (er wird jedes Mal aus dem letzten Lesen berechnet).
      */
     public function ReceiveData(string $JSONString): string
     {
@@ -86,7 +88,11 @@ class HomeMaticServicemeldungen extends HMSystemVariableBase
         }
         $Wait = max(static::ReadDelay, ($this->LastRead + self::MinEventInterval - time()) * 1000);
         $this->SendDebug('EVENT', $Event['DeviceID'] . '.' . $Event['VariableName'] . ' (read in ' . $Wait . ' ms)', 0);
-        $this->SetTimerInterval(static::ActionRead, $Wait);
+        if ($Wait > static::ReadDelay) {
+            $this->SetTimerInterval(static::ActionRead, $Wait);
+        } else {
+            $this->StartDelayedRead(static::ActionRead, static::ReadDelay);
+        }
         return '';
     }
 

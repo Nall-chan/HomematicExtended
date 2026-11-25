@@ -136,7 +136,6 @@ class PowerMeterTest extends HomematicModuleTestCase
             'VariableName'  => 'ENERGY_COUNTER',
             'VariableValue' => 3000.0
         ]));
-        $this->runTimer();
         $this->assertEquals(3.0, GetValueFloat(IPS_GetObjectIDByIdent('ENERGY_COUNTER_TOTAL', $this->PowerMeterId)));
         // Zurücksetzen auf 0: die vorhandene Variable folgt.
         FakeHomematicIO::$ScriptResponse = '<xml><exec>/x</exec><sessionId>0</sessionId><httpUserAgent>x</httpUserAgent><Value>0.0</Value></xml>';
@@ -146,7 +145,6 @@ class PowerMeterTest extends HomematicModuleTestCase
             'VariableName'  => 'ENERGY_COUNTER',
             'VariableValue' => 0.0
         ]));
-        $this->runTimer();
         $this->assertEquals(0.0, GetValueFloat(IPS_GetObjectIDByIdent('ENERGY_COUNTER_TOTAL', $this->PowerMeterId)));
     }
 
@@ -159,7 +157,6 @@ class PowerMeterTest extends HomematicModuleTestCase
             'VariableName'  => 'GAS_VOLUME',
             'VariableValue' => 2035.5
         ]));
-        $this->runTimer();
         $this->assertEquals(2035.5, GetValueFloat(IPS_GetObjectIDByIdent('GAS_VOLUME', $this->PowerMeterId)));
         $this->assertEquals(2035.5, GetValueFloat(IPS_GetObjectIDByIdent('GAS_VOLUME_TOTAL', $this->PowerMeterId)));
     }
@@ -196,7 +193,6 @@ class PowerMeterTest extends HomematicModuleTestCase
             'VariableName'  => 'ENERGY_COUNTER',
             'VariableValue' => 5000.0
         ]));
-        $this->runTimer();
         $this->assertEquals(5.0, GetValueFloat(IPS_GetObjectIDByIdent('ENERGY_COUNTER_TOTAL', $this->PowerMeterId)));
     }
 
@@ -222,7 +218,6 @@ class PowerMeterTest extends HomematicModuleTestCase
             'VariableName'  => 'ENERGY_COUNTER_FEED_IN',
             'VariableValue' => 900.0
         ]));
-        $this->runTimer();
         $this->assertEquals(2600.0, GetValueFloat(IPS_GetObjectIDByIdent('ENERGY_COUNTER_FEED_IN_TOTAL', $this->PowerMeterId)));
         // Der normale Zähler bleibt davon unberührt ein eigener Summenzähler.
         $this->assertNotFalse(@IPS_GetObjectIDByIdent('ENERGY_COUNTER_TOTAL', $this->PowerMeterId));
@@ -286,32 +281,34 @@ class PowerMeterTest extends HomematicModuleTestCase
             'VariableName'  => 'ENERGY_COUNTER',
             'VariableValue' => 1600.0
         ]));
-        $this->runTimer();
         $this->assertEquals(1600.0, GetValueFloat(IPS_GetObjectIDByIdent('ENERGY_COUNTER', $this->PowerMeterId)));
         $this->assertEquals(7000.0, GetValueFloat(IPS_GetObjectIDByIdent('ENERGY_COUNTER_TOTAL', $this->PowerMeterId)));
     }
 
-    public function testEventOfCounterReadsSystemVariableOnlyAfterTimer(): void
+    public function testEventStartsOnceTimerWithDelay(): void
     {
-        // Das Zählerprogramm der CCU läuft zeitgleich zum Ereignis, gelesen wird erst nach Ablauf des Timers und nur einmal je Datenpunkt.
+        // Die Stubs führen den einmaligen Timer sofort aus, das Skript wartet vorher ReadDelay (50 ms).
+        $Instance = IPS\InstanceManager::getInstanceInterface($this->PowerMeterId);
         FakeHomematicIO::$Requests = [];
         FakeHomematicIO::$ScriptResponse = '<xml><exec>/x</exec><sessionId>0</sessionId><httpUserAgent>x</httpUserAgent><Value>8000000.0</Value></xml>';
-        $Interface = IPS\InstanceManager::getInstanceInterface($this->PowerMeterId);
-        foreach ([1700.0, 1800.0] as $Value) {
-            $Interface->ReceiveData(json_encode([
-                'DataID'        => \HMExtended\GUID::HmDevice,
-                'DeviceID'      => self::Address,
-                'VariableName'  => 'ENERGY_COUNTER',
-                'VariableValue' => $Value
-            ]));
-        }
-        $this->assertCount(0, FakeHomematicIO::$Requests);
-        $this->assertSame(50, $this->timerInterval());
-        $this->assertEquals(5000.0, GetValueFloat(IPS_GetObjectIDByIdent('ENERGY_COUNTER_TOTAL', $this->PowerMeterId)));
-        $this->runTimer();
+        $this->sendCounterEvent(1700.0);
         $this->assertCount(1, FakeHomematicIO::$Requests);
         $this->assertEquals(8000.0, GetValueFloat(IPS_GetObjectIDByIdent('ENERGY_COUNTER_TOTAL', $this->PowerMeterId)));
-        $this->assertSame(0, $this->timerInterval());
+        $this->assertSame([], (fn () => $this->PendingCounters)->call($Instance));
+    }
+
+    public function testEventBeforeKernelReadyIsNotReadAndNotReported(): void
+    {
+        // Forum #805: Beim Start von Symcon kommen Ereignisse, bevor KernelReady den Parent registriert hat.
+        // Gelesen wird dann nicht und es gibt keine Meldung „Keine aktive Parent Instanz!“; ApplyChanges liest danach.
+        $Instance = IPS\InstanceManager::getInstanceInterface($this->PowerMeterId);
+        (fn () => $this->ParentID = 0)->call($Instance);
+        FakeHomematicIO::$Requests = [];
+        ob_start();
+        $this->sendCounterEvent(1700.0);
+        $this->assertSame('', ob_get_clean());
+        $this->assertCount(0, FakeHomematicIO::$Requests);
+        $this->assertSame([], (fn () => $this->PendingCounters)->call($Instance));
     }
 
     public function testEventOfOtherDatapointDoesNotReadScript(): void
@@ -381,17 +378,21 @@ class PowerMeterTest extends HomematicModuleTestCase
     }
 
     /**
-     * Löst den Timer aus, der nach einem Ereignis die Summenzähler liest.
+     * Führt die Aktion aus, die der einmalige Timer nach einem Ereignis aufruft (liest die Summenzähler).
      */
     private function runTimer(): void
     {
         IPS\InstanceManager::getInstanceInterface($this->PowerMeterId)->RequestAction(\HMExtended\Device\Timer::ReadSystemVariables, true);
     }
 
-    private function timerInterval(): int
+    private function sendCounterEvent(float $Value): void
     {
-        $Method = new ReflectionMethod(HomeMaticPowermeter::class, 'GetTimerInterval');
-        return $Method->invoke(IPS\InstanceManager::getInstanceInterface($this->PowerMeterId), \HMExtended\Device\Timer::ReadSystemVariables);
+        IPS\InstanceManager::getInstanceInterface($this->PowerMeterId)->ReceiveData(json_encode([
+            'DataID'        => \HMExtended\GUID::HmDevice,
+            'DeviceID'      => self::Address,
+            'VariableName'  => 'ENERGY_COUNTER',
+            'VariableValue' => $Value
+        ]));
     }
 
     /**

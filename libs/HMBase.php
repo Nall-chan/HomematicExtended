@@ -93,6 +93,7 @@ abstract class HMBase extends IPSModuleStrict
      * True, wenn die Zusammenfassung den Host des Homematic Sockets anzeigt (Konfigurator, Splitter und Singletons).
      */
     protected const SummaryShowsHost = false;
+
     /**
      * Interne Funktion des SDK.
      */
@@ -242,6 +243,36 @@ abstract class HMBase extends IPSModuleStrict
     {
         $this->UnregisterMessage(0, IPS_KERNELSTARTED);
         $this->RegisterParent();
+    }
+
+    /**
+     * Startet nach einem Ereignis das verzögerte Lesen über einen einmaligen Timer (RegisterOnceTimer).
+     * Der Timer läuft sofort in einem eigenen Thread, wartet dort $DelayMs Millisekunden und führt dann die Aktion $Action aus.
+     * Symcon führt einen Timer nur einmal zur Zeit aus; weitere Ereignisse, während er wartet, lösen kein weiteres Lesen aus.
+     * Die Aktion prüft zuerst CanDelayedRead.
+     *
+     * @param string $Action Ident der Aktion (RequestAction), welche liest.
+     * @param int $DelayMs Wartezeit in Millisekunden.
+     */
+    protected function StartDelayedRead(string $Action, int $DelayMs): void
+    {
+        $this->RegisterOnceTimer(\HMExtended\Device\Timer::DelayedRead, 'usleep(' . ($DelayMs * 1000) . ');IPS_RequestAction($_IPS[\'TARGET\'], \'' . $Action . '\', true);');
+    }
+
+    /**
+     * Prüft vor dem verzögerten Lesen, ob gelesen werden kann.
+     * Ohne aktiven Parent wird nicht gelesen und nichts gemeldet (z.B. beim Start von Symcon, bevor KernelReady den Parent
+     * registriert hat). Wird der Parent aktiv, liest die Instanz über KernelReady bzw. IOChangeState ohnehin.
+     *
+     * @return bool true, wenn gelesen werden kann.
+     */
+    protected function CanDelayedRead(): bool
+    {
+        if (!$this->HasActiveParent()) {
+            $this->SendDebug('Delayed read', 'skipped, no active parent', 0);
+            return false;
+        }
+        return true;
     }
 
     /**

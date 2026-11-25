@@ -67,14 +67,15 @@ class AlarmvariableTest extends HomematicModuleTestCase
     {
         $Id = $this->createAlarm(1253);
         $Interface = IPS\InstanceManager::getInstanceInterface($Id);
-        $Interface->ReceiveData(json_encode(['DataID' => \HMExtended\GUID::HmDevice, 'DeviceID' => self::Key, 'VariableName' => 'PRESS_SHORT', 'VariableValue' => true]));
-        $this->assertSame(250, $this->timerInterval($Id));
 
         // Gleicher Zeitstempel (eine andere Variable auf derselben Taste hat ausgelöst): keine Änderung.
+        // Das Ereignis liest über den einmaligen Timer (die Stubs führen ihn sofort aus).
         $StateId = IPS_GetObjectIDByIdent('STATE', $Id);
         $this->setModuleValue($Id, 'STATE', false);
         FakeHomematicIO::$ScriptResponse = $this->ccu(self::AlarmOutput) . self::Xml;
-        $Interface->RequestAction(\HMExtended\Device\Timer::ReadSystemVariables, true);
+        FakeHomematicIO::$Requests = [];
+        $Interface->ReceiveData(json_encode(['DataID' => \HMExtended\GUID::HmDevice, 'DeviceID' => self::Key, 'VariableName' => 'PRESS_SHORT', 'VariableValue' => true]));
+        $this->assertCount(1, $this->scripts());
         $this->assertFalse(GetValueBoolean($StateId));
 
         FakeHomematicIO::$ScriptResponse = "@@2026-10-28 08:30:00\r\nfalse\t2026-10-28 08:29:00\t2026-10-28 07:59:00\t2026-10-28 08:00:00\tFlur\tFlur\tx\r\n" . self::Xml;
@@ -179,11 +180,5 @@ class AlarmvariableTest extends HomematicModuleTestCase
     private function scripts(): array
     {
         return array_values(array_column(array_filter(FakeHomematicIO::$Requests, fn ($Request) => isset($Request['Content'])), 'Content'));
-    }
-
-    private function timerInterval(int $Id): int
-    {
-        $Method = new ReflectionMethod(HomeMaticAlarmvariable::class, 'GetTimerInterval');
-        return $Method->invoke(IPS\InstanceManager::getInstanceInterface($Id), \HMExtended\Device\Timer::ReadSystemVariables);
     }
 }
